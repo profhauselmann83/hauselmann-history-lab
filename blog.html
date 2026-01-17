@@ -37,6 +37,53 @@
         nav a:hover {
             text-decoration: underline;
         }
+        .search-container {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .filter-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 15px;
+            background-color: #ecf0f1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Open Sans', sans-serif;
+            transition: background-color 0.3s;
+        }
+        .filter-btn:hover {
+            background-color: #bdc3c7;
+        }
+        .filter-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .search-results-info {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
         .blog-post {
             background-color: white;
             padding: 30px;
@@ -75,6 +122,13 @@
             font-size: 0.85em;
             margin-right: 5px;
         }
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 5px;
+            color: #7f8c8d;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -92,6 +146,19 @@
         <a href="blog.html">Blog</a>
     </nav>
 
+    <div class="search-container">
+        <input 
+            type="text" 
+            id="search-input" 
+            class="search-box" 
+            placeholder="Search blog posts by keyword..."
+        >
+        <div class="filter-buttons" id="category-filters">
+            <!-- Category filter buttons will be added here dynamically -->
+        </div>
+        <div class="search-results-info" id="results-info"></div>
+    </div>
+
     <div id="blog-container">
         <div class="loading">Loading blog posts...</div>
     </div>
@@ -102,6 +169,10 @@
 
         const { createClient } = supabase
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        let allPosts = []
+        let currentSearchTerm = ''
+        let currentCategory = 'all'
 
         async function loadBlogPosts() {
             const container = document.getElementById('blog-container')
@@ -122,7 +193,95 @@
                 return
             }
 
-            container.innerHTML = data.map(post => `
+            allPosts = data
+            
+            // Extract unique categories and create filter buttons
+            createCategoryFilters(data)
+            
+            // Display all posts initially
+            displayPosts(data)
+            updateResultsInfo(data.length, data.length)
+        }
+
+        function createCategoryFilters(posts) {
+            const categories = ['all', ...new Set(posts.map(p => p.category).filter(c => c))]
+            const filterContainer = document.getElementById('category-filters')
+            
+            filterContainer.innerHTML = categories.map(cat => `
+                <button 
+                    class="filter-btn ${cat === 'all' ? 'active' : ''}" 
+                    onclick="filterByCategory('${cat}')"
+                >
+                    ${cat === 'all' ? 'All Posts' : cat}
+                </button>
+            `).join('')
+        }
+
+        function filterByCategory(category) {
+            currentCategory = category
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active')
+            })
+            event.target.classList.add('active')
+            
+            // Apply filters
+            applyFilters()
+        }
+
+        function searchPosts() {
+            currentSearchTerm = document.getElementById('search-input').value.toLowerCase()
+            applyFilters()
+        }
+
+        function applyFilters() {
+            let filteredPosts = allPosts
+
+            // Filter by category
+            if (currentCategory !== 'all') {
+                filteredPosts = filteredPosts.filter(post => 
+                    post.category === currentCategory
+                )
+            }
+
+            // Filter by search term
+            if (currentSearchTerm) {
+                filteredPosts = filteredPosts.filter(post => {
+                    const titleMatch = post.title.toLowerCase().includes(currentSearchTerm)
+                    const contentMatch = post.content.toLowerCase().includes(currentSearchTerm)
+                    const categoryMatch = post.category && post.category.toLowerCase().includes(currentSearchTerm)
+                    return titleMatch || contentMatch || categoryMatch
+                })
+            }
+
+            displayPosts(filteredPosts)
+            updateResultsInfo(filteredPosts.length, allPosts.length)
+        }
+
+        function updateResultsInfo(showing, total) {
+            const info = document.getElementById('results-info')
+            if (currentSearchTerm || currentCategory !== 'all') {
+                info.textContent = `Showing ${showing} of ${total} posts`
+            } else {
+                info.textContent = `Showing all ${total} posts`
+            }
+        }
+
+        function displayPosts(posts) {
+            const container = document.getElementById('blog-container')
+
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <p>No posts found matching your search.</p>
+                        <p>Try different keywords or browse all posts.</p>
+                    </div>
+                `
+                return
+            }
+
+            container.innerHTML = posts.map(post => `
                 <article class="blog-post">
                     <h2>${post.title}</h2>
                     <div class="blog-meta">
@@ -142,6 +301,19 @@
             `).join('')
         }
 
+        // Set up search input listener
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-input')
+            
+            // Search as user types (with small delay)
+            let searchTimeout
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout)
+                searchTimeout = setTimeout(searchPosts, 300)
+            })
+        })
+
+        // Load blog posts when page loads
         loadBlogPosts()
     </script>
 
