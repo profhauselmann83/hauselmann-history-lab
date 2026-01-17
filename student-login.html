@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Student Login - Hauselmann's History Lab</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .button {
+            width: 100%;
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+        }
+        .toggle-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            background-color: #fee;
+            color: #c00;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+        .success {
+            background-color: #efe;
+            color: #060;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Student Login</h1>
+        <p>Access Your Research Tools</p>
+    </header>
+
+    <div class="login-container">
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>Sign In</h2>
+            <div id="login-error" class="error"></div>
+            
+            <div class="form-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="your.email@my.yosemite.edu" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password" required>
+            </div>
+            
+            <button class="button" onclick="handleLogin()">Sign In</button>
+            
+            <div class="toggle-link">
+                Don't have an account? <a href="#" onclick="showRegister(); return false;">Register here</a>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="register-form" class="hidden">
+            <h2>Create Account</h2>
+            <div id="register-error" class="error"></div>
+            <div id="register-success" class="success"></div>
+            
+            <div class="form-group">
+                <label for="register-name">Full Name</label>
+                <input type="text" id="register-name" placeholder="John Doe" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" placeholder="your.email@my.yosemite.edu" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="register-password">Password</label>
+                <input type="password" id="register-password" placeholder="Create a password (min 8 characters)" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="register-password-confirm">Confirm Password</label>
+                <input type="password" id="register-password-confirm" placeholder="Re-enter your password" required>
+            </div>
+            
+            <button class="button" onclick="handleRegister()">Create Account</button>
+            
+            <div class="toggle-link">
+                Already have an account? <a href="#" onclick="showLogin(); return false;">Sign in here</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+
+        const { createClient } = supabase
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        function showRegister() {
+            document.getElementById('login-form').classList.add('hidden')
+            document.getElementById('register-form').classList.remove('hidden')
+        }
+
+        function showLogin() {
+            document.getElementById('register-form').classList.add('hidden')
+            document.getElementById('login-form').classList.remove('hidden')
+        }
+
+        function hashPassword(password) {
+            return CryptoJS.SHA256(password).toString()
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById('register-name').value.trim()
+            const email = document.getElementById('register-email').value.trim().toLowerCase()
+            const password = document.getElementById('register-password').value
+            const passwordConfirm = document.getElementById('register-password-confirm').value
+
+            const errorDiv = document.getElementById('register-error')
+            const successDiv = document.getElementById('register-success')
+            errorDiv.style.display = 'none'
+            successDiv.style.display = 'none'
+
+            // Validation
+            if (!name || !email || !password) {
+                errorDiv.textContent = 'Please fill in all fields'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            // Check email domain
+            if (!email.endsWith('@my.yosemite.edu')) {
+                errorDiv.textContent = 'You must use your @my.yosemite.edu email address to register'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            if (password.length < 8) {
+                errorDiv.textContent = 'Password must be at least 8 characters'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            if (password !== passwordConfirm) {
+                errorDiv.textContent = 'Passwords do not match'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            // Check if email already exists
+            const { data: existingUser } = await supabaseClient
+                .from('student_users')
+                .select('email')
+                .eq('email', email)
+                .single()
+
+            if (existingUser) {
+                errorDiv.textContent = 'An account with this email already exists'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            // Create account
+            const passwordHash = hashPassword(password)
+            
+            const { data, error } = await supabaseClient
+                .from('student_users')
+                .insert([
+                    {
+                        email: email,
+                        password_hash: passwordHash,
+                        full_name: name
+                    }
+                ])
+                .select()
+
+            if (error) {
+                console.error('Registration error:', error)
+                errorDiv.textContent = 'Registration failed. Please try again.'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            // Success
+            successDiv.textContent = 'Account created successfully! You can now sign in.'
+            successDiv.style.display = 'block'
+
+            // Clear form
+            document.getElementById('register-name').value = ''
+            document.getElementById('register-email').value = ''
+            document.getElementById('register-password').value = ''
+            document.getElementById('register-password-confirm').value = ''
+
+            // Switch to login form after 2 seconds
+            setTimeout(() => {
+                showLogin()
+                document.getElementById('login-email').value = email
+            }, 2000)
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value.trim().toLowerCase()
+            const password = document.getElementById('login-password').value
+
+            const errorDiv = document.getElementById('login-error')
+            errorDiv.style.display = 'none'
+
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter email and password'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            const passwordHash = hashPassword(password)
+
+            // Check credentials
+            const { data: user, error } = await supabaseClient
+                .from('student_users')
+                .select('*')
+                .eq('email', email)
+                .eq('password_hash', passwordHash)
+                .single()
+
+            if (error || !user) {
+                errorDiv.textContent = 'Invalid email or password'
+                errorDiv.style.display = 'block'
+                return
+            }
+
+            // Store user session
+            localStorage.setItem('student_user', JSON.stringify({
+                id: user.id,
+                email: user.email,
+                name: user.full_name
+            }))
+
+            // Redirect to thesis builder
+            window.location.href = 'hist101-thesis-builder-auth.html'
+        }
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const user = localStorage.getItem('student_user')
+            if (user) {
+                window.location.href = 'hist101-thesis-builder-auth.html'
+            }
+        })
+    </script>
+
+    <footer style="text-align: center; margin-top: 40px; color: #7f8c8d;">
+        <p>Prof. Hauselmann | profhauselmann.org</p>
+    </footer>
+</body>
+</html>
