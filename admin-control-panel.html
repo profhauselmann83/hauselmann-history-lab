@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Admin Control Panel - Research Tools</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .control-section {
+            background-color: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .control-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .setting-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .setting-description {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: #ccc;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toggle-switch.active {
+            background-color: #27ae60;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+        .toggle-switch.active::after {
+            left: 32px;
+        }
+        .number-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1em;
+        }
+        .button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .button-danger {
+            background-color: #e74c3c;
+        }
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .status-enabled {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .status-disabled {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <header>
+        <h1>🎛️ Admin Control Panel</h1>
+        <p>AI Feedback System Management</p>
+    </header>
+
+    <div id="success-message" class="success-message"></div>
+
+    <div class="control-section">
+        <h3>AI System Controls</h3>
+        
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Master AI Switch</div>
+                <div class="setting-description">Turn all AI feedback on or off globally</div>
+            </div>
+            <div class="toggle-switch" id="master-toggle" onclick="toggleMasterSwitch()"></div>
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Thesis Builder AI</div>
+                <div class="setting-description">Enable/disable AI for thesis builder tool only</div>
+            </div>
+            <div class="toggle-switch" id="thesis-toggle" onclick="toggleThesisTool()"></div>
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Max Requests Per Student</div>
+                <div class="setting-description">How many AI feedback requests each student can make</div>
+            </div>
+            <div>
+                <input type="number" id="max-requests" class="number-input" min="0" max="20" value="3">
+                <button class="button" onclick="updateMaxRequests()" style="margin-left: 10px;">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-section">
+        <h3>Usage Statistics</h3>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-requests">-</div>
+                <div class="stat-label">Total AI Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-students">-</div>
+                <div class="stat-label">Students Using AI</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-requests">-</div>
+                <div class="stat-label">Avg Requests/Student</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="estimated-cost">-</div>
+                <div class="stat-label">Estimated Cost</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-section">
+        <h3>Student Usage Details</h3>
+        <table id="usage-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>Requests Used</th>
+                    <th>Last Request</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usage-tbody">
+                <tr><td colspan="5" style="text-align: center; color: #7f8c8d;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="control-section">
+        <h3>Danger Zone</h3>
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Reset All Student Usage</div>
+                <div class="setting-description">⚠️ This will reset all students' request counts to zero</div>
+            </div>
+            <button class="button button-danger" onclick="resetAllUsage()">Reset All</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+
+        const { createClient } = supabase
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        // Load initial settings
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadSettings()
+            await loadStats()
+            await loadStudentUsage()
+        })
+
+        async function loadSettings() {
+            // Load master switch
+            const { data: masterData } = await supabaseClient
+                .from('system_settings')
+                .select('setting_value')
+                .eq('setting_key', 'ai_feedback_enabled')
+                .single()
+
+            if (masterData && masterData.setting_value === 'true') {
+                document.getElementById('master-toggle').classList.add('active')
+            }
+
+            // Load thesis tool switch
+            const { data: thesisData } = await supabaseClient
+                .from('system_settings')
+                .select('setting_value')
+                .eq('setting_key', 'ai_tool_enabled_thesis_builder')
+                .single()
+
+            if (thesisData && thesisData.setting_value === 'true') {
+                document.getElementById('thesis-toggle').classList.add('active')
+            }
+
+            // Load max requests
+            const { data: maxData } = await supabaseClient
+                .from('system_settings')
+                .select('setting_value')
+                .eq('setting_key', 'max_ai_requests_per_student')
+                .single()
+
+            if (maxData) {
+                document.getElementById('max-requests').value = maxData.setting_value
+            }
+        }
+
+        async function toggleMasterSwitch() {
+            const toggle = document.getElementById('master-toggle')
+            const isActive = toggle.classList.contains('active')
+            const newValue = !isActive
+
+            await supabaseClient
+                .from('system_settings')
+                .update({ setting_value: newValue.toString() })
+                .eq('setting_key', 'ai_feedback_enabled')
+
+            if (newValue) {
+                toggle.classList.add('active')
+            } else {
+                toggle.classList.remove('active')
+            }
+
+            showSuccess(`AI feedback ${newValue ? 'enabled' : 'disabled'} globally`)
+        }
+
+        async function toggleThesisTool() {
+            const toggle = document.getElementById('thesis-toggle')
+            const isActive = toggle.classList.contains('active')
+            const newValue = !isActive
+
+            await supabaseClient
+                .from('system_settings')
+                .update({ setting_value: newValue.toString() })
+                .eq('setting_key', 'ai_tool_enabled_thesis_builder')
+
+            if (newValue) {
+                toggle.classList.add('active')
+            } else {
+                toggle.classList.remove('active')
+            }
+
+            showSuccess(`Thesis builder AI ${newValue ? 'enabled' : 'disabled'}`)
+        }
+
+        async function updateMaxRequests() {
+            const value = document.getElementById('max-requests').value
+
+            await supabaseClient
+                .from('system_settings')
+                .update({ setting_value: value })
+                .eq('setting_key', 'max_ai_requests_per_student')
+
+            showSuccess(`Max requests updated to ${value} per student`)
+        }
+
+        async function loadStats() {
+            // Get all usage records
+            const { data: usageData } = await supabaseClient
+                .from('ai_usage_tracking')
+                .select('request_count')
+                .eq('tool_name', 'thesis_builder')
+
+            if (!usageData || usageData.length === 0) {
+                document.getElementById('total-requests').textContent = '0'
+                document.getElementById('total-students').textContent = '0'
+                document.getElementById('avg-requests').textContent = '0'
+                document.getElementById('estimated-cost').textContent = '$0.00'
+                return
+            }
+
+            const totalRequests = usageData.reduce((sum, record) => sum + record.request_count, 0)
+            const totalStudents = usageData.length
+            const avgRequests = (totalRequests / totalStudents).toFixed(1)
+            const estimatedCost = (totalRequests * 0.005).toFixed(2) // $0.005 per request average
+
+            document.getElementById('total-requests').textContent = totalRequests
+            document.getElementById('total-students').textContent = totalStudents
+            document.getElementById('avg-requests').textContent = avgRequests
+            document.getElementById('estimated-cost').textContent = '$' + estimatedCost
+        }
+
+        async function loadStudentUsage() {
+            // Get usage with student info
+            const { data: usageData } = await supabaseClient
+                .from('ai_usage_tracking')
+                .select(`
+                    user_id,
+                    request_count,
+                    last_request,
+                    student_users (
+                        full_name,
+                        email
+                    )
+                `)
+                .eq('tool_name', 'thesis_builder')
+
+            const tbody = document.getElementById('usage-tbody')
+            
+            if (!usageData || usageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #7f8c8d;">No usage data yet</td></tr>'
+                return
+            }
+
+            tbody.innerHTML = usageData.map(record => `
+                <tr>
+                    <td>${record.student_users?.full_name || 'Unknown'}</td>
+                    <td>${record.student_users?.email || 'Unknown'}</td>
+                    <td>${record.request_count}</td>
+                    <td>${new Date(record.last_request).toLocaleDateString()}</td>
+                    <td>
+                        <button class="button" style="padding: 5px 15px; font-size: 0.9em;" onclick="resetStudentUsage('${record.user_id}')">Reset</button>
+                    </td>
+                </tr>
+            `).join('')
+        }
+
+        async function resetStudentUsage(userId) {
+            if (!confirm('Reset this student\'s usage count to zero?')) {
+                return
+            }
+
+            await supabaseClient
+                .from('ai_usage_tracking')
+                .update({ request_count: 0 })
+                .eq('user_id', userId)
+                .eq('tool_name', 'thesis_builder')
+
+            showSuccess('Student usage reset')
+            await loadStats()
+            await loadStudentUsage()
+        }
+
+        async function resetAllUsage() {
+            if (!confirm('⚠️ Are you sure you want to reset ALL students\' usage? This cannot be undone.')) {
+                return
+            }
+
+            await supabaseClient
+                .from('ai_usage_tracking')
+                .update({ request_count: 0 })
+                .eq('tool_name', 'thesis_builder')
+
+            showSuccess('All student usage reset')
+            await loadStats()
+            await loadStudentUsage()
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message')
+            successDiv.textContent = '✓ ' + message
+            successDiv.style.display = 'block'
+            setTimeout(() => {
+                successDiv.style.display = 'none'
+            }, 3000)
+        }
+    </script>
+
+    <footer style="text-align: center; margin-top: 40px; color: #7f8c8d;">
+        <p>Prof. Hauselmann | profhauselmann.org</p>
+    </footer>
+</body>
+</html>
