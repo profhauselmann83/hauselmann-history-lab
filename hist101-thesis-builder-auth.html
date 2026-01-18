@@ -3,650 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <title>Thesis Statement Builder - HIST 101</title>
+    <title>Student Login | HIST 101</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f0;
-            color: #333;
-        }
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 30px;
-            text-align: center;
-            border-radius: 5px;
-            position: relative;
-        }
-        .user-info {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 0.9em;
-        }
-        .logout-btn {
-            background-color: #e74c3c;
-            color: white;
-            padding: 5px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.85em;
-            margin-left: 10px;
-        }
-        .logout-btn:hover {
-            background-color: #c0392b;
-        }
-        nav {
-            background-color: #34495e;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-            text-align: center;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-weight: bold;
-        }
-        nav a:hover {
-            text-decoration: underline;
-        }
-        .breadcrumb {
-            background-color: white;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        .breadcrumb a {
-            color: #3498db;
-            text-decoration: none;
-        }
-        .section {
-            background-color: white;
-            padding: 25px;
-            margin: 20px 0;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .section h3 {
-            color: #2c3e50;
-            margin-top: 0;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        .form-group {
-            margin: 20px 0;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
-        select, textarea, input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-family: 'Open Sans', sans-serif;
-            font-size: 1em;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        select:focus, textarea:focus, input:focus {
-            outline: none;
-            border-color: #3498db;
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-        textarea {
-            min-height: 100px;
-            resize: vertical;
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
         }
-        .hint {
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
             color: #7f8c8d;
-            font-size: 0.9em;
-            margin-top: 5px;
-            font-style: italic;
+            font-size: 1.1em;
         }
-        .button {
-            background-color: #3498db;
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dfe6e9;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #2c3e50;
+        }
+
+        .tab:hover {
+            background: #f8f9fa;
+        }
+
+        .tab.active {
+            background: #667eea;
             color: white;
-            padding: 12px 30px;
+            border-color: #667eea;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dfe6e9;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Georgia', serif;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
             border: none;
             border-radius: 5px;
             font-size: 1em;
             font-weight: bold;
             cursor: pointer;
-            margin-right: 10px;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .logged-in-view {
+            display: none;
+        }
+
+        .logged-in-view.active {
+            display: block;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-text {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #f0f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-box h3 {
+            color: #667eea;
             margin-bottom: 10px;
         }
-        .button:hover {
-            background-color: #2980b9;
+
+        .info-box p {
+            color: #34495e;
+            margin-bottom: 10px;
         }
-        .button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
+
+        .tools-list {
+            list-style: none;
+            padding: 0;
         }
-        .button-secondary {
-            background-color: #95a5a6;
-        }
-        .button-secondary:hover {
-            background-color: #7f8c8d;
-        }
-        .button-success {
-            background-color: #27ae60;
-        }
-        .button-success:hover {
-            background-color: #229954;
-        }
-        .ai-feedback-box {
-            background-color: #fff9e6;
-            padding: 20px;
-            margin: 20px 0;
+
+        .tools-list li {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
             border-radius: 5px;
-            border-left: 4px solid #f39c12;
+            border-left: 3px solid #667eea;
         }
-        .ai-feedback-box h4 {
-            color: #f39c12;
-            margin-top: 0;
+
+        .tools-list a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
         }
-        .field-feedback {
-            margin: 15px 0;
-            padding: 15px;
-            background-color: white;
-            border-radius: 5px;
+
+        .tools-list a:hover {
+            text-decoration: underline;
         }
-        .field-feedback h5 {
-            color: #2c3e50;
-            margin-top: 0;
+
+        .logout-btn {
+            background: #e74c3c;
+            margin-top: 20px;
         }
-        .field-feedback ul {
-            margin: 10px 0;
-            padding-left: 20px;
+
+        .logout-btn:hover {
+            background: #c0392b;
         }
-        .field-feedback li {
-            margin: 8px 0;
-            color: #555;
-        }
-        .save-indicator {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-            display: none;
-        }
-        .loading {
+
+        footer {
             text-align: center;
-            padding: 20px;
-            color: #7f8c8d;
-        }
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-        .hidden {
-            display: none;
+            margin-top: 40px;
+            color: white;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <header>
-        <div class="user-info">
-            <span id="user-name"></span>
-            <button class="logout-btn" onclick="handleLogout()">Logout</button>
-        </div>
-        <h1>Thesis Statement Builder</h1>
-        <p>Craft a Strong Historical Argument</p>
-    </header>
+    <div class="container">
+        <!-- Login/Register Forms -->
+        <div id="auth-forms">
+            <div class="header">
+                <h1>Student Login</h1>
+                <p class="subtitle">HIST 101: Democratic Norms & the American Revolution</p>
+            </div>
 
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="activities.html">Interactive Activities</a>
-        <a href="research.html">Research Tools</a>
-        <a href="archives.html">Student Archives</a>
-        <a href="blog.html">Blog</a>
-    </nav>
+            <div id="message" class="message"></div>
 
-    <div class="breadcrumb">
-        <a href="research-hist101.html">← Back to HIST 101 Research Guide</a>
-    </div>
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('login')">Login</div>
+                <div class="tab" onclick="showTab('register')">Register</div>
+            </div>
 
-    <div class="save-indicator" id="save-indicator">
-        ✓ Work saved automatically
-    </div>
+            <!-- Login Form -->
+            <div id="login-form" class="form-section active">
+                <div class="field-group">
+                    <label for="login-email">Email Address:</label>
+                    <input type="email" id="login-email" placeholder="your.email@example.com" required>
+                </div>
+                <div class="field-group">
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button class="button" onclick="login()">Login</button>
+            </div>
 
-    <div class="section" style="background-color: #e8f4f8; border-left: 4px solid #3498db;">
-        <div id="usage-info" style="font-size: 0.95em;">
-            <strong>AI Feedback Requests:</strong> Loading...
-        </div>
-    </div>
-
-    <div class="section">
-        <h3>About Your Thesis Statement</h3>
-        <p>A strong thesis for this assignment should:</p>
-        <ul>
-            <li><strong>Make a historical claim</strong> about how a democratic norm operated during the Revolutionary era</li>
-            <li><strong>Show complexity</strong> by addressing both practices and limitations</li>
-            <li><strong>Connect to consequences</strong> by explaining what the Revolution's approach reveals</li>
-            <li><strong>Be specific</strong> with evidence, groups, and time periods</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h3>Build Your Thesis Components</h3>
-        <p><em>Fill in each field below. Your work saves automatically. Click "Get AI Feedback" when you're ready for guidance.</em></p>
-        
-        <div class="form-group">
-            <label for="norm-select">1. Select Your Democratic Norm</label>
-            <select id="norm-select" onchange="autoSave()">
-                <option value="">-- Choose a norm --</option>
-                <option value="Civic Participation">Civic Participation</option>
-                <option value="Respect for Truth">Respect for Truth</option>
-                <option value="Compromise">Compromise</option>
-                <option value="Civility">Civility</option>
-                <option value="Respect for Institutions and the Rule of Law">Respect for Institutions and the Rule of Law</option>
-                <option value="Pluralism and Tolerance">Pluralism and Tolerance</option>
-                <option value="Responsibility to the Common Good">Responsibility to the Common Good</option>
-            </select>
-            <div class="hint">This is the democratic norm from Haass you'll analyze</div>
+            <!-- Register Form -->
+            <div id="register-form" class="form-section">
+                <div class="field-group">
+                    <label for="register-name">Full Name:</label>
+                    <input type="text" id="register-name" placeholder="First and Last Name" required>
+                </div>
+                <div class="field-group">
+                    <label for="register-email">Email Address:</label>
+                    <input type="email" id="register-email" placeholder="your.email@example.com" required>
+                </div>
+                <div class="field-group">
+                    <label for="register-password">Password:</label>
+                    <input type="password" id="register-password" placeholder="At least 6 characters" required>
+                </div>
+                <button class="button" onclick="register()">Create Account</button>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="historical-context">2. What historical context will you focus on?</label>
-            <textarea id="historical-context" placeholder="Example: Constitutional Convention debates, colonial resistance, Revolutionary pamphlets, state constitutions, etc." oninput="autoSave()"></textarea>
-            <div class="hint">Be specific about the time period and events (1760s-1790s)</div>
-        </div>
+        <!-- Logged In View -->
+        <div id="logged-in-view" class="logged-in-view">
+            <div class="header">
+                <h1>Research Tools</h1>
+                <p class="subtitle">HIST 101</p>
+            </div>
 
-        <div class="form-group">
-            <label for="who-practiced">3. Who practiced or debated this norm?</label>
-            <input type="text" id="who-practiced" placeholder="Example: Patriots and Loyalists, enslaved people, women, Indigenous nations, political elites" oninput="autoSave()">
-            <div class="hint">Which groups are central to your analysis?</div>
-        </div>
+            <div class="user-info">
+                <span class="welcome-text">Logged in as: <span id="user-email"></span></span>
+                <button class="button logout-btn" onclick="logout()" style="width: auto; padding: 8px 20px; margin: 0;">Logout</button>
+            </div>
 
-        <div class="form-group">
-            <label for="how-practiced">4. How was this norm practiced, debated, or violated?</label>
-            <textarea id="how-practiced" placeholder="Example: Through public petitions and pamphlets, in constitutional debates, through exclusionary laws, etc." oninput="autoSave()"></textarea>
-            <div class="hint">Describe the historical evidence you'll use</div>
-        </div>
+            <div class="info-box">
+                <h3>Available Tools:</h3>
+                <p>Choose a tool below to work on your midterm research project.</p>
+            </div>
 
-        <div class="form-group">
-            <label for="limitations">5. What limitations, contradictions, or exclusions existed?</label>
-            <textarea id="limitations" placeholder="Example: While claiming to value civic participation, revolutionary leaders excluded women and enslaved people from voting" oninput="autoSave()"></textarea>
-            <div class="hint">Show complexity - where did the ideal fall short?</div>
-        </div>
-
-        <div class="form-group">
-            <label for="consequences">6. What does this reveal about the Revolution's consequences?</label>
-            <textarea id="consequences" placeholder="Example: This contradiction established a pattern of expanding and restricting democratic participation that continues today" oninput="autoSave()"></textarea>
-            <div class="hint">Connect to the larger significance</div>
-        </div>
-
-        <button class="button button-success" onclick="getAIFeedback()" id="ai-btn">Get AI Feedback</button>
-        <button class="button button-secondary" onclick="resetForm()">Clear All Fields</button>
-    </div>
-
-    <div id="ai-feedback-section" class="hidden">
-        <div class="ai-feedback-box">
-            <h4>🤖 AI Guidance & Questions to Consider</h4>
-            <p><em>The AI has analyzed your responses. Consider these questions and suggestions as you refine your thinking:</em></p>
-            <div id="ai-feedback-content"></div>
+            <ul class="tools-list">
+                <li>📝 <a href="hist101-thesis-builder.html">Thesis Builder</a> - Get AI feedback on your thesis statement</li>
+                <li>📚 <a href="hist101-research-planner-wizard.html">Research Planning Worksheet</a> - Step-by-step research guide</li>
+                <li>📖 <a href="hist101-source-organizer-wizard.html">Source Organizer</a> - Track your citations and notes</li>
+                <li>🗣️ <a href="hist101-interview-guide-wizard.html">Interview Integration Guide</a> - Connect interviews to history</li>
+            </ul>
         </div>
     </div>
+
+    <footer>
+        <p>Prof. Hauselmann | profhauselmann.org</p>
+    </footer>
 
     <script>
         const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4MTM2NzYsImV4cCI6MjA1MjM4OTY3Nn0.KFQV8a5XKy1aq0pFHCF_XYLBGwDmBJNp8OpFJIrMu1w'
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4MTM2NzYsImV4cCI6MjA1MjM4OTY3Nn0.KFQV8a5XKy1aq0pFHCF_XYLBGwDmBJNp8OpFJIrMu1w'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-        const { createClient } = supabase
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-        let currentUser = null
-        let saveTimeout = null
-
-        // Check authentication on page load
-        window.addEventListener('DOMContentLoaded', async () => {
+        // Check if already logged in on page load
+        async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession()
             
-            if (!session || !session.user) {
-                window.location.href = 'hist101-thesis-builder-auth.html'
+            if (session && session.user) {
+                showLoggedInView(session.user)
+            }
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'))
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.tab')[0].classList.add('active')
+                document.getElementById('login-form').classList.add('active')
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active')
+                document.getElementById('register-form').classList.add('active')
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value.trim()
+            const password = document.getElementById('login-password').value
+
+            if (!email || !password) {
+                showMessage('Please enter both email and password', 'error')
                 return
             }
 
-            currentUser = session.user
-            
-            // Get user's actual ID from student_users table
-            const { data: studentData } = await supabaseClient
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            })
+
+            if (error) {
+                showMessage('Login failed: ' + error.message, 'error')
+                return
+            }
+
+            if (data.user) {
+                showMessage('Login successful!', 'success')
+                setTimeout(() => {
+                    showLoggedInView(data.user)
+                }, 1000)
+            }
+        }
+
+        async function register() {
+            const name = document.getElementById('register-name').value.trim()
+            const email = document.getElementById('register-email').value.trim()
+            const password = document.getElementById('register-password').value
+
+            if (!name || !email || !password) {
+                showMessage('Please fill in all fields', 'error')
+                return
+            }
+
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error')
+                return
+            }
+
+            // Create auth user
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password
+            })
+
+            if (authError) {
+                showMessage('Registration failed: ' + authError.message, 'error')
+                return
+            }
+
+            // Insert into student_users table
+            const { error: dbError } = await supabaseClient
                 .from('student_users')
-                .select('id, full_name')
-                .eq('email', currentUser.email)
-                .single()
+                .insert([{
+                    email: email,
+                    full_name: name,
+                    password_hash: 'auth_managed'
+                }])
 
-            if (studentData) {
-                currentUser.dbId = studentData.id
-                currentUser.name = studentData.full_name
-                document.getElementById('user-name').textContent = `Welcome, ${studentData.full_name}`
-            } else {
-                document.getElementById('user-name').textContent = `Welcome, ${currentUser.email}`
+            if (dbError) {
+                console.error('Database insert error:', dbError)
             }
 
-            // Load saved work
-            await loadSavedWork()
+            showMessage('Account created! Logging you in...', 'success')
             
-            // Update usage display
-            await updateRemainingRequests()
-        })
-
-        async function handleLogout() {
-            await supabaseClient.auth.signOut()
-            window.location.href = 'hist101-thesis-builder-auth.html'
-        }
-
-        async function loadSavedWork() {
-            if (!currentUser.dbId) return
-
-            const { data, error } = await supabaseClient
-                .from('thesis_builder_work')
-                .select('*')
-                .eq('user_id', currentUser.dbId)
-                .eq('course', 'HIST 101')
-                .single()
-
-            if (data) {
-                document.getElementById('norm-select').value = data.norm_selected || ''
-                document.getElementById('historical-context').value = data.historical_context || ''
-                document.getElementById('who-practiced').value = data.who_practiced || ''
-                document.getElementById('how-practiced').value = data.how_practiced || ''
-                document.getElementById('limitations').value = data.limitations || ''
-                document.getElementById('consequences').value = data.consequences || ''
-
-                // Load previous AI feedback if exists
-                if (data.ai_feedback) {
-                    document.getElementById('ai-feedback-content').innerHTML = data.ai_feedback
-                    document.getElementById('ai-feedback-section').classList.remove('hidden')
-                }
-            }
-        }
-
-        async function autoSave() {
-            if (!currentUser.dbId) return
-
-            // Clear existing timeout
-            if (saveTimeout) {
-                clearTimeout(saveTimeout)
-            }
-
-            // Save after 1 second of no typing
-            saveTimeout = setTimeout(async () => {
-                await saveWork()
-            }, 1000)
-        }
-
-        async function saveWork() {
-            if (!currentUser.dbId) return
-
-            const workData = {
-                user_id: currentUser.dbId,
-                course: 'HIST 101',
-                norm_selected: document.getElementById('norm-select').value,
-                historical_context: document.getElementById('historical-context').value,
-                who_practiced: document.getElementById('who-practiced').value,
-                how_practiced: document.getElementById('how-practiced').value,
-                limitations: document.getElementById('limitations').value,
-                consequences: document.getElementById('consequences').value
-            }
-
-            // Check if record exists
-            const { data: existing } = await supabaseClient
-                .from('thesis_builder_work')
-                .select('id')
-                .eq('user_id', currentUser.dbId)
-                .eq('course', 'HIST 101')
-                .single()
-
-            if (existing) {
-                // Update existing
-                await supabaseClient
-                    .from('thesis_builder_work')
-                    .update(workData)
-                    .eq('id', existing.id)
-            } else {
-                // Insert new
-                await supabaseClient
-                    .from('thesis_builder_work')
-                    .insert([workData])
-            }
-
-            // Show save indicator
-            const indicator = document.getElementById('save-indicator')
-            indicator.style.display = 'block'
-            setTimeout(() => {
-                indicator.style.display = 'none'
-            }, 2000)
-        }
-
-        async function getAIFeedback() {
-            if (!currentUser.dbId) return
-
-            const norm = document.getElementById('norm-select').value
-            const context = document.getElementById('historical-context').value.trim()
-            const who = document.getElementById('who-practiced').value.trim()
-            const how = document.getElementById('how-practiced').value.trim()
-            const limitations = document.getElementById('limitations').value.trim()
-            const consequences = document.getElementById('consequences').value.trim()
-
-            // Validation
-            if (!norm || !context || !who || !how || !limitations || !consequences) {
-                alert('Please fill in all fields before requesting AI feedback.')
-                return
-            }
-
-            const aiBtn = document.getElementById('ai-btn')
-            aiBtn.disabled = true
-            aiBtn.textContent = 'Checking usage limits...'
-
-            // Check if AI is enabled globally
-            const { data: aiEnabledSetting } = await supabaseClient
-                .from('system_settings')
-                .select('setting_value')
-                .eq('setting_key', 'ai_feedback_enabled')
-                .single()
-
-            if (aiEnabledSetting && aiEnabledSetting.setting_value === 'false') {
-                alert('AI feedback is temporarily unavailable. Please contact your professor.')
-                aiBtn.disabled = false
-                aiBtn.textContent = 'Get AI Feedback'
-                return
-            }
-
-            // Check if thesis builder AI is enabled
-            const { data: toolEnabledSetting } = await supabaseClient
-                .from('system_settings')
-                .select('setting_value')
-                .eq('setting_key', 'ai_tool_enabled_thesis_builder')
-                .single()
-
-            if (toolEnabledSetting && toolEnabledSetting.setting_value === 'false') {
-                alert('AI feedback for the thesis builder is temporarily unavailable.')
-                aiBtn.disabled = false
-                aiBtn.textContent = 'Get AI Feedback'
-                return
-            }
-
-            // Get max requests limit
-            const { data: maxRequestsSetting } = await supabaseClient
-                .from('system_settings')
-                .select('setting_value')
-                .eq('setting_key', 'max_ai_requests_per_student')
-                .single()
-
-            const maxRequests = maxRequestsSetting ? parseInt(maxRequestsSetting.setting_value) : 3
-
-            // Check current usage
-            const { data: usageData } = await supabaseClient
-                .from('ai_usage_tracking')
-                .select('request_count')
-                .eq('user_id', currentUser.dbId)
-                .eq('tool_name', 'thesis_builder')
-                .single()
-
-            const currentCount = usageData ? usageData.request_count : 0
-
-            if (currentCount >= maxRequests) {
-                alert(`You have reached your limit of ${maxRequests} AI feedback requests for this tool. If you need additional feedback, please contact Prof. Hauselmann.`)
-                aiBtn.disabled = false
-                aiBtn.textContent = 'Get AI Feedback'
-                return
-            }
-
-            aiBtn.textContent = 'Getting AI Feedback...'
-
-            // Call Supabase Edge Function for AI feedback
-            try {
-                const { data, error } = await supabaseClient.functions.invoke('get-thesis-feedback', {
-                    body: {
-                        user_id: currentUser.dbId,
-                        norm,
-                        historical_context: context,
-                        who_practiced: who,
-                        how_practiced: how,
-                        limitations,
-                        consequences
-                    }
+            // Auto-login
+            setTimeout(async () => {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
                 })
-
-                if (error) throw error
-
-                // Display feedback
-                displayAIFeedback(data.feedback)
-
-                // Update usage tracking
-                if (usageData) {
-                    // Update existing record
-                    await supabaseClient
-                        .from('ai_usage_tracking')
-                        .update({ 
-                            request_count: currentCount + 1,
-                            last_request: new Date().toISOString()
-                        })
-                        .eq('user_id', currentUser.dbId)
-                        .eq('tool_name', 'thesis_builder')
-                } else {
-                    // Create new record
-                    await supabaseClient
-                        .from('ai_usage_tracking')
-                        .insert([{
-                            user_id: currentUser.dbId,
-                            tool_name: 'thesis_builder',
-                            request_count: 1
-                        }])
+                
+                if (data.user) {
+                    showLoggedInView(data.user)
                 }
-
-                // Save AI feedback to database
-                const { data: existing } = await supabaseClient
-                    .from('thesis_builder_work')
-                    .select('id')
-                    .eq('user_id', currentUser.dbId)
-                    .eq('course', 'HIST 101')
-                    .single()
-
-                if (existing) {
-                    await supabaseClient
-                        .from('thesis_builder_work')
-                        .update({ ai_feedback: data.feedback })
-                        .eq('id', existing.id)
-                }
-
-                // Update remaining requests display
-                await updateRemainingRequests()
-
-            } catch (error) {
-                console.error('AI Feedback Error:', error)
-                alert('Unable to get AI feedback at this time. Please try again later.')
-            }
-
-            aiBtn.disabled = false
-            aiBtn.textContent = 'Get AI Feedback'
+            }, 1500)
         }
 
-        async function updateRemainingRequests() {
-            if (!currentUser.dbId) return
-
-            // Get max requests
-            const { data: maxRequestsSetting } = await supabaseClient
-                .from('system_settings')
-                .select('setting_value')
-                .eq('setting_key', 'max_ai_requests_per_student')
-                .single()
-
-            const maxRequests = maxRequestsSetting ? parseInt(maxRequestsSetting.setting_value) : 3
-
-            // Get current usage
-            const { data: usageData } = await supabaseClient
-                .from('ai_usage_tracking')
-                .select('request_count')
-                .eq('user_id', currentUser.dbId)
-                .eq('tool_name', 'thesis_builder')
-                .single()
-
-            const currentCount = usageData ? usageData.request_count : 0
-            const remaining = maxRequests - currentCount
-
-            const usageDiv = document.getElementById('usage-info')
-            if (remaining > 0) {
-                usageDiv.innerHTML = `<strong>AI Feedback Requests Remaining:</strong> ${remaining} of ${maxRequests}`
-                usageDiv.style.color = remaining <= 1 ? '#e74c3c' : '#27ae60'
-            } else {
-                usageDiv.innerHTML = `<strong>AI Feedback Requests Used:</strong> ${maxRequests} of ${maxRequests} (limit reached)`
-                usageDiv.style.color = '#e74c3c'
-            }
+        function showLoggedInView(user) {
+            document.getElementById('auth-forms').style.display = 'none'
+            document.getElementById('logged-in-view').classList.add('active')
+            document.getElementById('user-email').textContent = user.email
         }
 
-        function displayAIFeedback(feedbackHTML) {
-            document.getElementById('ai-feedback-content').innerHTML = feedbackHTML
-            document.getElementById('ai-feedback-section').classList.remove('hidden')
-            document.getElementById('ai-feedback-section').scrollIntoView({ behavior: 'smooth' })
+        async function logout() {
+            await supabaseClient.auth.signOut()
+            location.reload()
         }
 
-        function resetForm() {
-            if (!confirm('Are you sure you want to clear all fields? This cannot be undone.')) {
-                return
-            }
-
-            document.getElementById('norm-select').value = ''
-            document.getElementById('historical-context').value = ''
-            document.getElementById('who-practiced').value = ''
-            document.getElementById('how-practiced').value = ''
-            document.getElementById('limitations').value = ''
-            document.getElementById('consequences').value = ''
-            document.getElementById('ai-feedback-section').classList.add('hidden')
-
-            // Delete from database
-            if (currentUser.dbId) {
-                supabaseClient
-                    .from('thesis_builder_work')
-                    .delete()
-                    .eq('user_id', currentUser.dbId)
-                    .eq('course', 'HIST 101')
-            }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' })
+        function showMessage(message, type) {
+            const msgDiv = document.getElementById('message')
+            msgDiv.textContent = message
+            msgDiv.className = `message ${type}`
+            msgDiv.style.display = 'block'
+            setTimeout(() => {
+                msgDiv.style.display = 'none'
+            }, 5000)
         }
+
+        // Check auth on page load
+        checkAuth()
     </script>
-
-    <footer style="text-align: center; margin-top: 40px; color: #7f8c8d;">
-        <p>Prof. Hauselmann | profhauselmann.org</p>
-    </footer>
 </body>
 </html>
