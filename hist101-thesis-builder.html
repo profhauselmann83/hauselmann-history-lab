@@ -20,6 +20,26 @@
             padding: 30px;
             text-align: center;
             border-radius: 5px;
+            position: relative;
+        }
+        .user-info {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 0.9em;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
         }
         nav {
             background-color: #34495e;
@@ -93,16 +113,6 @@
             margin-top: 5px;
             font-style: italic;
         }
-        .example {
-            background-color: #f8f9fa;
-            padding: 15px;
-            margin: 15px 0;
-            border-left: 4px solid #3498db;
-            border-radius: 3px;
-        }
-        .example strong {
-            color: #2c3e50;
-        }
         .button {
             background-color: #3498db;
             color: white;
@@ -113,9 +123,14 @@
             font-weight: bold;
             cursor: pointer;
             margin-right: 10px;
+            margin-bottom: 10px;
         }
         .button:hover {
             background-color: #2980b9;
+        }
+        .button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
         }
         .button-secondary {
             background-color: #95a5a6;
@@ -123,43 +138,75 @@
         .button-secondary:hover {
             background-color: #7f8c8d;
         }
-        .generated-thesis {
-            background-color: #e8f4f8;
+        .button-success {
+            background-color: #27ae60;
+        }
+        .button-success:hover {
+            background-color: #229954;
+        }
+        .ai-feedback-box {
+            background-color: #fff9e6;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
-            border-left: 4px solid #27ae60;
+            border-left: 4px solid #f39c12;
         }
-        .generated-thesis h4 {
-            color: #27ae60;
+        .ai-feedback-box h4 {
+            color: #f39c12;
             margin-top: 0;
         }
-        .thesis-text {
-            font-size: 1.1em;
-            line-height: 1.6;
-            color: #2c3e50;
+        .field-feedback {
+            margin: 15px 0;
             padding: 15px;
             background-color: white;
             border-radius: 5px;
         }
-        .feedback {
-            background-color: #fff9e6;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
-            border-left: 4px solid #f39c12;
-        }
-        .feedback h5 {
-            color: #f39c12;
+        .field-feedback h5 {
+            color: #2c3e50;
             margin-top: 0;
+        }
+        .field-feedback ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .field-feedback li {
+            margin: 8px 0;
+            color: #555;
+        }
+        .save-indicator {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
         .hidden {
             display: none;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <header>
+        <div class="user-info">
+            <span id="user-name"></span>
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
         <h1>Thesis Statement Builder</h1>
         <p>Craft a Strong Historical Argument</p>
     </header>
@@ -176,6 +223,16 @@
         <a href="research-hist101.html">← Back to HIST 101 Research Guide</a>
     </div>
 
+    <div class="save-indicator" id="save-indicator">
+        ✓ Work saved automatically
+    </div>
+
+    <div class="section" style="background-color: #e8f4f8; border-left: 4px solid #3498db;">
+        <div id="usage-info" style="font-size: 0.95em;">
+            <strong>AI Feedback Requests:</strong> Loading...
+        </div>
+    </div>
+
     <div class="section">
         <h3>About Your Thesis Statement</h3>
         <p>A strong thesis for this assignment should:</p>
@@ -188,11 +245,12 @@
     </div>
 
     <div class="section">
-        <h3>Build Your Thesis</h3>
+        <h3>Build Your Thesis Components</h3>
+        <p><em>Fill in each field below. Your work saves automatically. Click "Get AI Feedback" when you're ready for guidance.</em></p>
         
         <div class="form-group">
             <label for="norm-select">1. Select Your Democratic Norm</label>
-            <select id="norm-select">
+            <select id="norm-select" onchange="autoSave()">
                 <option value="">-- Choose a norm --</option>
                 <option value="Civic Participation">Civic Participation</option>
                 <option value="Respect for Truth">Respect for Truth</option>
@@ -207,150 +265,383 @@
 
         <div class="form-group">
             <label for="historical-context">2. What historical context will you focus on?</label>
-            <textarea id="historical-context" placeholder="Example: Constitutional Convention debates, colonial resistance, Revolutionary pamphlets, state constitutions, etc."></textarea>
+            <textarea id="historical-context" placeholder="Example: Constitutional Convention debates, colonial resistance, Revolutionary pamphlets, state constitutions, etc." oninput="autoSave()"></textarea>
             <div class="hint">Be specific about the time period and events (1760s-1790s)</div>
         </div>
 
         <div class="form-group">
             <label for="who-practiced">3. Who practiced or debated this norm?</label>
-            <input type="text" id="who-practiced" placeholder="Example: Patriots and Loyalists, enslaved people, women, Indigenous nations, political elites">
+            <input type="text" id="who-practiced" placeholder="Example: Patriots and Loyalists, enslaved people, women, Indigenous nations, political elites" oninput="autoSave()">
             <div class="hint">Which groups are central to your analysis?</div>
         </div>
 
         <div class="form-group">
             <label for="how-practiced">4. How was this norm practiced, debated, or violated?</label>
-            <textarea id="how-practiced" placeholder="Example: Through public petitions and pamphlets, in constitutional debates, through exclusionary laws, etc."></textarea>
+            <textarea id="how-practiced" placeholder="Example: Through public petitions and pamphlets, in constitutional debates, through exclusionary laws, etc." oninput="autoSave()"></textarea>
             <div class="hint">Describe the historical evidence you'll use</div>
         </div>
 
         <div class="form-group">
             <label for="limitations">5. What limitations, contradictions, or exclusions existed?</label>
-            <textarea id="limitations" placeholder="Example: While claiming to value civic participation, revolutionary leaders excluded women and enslaved people from voting"></textarea>
+            <textarea id="limitations" placeholder="Example: While claiming to value civic participation, revolutionary leaders excluded women and enslaved people from voting" oninput="autoSave()"></textarea>
             <div class="hint">Show complexity - where did the ideal fall short?</div>
         </div>
 
         <div class="form-group">
             <label for="consequences">6. What does this reveal about the Revolution's consequences?</label>
-            <textarea id="consequences" placeholder="Example: This contradiction established a pattern of expanding and restricting democratic participation that continues today"></textarea>
+            <textarea id="consequences" placeholder="Example: This contradiction established a pattern of expanding and restricting democratic participation that continues today" oninput="autoSave()"></textarea>
             <div class="hint">Connect to the larger significance</div>
         </div>
 
-        <button class="button" onclick="generateThesis()">Generate Thesis Statement</button>
-        <button class="button button-secondary" onclick="resetForm()">Start Over</button>
+        <button class="button button-success" onclick="getAIFeedback()" id="ai-btn">Get AI Feedback</button>
+        <button class="button button-secondary" onclick="resetForm()">Clear All Fields</button>
     </div>
 
-    <div id="result-section" class="hidden">
-        <div class="generated-thesis">
-            <h4>Your Generated Thesis Statement:</h4>
-            <div class="thesis-text" id="thesis-output"></div>
-        </div>
-
-        <div class="feedback">
-            <h5>💡 Tips for Improvement:</h5>
-            <div id="feedback-output"></div>
-        </div>
-
-        <div class="section">
-            <h3>Next Steps</h3>
-            <p><strong>Refine Your Thesis:</strong> Use the feedback above to strengthen your argument</p>
-            <p><strong>Save Your Work:</strong> Copy your thesis to your planning worksheet or Google Doc</p>
-            <p><strong>Test It:</strong> Ask yourself - can I support this with specific evidence? Does it show historical complexity?</p>
-            <button class="button" onclick="window.print()">Print This Page</button>
-            <button class="button button-secondary" onclick="resetForm()">Create Another Version</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <h3>Example Thesis Statements</h3>
-        
-        <div class="example">
-            <strong>Example 1 (Civic Participation):</strong>
-            <p>"During the American Revolution, debates over civic participation reveal that democratic freedom depended on selective inclusion, as revolutionary leaders championed popular sovereignty through town meetings and petitions while simultaneously excluding women, enslaved people, and Indigenous nations from political rights, establishing a pattern of contested citizenship that defined American democracy's limits."</p>
-        </div>
-
-        <div class="example">
-            <strong>Example 2 (Compromise):</strong>
-            <p>"Although revolutionary leaders claimed to value compromise as essential to republican government, the practice of this norm during the Constitutional Convention shows that political compromise often preserved elite power and perpetuated slavery, demonstrating how democratic ideals could be invoked to justify profoundly undemocratic outcomes."</p>
-        </div>
-
-        <div class="example">
-            <strong>Example 3 (Respect for Truth):</strong>
-            <p>"The consequences of the American Revolution demonstrate that respect for truth was both a revolutionary weapon and a tool of exclusion, as Patriots used factual evidence and reasoned argument to challenge British authority while simultaneously suppressing Loyalist perspectives and denying the truth of Indigenous land rights."</p>
+    <div id="ai-feedback-section" class="hidden">
+        <div class="ai-feedback-box">
+            <h4>🤖 AI Guidance & Questions to Consider</h4>
+            <p><em>The AI has analyzed your responses. Consider these questions and suggestions as you refine your thinking:</em></p>
+            <div id="ai-feedback-content"></div>
         </div>
     </div>
 
     <script>
-        function generateThesis() {
-            const norm = document.getElementById('norm-select').value;
-            const context = document.getElementById('historical-context').value.trim();
-            const who = document.getElementById('who-practiced').value.trim();
-            const how = document.getElementById('how-practiced').value.trim();
-            const limitations = document.getElementById('limitations').value.trim();
-            const consequences = document.getElementById('consequences').value.trim();
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4MTM2NzYsImV4cCI6MjA1MjM4OTY3Nn0.KFQV8a5XKy1aq0pFHCF_XYLBGwDmBJNp8OpFJIrMu1w'
+
+        const { createClient } = supabase
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        let currentUser = null
+        let saveTimeout = null
+
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession()
+            
+            if (!session || !session.user) {
+                window.location.href = 'hist101-thesis-builder-auth.html'
+                return
+            }
+
+            currentUser = session.user
+            
+            // Get user's actual ID from student_users table
+            const { data: studentData } = await supabaseClient
+                .from('student_users')
+                .select('id, full_name')
+                .eq('email', currentUser.email)
+                .single()
+
+            if (studentData) {
+                currentUser.dbId = studentData.id
+                currentUser.name = studentData.full_name
+                document.getElementById('user-name').textContent = `Welcome, ${studentData.full_name}`
+            } else {
+                document.getElementById('user-name').textContent = `Welcome, ${currentUser.email}`
+            }
+
+            // Load saved work
+            await loadSavedWork()
+            
+            // Update usage display
+            await updateRemainingRequests()
+        })
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut()
+            window.location.href = 'hist101-thesis-builder-auth.html'
+        }
+
+        async function loadSavedWork() {
+            if (!currentUser.dbId) return
+
+            const { data, error } = await supabaseClient
+                .from('thesis_builder_work')
+                .select('*')
+                .eq('user_id', currentUser.dbId)
+                .eq('course', 'HIST 101')
+                .single()
+
+            if (data) {
+                document.getElementById('norm-select').value = data.norm_selected || ''
+                document.getElementById('historical-context').value = data.historical_context || ''
+                document.getElementById('who-practiced').value = data.who_practiced || ''
+                document.getElementById('how-practiced').value = data.how_practiced || ''
+                document.getElementById('limitations').value = data.limitations || ''
+                document.getElementById('consequences').value = data.consequences || ''
+
+                // Load previous AI feedback if exists
+                if (data.ai_feedback) {
+                    document.getElementById('ai-feedback-content').innerHTML = data.ai_feedback
+                    document.getElementById('ai-feedback-section').classList.remove('hidden')
+                }
+            }
+        }
+
+        async function autoSave() {
+            if (!currentUser.dbId) return
+
+            // Clear existing timeout
+            if (saveTimeout) {
+                clearTimeout(saveTimeout)
+            }
+
+            // Save after 1 second of no typing
+            saveTimeout = setTimeout(async () => {
+                await saveWork()
+            }, 1000)
+        }
+
+        async function saveWork() {
+            if (!currentUser.dbId) return
+
+            const workData = {
+                user_id: currentUser.dbId,
+                course: 'HIST 101',
+                norm_selected: document.getElementById('norm-select').value,
+                historical_context: document.getElementById('historical-context').value,
+                who_practiced: document.getElementById('who-practiced').value,
+                how_practiced: document.getElementById('how-practiced').value,
+                limitations: document.getElementById('limitations').value,
+                consequences: document.getElementById('consequences').value
+            }
+
+            // Check if record exists
+            const { data: existing } = await supabaseClient
+                .from('thesis_builder_work')
+                .select('id')
+                .eq('user_id', currentUser.dbId)
+                .eq('course', 'HIST 101')
+                .single()
+
+            if (existing) {
+                // Update existing
+                await supabaseClient
+                    .from('thesis_builder_work')
+                    .update(workData)
+                    .eq('id', existing.id)
+            } else {
+                // Insert new
+                await supabaseClient
+                    .from('thesis_builder_work')
+                    .insert([workData])
+            }
+
+            // Show save indicator
+            const indicator = document.getElementById('save-indicator')
+            indicator.style.display = 'block'
+            setTimeout(() => {
+                indicator.style.display = 'none'
+            }, 2000)
+        }
+
+        async function getAIFeedback() {
+            if (!currentUser.dbId) return
+
+            const norm = document.getElementById('norm-select').value
+            const context = document.getElementById('historical-context').value.trim()
+            const who = document.getElementById('who-practiced').value.trim()
+            const how = document.getElementById('how-practiced').value.trim()
+            const limitations = document.getElementById('limitations').value.trim()
+            const consequences = document.getElementById('consequences').value.trim()
 
             // Validation
             if (!norm || !context || !who || !how || !limitations || !consequences) {
-                alert('Please fill in all fields to generate your thesis statement.');
-                return;
+                alert('Please fill in all fields before requesting AI feedback.')
+                return
             }
 
-            // Generate thesis
-            let thesis = `During the American Revolution, debates over ${norm.toLowerCase()} reveal that democratic freedom depended on ${how}, as ${who} ${context}. However, ${limitations}, demonstrating that ${consequences}.`;
+            const aiBtn = document.getElementById('ai-btn')
+            aiBtn.disabled = true
+            aiBtn.textContent = 'Checking usage limits...'
 
-            // Display result
-            document.getElementById('thesis-output').textContent = thesis;
-            document.getElementById('result-section').classList.remove('hidden');
+            // Check if AI is enabled globally
+            const { data: aiEnabledSetting } = await supabaseClient
+                .from('system_settings')
+                .select('setting_value')
+                .eq('setting_key', 'ai_feedback_enabled')
+                .single()
 
-            // Generate feedback
-            generateFeedback(norm, context, who, how, limitations, consequences);
+            if (aiEnabledSetting && aiEnabledSetting.setting_value === 'false') {
+                alert('AI feedback is temporarily unavailable. Please contact your professor.')
+                aiBtn.disabled = false
+                aiBtn.textContent = 'Get AI Feedback'
+                return
+            }
 
-            // Scroll to result
-            document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+            // Check if thesis builder AI is enabled
+            const { data: toolEnabledSetting } = await supabaseClient
+                .from('system_settings')
+                .select('setting_value')
+                .eq('setting_key', 'ai_tool_enabled_thesis_builder')
+                .single()
+
+            if (toolEnabledSetting && toolEnabledSetting.setting_value === 'false') {
+                alert('AI feedback for the thesis builder is temporarily unavailable.')
+                aiBtn.disabled = false
+                aiBtn.textContent = 'Get AI Feedback'
+                return
+            }
+
+            // Get max requests limit
+            const { data: maxRequestsSetting } = await supabaseClient
+                .from('system_settings')
+                .select('setting_value')
+                .eq('setting_key', 'max_ai_requests_per_student')
+                .single()
+
+            const maxRequests = maxRequestsSetting ? parseInt(maxRequestsSetting.setting_value) : 3
+
+            // Check current usage
+            const { data: usageData } = await supabaseClient
+                .from('ai_usage_tracking')
+                .select('request_count')
+                .eq('user_id', currentUser.dbId)
+                .eq('tool_name', 'thesis_builder')
+                .single()
+
+            const currentCount = usageData ? usageData.request_count : 0
+
+            if (currentCount >= maxRequests) {
+                alert(`You have reached your limit of ${maxRequests} AI feedback requests for this tool. If you need additional feedback, please contact Prof. Hauselmann.`)
+                aiBtn.disabled = false
+                aiBtn.textContent = 'Get AI Feedback'
+                return
+            }
+
+            aiBtn.textContent = 'Getting AI Feedback...'
+
+            // Call Supabase Edge Function for AI feedback
+            try {
+                const { data, error } = await supabaseClient.functions.invoke('get-thesis-feedback', {
+                    body: {
+                        user_id: currentUser.dbId,
+                        norm,
+                        historical_context: context,
+                        who_practiced: who,
+                        how_practiced: how,
+                        limitations,
+                        consequences
+                    }
+                })
+
+                if (error) throw error
+
+                // Display feedback
+                displayAIFeedback(data.feedback)
+
+                // Update usage tracking
+                if (usageData) {
+                    // Update existing record
+                    await supabaseClient
+                        .from('ai_usage_tracking')
+                        .update({ 
+                            request_count: currentCount + 1,
+                            last_request: new Date().toISOString()
+                        })
+                        .eq('user_id', currentUser.dbId)
+                        .eq('tool_name', 'thesis_builder')
+                } else {
+                    // Create new record
+                    await supabaseClient
+                        .from('ai_usage_tracking')
+                        .insert([{
+                            user_id: currentUser.dbId,
+                            tool_name: 'thesis_builder',
+                            request_count: 1
+                        }])
+                }
+
+                // Save AI feedback to database
+                const { data: existing } = await supabaseClient
+                    .from('thesis_builder_work')
+                    .select('id')
+                    .eq('user_id', currentUser.dbId)
+                    .eq('course', 'HIST 101')
+                    .single()
+
+                if (existing) {
+                    await supabaseClient
+                        .from('thesis_builder_work')
+                        .update({ ai_feedback: data.feedback })
+                        .eq('id', existing.id)
+                }
+
+                // Update remaining requests display
+                await updateRemainingRequests()
+
+            } catch (error) {
+                console.error('AI Feedback Error:', error)
+                alert('Unable to get AI feedback at this time. Please try again later.')
+            }
+
+            aiBtn.disabled = false
+            aiBtn.textContent = 'Get AI Feedback'
         }
 
-        function generateFeedback(norm, context, who, how, limitations, consequences) {
-            let feedback = '<ul>';
-            
-            // Check for specificity
-            if (context.split(' ').length < 5) {
-                feedback += '<li>Consider adding more specific details about the historical context (time period, specific events)</li>';
+        async function updateRemainingRequests() {
+            if (!currentUser.dbId) return
+
+            // Get max requests
+            const { data: maxRequestsSetting } = await supabaseClient
+                .from('system_settings')
+                .select('setting_value')
+                .eq('setting_key', 'max_ai_requests_per_student')
+                .single()
+
+            const maxRequests = maxRequestsSetting ? parseInt(maxRequestsSetting.setting_value) : 3
+
+            // Get current usage
+            const { data: usageData } = await supabaseClient
+                .from('ai_usage_tracking')
+                .select('request_count')
+                .eq('user_id', currentUser.dbId)
+                .eq('tool_name', 'thesis_builder')
+                .single()
+
+            const currentCount = usageData ? usageData.request_count : 0
+            const remaining = maxRequests - currentCount
+
+            const usageDiv = document.getElementById('usage-info')
+            if (remaining > 0) {
+                usageDiv.innerHTML = `<strong>AI Feedback Requests Remaining:</strong> ${remaining} of ${maxRequests}`
+                usageDiv.style.color = remaining <= 1 ? '#e74c3c' : '#27ae60'
+            } else {
+                usageDiv.innerHTML = `<strong>AI Feedback Requests Used:</strong> ${maxRequests} of ${maxRequests} (limit reached)`
+                usageDiv.style.color = '#e74c3c'
             }
-            
-            // Check for groups mentioned
-            if (!who.includes(',') && !who.includes('and')) {
-                feedback += '<li>Try including multiple groups to show complexity (e.g., "Patriots and Loyalists" or "political elites, women, and enslaved people")</li>';
-            }
-            
-            // Check for consequences
-            if (consequences.split(' ').length < 8) {
-                feedback += '<li>Expand on the consequences - what larger patterns or themes does this reveal?</li>';
-            }
-            
-            // Check length
-            const thesisLength = document.getElementById('thesis-output').textContent.split(' ').length;
-            if (thesisLength < 30) {
-                feedback += '<li>Your thesis might be too brief. Strong theses for this assignment typically need 30-50 words to capture complexity</li>';
-            } else if (thesisLength > 60) {
-                feedback += '<li>Your thesis might be too long. Try to be more concise while keeping the complexity</li>';
-            }
-            
-            // Positive feedback
-            feedback += '<li><strong>Good work!</strong> You have the main components. Now refine the language to make your argument clearer and more compelling.</li>';
-            
-            feedback += '</ul>';
-            
-            document.getElementById('feedback-output').innerHTML = feedback;
+        }
+
+        function displayAIFeedback(feedbackHTML) {
+            document.getElementById('ai-feedback-content').innerHTML = feedbackHTML
+            document.getElementById('ai-feedback-section').classList.remove('hidden')
+            document.getElementById('ai-feedback-section').scrollIntoView({ behavior: 'smooth' })
         }
 
         function resetForm() {
-            document.getElementById('norm-select').value = '';
-            document.getElementById('historical-context').value = '';
-            document.getElementById('who-practiced').value = '';
-            document.getElementById('how-practiced').value = '';
-            document.getElementById('limitations').value = '';
-            document.getElementById('consequences').value = '';
-            document.getElementById('result-section').classList.add('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!confirm('Are you sure you want to clear all fields? This cannot be undone.')) {
+                return
+            }
+
+            document.getElementById('norm-select').value = ''
+            document.getElementById('historical-context').value = ''
+            document.getElementById('who-practiced').value = ''
+            document.getElementById('how-practiced').value = ''
+            document.getElementById('limitations').value = ''
+            document.getElementById('consequences').value = ''
+            document.getElementById('ai-feedback-section').classList.add('hidden')
+
+            // Delete from database
+            if (currentUser.dbId) {
+                supabaseClient
+                    .from('thesis_builder_work')
+                    .delete()
+                    .eq('user_id', currentUser.dbId)
+                    .eq('course', 'HIST 101')
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' })
         }
     </script>
 
