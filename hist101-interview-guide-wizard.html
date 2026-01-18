@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Integration Guide | HIST 101</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            min-height: 600px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #43e97b;
+        }
+
+        h1 {
+            color: #43e97b;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step h2 {
+            color: #43e97b;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+
+        .step-description {
+            background: #e8f8f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #43e97b;
+        }
+
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dfe6e9;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Georgia', serif;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #43e97b;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .button-primary {
+            background: #43e97b;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .button-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .button-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .button-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .button-success:hover {
+            background: #229954;
+        }
+
+        .button-logout {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .button-logout:hover {
+            background: #c0392b;
+        }
+
+        .question-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .question-item input {
+            flex: 1;
+        }
+
+        .delete-question-btn {
+            padding: 8px 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .delete-question-btn:hover {
+            background: #c0392b;
+        }
+
+        .add-button {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .add-button:hover {
+            background: #2980b9;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗣️ Interview Integration Guide</h1>
+            <p class="subtitle">Connect your civic interview to historical analysis</p>
+        </div>
+
+        <div class="user-info">
+            <span>Logged in as: <strong id="user-email"></strong></span>
+            <button class="button button-logout" onclick="logout()">Logout</button>
+        </div>
+
+        <div id="status-message" class="status-message"></div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">Step 1 of 5</div>
+        </div>
+
+        <!-- STEP 1: Planning -->
+        <div class="step active" id="step-1">
+            <h2>Step 1: Interview Planning</h2>
+            <div class="step-description">
+                Who will you interview and why?
+            </div>
+
+            <div class="field-group">
+                <label for="interviewee-name">Interviewee Name:</label>
+                <input type="text" id="interviewee-name" placeholder="Full name">
+            </div>
+
+            <div class="field-group">
+                <label for="interviewee-role">Role/Position:</label>
+                <input type="text" id="interviewee-role" placeholder="e.g., City Council Member, Community Organizer">
+            </div>
+
+            <div class="field-group">
+                <label for="interview-date">Interview Date:</label>
+                <input type="date" id="interview-date">
+            </div>
+
+            <div class="field-group">
+                <label for="interview-format">Interview Format:</label>
+                <select id="interview-format">
+                    <option value="">-- Select format --</option>
+                    <option value="In-person">In-person</option>
+                    <option value="Phone">Phone</option>
+                    <option value="Video call">Video call</option>
+                    <option value="Email">Email exchange</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="norm-focus">What democratic norm are you researching?</label>
+                <select id="norm-focus">
+                    <option value="">-- Select your norm --</option>
+                    <option value="Civic Participation">Civic Participation</option>
+                    <option value="Respect for Truth">Respect for Truth</option>
+                    <option value="Compromise">Compromise</option>
+                    <option value="Civility">Civility</option>
+                    <option value="Respect for Institutions / Rule of Law">Respect for Institutions / Rule of Law</option>
+                    <option value="Pluralism and Tolerance">Pluralism and Tolerance</option>
+                    <option value="Responsibility to the Common Good">Responsibility to the Common Good</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="selection-rationale">Why did you choose this person?</label>
+                <textarea id="selection-rationale" placeholder="This person is relevant because..."></textarea>
+            </div>
+
+            <div class="nav-buttons">
+                <div></div>
+                <button class="button button-primary" onclick="nextStep()">Next →</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Questions -->
+        <div class="step" id="step-2">
+            <h2>Step 2: Interview Questions</h2>
+            <div class="step-description">
+                Prepare 5-8 open-ended questions that connect your norm to the interviewee's experience.
+            </div>
+
+            <div class="field-group">
+                <label>Your Interview Questions:</label>
+                <div id="questions-container"></div>
+                <button class="add-button" onclick="addQuestion()">+ Add Question</button>
+            </div>
+
+            <div class="field-group">
+                <label for="question-strategy">How do these questions help you understand your democratic norm?</label>
+                <textarea id="question-strategy"></textarea>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="button button-secondary" onclick="prevStep()">← Back</button>
+                <button class="button button-primary" onclick="nextStep()">Next →</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Post-Interview -->
+        <div class="step" id="step-3">
+            <h2>Step 3: Interview Insights</h2>
+            <div class="step-description">
+                After the interview, record the key insights.
+            </div>
+
+            <div class="field-group">
+                <label for="interview-summary">What were the main insights from the interview?</label>
+                <textarea id="interview-summary" placeholder="Summarize the key points..."></textarea>
+            </div>
+
+            <div class="field-group">
+                <label for="key-quotations">Important Quotations (2-3 quotes):</label>
+                <textarea id="key-quotations" placeholder="Quote 1: '...'&#10;Quote 2: '...'"></textarea>
+            </div>
+
+            <div class="field-group">
+                <label for="norm-practice">How does the interviewee's work demonstrate your democratic norm in practice?</label>
+                <textarea id="norm-practice"></textarea>
+            </div>
+
+            <div class="field-group">
+                <label for="challenges">What challenges did the interviewee describe?</label>
+                <textarea id="challenges"></textarea>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="button button-secondary" onclick="prevStep()">← Back</button>
+                <button class="button button-primary" onclick="nextStep()">Next →</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Historical Connection -->
+        <div class="step" id="step-4">
+            <h2>Step 4: Connecting to History</h2>
+            <div class="step-description">
+                Link the interview to your Revolutionary-era analysis.
+            </div>
+
+            <div class="field-group">
+                <label for="historical-parallels">What similarities exist between Revolutionary debates and the interviewee's experience?</label>
+                <textarea id="historical-parallels" placeholder="Both Revolutionary Patriots and my interviewee..."></textarea>
+            </div>
+
+            <div class="field-group">
+                <label for="historical-differences">How has the practice of this norm changed since the Revolutionary era?</label>
+                <textarea id="historical-differences"></textarea>
+            </div>
+
+            <div class="field-group">
+                <label for="unfinished-revolution">How does this interview show democracy as an ongoing process?</label>
+                <textarea id="unfinished-revolution"></textarea>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="button button-secondary" onclick="prevStep()">← Back</button>
+                <button class="button button-primary" onclick="nextStep()">Next →</button>
+            </div>
+        </div>
+
+        <!-- STEP 5: Integration Plan -->
+        <div class="step" id="step-5">
+            <h2>Step 5: Paper Integration</h2>
+            <div class="step-description">
+                Plan how you'll integrate the interview into your paper.
+            </div>
+
+            <div class="field-group">
+                <label for="integration-plan">How will you weave interview insights into your historical analysis?</label>
+                <textarea id="integration-plan" placeholder="I will use the interview to...&#10;&#10;For example: 'In my third body paragraph, I'll connect...'"></textarea>
+            </div>
+
+            <div class="field-group">
+                <label for="analytical-connection">What analytical point does the interview help you make?</label>
+                <textarea id="analytical-connection"></textarea>
+            </div>
+
+            <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-top: 30px;">
+                <h3 style="color: #155724; margin-bottom: 10px;">✓ Interview Guide Complete!</h3>
+                <p style="color: #155724;">You've planned your interview and connection to history. Save your work or export it.</p>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                <button class="button button-success" onclick="saveWork()">💾 Save My Work</button>
+                <button class="button button-primary" onclick="exportWork()">📄 Export as Text File</button>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="button button-secondary" onclick="prevStep()">← Back</button>
+                <button class="button button-secondary" onclick="goToStep(1)">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Prof. Hauselmann | profhauselmann.org</p>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4MTM2NzYsImV4cCI6MjA1MjM4OTY3Nn0.KFQV8a5XKy1aq0pFHCF_XYLBGwDmBJNp8OpFJIrMu1w'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+        let currentUser = null
+        let currentStep = 1
+        const totalSteps = 5
+
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession()
+            
+            if (!session) {
+                window.location.href = 'hist101-thesis-builder-auth.html'
+                return
+            }
+
+            currentUser = session.user
+            document.getElementById('user-email').textContent = currentUser.email
+
+            await loadWork()
+            
+            // Add initial questions if none exist
+            if (document.getElementById('questions-container').children.length === 0) {
+                addQuestion()
+                addQuestion()
+                addQuestion()
+            }
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut()
+            window.location.href = 'hist101-thesis-builder-auth.html'
+        }
+
+        function updateProgress() {
+            const percentage = (currentStep / totalSteps) * 100
+            document.getElementById('progress-fill').style.width = percentage + '%'
+            document.getElementById('progress-text').textContent = `Step ${currentStep} of ${totalSteps}`
+        }
+
+        function goToStep(stepNumber) {
+            autoSave()
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'))
+            document.getElementById(`step-${stepNumber}`).classList.add('active')
+            currentStep = stepNumber
+            updateProgress()
+            window.scrollTo(0, 0)
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                goToStep(currentStep + 1)
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1)
+            }
+        }
+
+        function addQuestion() {
+            const container = document.getElementById('questions-container')
+            const questionDiv = document.createElement('div')
+            questionDiv.className = 'question-item'
+            questionDiv.innerHTML = `
+                <input type="text" class="interview-question" placeholder="e.g., How do you navigate disagreements in civic life?">
+                <button class="delete-question-btn" onclick="deleteQuestion(this)">×</button>
+            `
+            container.appendChild(questionDiv)
+        }
+
+        function deleteQuestion(btn) {
+            if (document.querySelectorAll('.interview-question').length > 1) {
+                btn.parentElement.remove()
+            }
+        }
+
+        function collectQuestions() {
+            const questions = []
+            document.querySelectorAll('.interview-question').forEach(input => {
+                if (input.value.trim()) {
+                    questions.push(input.value)
+                }
+            })
+            return questions
+        }
+
+        function populateQuestions(questions) {
+            const container = document.getElementById('questions-container')
+            container.innerHTML = ''
+            
+            if (!questions || questions.length === 0) {
+                addQuestion()
+                addQuestion()
+                addQuestion()
+                return
+            }
+
+            questions.forEach(q => {
+                addQuestion()
+                const inputs = container.querySelectorAll('.interview-question')
+                inputs[inputs.length - 1].value = q
+            })
+        }
+
+        async function autoSave() {
+            await saveWork(true)
+        }
+
+        async function saveWork(silent = false) {
+            const data = {
+                user_id: currentUser.id,
+                interviewee_name: document.getElementById('interviewee-name').value,
+                interviewee_role: document.getElementById('interviewee-role').value,
+                interview_date: document.getElementById('interview-date').value,
+                interview_format: document.getElementById('interview-format').value,
+                selection_rationale: document.getElementById('selection-rationale').value,
+                norm_focus: document.getElementById('norm-focus').value,
+                questions: collectQuestions(),
+                question_strategy: document.getElementById('question-strategy').value,
+                interview_summary: document.getElementById('interview-summary').value,
+                key_quotations: document.getElementById('key-quotations').value,
+                norm_practice: document.getElementById('norm-practice').value,
+                challenges: document.getElementById('challenges').value,
+                historical_parallels: document.getElementById('historical-parallels').value,
+                historical_differences: document.getElementById('historical-differences').value,
+                unfinished_revolution: document.getElementById('unfinished-revolution').value,
+                integration_plan: document.getElementById('integration-plan').value,
+                analytical_connection: document.getElementById('analytical-connection').value
+            }
+
+            const { error } = await supabaseClient
+                .from('interview_guide_work')
+                .upsert(data, { onConflict: 'user_id' })
+
+            if (!silent) {
+                if (error) {
+                    showMessage('Error saving: ' + error.message, 'error')
+                } else {
+                    showMessage('✓ Saved successfully!', 'success')
+                }
+            }
+        }
+
+        async function loadWork() {
+            const { data, error } = await supabaseClient
+                .from('interview_guide_work')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .single()
+
+            if (error || !data) return
+
+            document.getElementById('interviewee-name').value = data.interviewee_name || ''
+            document.getElementById('interviewee-role').value = data.interviewee_role || ''
+            document.getElementById('interview-date').value = data.interview_date || ''
+            document.getElementById('interview-format').value = data.interview_format || ''
+            document.getElementById('selection-rationale').value = data.selection_rationale || ''
+            document.getElementById('norm-focus').value = data.norm_focus || ''
+            
+            populateQuestions(data.questions)
+            
+            document.getElementById('question-strategy').value = data.question_strategy || ''
+            document.getElementById('interview-summary').value = data.interview_summary || ''
+            document.getElementById('key-quotations').value = data.key_quotations || ''
+            document.getElementById('norm-practice').value = data.norm_practice || ''
+            document.getElementById('challenges').value = data.challenges || ''
+            document.getElementById('historical-parallels').value = data.historical_parallels || ''
+            document.getElementById('historical-differences').value = data.historical_differences || ''
+            document.getElementById('unfinished-revolution').value = data.unfinished_revolution || ''
+            document.getElementById('integration-plan').value = data.integration_plan || ''
+            document.getElementById('analytical-connection').value = data.analytical_connection || ''
+        }
+
+        function exportWork() {
+            let output = 'HIST 101 — INTERVIEW INTEGRATION GUIDE\n'
+            output += '='.repeat(70) + '\n\n'
+
+            output += 'INTERVIEW PLANNING\n'
+            output += '-'.repeat(70) + '\n'
+            output += `Interviewee: ${document.getElementById('interviewee-name').value}\n`
+            output += `Role: ${document.getElementById('interviewee-role').value}\n`
+            output += `Date: ${document.getElementById('interview-date').value}\n`
+            output += `Format: ${document.getElementById('interview-format').value}\n`
+            output += `Norm: ${document.getElementById('norm-focus').value}\n`
+            output += `Rationale: ${document.getElementById('selection-rationale').value}\n\n`
+
+            output += 'INTERVIEW QUESTIONS\n'
+            output += '-'.repeat(70) + '\n'
+            const questions = collectQuestions()
+            questions.forEach((q, i) => {
+                output += `${i + 1}. ${q}\n`
+            })
+            output += `\nStrategy: ${document.getElementById('question-strategy').value}\n\n`
+
+            output += 'INTERVIEW INSIGHTS\n'
+            output += '-'.repeat(70) + '\n'
+            output += `Summary: ${document.getElementById('interview-summary').value}\n\n`
+            output += `Key Quotations:\n${document.getElementById('key-quotations').value}\n\n`
+            output += `Norm in Practice: ${document.getElementById('norm-practice').value}\n\n`
+            output += `Challenges: ${document.getElementById('challenges').value}\n\n`
+
+            output += 'HISTORICAL CONNECTIONS\n'
+            output += '-'.repeat(70) + '\n'
+            output += `Parallels: ${document.getElementById('historical-parallels').value}\n\n`
+            output += `Differences: ${document.getElementById('historical-differences').value}\n\n`
+            output += `Democracy as Process: ${document.getElementById('unfinished-revolution').value}\n\n`
+
+            output += 'PAPER INTEGRATION\n'
+            output += '-'.repeat(70) + '\n'
+            output += `Integration Plan: ${document.getElementById('integration-plan').value}\n\n`
+            output += `Analytical Connection: ${document.getElementById('analytical-connection').value}\n`
+
+            const blob = new Blob([output], { type: 'text/plain' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `Interview_Guide_${new Date().toISOString().split('T')[0]}.txt`
+            a.click()
+            URL.revokeObjectURL(url)
+
+            showMessage('✓ Exported successfully!', 'success')
+        }
+
+        function showMessage(message, type) {
+            const msgDiv = document.getElementById('status-message')
+            msgDiv.textContent = message
+            msgDiv.className = `status-message status-${type}`
+            msgDiv.style.display = 'block'
+            setTimeout(() => {
+                msgDiv.style.display = 'none'
+            }, 4000)
+        }
+
+        checkAuth()
+    </script>
+</body>
+</html>
