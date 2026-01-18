@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Source Organizer | HIST 101</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Source Organizer - HIST 101</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -13,10 +14,10 @@
         }
 
         body {
-            font-family: 'Georgia', serif;
+            font-family: 'Open Sans', sans-serif;
             line-height: 1.6;
-            color: #2c3e50;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #333;
+            background-color: #f5f5f0;
             min-height: 100vh;
             padding: 20px;
         }
@@ -26,7 +27,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             padding: 40px;
             min-height: 600px;
         }
@@ -35,11 +36,11 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 3px solid #f5576c;
+            border-bottom: 3px solid #3498db;
         }
 
         h1 {
-            color: #f5576c;
+            color: #2c3e50;
             font-size: 2em;
             margin-bottom: 10px;
         }
@@ -74,7 +75,7 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            background: #3498db;
             transition: width 0.3s ease;
         }
 
@@ -99,17 +100,17 @@
         }
 
         .step h2 {
-            color: #f5576c;
+            color: #2c3e50;
             margin-bottom: 20px;
             font-size: 1.6em;
         }
 
         .step-description {
-            background: #fff0f3;
+            background: #e8f4f8;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 25px;
-            border-left: 4px solid #f5576c;
+            border-left: 4px solid #3498db;
         }
 
         .field-group {
@@ -128,17 +129,17 @@
         textarea {
             width: 100%;
             padding: 12px;
-            border: 2px solid #dfe6e9;
+            border: 2px solid #ddd;
             border-radius: 5px;
             font-size: 1em;
-            font-family: 'Georgia', serif;
+            font-family: 'Open Sans', sans-serif;
             transition: border-color 0.3s;
         }
 
         input:focus,
         textarea:focus {
             outline: none;
-            border-color: #f5576c;
+            border-color: #3498db;
         }
 
         textarea {
@@ -165,12 +166,12 @@
         }
 
         .button-primary {
-            background: #f5576c;
+            background: #3498db;
             color: white;
         }
 
         .button-primary:hover {
-            background: #e74c3c;
+            background: #2980b9;
             transform: translateY(-2px);
         }
 
@@ -195,6 +196,10 @@
         .button-logout {
             background: #e74c3c;
             color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
         .button-logout:hover {
@@ -220,12 +225,12 @@
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 15px;
-            border-left: 4px solid #f5576c;
+            border-left: 4px solid #3498db;
             position: relative;
         }
 
         .source-card h4 {
-            color: #f5576c;
+            color: #2c3e50;
             margin-bottom: 15px;
         }
 
@@ -268,20 +273,20 @@
         footer {
             text-align: center;
             margin-top: 40px;
-            color: white;
+            color: #7f8c8d;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 Source Organizer</h1>
-            <p class="subtitle">Organize your research sources step-by-step</p>
+            <h1>Source Organizer</h1>
+            <p class="subtitle">HIST 101 - Organize your research sources for the midterm paper</p>
         </div>
 
         <div class="user-info">
             <span>Logged in as: <strong id="user-email"></strong></span>
-            <button class="button button-logout" onclick="logout()">Logout</button>
+            <button class="button-logout" onclick="logout()">Logout</button>
         </div>
 
         <div id="status-message" class="status-message"></div>
@@ -290,18 +295,22 @@
             <div class="progress-bar">
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
-            <div class="progress-text" id="progress-text">Step 1 of 4</div>
+            <div class="progress-text" id="progress-text">Step 1 of 5</div>
         </div>
 
         <!-- STEP 1: Primary Sources -->
         <div class="step active" id="step-1">
             <h2>Step 1: Primary Sources</h2>
             <div class="step-description">
-                Add documents, letters, speeches, or artifacts from the Revolutionary period.
+                Add documents, letters, speeches, or artifacts from the Revolutionary period (1760s-1790s).
             </div>
 
             <div id="primary-sources-container"></div>
             <button class="add-button" onclick="addPrimarySource()">+ Add Another Primary Source</button>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="button button-success" onclick="saveWork()">💾 Save My Work</button>
+            </div>
 
             <div class="nav-buttons">
                 <div></div>
@@ -309,15 +318,19 @@
             </div>
         </div>
 
-        <!-- STEP 2: Secondary Sources -->
+        <!-- STEP 2: Bill of Obligations -->
         <div class="step" id="step-2">
-            <h2>Step 2: Secondary Sources</h2>
+            <h2>Step 2: Richard Haass - The Bill of Obligations</h2>
             <div class="step-description">
-                Add scholarly books, journal articles, and historical interpretations.
+                Record key concepts and quotations from Richard Haass's <em>The Bill of Obligations</em> related to your democratic norm.
             </div>
 
-            <div id="secondary-sources-container"></div>
-            <button class="add-button" onclick="addSecondarySource()">+ Add Another Secondary Source</button>
+            <div id="haass-sources-container"></div>
+            <button class="add-button" onclick="addHaassSource()">+ Add Another Quote/Concept from Haass</button>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="button button-success" onclick="saveWork()">💾 Save My Work</button>
+            </div>
 
             <div class="nav-buttons">
                 <button class="button button-secondary" onclick="prevStep()">← Back</button>
@@ -329,11 +342,15 @@
         <div class="step" id="step-3">
             <h2>Step 3: The Atlantic Articles</h2>
             <div class="step-description">
-                Add articles that connect historical analysis to contemporary civic debates.
+                Add articles from <em>The Atlantic</em> that connect historical analysis to contemporary civic debates.
             </div>
 
             <div id="atlantic-sources-container"></div>
             <button class="add-button" onclick="addAtlanticSource()">+ Add Another Atlantic Article</button>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="button button-success" onclick="saveWork()">💾 Save My Work</button>
+            </div>
 
             <div class="nav-buttons">
                 <button class="button button-secondary" onclick="prevStep()">← Back</button>
@@ -341,16 +358,36 @@
             </div>
         </div>
 
-        <!-- STEP 4: Review & Export -->
+        <!-- STEP 4: Secondary Sources -->
         <div class="step" id="step-4">
-            <h2>Step 4: Review & Save</h2>
+            <h2>Step 4: Secondary Scholarly Sources</h2>
+            <div class="step-description">
+                Add scholarly books, journal articles, and historical interpretations by historians.
+            </div>
+
+            <div id="secondary-sources-container"></div>
+            <button class="add-button" onclick="addSecondarySource()">+ Add Another Secondary Source</button>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="button button-success" onclick="saveWork()">💾 Save My Work</button>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="button button-secondary" onclick="prevStep()">← Back</button>
+                <button class="button button-primary" onclick="nextStep()">Next →</button>
+            </div>
+        </div>
+
+        <!-- STEP 5: Review & Export -->
+        <div class="step" id="step-5">
+            <h2>Step 5: Review & Save</h2>
             <div class="step-description">
                 You've organized your sources! Save your work or export it.
             </div>
 
             <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <h3 style="color: #155724; margin-bottom: 10px;">✓ Sources Organized!</h3>
-                <p style="color: #155724;">Your sources are ready. Save them to come back later, or export as a text file for your records.</p>
+                <p style="color: #155724;">Your sources are ready. Save them to come back later, or export as a text file for your bibliography.</p>
             </div>
 
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
@@ -376,7 +413,7 @@
 
         let currentUser = null
         let currentStep = 1
-        const totalSteps = 4
+        const totalSteps = 5
         let sourceCounter = 0
 
         async function checkAuth() {
@@ -390,16 +427,19 @@
             document.getElementById('user-email').textContent = currentUser.email
 
             await loadWork()
-            
+
             // Add initial sources if none exist
             if (document.getElementById('primary-sources-container').children.length === 0) {
                 addPrimarySource()
             }
-            if (document.getElementById('secondary-sources-container').children.length === 0) {
-                addSecondarySource()
+            if (document.getElementById('haass-sources-container').children.length === 0) {
+                addHaassSource()
             }
             if (document.getElementById('atlantic-sources-container').children.length === 0) {
                 addAtlanticSource()
+            }
+            if (document.getElementById('secondary-sources-container').children.length === 0) {
+                addSecondarySource()
             }
         }
 
@@ -472,6 +512,84 @@
             container.appendChild(card)
         }
 
+        function addHaassSource() {
+            const container = document.getElementById('haass-sources-container')
+            const id = `haass-${sourceCounter++}`
+            const card = document.createElement('div')
+            card.className = 'source-card'
+            card.id = id
+            card.innerHTML = `
+                <button class="delete-button" onclick="deleteSource('${id}')">Delete</button>
+                <h4>Haass Quote/Concept</h4>
+                <div class="field-group">
+                    <label>Which democratic norm?</label>
+                    <input type="text" class="haass-norm" placeholder="e.g., Civic Participation, Respect for Truth">
+                </div>
+                <div class="field-group">
+                    <label>Page Number:</label>
+                    <input type="text" class="haass-page" placeholder="e.g., p. 45">
+                </div>
+                <div class="field-group">
+                    <label>Key Quotation:</label>
+                    <textarea class="haass-quote" placeholder="Direct quote from Haass..."></textarea>
+                </div>
+                <div class="field-group">
+                    <label>How does Haass define/explain this norm?</label>
+                    <textarea class="haass-explanation"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>How will you use this in your paper?</label>
+                    <textarea class="haass-usage"></textarea>
+                </div>
+            `
+            container.appendChild(card)
+        }
+
+        function addAtlanticSource() {
+            const container = document.getElementById('atlantic-sources-container')
+            const id = `atl-${sourceCounter++}`
+            const card = document.createElement('div')
+            card.className = 'source-card'
+            card.id = id
+            card.innerHTML = `
+                <button class="delete-button" onclick="deleteSource('${id}')">Delete</button>
+                <h4>Atlantic Article</h4>
+                <div class="field-group">
+                    <label>Article Title:</label>
+                    <input type="text" class="atl-title">
+                </div>
+                <div class="field-group">
+                    <label>Author:</label>
+                    <input type="text" class="atl-author">
+                </div>
+                <div class="field-group">
+                    <label>Publication Date:</label>
+                    <input type="text" class="atl-year" placeholder="e.g., November 2025">
+                </div>
+                <div class="field-group">
+                    <label>URL:</label>
+                    <input type="text" class="atl-url">
+                </div>
+                <div class="field-group">
+                    <label>Citation (Turabian format):</label>
+                    <textarea class="atl-citation"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>Central Claim:</label>
+                    <textarea class="atl-claim"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>Connection to your democratic norm:</label>
+                    <textarea class="atl-connection"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>Key Quotation:</label>
+                    <textarea class="atl-quote"></textarea>
+                </div>
+            `
+            container.appendChild(card)
+        }
+
         function addSecondarySource() {
             const container = document.getElementById('secondary-sources-container')
             const id = `ss-${sourceCounter++}`
@@ -509,47 +627,6 @@
             container.appendChild(card)
         }
 
-        function addAtlanticSource() {
-            const container = document.getElementById('atlantic-sources-container')
-            const id = `atl-${sourceCounter++}`
-            const card = document.createElement('div')
-            card.className = 'source-card'
-            card.id = id
-            card.innerHTML = `
-                <button class="delete-button" onclick="deleteSource('${id}')">Delete</button>
-                <h4>Atlantic Article</h4>
-                <div class="field-group">
-                    <label>Article Title:</label>
-                    <input type="text" class="atl-title">
-                </div>
-                <div class="field-group">
-                    <label>Author:</label>
-                    <input type="text" class="atl-author">
-                </div>
-                <div class="field-group">
-                    <label>Publication Date:</label>
-                    <input type="text" class="atl-year">
-                </div>
-                <div class="field-group">
-                    <label>URL:</label>
-                    <input type="text" class="atl-url">
-                </div>
-                <div class="field-group">
-                    <label>Citation (Turabian format):</label>
-                    <textarea class="atl-citation"></textarea>
-                </div>
-                <div class="field-group">
-                    <label>Central Claim:</label>
-                    <textarea class="atl-claim"></textarea>
-                </div>
-                <div class="field-group">
-                    <label>Connection to your democratic norm:</label>
-                    <textarea class="atl-connection"></textarea>
-                </div>
-            `
-            container.appendChild(card)
-        }
-
         function deleteSource(id) {
             if (confirm('Delete this source?')) {
                 document.getElementById(id).remove()
@@ -577,8 +654,9 @@
             const data = {
                 user_id: currentUser.id,
                 primary_sources: collectSources('primary-sources-container'),
-                secondary_sources: collectSources('secondary-sources-container'),
-                atlantic_sources: collectSources('atlantic-sources-container')
+                haass_sources: collectSources('haass-sources-container'),
+                atlantic_sources: collectSources('atlantic-sources-container'),
+                secondary_sources: collectSources('secondary-sources-container')
             }
 
             const { error } = await supabaseClient
@@ -603,52 +681,67 @@
 
             if (error || !data) return
 
-            // Load sources
+            // Load primary sources
             if (data.primary_sources && data.primary_sources.length > 0) {
                 document.getElementById('primary-sources-container').innerHTML = ''
                 data.primary_sources.forEach(source => {
                     addPrimarySource()
-                    const card = document.getElementById(source.id)
-                    if (card) {
-                        Object.keys(source).forEach(key => {
-                            if (key !== 'id') {
-                                const input = card.querySelector(`.${key}`)
-                                if (input) input.value = source[key] || ''
-                            }
-                        })
-                    }
+                    const cards = document.querySelectorAll('#primary-sources-container .source-card')
+                    const card = cards[cards.length - 1]
+                    Object.keys(source).forEach(key => {
+                        if (key !== 'id') {
+                            const input = card.querySelector(`.${key}`)
+                            if (input) input.value = source[key] || ''
+                        }
+                    })
                 })
             }
 
-            if (data.secondary_sources && data.secondary_sources.length > 0) {
-                document.getElementById('secondary-sources-container').innerHTML = ''
-                data.secondary_sources.forEach(source => {
-                    addSecondarySource()
-                    const card = document.getElementById(source.id)
-                    if (card) {
-                        Object.keys(source).forEach(key => {
-                            if (key !== 'id') {
-                                const input = card.querySelector(`.${key}`)
-                                if (input) input.value = source[key] || ''
-                            }
-                        })
-                    }
+            // Load Haass sources
+            if (data.haass_sources && data.haass_sources.length > 0) {
+                document.getElementById('haass-sources-container').innerHTML = ''
+                data.haass_sources.forEach(source => {
+                    addHaassSource()
+                    const cards = document.querySelectorAll('#haass-sources-container .source-card')
+                    const card = cards[cards.length - 1]
+                    Object.keys(source).forEach(key => {
+                        if (key !== 'id') {
+                            const input = card.querySelector(`.${key}`)
+                            if (input) input.value = source[key] || ''
+                        }
+                    })
                 })
             }
 
+            // Load Atlantic sources
             if (data.atlantic_sources && data.atlantic_sources.length > 0) {
                 document.getElementById('atlantic-sources-container').innerHTML = ''
                 data.atlantic_sources.forEach(source => {
                     addAtlanticSource()
-                    const card = document.getElementById(source.id)
-                    if (card) {
-                        Object.keys(source).forEach(key => {
-                            if (key !== 'id') {
-                                const input = card.querySelector(`.${key}`)
-                                if (input) input.value = source[key] || ''
-                            }
-                        })
-                    }
+                    const cards = document.querySelectorAll('#atlantic-sources-container .source-card')
+                    const card = cards[cards.length - 1]
+                    Object.keys(source).forEach(key => {
+                        if (key !== 'id') {
+                            const input = card.querySelector(`.${key}`)
+                            if (input) input.value = source[key] || ''
+                        }
+                    })
+                })
+            }
+
+            // Load secondary sources
+            if (data.secondary_sources && data.secondary_sources.length > 0) {
+                document.getElementById('secondary-sources-container').innerHTML = ''
+                data.secondary_sources.forEach(source => {
+                    addSecondarySource()
+                    const cards = document.querySelectorAll('#secondary-sources-container .source-card')
+                    const card = cards[cards.length - 1]
+                    Object.keys(source).forEach(key => {
+                        if (key !== 'id') {
+                            const input = card.querySelector(`.${key}`)
+                            if (input) input.value = source[key] || ''
+                        }
+                    })
                 })
             }
         }
@@ -658,10 +751,11 @@
             output += '='.repeat(70) + '\n\n'
 
             const primarySources = collectSources('primary-sources-container')
-            const secondarySources = collectSources('secondary-sources-container')
+            const haassSources = collectSources('haass-sources-container')
             const atlanticSources = collectSources('atlantic-sources-container')
+            const secondarySources = collectSources('secondary-sources-container')
 
-            output += 'PRIMARY SOURCES\n'
+            output += 'PRIMARY SOURCES (Revolutionary Era)\n'
             output += '-'.repeat(70) + '\n'
             primarySources.forEach((s, i) => {
                 output += `\n${i + 1}. ${s['ps-title'] || 'Untitled'}\n`
@@ -672,7 +766,30 @@
                 output += `   How it supports argument: ${s['ps-argument']}\n`
             })
 
-            output += '\n\nSECONDARY SOURCES\n'
+            output += '\n\nRICHARD HAASS - THE BILL OF OBLIGATIONS\n'
+            output += '-'.repeat(70) + '\n'
+            haassSources.forEach((s, i) => {
+                output += `\n${i + 1}. Democratic Norm: ${s['haass-norm'] || 'Untitled'}\n`
+                output += `   Page: ${s['haass-page']}\n`
+                output += `   Quote: "${s['haass-quote']}"\n`
+                output += `   Explanation: ${s['haass-explanation']}\n`
+                output += `   How to use: ${s['haass-usage']}\n`
+            })
+
+            output += '\n\nTHE ATLANTIC ARTICLES\n'
+            output += '-'.repeat(70) + '\n'
+            atlanticSources.forEach((s, i) => {
+                output += `\n${i + 1}. "${s['atl-title'] || 'Untitled'}"\n`
+                output += `   Author: ${s['atl-author']}\n`
+                output += `   Date: ${s['atl-year']}\n`
+                output += `   URL: ${s['atl-url']}\n`
+                output += `   Citation: ${s['atl-citation']}\n`
+                output += `   Central Claim: ${s['atl-claim']}\n`
+                output += `   Connection to norm: ${s['atl-connection']}\n`
+                output += `   Key Quote: "${s['atl-quote']}"\n`
+            })
+
+            output += '\n\nSECONDARY SOURCES (Scholarly Works)\n'
             output += '-'.repeat(70) + '\n'
             secondarySources.forEach((s, i) => {
                 output += `\n${i + 1}. ${s['ss-title'] || 'Untitled'}\n`
@@ -681,18 +798,6 @@
                 output += `   Citation: ${s['ss-citation']}\n`
                 output += `   Interpretation: ${s['ss-interpretation']}\n`
                 output += `   Quotations: ${s['ss-quotations']}\n`
-            })
-
-            output += '\n\nTHE ATLANTIC ARTICLES\n'
-            output += '-'.repeat(70) + '\n'
-            atlanticSources.forEach((s, i) => {
-                output += `\n${i + 1}. ${s['atl-title'] || 'Untitled'}\n`
-                output += `   Author: ${s['atl-author']}\n`
-                output += `   Date: ${s['atl-year']}\n`
-                output += `   URL: ${s['atl-url']}\n`
-                output += `   Citation: ${s['atl-citation']}\n`
-                output += `   Central Claim: ${s['atl-claim']}\n`
-                output += `   Connection to norm: ${s['atl-connection']}\n`
             })
 
             const blob = new Blob([output], { type: 'text/plain' })
