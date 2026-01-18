@@ -307,7 +307,7 @@
 
     <script>
         const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4MTM2NzYsImV4cCI6MjA1MjM4OTY3Nn0.KFQV8a5XKy1aq0pFHCF_XYLBGwDmBJNp8OpFJIrMu1w'
 
         const { createClient } = supabase
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -317,14 +317,29 @@
 
         // Check authentication on page load
         window.addEventListener('DOMContentLoaded', async () => {
-            const userStr = localStorage.getItem('student_user')
-            if (!userStr) {
-                window.location.href = 'student-login.html'
+            const { data: { session } } = await supabaseClient.auth.getSession()
+            
+            if (!session || !session.user) {
+                window.location.href = 'hist101-thesis-builder-auth.html'
                 return
             }
 
-            currentUser = JSON.parse(userStr)
-            document.getElementById('user-name').textContent = `Welcome, ${currentUser.name}`
+            currentUser = session.user
+            
+            // Get user's actual ID from student_users table
+            const { data: studentData } = await supabaseClient
+                .from('student_users')
+                .select('id, full_name')
+                .eq('email', currentUser.email)
+                .single()
+
+            if (studentData) {
+                currentUser.dbId = studentData.id
+                currentUser.name = studentData.full_name
+                document.getElementById('user-name').textContent = `Welcome, ${studentData.full_name}`
+            } else {
+                document.getElementById('user-name').textContent = `Welcome, ${currentUser.email}`
+            }
 
             // Load saved work
             await loadSavedWork()
@@ -333,16 +348,18 @@
             await updateRemainingRequests()
         })
 
-        function handleLogout() {
-            localStorage.removeItem('student_user')
-            window.location.href = 'student-login.html'
+        async function handleLogout() {
+            await supabaseClient.auth.signOut()
+            window.location.href = 'hist101-thesis-builder-auth.html'
         }
 
         async function loadSavedWork() {
+            if (!currentUser.dbId) return
+
             const { data, error } = await supabaseClient
                 .from('thesis_builder_work')
                 .select('*')
-                .eq('user_id', currentUser.id)
+                .eq('user_id', currentUser.dbId)
                 .eq('course', 'HIST 101')
                 .single()
 
@@ -363,6 +380,8 @@
         }
 
         async function autoSave() {
+            if (!currentUser.dbId) return
+
             // Clear existing timeout
             if (saveTimeout) {
                 clearTimeout(saveTimeout)
@@ -375,8 +394,10 @@
         }
 
         async function saveWork() {
+            if (!currentUser.dbId) return
+
             const workData = {
-                user_id: currentUser.id,
+                user_id: currentUser.dbId,
                 course: 'HIST 101',
                 norm_selected: document.getElementById('norm-select').value,
                 historical_context: document.getElementById('historical-context').value,
@@ -390,7 +411,7 @@
             const { data: existing } = await supabaseClient
                 .from('thesis_builder_work')
                 .select('id')
-                .eq('user_id', currentUser.id)
+                .eq('user_id', currentUser.dbId)
                 .eq('course', 'HIST 101')
                 .single()
 
@@ -416,6 +437,8 @@
         }
 
         async function getAIFeedback() {
+            if (!currentUser.dbId) return
+
             const norm = document.getElementById('norm-select').value
             const context = document.getElementById('historical-context').value.trim()
             const who = document.getElementById('who-practiced').value.trim()
@@ -474,7 +497,7 @@
             const { data: usageData } = await supabaseClient
                 .from('ai_usage_tracking')
                 .select('request_count')
-                .eq('user_id', currentUser.id)
+                .eq('user_id', currentUser.dbId)
                 .eq('tool_name', 'thesis_builder')
                 .single()
 
@@ -493,7 +516,7 @@
             try {
                 const { data, error } = await supabaseClient.functions.invoke('get-thesis-feedback', {
                     body: {
-                        user_id: currentUser.id,
+                        user_id: currentUser.dbId,
                         norm,
                         historical_context: context,
                         who_practiced: who,
@@ -517,14 +540,14 @@
                             request_count: currentCount + 1,
                             last_request: new Date().toISOString()
                         })
-                        .eq('user_id', currentUser.id)
+                        .eq('user_id', currentUser.dbId)
                         .eq('tool_name', 'thesis_builder')
                 } else {
                     // Create new record
                     await supabaseClient
                         .from('ai_usage_tracking')
                         .insert([{
-                            user_id: currentUser.id,
+                            user_id: currentUser.dbId,
                             tool_name: 'thesis_builder',
                             request_count: 1
                         }])
@@ -534,7 +557,7 @@
                 const { data: existing } = await supabaseClient
                     .from('thesis_builder_work')
                     .select('id')
-                    .eq('user_id', currentUser.id)
+                    .eq('user_id', currentUser.dbId)
                     .eq('course', 'HIST 101')
                     .single()
 
@@ -558,6 +581,8 @@
         }
 
         async function updateRemainingRequests() {
+            if (!currentUser.dbId) return
+
             // Get max requests
             const { data: maxRequestsSetting } = await supabaseClient
                 .from('system_settings')
@@ -571,7 +596,7 @@
             const { data: usageData } = await supabaseClient
                 .from('ai_usage_tracking')
                 .select('request_count')
-                .eq('user_id', currentUser.id)
+                .eq('user_id', currentUser.dbId)
                 .eq('tool_name', 'thesis_builder')
                 .single()
 
@@ -608,11 +633,13 @@
             document.getElementById('ai-feedback-section').classList.add('hidden')
 
             // Delete from database
-            supabaseClient
-                .from('thesis_builder_work')
-                .delete()
-                .eq('user_id', currentUser.id)
-                .eq('course', 'HIST 101')
+            if (currentUser.dbId) {
+                supabaseClient
+                    .from('thesis_builder_work')
+                    .delete()
+                    .eq('user_id', currentUser.dbId)
+                    .eq('course', 'HIST 101')
+            }
 
             window.scrollTo({ top: 0, behavior: 'smooth' })
         }
