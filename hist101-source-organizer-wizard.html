@@ -380,14 +380,13 @@
         let sourceCounter = 0
 
         async function checkAuth() {
-            const { data: { session } } = await supabaseClient.auth.getSession()
-            
-            if (!session) {
-                window.location.href = 'hist101-thesis-builder-auth.html'
+            const userStr = localStorage.getItem('student_user')
+            if (!userStr) {
+                window.location.href = 'student-login.html'
                 return
             }
 
-            currentUser = session.user
+            currentUser = JSON.parse(userStr)
             document.getElementById('user-email').textContent = currentUser.email
 
             await loadWork()
@@ -405,8 +404,8 @@
         }
 
         async function logout() {
-            await supabaseClient.auth.signOut()
-            window.location.href = 'hist101-thesis-builder-auth.html'
+            localStorage.removeItem('student_user')
+            window.location.href = 'student-login.html'
         }
 
         function updateProgress() {
