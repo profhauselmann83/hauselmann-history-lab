@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renaissance Murder Mystery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            color: #2c1810;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a0f0a 0%, #3d2817 100%);
+            color: #f4e4c1;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            font-style: italic;
+            color: #d4af37;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            background: #f4e4c1;
+            border: 3px solid #8b4513;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #2c1810;
+        }
+
+        .tab-button:hover {
+            background: #d4af37;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .tab-button.active {
+            background: #8b4513;
+            color: #f4e4c1;
+            border-color: #d4af37;
+        }
+
+        .content-section {
+            display: none;
+            background: #f4e4c1;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .intro-section {
+            background: #fff9e6;
+            padding: 25px;
+            border-left: 5px solid #8b4513;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .victim-card, .clue-card {
+            background: #fff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #d4af37;
+        }
+
+        .suspect-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .suspect-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .suspect-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            border-color: #8b4513;
+        }
+
+        .suspect-card.selected {
+            border-color: #d4af37;
+            background: #fff9e6;
+        }
+
+        .suspect-card h3 {
+            color: #8b4513;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        .suspect-role {
+            color: #d4af37;
+            font-style: italic;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #f4e4c1;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #8b4513;
+            background: none;
+            border: none;
+        }
+
+        .close-modal:hover {
+            color: #d4af37;
+        }
+
+        .theory-builder {
+            background: #fff9e6;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .theory-section {
+            margin: 20px 0;
+        }
+
+        .theory-section label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #8b4513;
+            font-size: 1.1em;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #8b4513;
+            border-radius: 5px;
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+            background: #fff;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .clue-checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .clue-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+        }
+
+        .clue-checkbox input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+
+        .btn-primary {
+            background: #8b4513;
+            color: #f4e4c1;
+        }
+
+        .btn-primary:hover {
+            background: #6d3610;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn-success {
+            background: #2d5016;
+            color: #f4e4c1;
+        }
+
+        .btn-success:hover {
+            background: #1f3810;
+        }
+
+        .btn-danger {
+            background: #8b0000;
+            color: #f4e4c1;
+        }
+
+        .evidence-item {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #d4af37;
+            border-radius: 5px;
+        }
+
+        .evidence-title {
+            font-weight: bold;
+            color: #8b4513;
+            margin-bottom: 5px;
+        }
+
+        .map-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+        }
+
+        .reveal-section {
+            background: linear-gradient(135deg, #1a0f0a 0%, #3d2817 100%);
+            color: #f4e4c1;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .reveal-section h3 {
+            color: #d4af37;
+            margin-bottom: 15px;
+        }
+
+        .clue-explanation {
+            background: rgba(244, 228, 193, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .warning-banner {
+            background: #8b0000;
+            color: #f4e4c1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .suspect-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-button {
+                min-width: 100px;
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗡️ Renaissance Murder Mystery 🗡️</h1>
+            <p class="subtitle">A Fatal Crime in Florence, February 1497</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="showTab('intro')">Introduction</button>
+            <button class="tab-button" onclick="showTab('crime')">The Crime</button>
+            <button class="tab-button" onclick="showTab('suspects')">Suspects</button>
+            <button class="tab-button" onclick="showTab('theory')">Build Your Case</button>
+            <button class="tab-button" onclick="showTab('reveal')">Reveal</button>
+        </div>
+
+        <!-- Introduction Tab -->
+        <div id="intro" class="content-section active">
+            <h2>Welcome, Detective!</h2>
+            <div class="intro-section">
+                <h3>Your Mission</h3>
+                <p>A murder has been committed in Florence during the height of Carnival, 1497. A prominent merchant lies dead in the streets, and five powerful historical figures are under suspicion. Your task is to examine the evidence, study the suspects, and solve this Renaissance mystery.</p>
+            </div>
+
+            <div class="intro-section">
+                <h3>Historical Context</h3>
+                <p>The Renaissance in Italy was a time of extraordinary cultural achievement—breathtaking art, magnificent architecture, and groundbreaking literature. But it was also an era of fierce political intrigue, where wealthy families competed ruthlessly for power through marriage, deception, and assassination.</p>
+                <p>Florence, ruled by the powerful Medici banking family, stood at the center of both artistic brilliance and political chaos. Italy was fractured into competing city-states, making it vulnerable to foreign invasion and internal betrayal.</p>
+            </div>
+
+            <div class="intro-section">
+                <h3>Important Note</h3>
+                <p><strong>The murder described in this activity is FICTIONAL</strong>, created as a teaching tool. However, all five suspects are REAL historical figures, and all the facts presented about them are historically accurate. Use your knowledge of Renaissance politics, culture, and these historical figures to solve the mystery!</p>
+            </div>
+
+            <button class="btn btn-primary" onclick="showTab('crime')">Begin Investigation →</button>
+        </div>
+
+        <!-- Crime Scene Tab -->
+        <div id="crime" class="content-section">
+            <h2>The Crime Scene</h2>
+            
+            <div class="victim-card">
+                <h3>The Victim: Giuseppe Conti</h3>
+                <p><strong>Occupation:</strong> Wealthy wool merchant</p>
+                <p><strong>Family:</strong> Married with several children</p>
+                <p><strong>Background:</strong></p>
+                <ul>
+                    <li>Former patron of the arts (closed his art studio one year ago)</li>
+                    <li>Allied with the Medici family</li>
+                    <li>Business connections with the Borgia family</li>
+                    <li>Frequently traveled to Rome as a go-between, meeting the Pope and his family</li>
+                    <li>Had customers in France, including King Charles VIII</li>
+                    <li>Met the French king during the 1494 occupation of Italy</li>
+                </ul>
+            </div>
+
+            <div class="clue-card">
+                <h3>Crime Scene Details</h3>
+                <p><strong>Location:</strong> Narrow passageway off Via dei Cerchi, central Florence</p>
+                <p><strong>Time:</strong> During Carnival festivities, February 1497</p>
+                <p><strong>Cause of Death:</strong> Multiple stab wounds to the chest</p>
+                <p><strong>Witness Account:</strong> One eyewitness saw two men in black cloaks leap from the passageway, drag Conti inside, and murder him. They searched his satchel but fled northward when the witness shouted. The Carnival festivities masked their escape.</p>
+            </div>
+
+            <div class="clue-card">
+                <h3>Evidence Found</h3>
+                <div class="evidence-item">
+                    <div class="evidence-title">📜 Evidence #1: Botticelli Painting</div>
+                    <p>A painting depicting a scene from Roman mythology by the artist Botticelli, found lying next to the victim in the street.</p>
+                </div>
+
+                <div class="evidence-item">
+                    <div class="evidence-title">📖 Evidence #2: Book of Micah</div>
+                    <p>A copy of the Book of Micah (Old Testament) found in the victim's satchel.</p>
+                </div>
+
+                <div class="evidence-item">
+                    <div class="evidence-title">💌 Evidence #3: Letter Fragment (Missing First Page)</div>
+                    <p>A letter addressed to the victim. Only the final sentence remains:</p>
+                    <p style="font-style: italic; margin-left: 20px;">"...and so despite your previous refusals, I must ask you once more for the loan I so desperately require."</p>
+                    <p>The letter bears the official <strong>Medici family coat of arms</strong>.</p>
+                </div>
+
+                <div class="evidence-item">
+                    <div class="evidence-title">💌 Evidence #4: Mysterious Letter Fragment</div>
+                    <p>Another partial letter found in an envelope. The final legible sentence reads:</p>
+                    <p style="font-style: italic; margin-left: 20px;">"...now that he knows about us, we must save the child. You must see to it that he becomes one of the Angels of H..."</p>
+                    <p>Signed: <strong>"L.B."</strong></p>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <p><em>Map location: Near Piazza della Signoria, central Florence</em></p>
+                <p style="margin-top: 10px; font-size: 0.9em;">The crime occurred very close to Florence's main public square, where major civic events took place.</p>
+            </div>
+
+            <button class="btn btn-primary" onclick="showTab('suspects')">Examine Suspects →</button>
+        </div>
+
+        <!-- Suspects Tab -->
+        <div id="suspects" class="content-section">
+            <h2>The Suspects</h2>
+            <p style="margin-bottom: 20px;">Click on any suspect to read their detailed profile. Pay close attention—important clues are hidden in their histories!</p>
+            
+            <div class="suspect-grid">
+                <div class="suspect-card" onclick="showSuspectModal('savonarola')">
+                    <h3>Girolamo Savonarola</h3>
+                    <p class="suspect-role">Radical Friar & Prophet</p>
+                    <p>A fiery preacher who condemned Renaissance culture as sinful and led a religious revolution in Florence.</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">Read Full Profile</button>
+                </div>
+
+                <div class="suspect-card" onclick="showSuspectModal('piero')">
+                    <h3>Piero de' Medici</h3>
+                    <p class="suspect-role">Exiled Ruler of Florence</p>
+                    <p>Son of Lorenzo the Magnificent, fled Florence during the French invasion and plots his return to power.</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">Read Full Profile</button>
+                </div>
+
+                <div class="suspect-card" onclick="showSuspectModal('charles')">
+                    <h3>King Charles VIII</h3>
+                    <p class="suspect-role">King of France</p>
+                    <p>The foreign invader who conquered Florence in 1494, looting its treasures and changing Italian politics forever.</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">Read Full Profile</button>
+                </div>
+
+                <div class="suspect-card" onclick="showSuspectModal('pope')">
+                    <h3>Pope Alexander VI</h3>
+                    <p class="suspect-role">The Borgia Pope</p>
+                    <p>Notorious for corruption and nepotism, he wielded papal power to advance his family's political ambitions.</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">Read Full Profile</button>
+                </div>
+
+                <div class="suspect-card" onclick="showSuspectModal('lucrezia')">
+                    <h3>Lucrezia Borgia</h3>
+                    <p class="suspect-role">Daughter of the Pope</p>
+                    <p>A beautiful pawn in her father's political games, married and divorced multiple times for strategic alliances.</p>
+                    <button class="btn btn-primary" style="margin-top: 10px;">Read Full Profile</button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="margin-top: 30px;" onclick="showTab('theory')">Build Your Case →</button>
+        </div>
+
+        <!-- Theory Builder Tab -->
+        <div id="theory" class="content-section">
+            <h2>Build Your Case</h2>
+            <p>Now it's time to put the pieces together. Who committed this murder, and why?</p>
+
+            <div class="theory-builder">
+                <div class="theory-section">
+                    <label for="killer-select">Who is the killer?</label>
+                    <select id="killer-select">
+                        <option value="">-- Select a suspect --</option>
+                        <option value="savonarola">Girolamo Savonarola</option>
+                        <option value="piero">Piero de' Medici</option>
+                        <option value="charles">King Charles VIII of France</option>
+                        <option value="pope">Pope Alexander VI</option>
+                        <option value="lucrezia">Lucrezia Borgia</option>
+                    </select>
+                </div>
+
+                <div class="theory-section">
+                    <label for="motive">What was their motive?</label>
+                    <textarea id="motive" placeholder="Explain why this suspect would want Giuseppe Conti dead..."></textarea>
+                </div>
+
+                <div class="theory-section">
+                    <label>Which clues support your theory? (Check all that apply)</label>
+                    <div class="clue-checklist">
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue1" value="botticelli">
+                            <span>Botticelli painting</span>
+                        </label>
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue2" value="micah">
+                            <span>Book of Micah</span>
+                        </label>
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue3" value="medici-letter">
+                            <span>Medici letter fragment</span>
+                        </label>
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue4" value="lb-letter">
+                            <span>"L.B." letter fragment</span>
+                        </label>
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue5" value="angels">
+                            <span>"Angels of H" reference</span>
+                        </label>
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue6" value="location">
+                            <span>Crime scene location</span>
+                        </label>
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue7" value="timing">
+                            <span>Timing (Carnival 1497)</span>
+                        </label>
+                        <label class="clue-checkbox">
+                            <input type="checkbox" id="clue8" value="victim-connections">
+                            <span>Victim's connections</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="theory-section">
+                    <label for="evidence">How do these clues prove your theory?</label>
+                    <textarea id="evidence" placeholder="Connect the clues to explain how they point to your chosen suspect..."></textarea>
+                </div>
+
+                <button class="btn btn-success" onclick="saveTheory()">💾 Save Your Theory</button>
+                <button class="btn btn-primary" onclick="showTab('reveal')">Ready to See the Answer →</button>
+            </div>
+
+            <div id="saved-theory" style="display: none; margin-top: 20px; padding: 20px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #2d5016;">
+                <h3>Your Theory Saved! ✓</h3>
+                <p>Your accusation and reasoning have been recorded. When you're ready, proceed to the Reveal tab to see if you solved the mystery!</p>
+            </div>
+        </div>
+
+        <!-- Reveal Tab -->
+        <div id="reveal" class="content-section">
+            <div class="warning-banner">
+                ⚠️ LOCKED UNTIL CLASS ⚠️<br>
+                The solution will be revealed when we meet in class. Do not attempt to unlock this early!
+            </div>
+
+            <div class="intro-section" style="margin-bottom: 30px;">
+                <h3>📅 Mystery To Be Solved Later</h3>
+                <p>You've examined the evidence, studied the suspects, and built your case. Excellent detective work!</p>
+                <p><strong>The reveal will take place during our next class meeting.</strong> Until then, continue discussing theories with your classmates and refining your arguments. The password will be provided in class when it's time to see the solution.</p>
+                <p>Make sure you've saved your theory using the "Build Your Case" tab!</p>
+            </div>
+
+            <h2>The Solution</h2>
+            
+            <div id="reveal-content" style="display: none;">
+                <div class="reveal-section">
+                    <h3>🎭 The Killer Is...</h3>
+                    <h2 style="color: #d4af37; font-size: 2em; margin: 20px 0;">POPE ALEXANDER VI (Rodrigo Borgia)</h2>
+                    
+                    <p style="margin: 20px 0;">The evidence points conclusively to the Borgia Pope, though his daughter Lucrezia was deeply involved. Here's how the clues come together:</p>
+
+                    <div class="clue-explanation">
+                        <h4>🔍 The Victim Was a Savonarola Follower</h4>
+                        <p><strong>The Book of Micah:</strong> Savonarola frequently preached from this Old Testament book, which criticizes the wealthy and religiously unfaithful. Finding it in Conti's possession suggests he was a follower.</p>
+                        <p><strong>The Botticelli Painting:</strong> Conti was carrying Renaissance art with pagan themes—exactly the type Savonarola condemned as sinful.</p>
+                        <p><strong>The Location and Timing:</strong> The murder occurred near Piazza della Signoria during Carnival 1497—precisely when and where Savonarola's "Bonfire of the Vanities" took place. Conti was likely bringing the painting to be burned, demonstrating his devotion to Savonarola's cause.</p>
+                    </div>
+
+                    <div class="clue-explanation">
+                        <h4>💔 The Secret Affair</h4>
+                        <p><strong>The "L.B." Letter:</strong> Signed by Lucrezia Borgia, this fragment reveals a romantic relationship with Conti. The phrase "now that he knows about us" refers to her father, Pope Alexander VI, discovering the affair.</p>
+                        <p><strong>"We must save the child":</strong> This indicates Lucrezia and Conti had an illegitimate child together.</p>
+                        <p><strong>"Angels of H":</strong> The incomplete phrase refers to Savonarola's "Angels of Hope"—orphans and children raised to serve his cause. Lucrezia wanted their child hidden among these followers to protect him from her father's wrath.</p>
+                    </div>
+
+                    <div class="clue-explanation">
+                        <h4>🎯 The Motive</h4>
+                        <p>Pope Alexander VI had multiple reasons to want Conti dead:</p>
+                        <ul style="margin-left: 20px;">
+                            <li><strong>Personal Betrayal:</strong> Conti was having an affair with the Pope's daughter and had fathered her illegitimate child</li>
+                            <li><strong>Political Threat:</strong> Conti had become a follower of Savonarola, the Pope's greatest enemy who openly condemned him from the pulpit</li>
+                            <li><strong>Dangerous Knowledge:</strong> As a former business associate who frequently visited Rome, Conti knew too much about Borgia family secrets</li>
+                            <li><strong>Protection of Lucrezia:</strong> With her forced divorce from Giovanni Sforza pending and a new marriage to Alfonso of Naples arranged for 1498, Conti and their illegitimate child represented a scandal that could destroy these political alliances</li>
+                        </ul>
+                    </div>
+
+                    <div class="clue-explanation">
+                        <h4>⚔️ The Method</h4>
+                        <p>The "two men in black cloaks" were likely papal assassins sent by Alexander VI. The Pope was notorious for using murder to eliminate threats, and his son Cesare Borgia would later become infamous for political assassinations. The assassins searched Conti's satchel to retrieve any evidence of the affair.</p>
+                    </div>
+
+                    <div class="clue-explanation">
+                        <h4>📚 Historical Context</h4>
+                        <p>While this murder is fictional, it accurately reflects the political reality of Renaissance Italy:</p>
+                        <ul style="margin-left: 20px;">
+                            <li>Pope Alexander VI was indeed notorious for corruption, nepotism, and ruthless elimination of enemies</li>
+                            <li>The Pazzi Conspiracy of 1478 involved Pope Sixtus IV and Vatican officials in the assassination of Giuliano de' Medici during Mass</li>
+                            <li>Political murders were common tools of Renaissance power politics</li>
+                            <li>Savonarola was the Pope's fierce critic and was eventually executed in 1498</li>
+                            <li>The Borgia family's moral scandals, including allegations of incest and illegitimate children, were well-documented</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="intro-section" style="margin-top: 30px;">
+                    <h3>Discussion Questions</h3>
+                    <ul>
+                        <li>Why was Savonarola so opposed to Renaissance art and culture?</li>
+                        <li>How did political fragmentation make Italy vulnerable during this period?</li>
+                        <li>What does this activity reveal about the relationship between Church power and political power in Renaissance Italy?</li>
+                        <li>How did wealthy families like the Medicis and Borgias use their resources to gain and maintain power?</li>
+                        <li>Is Savonarola a medieval holdover or a forerunner of the Protestant Reformation?</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="password-section">
+                <div style="background: #fff; padding: 25px; border-radius: 8px; max-width: 500px; margin: 20px auto; text-align: center;">
+                    <h3 style="margin-bottom: 15px;">🔒 Enter Password to Reveal Solution</h3>
+                    <p style="margin-bottom: 20px; color: #666;">The password will be provided by your instructor in class.</p>
+                    <input type="password" id="reveal-password" placeholder="Enter password..." style="width: 100%; padding: 12px; font-size: 1.1em; margin-bottom: 15px; text-align: center;">
+                    <button class="btn btn-danger" onclick="checkPassword()">🔓 Unlock Solution</button>
+                    <p id="password-error" style="color: #8b0000; margin-top: 10px; display: none; font-weight: bold;">❌ Incorrect password. Try again or wait for class.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspect Modal -->
+    <div id="suspect-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const suspectProfiles = {
+            savonarola: {
+                name: "Girolamo Savonarola",
+                role: "Radical Friar & Prophet",
+                image: "savonarola.jpg",
+                content: `
+                    <h3>Background</h3>
+                    <p>Savonarola was a friar from Ferrara who began preaching at the Church of San Marco in Florence in 1490. He became one of the most influential religious figures of the Renaissance through his fierce criticism of Florentine culture.</p>
+                    
+                    <h3>His Message</h3>
+                    <p>Savonarola severely criticized Florence for its decadence, greed, and sinfulness. He opposed much Renaissance art because it was based on "pagan" themes from ancient Greece and Rome. He dressed only in black robes and lived in a plain room with almost no possessions.</p>
+                    
+                    <h3>His Enemies</h3>
+                    <p>He openly criticized powerful leaders including Lorenzo de' Medici and Pope Alexander VI for their corruption and elitism. He particularly despised the luxurious lifestyle of Florence's elite families.</p>
+                    
+                    <h3>His Following</h3>
+                    <p>Savonarola gained a large following called the <strong>piagnoni</strong> ("whiners" or "complainers"), especially among the lower classes. Even some wealthy Florentines and artists like Botticelli joined his movement.</p>
+                    
+                    <h3>The Angels of Hope</h3>
+                    <p>He mobilized thousands of children and teenagers, including orphans, into an army called the <strong>Angels of Hope</strong> to enforce his teachings. He claimed to have a crucifix carved onto his chest.</p>
+                    
+                    <h3>His Prophecies</h3>
+                    <p>Many of his sermons drew from the Old Testament, particularly the <strong>Book of Micah</strong>, known for criticizing the wealthy. He prophesied that Florence would be punished for its waywardness, and saw King Charles VIII's invasion in 1494 as fulfillment of this prophecy.</p>
+                    
+                    <h3>Revolution in Florence</h3>
+                    <p>After Charles VIII left, Savonarola led a revolution, transforming Florence into a republic with strict rules against vice. He organized the infamous <strong>"Bonfires of the Vanities"</strong> during Lent in 1497 and 1498, burning Renaissance artworks, fancy clothing, books, perfume, and other luxuries in the Piazza della Signoria.</p>
+                    
+                    <h3>His Fate</h3>
+                    <p>Eventually, he antagonized everyone from the Pope to all powerful families. He was put on trial and burned at the stake in 1498.</p>
+                `
+            },
+            piero: {
+                name: "Piero de' Medici",
+                role: "Exiled Ruler of Florence (\"Piero the Unfortunate\")",
+                content: `
+                    <h3>The Medici Legacy</h3>
+                    <p>Piero was the son of Lorenzo "the Magnificent" de' Medici, the wealthiest and most powerful man in Florence. The Medicis were a banking family who loaned money to the most powerful people in Europe, including the King of England and the Pope himself.</p>
+                    
+                    <h3>The Family Coat of Arms</h3>
+                    <p>The Medicis chose a coat of arms featuring <strong>five red balls on a yellow shield under a black eagle</strong> after buying their way into the nobility.</p>
+                    
+                    <h3>Lorenzo the Magnificent</h3>
+                    <p>Piero's father Lorenzo was a great patron of the arts, funding works by Michelangelo, Botticelli, and Leonardo da Vinci. The Medici family spent the equivalent of $450 million on charity and public works in Florence, making it one of Europe's most beautiful cities.</p>
+                    
+                    <h3>The Pazzi Conspiracy</h3>
+                    <p>In 1478, the rival Pazzi banking family assassinated Lorenzo's brother Giuliano and nearly killed Lorenzo. The people of Florence rallied to the Medicis, lynching the conspirators.</p>
+                    
+                    <h3>Growing Resentment</h3>
+                    <p>Despite their generosity, the Medicis controlled Florence like a dictatorship. Other merchants and bankers resented how the Medicis rigged the economic system in their favor. The Pope resented their power, and Savonarola despised them as embodiments of greed and corruption.</p>
+                    
+                    <h3>Piero's Failure</h3>
+                    <p>When Piero took over in 1492 after his father's death, he had to deal with many enemies. He was no match for them. When Charles VIII of France invaded in 1494, Piero fled to the great pleasure of his enemies, including Savonarola.</p>
+                    
+                    <h3>Plotting Return</h3>
+                    <p>He lived in Venice, constantly plotting his return to power—a return that would never come. He became known as "Piero the Unfortunate."</p>
+                `
+            },
+            charles: {
+                name: "King Charles VIII of France",
+                role: "Foreign Invader",
+                content: `
+                    <h3>The King</h3>
+                    <p>Charles VIII ruled France from 1483 to 1498. He was described as hideously ugly, possessed of a tremendous ego, and an extreme womanizer.</p>
+                    
+                    <h3>The Invasion of 1494</h3>
+                    <p>In 1494, he invaded Italy with an army of 25,000 men—enormous for that time—equipped with the most modern weaponry including mobile siege artillery. This was the first major invasion of Italy since the barbarian invasions that brought down the Roman Empire.</p>
+                    
+                    <h3>Italy's Weakness</h3>
+                    <p>He found Italy politically and militarily weak—a collection of small kingdoms and city-states like Milan and Florence, each with their own agendas. He easily conquered and plundered everywhere his army went.</p>
+                    
+                    <h3>The Sack of Florence</h3>
+                    <p>Charles took up residence in the Medici palace before stealing everything in it, including great works of art and even a supposed unicorn horn. He was allied with Savonarola, who welcomed him as the hand of God and approved of the looting of sinful art and wealth.</p>
+                    
+                    <h3>Sparking the Italian Wars</h3>
+                    <p>The ease of his conquest signaled to Spain and the Holy Roman Empire that Italy was vulnerable. It also frightened the Pope and the Duke of Milan into forming the Holy League to drive out the "barbarian" invaders, beginning the Italian Wars (1494-1559).</p>
+                    
+                    <h3>Defeat and Retreat</h3>
+                    <p>French troops lost a key battle at Fornovo in 1495 against allied Italian forces, who recaptured much of the plundered wealth and art. Charles returned to France but continued plotting his return with allies like Savonarola.</p>
+                    
+                    <h3>His Death</h3>
+                    <p>He died in 1498 in an accident, but future French kings would return to fight for control of Italy.</p>
+                `
+            },
+            pope: {
+                name: "Pope Alexander VI (Rodrigo Borgia)",
+                role: "The Borgia Pope",
+                content: `
+                    <h3>The Corrupt Pope</h3>
+                    <p>Alexander VI (real name: Rodrigo Borgia) was Pope from 1492 to 1503. He was famous for corruption, nepotism, venality, and ruthlessness—openly having several mistresses and at least seven children (popes were supposed to be celibate).</p>
+                    
+                    <h3>The Borgia Family</h3>
+                    <p>He used the papacy to further his family's fortunes and used his family to increase his power as Pope. His favorite mistress, Vanezza dei Cattanei, bore him four children including Cesare and Lucrezia.</p>
+                    
+                    <h3>Nepotism</h3>
+                    <p>Pope Alexander appointed his son Cesare as a cardinal at age eighteen—almost unheard of. He used his daughter Lucrezia to make political alliances, arranging her marriages and divorces at very young ages.</p>
+                    
+                    <h3>Simony</h3>
+                    <p>He openly practiced simony—selling church offices for fees. It was alleged he bought the papacy itself by bribing cardinals to vote for him.</p>
+                    
+                    <h3>Power Politics</h3>
+                    <p>As Pope when Columbus discovered the "New World," he divided the Americas between Portugal and Spain. Scholars accuse him of giving permission to enslave Native Americans and Africans on the pretext of converting them to Christianity.</p>
+                    
+                    <h3>The French Invasion</h3>
+                    <p>He initially welcomed Charles VIII's invasion because Charles attacked Naples, the Pope's enemy. But when Charles invaded Rome, the Pope desperately created the Holy League alliance to drive the French out of Italy in 1495.</p>
+                    
+                    <h3>Enemies</h3>
+                    <p>His ruthless power politics disgusted many in the Church, including Savonarola, who openly denounced him in sermons. The Pope used his leverage to have Savonarola executed in 1498.</p>
+                    
+                    <h3>Scandals</h3>
+                    <p>Many accused the Borgia family of holding orgies, engaging in incest, and committing political assassinations. These real and rumored abuses inspired later rebellions, beginning with Martin Luther's protest in 1517 and the Reformation.</p>
+                `
+            },
+            lucrezia: {
+                name: "Lucrezia Borgia",
+                role: "Daughter of Pope Alexander VI",
+                content: `
+                    <h3>The Pope's Daughter</h3>
+                    <p>Lucrezia was the illegitimate daughter of Pope Alexander VI. She was used as a pawn by her father to make and break political alliances to strengthen the papacy.</p>
+                    
+                    <h3>Beauty and Youth</h3>
+                    <p>With blond, flowing hair, hazel eyes, and a graceful step, she was considered extremely beautiful. At age eleven, she was betrothed to Giovanni Sforza of the powerful Milanese family. She married him at thirteen, adorned with immense jewels bought by her father.</p>
+                    
+                    <h3>First Divorce (1497)</h3>
+                    <p>After a couple years, Pope Alexander no longer wanted an alliance with Milan, opting instead for Naples. He demanded Giovanni agree to divorce Lucrezia on grounds of impotence. Giovanni refused, accusing the Pope of having a sexual relationship with his own daughter.</p>
+                    
+                    <h3>The Secret Child</h3>
+                    <p>Before marrying her next husband (seventeen-year-old Alfonso of Naples) in 1498, she almost certainly had an affair with a palace servant named Peretto. His body was later found in the Tiber River—most scholars believe her brother Cesare killed him and another servant who knew of the affair.</p>
+                    
+                    <p>She then spent months secluded in a convent—usually a sign a woman was giving birth to an illegitimate child. She had a son named Giovanni, but whether the father was Peretto, Giovanni Sforza, her father, or her brother remains unclear. Lucrezia herself referred to the boy as her half-brother, not her son, leading some to believe he was another of Alexander's illegitimate children.</p>
+                    
+                    <h3>Second Marriage</h3>
+                    <p>Her marriage to Alfonso didn't last long. He was assassinated in 1500 by killers almost certainly hired by her brother Cesare, who was rumored to be in love with his sister and wanted to continue a sexual relationship with her. Politically, Cesare was aligned with France while Alfonso was aligned with Spain—major antagonists in the Italian Wars.</p>
+                    
+                    <h3>Final Marriage</h3>
+                    <p>Eventually Lucrezia married the Duke of Ferrara in 1502, giving him eight children before dying in childbirth in 1519.</p>
+                `
+            }
+        };
+
+        function showTab(tabName) {
+            // Hide all content sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+            
+            // Highlight active button
+            event.target.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function showSuspectModal(suspectKey) {
+            const suspect = suspectProfiles[suspectKey];
+            const modal = document.getElementById('suspect-modal');
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <h2>${suspect.name}</h2>
+                <p class="suspect-role" style="font-size: 1.2em; margin-bottom: 20px;">${suspect.role}</p>
+                ${suspect.content}
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('suspect-modal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('suspect-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function saveTheory() {
+            const killer = document.getElementById('killer-select').value;
+            const motive = document.getElementById('motive').value;
+            const evidence = document.getElementById('evidence').value;
+            
+            if (!killer) {
+                alert('Please select a suspect!');
+                return;
+            }
+            
+            if (!motive.trim()) {
+                alert('Please explain the motive!');
+                return;
+            }
+            
+            // Get checked clues
+            const clues = [];
+            document.querySelectorAll('.clue-checkbox input:checked').forEach(checkbox => {
+                clues.push(checkbox.value);
+            });
+            
+            if (clues.length === 0) {
+                alert('Please select at least one clue!');
+                return;
+            }
+            
+            // Save to localStorage
+            const theory = {
+                killer,
+                motive,
+                evidence,
+                clues,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('murderMysteryTheory', JSON.stringify(theory));
+            
+            // Show confirmation
+            document.getElementById('saved-theory').style.display = 'block';
+            
+            // Scroll to confirmation
+            document.getElementById('saved-theory').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function revealSolution() {
+            document.getElementById('reveal-content').style.display = 'block';
+            document.getElementById('password-section').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('reveal-password').value;
+            const correctPassword = 'FLORENCE1497'; // Change this to whatever password you want
+            
+            if (password === correctPassword) {
+                revealSolution();
+            } else {
+                document.getElementById('password-error').style.display = 'block';
+                document.getElementById('reveal-password').value = '';
+                document.getElementById('reveal-password').focus();
+                
+                // Hide error after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('password-error').style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Allow Enter key to submit password
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('reveal-password');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkPassword();
+                    }
+                });
+            }
+        });
+
+        // Load saved theory if exists
+        window.addEventListener('load', function() {
+            const savedTheory = localStorage.getItem('murderMysteryTheory');
+            if (savedTheory) {
+                const theory = JSON.parse(savedTheory);
+                document.getElementById('killer-select').value = theory.killer;
+                document.getElementById('motive').value = theory.motive;
+                document.getElementById('evidence').value = theory.evidence;
+                
+                // Check saved clues
+                theory.clues.forEach(clueValue => {
+                    const checkbox = document.querySelector(`input[value="${clueValue}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
