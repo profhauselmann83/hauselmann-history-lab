@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HIST 107 — Commodity Passports (Instructor Live Guide)</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7fb; color:#111; }
+    header { position: sticky; top:0; z-index:10; background: #111; color:#fff; padding: 12px 16px; }
+    header h1 { font-size: 16px; margin:0; font-weight:700; }
+    header .sub { font-size: 12px; opacity:.85; margin-top:2px; }
+    main { padding: 14px 16px 28px; max-width: 1300px; margin: 0 auto; }
+
+    .grid { display:grid; grid-template-columns: 420px 1fr; gap: 14px; }
+    @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background:#fff; border:1px solid #e5e7ef; border-radius: 10px;
+      padding: 12px; box-shadow: 0 1px 0 rgba(0,0,0,.03);
+    }
+    .card h2 { margin:0 0 10px; font-size: 14px; }
+    .row { display:flex; gap:8px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 0 0 auto; }
+    .muted { color:#5b6270; font-size: 12px; }
+    label { font-size: 12px; color:#2c3140; display:block; margin-bottom:4px; }
+    textarea, input, select {
+      width:100%; box-sizing: border-box; border:1px solid #d7dbe8; border-radius: 8px;
+      padding: 10px; font-size: 13px; background:#fff;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    button {
+      border:1px solid #d7dbe8; background:#f3f5fb; padding:8px 10px; border-radius: 8px;
+      cursor:pointer; font-size: 12px;
+    }
+    button.primary { background:#111; color:#fff; border-color:#111; }
+    button.danger { background:#fff0f0; border-color:#ffc7c7; }
+    button:disabled { opacity: .5; cursor:not-allowed; }
+
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 8px; border-radius: 999px;
+      border:1px solid #e5e7ef; background:#fafbff; font-size: 12px; }
+    .pill b { font-weight:700; }
+
+    .eraBar { display:flex; flex-wrap: wrap; gap: 8px; }
+    .eraBtn { padding:8px 10px; }
+    .eraBtn.active { background:#111; color:#fff; border-color:#111; }
+
+    .twoCol { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 900px) { .twoCol { grid-template-columns: 1fr; } }
+
+    .regionGrid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (max-width: 1100px) { .regionGrid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px) { .regionGrid { grid-template-columns: 1fr; } }
+
+    .regionCard { border:1px solid #e5e7ef; border-radius: 10px; padding: 10px; background:#fff; }
+    .regionHead { display:flex; justify-content: space-between; gap:8px; align-items:flex-start; }
+    .regionHead h3 { margin:0; font-size: 13px; }
+    .regionMeta { font-size: 12px; color:#5b6270; }
+    .small { font-size: 12px; }
+
+    .checklist { border-top:1px dashed #e5e7ef; margin-top:10px; padding-top:10px; }
+    .chk { display:flex; gap:8px; align-items:flex-start; margin: 6px 0; font-size: 12px; }
+    .chk input { width:auto; margin-top:2px; }
+    .tag { display:inline-block; font-size: 11px; padding: 2px 6px; border-radius: 6px; background:#f3f5fb; border:1px solid #e5e7ef; }
+
+    .timer {
+      display:flex; gap:10px; align-items:center; justify-content: space-between;
+      padding:10px; border-radius: 10px; background:#0f172a; color:#fff;
+    }
+    .timer .big { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+    .timer .tiny { font-size: 12px; opacity: .85; }
+    .timerBtns button { background: rgba(255,255,255,.12); color:#fff; border-color: rgba(255,255,255,.22); }
+    .timerBtns button.primary { background:#fff; color:#111; border-color:#fff; }
+
+    .stickyTools { position: sticky; top: 62px; z-index: 5; }
+    @media (max-width: 1100px) { .stickyTools { position: static; } }
+
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px; padding:2px 6px; border:1px solid #e5e7ef; border-radius: 6px; background:#fafbff; }
+
+    .printOnly { display:none; }
+    @media print {
+      header, .noPrint { display:none !important; }
+      body { background:#fff; }
+      .grid { grid-template-columns: 1fr; }
+      .card { box-shadow:none; }
+      .printOnly { display:block; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>HIST 107 — Commodity Passports (Instructor Live Guide)</h1>
+  <div class="sub">Run the activity, track eras, manage demand, and take notes while circulating.</div>
+</header>
+
+<main>
+  <div class="grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="card stickyTools">
+      <h2>1) Era control + Timer</h2>
+
+      <div class="eraBar noPrint" id="eraBar"></div>
+
+      <div style="height:10px"></div>
+
+      <div class="timer">
+        <div>
+          <div class="tiny">Countdown</div>
+          <div class="big" id="timerDisplay">10:00</div>
+          <div class="tiny">Suggested: 7–10 min per era</div>
+        </div>
+        <div class="timerBtns">
+          <button id="minus30">-30s</button>
+          <button id="plus30">+30s</button>
+          <button class="primary" id="startPause">Start</button>
+          <button id="reset">Reset</button>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <h2>2) Grouping / roster</h2>
+      <div class="muted">Paste a student list (one per line). Then auto-assign to regions (Europe is larger by design).</div>
+      <div style="height:8px"></div>
+
+      <label for="studentList">Student names (optional)</label>
+      <textarea id="studentList" placeholder="Paste names, one per line..."></textarea>
+
+      <div style="height:10px"></div>
+
+      <div class="twoCol noPrint">
+        <div>
+          <label>Europe size (recommended)</label>
+          <select id="europeSize">
+            <option value="8" selected>8 (best for 40 students)</option>
+            <option value="7">7</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+        <div>
+          <label>Shuffle before assigning?</label>
+          <select id="shuffle">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No (keep input order)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="row noPrint">
+        <button class="primary" id="assignBtn">Auto-assign regions</button>
+        <button id="clearAssignments" class="danger">Clear assignments</button>
+        <button id="print" title="Print roster + checklists">Print</button>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="card" style="padding:10px; background:#fafbff; border-color:#e5e7ef;">
+        <div class="small"><b>Fast roles (reduces chaos):</b></div>
+        <div class="small">• <span class="tag">Scanner</span> finds info in text • <span class="tag">Scribe</span> writes on passports • <span class="tag">Runner</span> handles passport “trade” • <span class="tag">Analyst</span> watches patterns + demand</div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <h2>3) Instructor “circulation log”</h2>
+      <div class="muted">Use this as your running narrative of what you’re seeing.</div>
+      <div style="height:8px"></div>
+      <label for="circulation">Live notes</label>
+      <textarea id="circulation" placeholder="What I’m noticing... (confusion points, great observations, demand spikes, chaos moments, etc.)"></textarea>
+
+      <div style="height:10px"></div>
+      <div class="row noPrint">
+        <button id="saveLocal">Save (local)</button>
+        <button id="loadLocal">Load</button>
+        <button id="exportJson">Export notes</button>
+      </div>
+
+      <div style="height:10px"></div>
+      <div class="muted">Tip: If you’re typing while walking, keep it short: “EA → silver to opium; asked why; great answer.”</div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="card">
+      <h2>4) Region stations (checklists + demand tracking + notes)</h2>
+
+      <div class="row">
+        <div class="pill"><b>Current era:</b> <span id="currentEraLabel">Pre-1500s</span></div>
+        <div class="pill"><b>Instructor prompt:</b> <span id="eraPrompt">Start passports in origin regions; fill first visa page.</span></div>
+        <div class="pill"><b>Shortcut:</b> <span class="kbd">Ctrl</span> + <span class="kbd">F</span> “Region Notes”</div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="regionGrid" id="regionGrid"></div>
+
+      <div style="height:14px"></div>
+
+      <div class="card" style="background:#fff; border-color:#e5e7ef;">
+        <h2 style="margin-bottom:6px;">5) Debrief capture (end-of-activity)</h2>
+        <div class="muted">Use these boxes to collect the debrief in real time.</div>
+        <div style="height:8px"></div>
+
+        <div class="twoCol">
+          <div>
+            <label>Which regions had the most / least commodities? Why?</label>
+            <textarea id="debrief1" placeholder="Europe gluts; colonial extraction; networks; power..."></textarea>
+          </div>
+          <div>
+            <label>High-demand commodities across eras (and theories why)</label>
+            <textarea id="debrief2" placeholder="Coffee/sugar/potatoes; addiction, calories, empire, labor systems..."></textarea>
+          </div>
+          <div>
+            <label>Drivers of demand (what patterns did students name?)</label>
+            <textarea id="debrief3" placeholder="Taste, medicine, status, industrial inputs, state revenue, war..."></textarea>
+          </div>
+          <div>
+            <label>Connections to slavery/exploitation/genocide + medicine/poison</label>
+            <textarea id="debrief4" placeholder="Sugar + slavery; opium + coercion; silver + forced labor; etc."></textarea>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="row noPrint">
+          <button id="saveDebrief">Save debrief (local)</button>
+          <button id="exportAll">Export everything</button>
+        </div>
+      </div>
+
+      <div class="printOnly">
+        <h2>Roster + Station Notes (Print View)</h2>
+        <p class="muted">This print view includes region assignments and the era checklists per station.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ---------- DATA ----------
+  const ERAS = [
+    { key:"pre1500", label:"Pre-1500s", minutes:10, prompt:"Start passports in origin regions; fill first visa page (Where from? How used?)." },
+    { key:"1500s", label:"1500s", minutes:10, prompt:"Regions call out needed passports; facilitate flow; check appendix." },
+    { key:"1600s", label:"1600s", minutes:10, prompt:"Repeat: call out demand, move passports, finish visa page for era." },
+    { key:"1700s", label:"1700s", minutes:10, prompt:"Watch demand patterns intensify; ask why (labor, empire, taste, energy)." },
+    { key:"1800s", label:"1800s", minutes:10, prompt:"Cue opium dynamics; connect to coercion, trade imbalance, imperial power." },
+    { key:"1900s", label:"1900s–Present", minutes:10, prompt:"Commodities redistribute; connect to globalization + industrial supply chains." },
+  ];
+
+  const REGIONS = [
+    { id:1, name:"Europe" },
+    { id:2, name:"North America" },
+    { id:3, name:"Caribbean/Central America" },
+    { id:4, name:"South America" },
+    { id:5, name:"Africa" },
+    { id:6, name:"Middle East / the Levant (incl. Turkey)" },
+    { id:7, name:"East Asia (Japan, China, Korea)" },
+    { id:8, name:"SE Asia, Indonesia & Oceania" },
+    { id:9, name:"South Asia" },
+  ];
+
+  // Appendix chart (commodities each region should have per era)
+  const APPENDIX = {
+    "Pre-1500s": {
+      "Europe": [],
+      "North America": ["Tobacco"],
+      "Caribbean/Central America": ["Chocolate","Chili peppers"],
+      "South America": ["Tomatoes","Potatoes","Silver"],
+      "Africa": ["Coffee"],
+      "Middle East / the Levant (incl. Turkey)": ["Cotton"],
+      "East Asia (Japan, China, Korea)": ["Tea"],
+      "SE Asia, Indonesia & Oceania": ["Spices (cloves, nutmeg, mace)"],
+      "South Asia": ["Cannabis","Opium","Sugar"],
+    },
+    "1500s": {
+      "Europe": ["Chocolate","Silver","Tomatoes","Tea","Sugar","Potatoes","Chili peppers","Spices","Cotton","Opium","Tobacco"],
+      "North America": ["Tobacco"],
+      "Caribbean/Central America": ["Tomatoes","Sugar","Tobacco"],
+      "South America": ["Silver","Chili peppers","Potatoes"],
+      "Africa": ["Chili peppers"],
+      "Middle East / the Levant (incl. Turkey)": ["Coffee"],
+      "East Asia (Japan, China, Korea)": [],
+      "SE Asia, Indonesia & Oceania": ["Spices"],
+      "South Asia": ["Chili peppers"],
+    },
+    "1600s": {
+      "Europe": ["Chocolate","Silver","Tomatoes","Tea","Sugar","Potatoes","Chili peppers","Coffee","Tobacco","Opium","Spices"],
+      "North America": ["Tomatoes","Tobacco","Potatoes"],
+      "Caribbean/Central America": ["Cannabis","Sugar"],
+      "South America": ["Silver"],
+      "Africa": ["Cotton","Tobacco"],
+      "Middle East / the Levant (incl. Turkey)": ["Coffee","Silver","Chili peppers","Tobacco"],
+      "East Asia (Japan, China, Korea)": ["Silver","Tomatoes"],
+      "SE Asia, Indonesia & Oceania": ["Spices","Chili peppers","Tomatoes"],
+      "South Asia": ["Silver","Opium","Cotton"],
+    },
+    "1700s": {
+      "Europe": ["Sugar","Chocolate","Tea","Potatoes","Tomatoes","Coffee","Spices","Cotton"],
+      "North America": ["Tobacco","Tomatoes","Cannabis","Chocolate","Spices"],
+      "Caribbean/Central America": ["Sugar","Chocolate","Coffee"],
+      "South America": ["Chocolate","Coffee"],
+      "Africa": ["Coffee"],
+      "Middle East / the Levant (incl. Turkey)": [],
+      "East Asia (Japan, China, Korea)": ["Silver","Chili peppers","Opium","Tobacco"],
+      "SE Asia, Indonesia & Oceania": ["Spices","Coffee","Chili peppers"],
+      "South Asia": ["Opium","Tea","Cotton","Silver"],
+    },
+    "1800s": {
+      "Europe": ["Sugar","Tea","Potatoes","Opium","Cotton","Coffee","Chocolate","Spices"],
+      "North America": ["Potatoes","Cotton","Tomatoes","Tobacco","Coffee","Opium","Spices"],
+      "Caribbean/Central America": ["Sugar","Cannabis","Chocolate"],
+      "South America": ["Coffee"],
+      "Africa": ["Potatoes","Cotton","Cannabis","Chocolate"],
+      "Middle East / the Levant (incl. Turkey)": ["Tomatoes","Opium"],
+      "East Asia (Japan, China, Korea)": ["Opium"],
+      "SE Asia, Indonesia & Oceania": ["Coffee","Potatoes","Chocolate"],
+      "South Asia": ["Potatoes","Tea","Opium"],
+    },
+    "1900s–Present": {
+      "Europe": ["Cannabis","Spices","Tobacco"],
+      "North America": ["Tea","Cannabis","Opium","Spices","Tobacco","Chili peppers","Chocolate"],
+      "Caribbean/Central America": ["Coffee"],
+      "South America": ["Coffee"],
+      "Africa": ["Cotton","Coffee","Chocolate"],
+      "Middle East / the Levant (incl. Turkey)": ["Tea"],
+      "East Asia (Japan, China, Korea)": ["Cotton","Opium","Potatoes"],
+      "SE Asia, Indonesia & Oceania": ["Coffee","Opium"],
+      "South Asia": ["Tea","Cotton","Potatoes"],
+    }
+  };
+
+  // ---------- STATE ----------
+  let currentEraIdx = 0;
+
+  let assignments = {}; // regionName -> [students]
+  let regionNotes = {}; // regionName -> text
+  let demandNotes = {}; // regionName -> text (what they keep calling for)
+  let checklistState = {}; // eraLabel -> regionName -> commodity -> checked?
+
+  // timer
+  let timerSeconds = ERAS[0].minutes * 60;
+  let timerRunning = false;
+  let timerInterval = null;
+
+  // ---------- HELPERS ----------
+  function $(id){ return document.getElementById(id); }
+  function fmtTime(s){
+    const m = Math.floor(s/60);
+    const r = s % 60;
+    return String(m).padStart(2,'0') + ":" + String(r).padStart(2,'0');
+  }
+  function shuffleArray(arr){
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function eraLabel(){ return ERAS[currentEraIdx].label; }
+
+  function initChecklistState(){
+    for (const e of ERAS) {
+      const el = e.label;
+      checklistState[el] = checklistState[el] || {};
+      for (const r of REGIONS) {
+        const rn = r.name;
+        checklistState[el][rn] = checklistState[el][rn] || {};
+        const list = (APPENDIX[el] && APPENDIX[el][rn]) ? APPENDIX[el][rn] : [];
+        list.forEach(c => {
+          if (typeof checklistState[el][rn][c] === "undefined") checklistState[el][rn][c] = false;
+        });
+      }
+    }
+  }
+
+  function setEra(idx){
+    currentEraIdx = idx;
+    $("currentEraLabel").textContent = eraLabel();
+    $("eraPrompt").textContent = ERAS[currentEraIdx].prompt;
+
+    // Update button styles
+    document.querySelectorAll(".eraBtn").forEach((b, i) => {
+      b.classList.toggle("active", i === currentEraIdx);
+    });
+
+    // Reset timer to default for that era (without nuking notes)
+    timerSeconds = ERAS[currentEraIdx].minutes * 60;
+    stopTimer();
+    renderTimer();
+    renderRegions();
+    saveAuto();
+  }
+
+  // ---------- TIMER ----------
+  function renderTimer(){ $("timerDisplay").textContent = fmtTime(timerSeconds); }
+  function startTimer(){
+    if (timerRunning) return;
+    timerRunning = true;
+    $("startPause").textContent = "Pause";
+    timerInterval = setInterval(() => {
+      if (timerSeconds > 0) timerSeconds--;
+      renderTimer();
+      if (timerSeconds === 0) {
+        // gentle visual cue only (no sound)
+        $("timerDisplay").textContent = "00:00";
+        stopTimer();
+        $("timerDisplay").style.textDecoration = "underline";
+        setTimeout(()=> $("timerDisplay").style.textDecoration = "none", 1500);
+      }
+    }, 1000);
+  }
+  function stopTimer(){
+    timerRunning = false;
+    $("startPause").textContent = "Start";
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  // ---------- RENDER ----------
+  function renderEraBar(){
+    const bar = $("eraBar");
+    bar.innerHTML = "";
+    ERAS.forEach((e, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "eraBtn";
+      btn.textContent = e.label;
+      btn.addEventListener("click", () => setEra(idx));
+      bar.appendChild(btn);
+    });
+  }
+
+  function renderRegions(){
+    initChecklistState();
+    const grid = $("regionGrid");
+    grid.innerHTML = "";
+
+    const eLabel = eraLabel();
+
+    REGIONS.forEach((r) => {
+      const rn = r.name;
+      const card = document.createElement("div");
+      card.className = "regionCard";
+
+      const head = document.createElement("div");
+      head.className = "regionHead";
+
+      const left = document.createElement("div");
+      const title = document.createElement("h3");
+      title.textContent = `${r.id}. ${rn}`;
+      const meta = document.createElement("div");
+      meta.className = "regionMeta";
+      const roster = (assignments[rn] && assignments[rn].length)
+        ? assignments[rn].join(", ")
+        : "Students: (not assigned yet)";
+      meta.textContent = roster;
+
+      left.appendChild(title);
+      left.appendChild(meta);
+
+      const right = document.createElement("div");
+      right.innerHTML = `<span class="tag">${eLabel}</span>`;
+
+      head.appendChild(left);
+      head.appendChild(right);
+
+      // Demand / movement notes (quick capture)
+      const demandLbl = document.createElement("label");
+      demandLbl.textContent = "What are they calling for / moving right now?";
+      demandLbl.style.marginTop = "8px";
+      const demandTa = document.createElement("textarea");
+      demandTa.value = demandNotes[rn] || "";
+      demandTa.placeholder = "e.g., 'Need sugar + coffee; runner stuck waiting on potatoes…'";
+      demandTa.addEventListener("input", (ev) => { demandNotes[rn] = ev.target.value; saveAuto(); });
+
+      // Region notes (your instructor notes while circulating)
+      const noteLbl = document.createElement("label");
+      noteLbl.textContent = "Region Notes (observations, confusions, great comments)";
+      noteLbl.style.marginTop = "8px";
+      const noteTa = document.createElement("textarea");
+      noteTa.value = regionNotes[rn] || "";
+      noteTa.placeholder = "e.g., 'EU understands glut = power; asked about coercion + markets…'";
+      noteTa.addEventListener("input", (ev) => { regionNotes[rn] = ev.target.value; saveAuto(); });
+
+      // Checklist for the current era for that region
+      const checklistWrap = document.createElement("div");
+      checklistWrap.className = "checklist";
+
+      const list = (APPENDIX[eLabel] && APPENDIX[eLabel][rn]) ? APPENDIX[eLabel][rn] : [];
+      const clTitle = document.createElement("div");
+      clTitle.className = "small";
+      clTitle.innerHTML = `<b>Era checklist:</b> passports this region should have this era`;
+      checklistWrap.appendChild(clTitle);
+
+      if (!list.length) {
+        const none = document.createElement("div");
+        none.className = "muted";
+        none.style.marginTop = "6px";
+        none.textContent = "n/a (no passports listed for this region in this era)";
+        checklistWrap.appendChild(none);
+      } else {
+        list.forEach((commodity) => {
+          const row = document.createElement("label");
+          row.className = "chk";
+
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.checked = !!checklistState[eLabel][rn][commodity];
+          cb.addEventListener("change", () => {
+            checklistState[eLabel][rn][commodity] = cb.checked;
+            saveAuto();
+          });
+
+          const span = document.createElement("span");
+          span.textContent = commodity;
+
+          row.appendChild(cb);
+          row.appendChild(span);
+          checklistWrap.appendChild(row);
+        });
+      }
+
+      card.appendChild(head);
+      card.appendChild(demandLbl);
+      card.appendChild(demandTa);
+      card.appendChild(noteLbl);
+      card.appendChild(noteTa);
+      card.appendChild(checklistWrap);
+
+      grid.appendChild(card);
+    });
+
+    // update labels
+    $("currentEraLabel").textContent = eLabel;
+    $("eraPrompt").textContent = ERAS[currentEraIdx].prompt;
+  }
+
+  // ---------- ASSIGNMENTS ----------
+  function autoAssign(){
+    const namesRaw = $("studentList").value.trim();
+    let names = namesRaw ? namesRaw.split("\n").map(x => x.trim()).filter(Boolean) : [];
+    const total = names.length || 40; // if no roster pasted, still generate placeholders
+    if (!names.length){
+      names = Array.from({length:40}, (_,i) => `Student ${i+1}`);
+    }
+
+    if ($("shuffle").value === "yes") shuffleArray(names);
+
+    const europeN = parseInt($("europeSize").value, 10);
+    const otherRegions = REGIONS.filter(r => r.name !== "Europe");
+    const remaining = total - europeN;
+
+    // Spread remaining evenly across 8 regions
+    const base = Math.floor(remaining / otherRegions.length);
+    let extra = remaining % otherRegions.length;
+
+    const sizes = {};
+    sizes["Europe"] = europeN;
+    otherRegions.forEach(r => {
+      sizes[r.name] = base + (extra > 0 ? 1 : 0);
+      if (extra > 0) extra--;
+    });
+
+    // allocate
+    assignments = {};
+    REGIONS.forEach(r => assignments[r.name] = []);
+
+    let idx = 0;
+    for (const r of REGIONS){
+      const need = sizes[r.name] || 0;
+      assignments[r.name] = names.slice(idx, idx + need);
+      idx += need;
+    }
+
+    renderRegions();
+    saveAuto();
+  }
+
+  function clearAssignments(){
+    REGIONS.forEach(r => assignments[r.name] = []);
+    renderRegions();
+    saveAuto();
+  }
+
+  // ---------- SAVE / LOAD ----------
+  function saveAuto(){
+    // silent autosave
+    const payload = getState();
+    localStorage.setItem("hist107_passports_state", JSON.stringify(payload));
+  }
+
+  function getState(){
+    return {
+      currentEraIdx,
+      timerSeconds,
+      assignments,
+      regionNotes,
+      demandNotes,
+      checklistState,
+      circulation: $("circulation").value || "",
+      debrief: {
+        d1: $("debrief1").value || "",
+        d2: $("debrief2").value || "",
+        d3: $("debrief3").value || "",
+        d4: $("debrief4").value || "",
+      },
+      rosterText: $("studentList").value || "",
+      europeSize: $("europeSize").value,
+      shuffle: $("shuffle").value,
+      savedAt: new Date().toISOString()
+    };
+  }
+
+  function applyState(s){
+    if (!s) return;
+    currentEraIdx = s.currentEraIdx ?? 0;
+    timerSeconds = s.timerSeconds ?? (ERAS[currentEraIdx].minutes * 60);
+    assignments = s.assignments || {};
+    regionNotes = s.regionNotes || {};
+    demandNotes = s.demandNotes || {};
+    checklistState = s.checklistState || {};
+    $("circulation").value = s.circulation || "";
+    $("debrief1").value = s.debrief?.d1 || "";
+    $("debrief2").value = s.debrief?.d2 || "";
+    $("debrief3").value = s.debrief?.d3 || "";
+    $("debrief4").value = s.debrief?.d4 || "";
+    $("studentList").value = s.rosterText || "";
+    $("europeSize").value = s.europeSize || "8";
+    $("shuffle").value = s.shuffle || "yes";
+
+    renderEraBar();
+    setEra(currentEraIdx);
+    renderTimer();
+    renderRegions();
+  }
+
+  function saveLocal(){
+    saveAuto();
+    alert("Saved locally in this browser (localStorage).");
+  }
+
+  function loadLocal(){
+    const raw = localStorage.getItem("hist107_passports_state");
+    if (!raw) return alert("No saved state found in this browser yet.");
+    const s = JSON.parse(raw);
+    applyState(s);
+    alert("Loaded saved state.");
+  }
+
+  function download(filename, text){
+    const el = document.createElement("a");
+    el.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
+    el.setAttribute("download", filename);
+    document.body.appendChild(el);
+    el.click();
+    document.body.removeChild(el);
+  }
+
+  function exportJson(){
+    const payload = getState();
+    download(`hist107_commodity_passports_notes_${eraLabel().replaceAll(" ","_")}.json`, JSON.stringify(payload, null, 2));
+  }
+
+  function exportAll(){
+    const payload = getState();
+    download(`hist107_commodity_passports_FULL_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2));
+  }
+
+  // ---------- WIRE UP UI ----------
+  renderEraBar();
+  initChecklistState();
+  setEra(0);
+  renderTimer();
+  renderRegions();
+
+  $("startPause").addEventListener("click", () => timerRunning ? stopTimer() : startTimer());
+  $("reset").addEventListener("click", () => { stopTimer(); timerSeconds = ERAS[currentEraIdx].minutes * 60; renderTimer(); saveAuto(); });
+  $("minus30").addEventListener("click", () => { timerSeconds = Math.max(0, timerSeconds - 30); renderTimer(); saveAuto(); });
+  $("plus30").addEventListener("click", () => { timerSeconds = timerSeconds + 30; renderTimer(); saveAuto(); });
+
+  $("assignBtn").addEventListener("click", autoAssign);
+  $("clearAssignments").addEventListener("click", clearAssignments);
+  $("print").addEventListener("click", () => window.print());
+
+  $("saveLocal").addEventListener("click", saveLocal);
+  $("loadLocal").addEventListener("click", loadLocal);
+  $("exportJson").addEventListener("click", exportJson);
+  $("exportAll").addEventListener("click", exportAll);
+  $("saveDebrief").addEventListener("click", saveLocal);
+
+  // autosave on key inputs
+  ["circulation","debrief1","debrief2","debrief3","debrief4","studentList"].forEach(id => {
+    $(id).addEventListener("input", saveAuto);
+  });
+
+  // Attempt auto-load on open
+  (function(){
+    const raw = localStorage.getItem("hist107_passports_state");
+    if (!raw) return;
+    try { applyState(JSON.parse(raw)); } catch(e) {}
+  })();
+</script>
+</body>
+</html>
