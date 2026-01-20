@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Commodity Passports - HIST 107</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2em;
+        }
+        
+        header p {
+            margin: 5px 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        nav {
+            background-color: #34495e;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        
+        nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .intro-section {
+            background-color: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid #8b4513;
+        }
+        
+        .intro-section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .intro-section p {
+            line-height: 1.8;
+            color: #555;
+        }
+        
+        .commodity-selector {
+            background-color: white;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .commodity-selector h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .commodity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .commodity-btn {
+            background: linear-gradient(135deg, #8b4513 0%, #6d3610 100%);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .commodity-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .commodity-btn:active {
+            transform: translateY(0);
+        }
+        
+        .passport-card {
+            background-color: white;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border-top: 5px solid #8b4513;
+            display: none;
+        }
+        
+        .passport-card.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .passport-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            margin: -30px -30px 25px -30px;
+            border-radius: 5px 5px 0 0;
+            text-align: center;
+        }
+        
+        .passport-header h2 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        .passport-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .period {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .period h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .period-icon {
+            background-color: #3498db;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .period p {
+            line-height: 1.8;
+            color: #555;
+            margin: 10px 0;
+        }
+        
+        .back-btn {
+            background-color: #95a5a6;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .back-btn:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .footnote {
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .commodity-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 1.5em;
+            }
+            
+            .passport-header h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌍 Commodity Passports</h1>
+        <p>HIST 107: Global Commodities, 1400s–1900s</p>
+        <p style="font-size: 0.95em;">Trace the global journeys of goods that shaped world history</p>
+    </header>
+    
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="activities.html">Interactive Activities</a>
+        <a href="research.html">Research Tools</a>
+        <a href="archives.html">Student Archives</a>
+        <a href="blog.html">Blog</a>
+    </nav>
+    
+    <div class="intro-section">
+        <h2>About This Activity</h2>
+        <p>Between the 1400s and the 1900s, European expansion and colonialism radically redistributed a long list of goods, or <strong>commodities</strong>, such as silk, tea, silver, coffee, potatoes, and tobacco. These commodities traveled across continents, transforming economies, cultures, and lives along the way.</p>
+        <p>In this activity, you will explore the "passports" of various commodities—documents that trace their origins, journeys, and impacts across the globe. As each commodity circulates through different time periods and regions, you'll learn about the places it went and the profound changes it brought.</p>
+        <p><strong>Instructions:</strong> Select a commodity below to view its passport and journey through history.</p>
+    </div>
+    
+    <div class="commodity-selector">
+        <h2>Select a Commodity:</h2>
+        <div class="commodity-grid">
+            <button class="commodity-btn" onclick="showPassport('cannabis')">🌿 Cannabis</button>
+            <button class="commodity-btn" onclick="showPassport('chili')">🌶️ Chili Peppers</button>
+            <button class="commodity-btn" onclick="showPassport('chocolate')">🍫 Chocolate</button>
+            <button class="commodity-btn" onclick="showPassport('coffee')">☕ Coffee</button>
+            <button class="commodity-btn" onclick="showPassport('cotton')">🧵 Cotton</button>
+            <button class="commodity-btn" onclick="showPassport('nutmeg')">⚡ Nutmeg, Cloves & Mace</button>
+            <button class="commodity-btn" onclick="showPassport('opium')">💊 Opium</button>
+            <button class="commodity-btn" onclick="showPassport('potato')">🥔 Potatoes</button>
+            <button class="commodity-btn" onclick="showPassport('silver')">💎 Silver</button>
+            <button class="commodity-btn" onclick="showPassport('sugar')">🍬 Sugar</button>
+            <button class="commodity-btn" onclick="showPassport('tea')">🍵 Tea</button>
+            <button class="commodity-btn" onclick="showPassport('tomato')">🍅 Tomatoes</button>
+            <button class="commodity-btn" onclick="showPassport('tobacco')">🚬 Tobacco</button>
+        </div>
+    </div>
+    
+    <!-- Cannabis Passport -->
+    <div id="cannabis" class="passport-card">
+        <div class="passport-header">
+            <h2>🌿 Cannabis Passport</h2>
+            <p>From Ancient Highlands to Global Cultures</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Origins in South Asia</h3>
+            <p>Cannabis, or hemp, is one of the oldest known domesticated crops. It is believed to be native to South Asia, especially in the Himalayan highlands of Northern India, Pakistan, and parts of Afghanistan. Since before recorded history, cannabis was valued for its many useful properties: its seeds and oil have nutritional and medicinal value; its fibrous stems can be used to make clothes and especially rope; and because of its hardiness, it can be adapted to many different climates.</p>
+            <p>Of course, it was also valued for its psychoactive properties, which stem from the presence of a chemical known as THC. As a result, it was often used by holy men and mystics. Known as <em>ganja</em> in India, cannabis was often used by wandering holy men known as gurus. It was also used widely in the Middle East, often as a hard substance known as hashish. It is believed to have made its way into Spain during the Muslim conquest of Iberia in the 1300s.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: Spanish Expansion to Central America</h3>
+            <p>In the 1600s, cannabis spread to Central America by Spanish settlers, where it became known by the Spanish word <em>marijuana</em>.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Hemp in North America</h3>
+            <p>In the 1700s, hemp—the fibers derived from the stems of the cannabis plant—became the main source of rope and other fabrics, and was grown extensively in North America, though it was often not the same strain capable of producing psychoactive effects. George Washington famously grew hemp for rope production at his Mount Vernon estate.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: British Empire and Rastafarianism</h3>
+            <p>In the 1800s, it is believed, Indian sailors and workers, employed by British trade companies, spread the use of ganja throughout the British Empire, including to Africa and Jamaica in the Caribbean. Ganja was adapted by enslaved people as a central component of a new religious cult based loosely on Christianity known as "Rastafarianism."</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: Global Counterculture</h3>
+            <p>In the 1900s, Jamaican immigrants to the United States and Europe (Great Britain) brought the use of ganja with them, along with Rastafarianism and Reggae music. Also in the 1900s, marijuana was brought from Mexico northward to California, where it became a popular part of the U.S. "counterculture" in the 1950s and 1960s.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Chili Peppers Passport -->
+    <div id="chili" class="passport-card">
+        <div class="passport-header">
+            <h2>🌶️ Chili Peppers Passport</h2>
+            <p>From Ancient Mexico to Global Cuisine</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Native to Central America</h3>
+            <p>Hot, or chili, peppers are native to Central America. They were one of the earliest domesticated crops in Mexico, with evidence of their cultivation stretching back to 7500 BCE. They were an integral part of Native American cuisine, and often combined with cacao in the chocolate drinks consumed by Aztecs and others. They were spread by pre-Columbian trade from Mexico throughout the Caribbean.</p>
+            <p>One theory as to why they became so valuable to Native populations is that the ingredient in them which makes them spicy, called capsicum, also produces a mild "high" and functions as a mild painkiller; it is also believed by some experts today that the sweating caused by the capsicum helps cool the body down—important in tropical areas. Peppers are also very rich in vitamin C, and some researchers believe they are especially beneficial to the immune system.</p>
+            <p>Christopher Columbus and his crew were the first Europeans to encounter chili peppers on their first voyage in 1492–1493, during their encounter with Native Americans in the Caribbean. Columbus named them "pepper" because they reminded him of the spiciness of traditional pepper, or peppercorn, which was known in Europe at the time as an exotic Asian delicacy. One of the physicians aboard Columbus's ship brought them back to Spain in 1493 and began to write about their medicinal effects in 1494. Initially, they were cultivated in Europe only as a curiosity, often by monks in Spain, Portugal, and Italy.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Portuguese Spread to Africa and India</h3>
+            <p>Portuguese explorers also discovered Amazonian Indians who ate wild hot peppers in South America in the early 1500s. From here, and from trade with the Spanish colonies, the Portuguese were the main vector that spread hot peppers throughout the world. One of the first places that the Portuguese spread the peppers to was West Africa, especially the Kingdom of the Congo, in the 1500s, as the peppers grew easily in the West African climate and were also a good used to trade in exchange for enslaved people.</p>
+            <p>The Portuguese were among the first Europeans to establish colonies in South Asia, especially in India where they began trading outposts on the western coast in Goa, Calicut, and Cochin in the very early 1500s. Here, too, they spread hot peppers as one of the goods they could offer in exchange for other commodities, such as cotton cloth. As a result, the cuisine in that part of India became known for extremely spicy dishes.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: To Indonesia, Middle East, and Hungary</h3>
+            <p>The Portuguese continued to spread hot peppers wherever they explored, including the Spice Islands in Indonesia and in Southeast Asia by the 1600s. It is also believed that hot peppers found their way to the Middle East through contact with the Spanish during the 1600s, and from there found their way to Europe. In Hungary, they were referred to as "paprika," a key spice in many Hungarian dishes, including the national dish of Hungary, known as gulash.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Integration into Asian Cuisine</h3>
+            <p>By the 1700s, the Portuguese had spread hot peppers to Asia. Especially in Southeast Asia, and in southern parts of China in East Asia such as Szechuan, Yunan, and Canton, where the quasi-tropical climate was well suited for their cultivation, hot peppers quickly became an integral part of the cuisine. To this day, Szechuanese, Cantonese, Thai, Vietnamese, and Indonesian food are renowned for their use of very hot peppers.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s and 1900s–Present Day: New Varieties</h3>
+            <p>Part of the reason that hot peppers have proved so popular throughout the world is that they are easy to grow, and it proved to be relatively easy to create new variations, or cultivars. For this reason, there are many newer varieties of peppers, from jalapeños to habaneros and even hotter varieties like the scotch bonnet and the scorpion pepper. Today, the hottest pepper in the world is cultivated in North America in North Carolina and is known as the "Carolina Reaper." It is almost ten times as hot as a habanero, which is still widely used in the Caribbean.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Chocolate Passport -->
+    <div id="chocolate" class="passport-card">
+        <div class="passport-header">
+            <h2>🍫 Chocolate Passport</h2>
+            <p>From Sacred Drink to Global Treat</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Aztec Treasure</h3>
+            <p>Chocolate comes from the beans, or fruit, of the cacao tree, which can only grow in tropical conditions. Originating in the Amazon, it spread to Central America, where it became an important part of the culture of Native communities. It was probably the Olmecs of Central America that first made chocolate from cacao. The Mayans further developed it, making a drink out of it that was used in religious ceremonies, often mixing hot peppers, corn, and other ingredients into it.</p>
+            <p>Chemicals in the cacao bean, known as alkaloids, produced a mild stimulant effect (this is why chocolate is believed to be addictive by some). This drink was often bitter, because sugarcane was unknown in the Western Hemisphere at the time. It was believed that the drink gave people stamina, increased energy, suppressed hunger, and had medicinal value.</p>
+            <p>The Aztecs, who ruled a powerful empire in Mexico in the 1400s, called it <em>cacahuatl</em> and believed it to be an aphrodisiac as well as a drink that could help them communicate with the gods. The emperor of the Aztecs regularly drank it, and the cacao beans were so valuable they were often used as currency.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Spanish Conquest</h3>
+            <p>In the 1500s, Spanish conquistadores, led by Hernan Cortes, defeated the Aztec Empire, and destroyed much of it. They looted the treasures of the empire and brought them back to Spain, including gold, silver, enslaved people, and chocolate.<span class="footnote">¹</span> The Spanish first brought the drink back to Europe in the 1500s, calling it "chocolate" after a mistranslation of the original Nahuatl word. It remained a curiosity there, as it was still very bitter to drink.</p>
+            <p class="footnote">¹ Nahuatl is the language spoken by the Aztecs.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: The Sugar Discovery</h3>
+            <p>In the 1600s, Europeans in Spain, France, Italy, and the Netherlands discovered the simple trick of mixing pure sugar, available in large quantities for the first time, with chocolate, still consumed mainly as a drink. The combination of the alkaloids in the chocolate and the pure sugar made chocolate highly desirable and quasi-addictive for Europeans. Europeans also believed the drink to be medicinal.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Plantation Economy</h3>
+            <p>In the 1700s, the Spanish and the Portuguese began creating large cacao plantations especially in South America where the cacao tree is native, including Venezuela and Ecuador. These cacao plantations were worked by the enormous influx of Black enslaved people that Europeans shipped from Africa, often in horrific conditions. Much of the cacao the enslaved people harvested was shipped to Europe and North America, where chocolate—still consumed as a drink, not yet as a solid food—was served in coffee houses for its qualities as a stimulant, like coffee.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: Solid Chocolate and Colonial Expansion</h3>
+            <p>In the early 1800s, further cacao plantations were created in the Caribbean, worked by enslaved people until the abolition of British slavery in the 1830s. In the middle of the 1800s, Europeans invented the solid chocolate bar. A little later in the 1800s, confectioners in Switzerland combined milk and chocolate to make milk chocolate.</p>
+            <p>In the later 1800s, as European powers such as Britain, Holland, and Germany expanded their colonial empires around the world, they spread cacao plantations as well. Cacao plantations were begun by the British in New Guinea and elsewhere in Oceania and Southeast Asia, by the Dutch in Indonesia (Java and Sumatra), by the United States in the Philippines, and by German colonists in Cameroon in West Africa.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: Mass Production</h3>
+            <p>In the early 1900s, the American Milton Hershey in Pennsylvania created a factory able to mass-produce milk chocolate bars, naming the town in which the factory was built after the Hershey corporation, which became the largest and most successful chocolate distributor in the world. By the end of the twentieth century, Africa became the leading exporter of cacao, accounting for almost 70 percent of the world's chocolate production.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Coffee Passport -->
+    <div id="coffee" class="passport-card">
+        <div class="passport-header">
+            <h2>☕ Coffee Passport</h2>
+            <p>From Ethiopian Highlands to Global Commodity</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Ethiopian Origins</h3>
+            <p>Coffee is believed to have originated in the highlands of Ethiopia, in eastern Africa. One legend of its discovery is that a goat herder noticed his goats having uncommon strength and energy after eating the green berries (which are the raw coffee beans) of the Coffea arabica tree. Some theories hold that since these trees originate close to the Rift Valley (they still grow wild there), which is where paleontologists believe the first humans evolved, the psychoactive properties of the coffee beans aided the development and evolution of the modern human brain; other legends believe the coffee tree is the "tree of knowledge" mentioned in the Genesis tale of the Garden of Eden.</p>
+            <p>One of the first places that the practice of coffee growing and consumption spread first was Yemen in the Middle East, across the Red Sea from Ethiopia. From Yemen, it became widespread throughout the Middle East, in part because Islam prohibits alcohol, so coffee became one of the few allowable drugs that was widely available. The main port of Yemen was Mocha, which is where the term originated when used for a blend of coffee.</p>
+            <p>Sufis, who practiced a mystical kind of Islam, were instrumental in spreading the practice of drinking coffee throughout the Islamic world. They may have known about caffeine from discovering tea during Islam's spread into China. Europeans during the Middle Ages knew little of coffee—some travelers and traders knew it as the "wine of Araby" and Crusaders also encountered it in the holy land, but it remained an exotic rarity for most Europeans, most of whom never got to try it.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Ottoman Empire</h3>
+            <p>It was widely used during the 1400 and 1500s in the Ottoman Empire, which ruled much of the Middle East, and it is believed that Ottoman troops were given coffee before battle to give them extra energy and alertness in combat.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: Vienna and Europe</h3>
+            <p>It was not until the 1600s that coffee became widely known in Europe. One important point of crossover was the Battle of Vienna in 1683, when the Ottoman Empire surrounded and nearly captured the city of Vienna but was defeated. During the siege, smugglers conducted business between the two armies, including bringing Turkish coffee into Vienna. After their defeat, the Ottoman troops retreated, leaving some of their coffee behind. To this day, Vienna is famous for its elegant and popular cafés.</p>
+            <p>Portions of modern-day Hungary, including Budapest, were occupied by the Ottoman Empire for over a century and served as another point of contact and exchange, which brought coffee to the attention of Europeans.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Coffeehouses and Enlightenment</h3>
+            <p>Coffee drinking became much more widespread in Europe in the 1700s. This was when the coffeehouse, or café, became popular. The coffeehouse was a place not only to drink coffee but also to read newspapers and pamphlets and discuss the revolutionary new ideas of the Enlightenment. Patrons, fueled by coffee, excitedly discussed new and revolutionary concepts and writings.</p>
+            <p>European colonial powers realized the potential profits in the crop and began planting it in territories they had begun acquiring. Portugal planted it in Brazil in South America, which became (and remains) the biggest producer of coffee in the world; the Dutch planted it in Indonesia, especially in Java. Other plantations were set up in European colonies in Central America and the Caribbean (Belize, Nicaragua, Costa Rica, Jamaica), South America (Colombia, Venezuela, Peru), and Africa (Rwanda, Tanzania). Many of the names of gourmet coffee blends reflect these same locations.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: Industrial Working Class</h3>
+            <p>During the 1800s, coffee, along with tea, became a common drink of the developing industrial working class in Europe and North America, providing an extra boost of energy for exhausted workers, making them more productive and thus their factories more profitable.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: Second Most Valuable Commodity</h3>
+            <p>Over the twentieth century and up to the present day, coffee has become the second most valuable trading commodity in the world, after oil. It is the most or one of the most important crops for many developing nations in Central America, South America, Africa, Southeast Asia, and Oceania. In fact, partially as a result of the need for socialist countries to gain access to coffee during the Cold War, Vietnam has become the second largest producer of coffee in the world. Together with tea, the popularity of coffee is the reason that caffeine is by far the most widely consumed psychoactive substance in the world.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Cotton Passport -->
+    <div id="cotton" class="passport-card">
+        <div class="passport-header">
+            <h2>🧵 Cotton Passport</h2>
+            <p>From Indian Textiles to Industrial Revolution</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Native to India</h3>
+            <p>Cotton was likely native to India. Arab traders who did business across the Indian Ocean with India brought it to the Middle East, where it proved to grow very well in the Nile Delta in Egypt. It became commonplace in the Islamic world, especially in present-day Syria and Turkey, by the 1300s and 1400s.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: European Discovery</h3>
+            <p>Cotton became known in Europe slowly, through Venetian merchants who imported it from the Middle East, though it was very expensive, like many of the goods imported from the Middle East.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: British East India Company</h3>
+            <p>The British East India Trading company began importing cotton fabrics to Europe, and then cotton itself, from India in the 1600s. Cotton fabrics from India were also traded in West Africa for enslaved people during the 1600s. Cotton was considered by many Europeans to be superior to the fabrics that had previously been common, such as wool, because cotton was more breathable, more comfortable, easier to wash, and easier to print with colors and patterns.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Sparking the Industrial Revolution</h3>
+            <p>In the 1700s in Europe, it was the cotton textile industry that began the Industrial Revolution, with several inventions such as the spinning jenny and the spinning mule transforming spinning cotton from a cottage industry into something done in a large factory.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: American Slavery and Cotton</h3>
+            <p>Europe continued to lead the world in industrial production of cotton textiles during the 1800s. The increasing demand for cotton, especially in Britain, meant that it became a highly profitable crop to plant in the United States, especially in the Southeast, where it became the most common crop. Because it was so labor-intensive, cotton was usually picked by enslaved people.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: Colonial Production and Gandhi</h3>
+            <p>In the 1800s and 1900s, after the end of American slavery, Europeans turned to African colonies as a source of cheap cotton, including Mozambique, Angola, and Congo. Typically, European countries such as Britain would get raw cotton from their colonies, such as India in South Asia, manufacture it into fabric, and then sell it back to colonial subjects, making Britain dependent upon India, in particular. This fact was exploited by Mohandas Gandhi through a boycott of British cotton in his quest for Indian independence. Today, cotton and cotton textiles are produced largely in East Asia and South Asia.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Nutmeg, Cloves, and Mace Passport -->
+    <div id="nutmeg" class="passport-card">
+        <div class="passport-header">
+            <h2>⚡ Nutmeg, Cloves, and Mace Passport</h2>
+            <p>From the Spice Islands to European Tables</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: The Spice Islands</h3>
+            <p>Many spices that we know today, from cinnamon to black pepper, originated in tropical areas around the Indian Ocean, including especially the islands around Indonesia, Philippines, and New Guinea, which we often refer to as part of "Oceania." These spices were very rare and grew only in small areas—sometimes only on one small island.</p>
+            <p>One cluster of islands, known as the Moluccas or Maluku islands, part of Indonesia today, were once also known as the "Spice Islands." Here, the rare spices cloves, nutmeg, and mace were native and could be found nowhere else—in part, because of the unique combination of volcanic soil and tropical climate there. Cloves, in fact, were so rare that they only grew on one tiny volcanic island.</p>
+            <p>European food was quite bland in this period, with little in the way of flavoring beyond salt. As a result, any kind of flavorful spices were extremely desirable, and because they were so hard to come by, also extremely expensive. Anyone who could get ahold of some and bring them to Europe to sell could make enormous amounts of money. Many European explorers searched for the origins of these exotic spices—the Spice Islands.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s and 1600s: Portuguese and Dutch Control</h3>
+            <p>The Portuguese were the first to discover this source in the Moluccas, calling them the "Spice Islands," and building forts there, though they were also in part the destination of Spanish explorers, including Magellan. Shortly thereafter, these rare spices began to be imported to Europe.</p>
+            <p>In the 1600s, the Dutch formed the Dutch East India Company to take control of the Spice Islands trade from the Portuguese. The profits made from these imports were extremely high. Eventually, Dutch control of the Spice Islands, or Moluccas, extended to all of Indonesia, as it became the largest colony of the Dutch Empire.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s and 1800s: European and American Cuisine</h3>
+            <p>During the 1700s and 1800s, cloves, nutmeg, and mace became central in many European and North American cuisines. For example, nutmeg and cloves became common additions to warm drinks such as mulled wine and hot chocolate, and this is still the case today. Smoking clove cigarettes, often mixed with tobacco, was a practice that began in Dutch Indonesia and spread to the rest of the world.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Opium Passport -->
+    <div id="opium" class="passport-card">
+        <div class="passport-header">
+            <h2>💊 Opium Passport</h2>
+            <p>From Ancient Medicine to Modern Crisis</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Origins in South Asia</h3>
+            <p>Opium is a powerful drug derived from the poppy plant. It has many effects, ranging from inducing sleepiness, suppressing coughs and killing pain, to inducing euphoria and dreamlike stupors. It can be powerfully addictive as well—more refined forms of it include codeine, morphine, and heroin. It originated and was cultivated most heavily in South Asia, including modern-day Pakistan, Afghanistan, and Northern India.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Paracelsus and Laudanum</h3>
+            <p>In the 1500s, opium was popularized in Europe by a Swiss doctor named Paracelsus, who helped found the field of modern medicine. Paracelsus called it "laudanum," which remained its name for many centuries.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: European Medicine</h3>
+            <p>By the 1600s, doctors in Europe learned to use "laudanum" as a medicine for a wide range of maladies, including coughing, diarrhea, menstrual cramps, common colds, yellow fever, anxiety, and insomnia. It was also given to irritable or hyperactive children, including infants.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: British Trade with China</h3>
+            <p>In the late 1700s, Britain discovered another use for opium. Since the 1500s, Europeans had trouble finding anything they could sell to China that the Chinese wanted or would accept within their borders. As a result, there was a trade imbalance between Europe and China—Europe spent money (mostly silver) and China exported goods, especially silk and tea, which led to the depletion of currency reserves in Europe, and the huge stockpiling of currency in China.</p>
+            <p>Opium became the one commodity that the British had and for which there was a large demand in China and in East Asia more broadly. Opium had already been known in China, and Europeans had introduced smoking tobacco in the 1500s to China as well, which helped pave the way for the practice of smoking opium in China, which made opium usage far more widespread in China than it had been in previous centuries. The British East India Company began producing opium in South Asia in the 1780s and selling it in China, despite a ban placed on the drug by the Chinese emperor.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: The Opium Wars</h3>
+            <p>By the 1800s, as Great Britain expanded its empire throughout South Asia, vast amounts of opium began to flow to Britain and to the rest of Europe as well. Having already discovered smoking as a social practice, Europeans realized that opium could be smoked as well, leading to much more intense effects. Opium dens—establishments where patrons could smoke the drug in comfort and seclusion—began to open in Europe. Poets and writers such as Samuel Taylor Coleridge and Charles Dickens became opium addicts; even (First Lady) Mary Todd Lincoln was reportedly an addict.</p>
+            <p>By the 1800s, Britain had become incredibly successful selling opium from India in China—sales of opium accounted for 25 percent of all the revenue of the British Empire. (At the same time, merchants from the United States began selling opium in China as well.)</p>
+            <p>In 1839, in an attempt to stop the influx of illegal opium to China, the Chinese Qing dynasty seized and destroyed 20,000 chests of British opium, touching off a war between Britain and China known as the First Opium War, which Britain won decisively because of its technologically advanced military. A Second Opium War took place in 1858, which China lost just as badly; the result of this war was that China was forced to legalize opium production and consumption. After this point, opium became widespread in China, and China produced 85 percent of the world's opium.</p>
+            <p>Opium spread with Chinese immigrants around the world, including to the United States. Morphine and heroin, both substances related to opium (i.e., opiates), began to be used as pain medication in Europe and the United States and were initially believed not to have the addictive potential of opium.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: Modern Addiction Crisis</h3>
+            <p>By the 1900s, heroin had proven to be at least as addictive as opium, and its use became associated with nightlife in the United States. At the same time, with the growth of modern Chinese nationalism, opium became linked to the national disgrace and humiliation of the Opium Wars at the hands of the West. Once the communist leader Mao Zedong took power in China in 1949, opium production was eradicated, and to this day drug smuggling is considered a most serious offense in China, often punishable by death.</p>
+            <p>Opium production did remain in Southeast Asia, where, in the form of heroin, it was frequently used by American servicemen during the Vietnam War, a result of which was that a flood of heroin found its way to American society in the 1960s and 1970s, causing a wave of drug addiction in the United States. By the 2000s, a new opiate addiction epidemic took hold in America, this time as a result of opiate pain pills such as oxycodone.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Potato Passport -->
+    <div id="potato" class="passport-card">
+        <div class="passport-header">
+            <h2>🥔 Potato Passport</h2>
+            <p>From Andean Staple to European Revolution</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Andean Origins</h3>
+            <p>The potato had its origin in South America. It was domesticated around 10,000 BCE in the Andes Mountains (in Peru), near Lake Titicaca. It was known as a superior crop for many reasons: it grows in many different climates, including wet and dry, low and high altitudes, and in poor soil, where corn and wheat cannot grow. It has a short growing time, is easy to harvest, and very importantly, has a higher caloric value than many other crops. The potato is also easy to transport and can be kept in storage for months without spoiling; it can be prepared in many ways and can be fed to livestock.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Spanish Conquest and European Introduction</h3>
+            <p>As a result, it became a staple of many Native American cultures, and it was the most important source of food for the Incan civilization that flourished in South America in the 1500s. In their conquest of the Incas, the Spanish discovered the potato and were the first to transport it back to Europe. There, they discovered its benefits, using it as a source of provisioning for their army as it marched from battle to battle across Europe during the 1500s. Everywhere they went, the potato was introduced, including Italy, Germany, France, and Holland.</p>
+            <p>Some Europeans believed the potato to be an aphrodisiac. Others were convinced potatoes were poisonous and caused leprosy.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: European Staple</h3>
+            <p>By the late 1600s, the potato had become central to the diets of ordinary people in much of Europe, including Great Britain and Ireland, and potatoes brought with them to British colonies in North America. Especially in western Ireland, where many of the poor Catholic Irish had been forced after the conquest of Ireland by the English, and where the soil was poor and hilly, the potato became a lifeline.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Population Explosion</h3>
+            <p>In the mid-1700s, enlightened despots like Frederick the Great and Catherine the Great encouraged peasants to plant potatoes to increase their caloric intake. In fact, potatoes were so effective at growing and providing food that they contributed in part to high birthrates, lower mortality, and longer lifespans of Europeans, which led to huge population explosions in the late 1700s and early 1800s.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: Global Spread and Irish Famine</h3>
+            <p>Because they kept for a long time, potatoes were also crucial to Europeans' long sea voyages which were necessary for them to establish their global empires during the 1700s and 1800s. As with other crops, Europeans spread the potato throughout their global empires. The British introduced potatoes to its colonies in South Asia, Africa, and Oceania in the 1800s.</p>
+            <p>In 1845, a blight began in North America and spread to Europe, wiping out potato crops and causing devastating famine. When it spread to Ireland, however, it was particularly devastating. There, the potato blight lasted until 1851, during which time one million Irish died, and a million more emigrated, many to the United States. Many Americans with Irish heritage can trace their ancestry in part back to the potato famine. It is widely believed that British governmental policy exacerbated the effects of the famine by not importing emergency food supplies and actually exporting food out of Ireland during the famine. It became one of the main causes of the Irish independence movement over the next several decades.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: Asian Production</h3>
+            <p>Today, most potatoes are cultivated in East Asia and South Asia.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Silver Passport -->
+    <div id="silver" class="passport-card">
+        <div class="passport-header">
+            <h2>💎 Silver Passport</h2>
+            <p>From Tears of the Moon to Global Currency</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Prehistoric Uses</h3>
+            <p>Silver has existed since prehistoric times in many parts of the world, including Europe, the Middle East, and East Asia, where it was used both for jewelry and crafts, and as coinage. One region in particular which valued silver was the Andes Mountains in South America, where the Inca and other cultures referred to silver as the "tears of the moon" and incorporated silver into many of their traditional crafts.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Potosí Silver Mine</h3>
+            <p>Following the trail of Native silver, Spanish conquistadores in South America found the single largest deposit of silver in the world, in a place called Potosi in what is now Bolivia, in 1546. Using the enslaved labor of tens of thousands of Natives, including Incans, the Spanish built the largest silver mine in the world. It is estimated that tens of thousands of Native Americans died from exhaustion and accidents in that mine, possibly much more than that.</p>
+            <p>Tens of thousands of African enslaved people were brought in to replace the Native Americans. The mines were operational from 1556 to 1783. Again, an unknown number of enslaved people continued to suffer and die in the mine, with one source estimating over a million deaths. During that period, over 40,000 metric tons of silver was shipped to Spain. As much as 40 percent of all goods shipped from the "New World" to Europe during the 1500s was just silver, almost all of it from the Potosi mine.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: Spanish Power and Inflation</h3>
+            <p>The wealth from the silver allowed Spain to equip a modern army and navy and ignite wars for conquest and power throughout Europe, including in Italy and the Netherlands, and eventually an attack on England by sea (known as the Spanish Armada), which was scuttled by bad weather. It was also used to purchase expensive new military technology that helped fuel the wars of the 1600s in Europe.</p>
+            <p>It is believed that the large amount of silver that flowed into Europe through Spain also created a massive price inflation during the 1500s and 1600s in Europe and the Middle East. Eventually, the silver began to flow through Europe and the Middle East to China in East Asia in exchange for the many precious goods that Europeans could not acquire on their own, such as silk and porcelain. Some historians believe that the huge quantities of silver were crucial in jumpstarting the era of capitalism in Europe.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Flow to Asia</h3>
+            <p>Ultimately, much of this silver did not stay in Europe, but ended up in South Asia and East Asia during the 1600s and 1700s. In India, the silver was used by Europeans to purchase spices, such as pepper, and fine fabrics such as cotton, which was then used by Europeans to trade for enslaved people in West Africa. The silver helped enrich the Indian Mogul dynasty.</p>
+            <p>In China, silver was the only thing Europeans had to offer in exchange for goods such as porcelain and silk, until the 1800s when they found they could also offer opium. In fact, most of the silver mined from Peru and Bolivia ended up in China, often in the form of stamped coins, which then served as a currency for the Ming dynasty. Often this silver bypassed Europe and was shipped on Spanish boats directly from South America across the Pacific to the Philippines, and from there to China. Over 30 million tons of silver ended up in China in this way.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Sugar Passport -->
+    <div id="sugar" class="passport-card">
+        <div class="passport-header">
+            <h2>🍬 Sugar Passport</h2>
+            <p>From Sweet Salt to Global Plantations</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: South Asian Origins</h3>
+            <p>Sugar comes from the sugarcane plant, which is a tall, reed-like plant from the grass family. When the reeds of the cane are crushed, sugary water can be extracted, and then boiled down to form pure crystalline sugar. Though it may have evolved first in Indonesia, it was first domesticated on a widespread basis in South Asia, where it was known as <em>khanda</em> (the source of the word candy) as well as <em>sarkara</em> (the source of the word sugar). Buddhists from India spread it to East Asia.</p>
+            <p>Europeans had known about sugar since ancient times; the ancient Greeks discovered the substance in their travels to India and named the substance <em>saccharon</em> (the origin of the contemporary word saccharine), likely from the original Sanskrit name. Europeans in the Middle Ages referred to it as "sweet salt." As with spices from South Asia and Oceania, sugar was highly valued in Europe both because their diet was so bland and the only way to sweeten food came either from honey or from some root vegetables like beets. Also, like spices, "sweet salt" was very hard to come by, as it had to be imported from the Middle East, so it was very expensive, and anyone who could import it to Europe could make a lot of money.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Atlantic Islands and Caribbean Slavery</h3>
+            <p>In the late 1400s and early 1500s, the Spanish and the Portuguese realized that sugar could be a lucrative crop. However, sugarcane needs heavy rainfall and a warm, tropical or semi-tropical climate to grow, and these conditions are not found anywhere in Spain or Portugal, or anywhere else in Europe. Thus, Spain and Portugal colonized islands in the Atlantic that do have tropical climates: Madeira and the Canary Islands. But processing sugarcane into raw sugar also requires a great amount of labor. So Spain and Portugal were the first to begin importing Black African enslaved people to work the cane in their Atlantic islands. From the beginning, therefore, sugarcane and the enslavement of Black Africans developed hand in hand.</p>
+            <p>Christopher Columbus brought some sugarcane plants from the Canary Islands with him on his initial voyage of discovery and discovered that they grew extremely well in the Caribbean. Beginning early in the 1500s, Spanish encomenderos enslaved the surviving Native American population to work their sugarcane plantation in the Caribbean. When those Natives died out, Spanish, Portuguese, British, French, and Dutch colonial rulers began importing Black enslaved people from Africa by the millions to work on sugarcane plantations.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: European Desserts</h3>
+            <p>All of this cruelty was driven by the ever-increasing demand, and purchasing power, in Europe for sugar. Beginning in the 1600s, desserts, which had been rare, now became commonplace, because of cheap sugar. Many of the finest European pastries and candies such as marzipan became accessible to the common citizen and working classes. In North America cheap sugar made desserts like pies and cookies part of the American culinary tradition. Sugar was combined with tea and coffee as well. It is hypothesized that the increase in calories in the European and American diets, especially among the working classes, led to fewer epidemics, more productivity, and longer lifespans.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Distilled Liquors</h3>
+            <p>Sugar also became vital to the creation of distilled liquors, especially rum, made in the Caribbean, but also gin and vodka, made primarily in the Europe during the 1700s and 1800s.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Tea Passport -->
+    <div id="tea" class="passport-card">
+        <div class="passport-header">
+            <h2>🍵 Tea Passport</h2>
+            <p>From Ancient China to Global Beverage</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Chinese Origins</h3>
+            <p>The domestication and brewing of tea leaves began in China in East Asia thousands of years ago, spreading to Japan and other parts of East Asia and South Asia about 800 CE. It was popular not only because it was caffeinated, but because it was widely believed to have healthful properties—in fact, historians have noted that because tea must be boiled before being served, it did provide a beverage protected against harmful microorganisms.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s–1600s: Portuguese and English Introduction</h3>
+            <p>During the 1500s, the Portuguese were among the first Europeans to be introduced to tea, or "chai" as they understood it to be called, during their first voyages to China, and then bring it back to Europe. In the 1600s, it made its first appearance in England. Like coffee and chocolate, it was at first considered a medicinal drink in Europe, and very rare, consumed mainly by the upper classes and the wealthy bourgeoisie. Part of the difficulty was that, as with silk, Chinese producers of tea held a monopoly on the product, jealously guarding the seeds that could be used to spread the crop to other regions, and as a result tea remained very expensive.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: European Coffeehouses</h3>
+            <p>In the 1700s, tea became very popular in Europe, and it was then that both the Dutch East India Company and the British East India Company managed to smuggle tea seeds and begin cultivating tea plantations in South Asia. The mass production of tea in India during the 1800s meant that its price in Europe dropped, and it became even more popular. In Europe during the 1700s, tea was often consumed in coffeehouses, along with coffee, adding to the highly caffeinated environment of these establishments and contributing to the political fervor and revolutionary spirit that they produced.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: British Tea Culture</h3>
+            <p>During the 1800s, tea became an integral part of European culture, especially in Great Britain, where a late afternoon break in the workday for a rejuvenating cup of tea, known as "tea time," became part of the daily schedule for most people. Tea parties, or inviting others over for tea, became equally important in wealthier circles. Because of this, tea would become one of the most important commodities for both the British and the Dutch empires.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: World's Second Most Consumed Beverage</h3>
+            <p>By the 1900s, the British, Dutch, and other Europeans helped spread tea throughout the world, where it became popular almost universally. In the Middle East, tea became hugely popular alongside coffee, and today, Turks drink more tea per capita than any other people in the world. In the hot and humid southeastern United States, tea became popular especially as a cold drink, often heavily sweetened. Today, 80 percent of the tea consumed in the United States is cold, not hot. Today, tea is the second most consumed beverage on Earth, after water. Humans drink more tea than they drink coffee, alcohol, soft drinks, or chocolate combined.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Tomato Passport -->
+    <div id="tomato" class="passport-card">
+        <div class="passport-header">
+            <h2>🍅 Tomato Passport</h2>
+            <p>From Golden Apples to Global Cuisine</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: South American Origins</h3>
+            <p>Tomatoes are native to South America and show evidence of having been domesticated around 500 BCE, likely in the Amazon rainforest. Originally, they were small, like cherry tomatoes, and yellow.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Aztec Sauce and European Introduction</h3>
+            <p>Tomatoes were first described by a Spanish Franciscan Friar, Bernardino Sahagún, in 1529, who encountered the fruit among Aztecs in Mexico in North America, who called them <em>xitomatl</em>, and were the first to combine them with hot peppers to make sauce, which they put on fish and other meats. Sahagún was probably the first to call them "tomates," likely a mistranslation of the Nahuatl word. During the 1500s, the Spanish spread cultivation of the tomato to the Caribbean.</p>
+            <p>The first known mention of tomatoes in Europe is in Italy, where in 1543 an Italian herbalist named Pietro Matthioli described them as "golden apples"—reflecting their original yellow color and the fact that Europeans needed to understand new foods in terms of foods they already knew. (The Italian word for golden apple is <em>pomo d'oro</em>, "apples of gold." To this day, tomatoes are known as <em>pomidoros</em> in Italian.) In other places, tomatoes were known as "love apples." The first recorded instance of tomatoes being eaten in Italy was in 1548, when they were served to Cosimo de'Medici in Florence.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: Asian Adoption and European Hesitation</h3>
+            <p>By the early 1600s, the Spanish had spread tomatoes to their forts in North America, in Florida and the Carolinas, as well as to Southeast Asia. From there, the tomato spread quickly to East Asia where it quickly became part of the cuisine.</p>
+            <p>Tomatoes took longer to be accepted widely in Europe, where it was believed for a long time that tomatoes were poisonous—especially in England. (This belief stemmed from the fact that tomatoes are part of the nightshade family of plants, which can be toxic.) So, for a while, they were only grown as ornamental plants. Other Europeans believed tomatoes to be medicinal in value and used them to treat a wide variety of ailments.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Southern European Acceptance</h3>
+            <p>Only in the 1700s did tomatoes become more widely accepted in Europe, though they remained popular mostly in southern Europe, where they became a central part of Spanish and Italian cuisine. In the 1700s, the tomato began to be eaten in the southeast of North America, especially in Georgia and Alabama.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: American Popularity and Ketchup</h3>
+            <p>In the early 1800s Thomas Jefferson, who had sampled tomatoes in France, helped to popularize them in the rest of the United States, especially in New England, where they were still believed to be poisonous. An American grower named Alexander Livingston was instrumental in breeding tomatoes that were bigger, sweeter, and red—more like the tomatoes we commonly eat today.</p>
+            <p>It was also in the United States in the 1800s that tomatoes were first used to make ketchup, which had previously been a sauce which originated in East Asia, where it was made by combining tomatoes with pickled fish, and spread to England, where it was made using tomatoes and mushrooms. It was common to combine exotic spices such as nutmeg and mace in early recipes of tomato ketchup. Also in the 1800s, a British diplomat introduced them to the Middle East, where they spread rapidly, often being grilled on a skewer known as shish kebab along with meat and other vegetables.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <!-- Tobacco Passport -->
+    <div id="tobacco" class="passport-card">
+        <div class="passport-header">
+            <h2>🚬 Tobacco Passport</h2>
+            <p>From Sacred Ritual to Global Addiction</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">PRE</span>Pre-1500s: Caribbean Origins</h3>
+            <p>Tobacco was originally harvested by Native Americans in the Caribbean. It was often used in religious ceremonies, and Native Americans also believed it had a number of medicinal uses. Native Americans often ingested tobacco by smoking it, either through a pipe or wrapped in dried leaves, a practice virtually unknown in Europe or elsewhere in the world.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">16</span>1500s: Columbus and European Introduction</h3>
+            <p>In 1492, Columbus and his crew were the first Europeans to encounter the practice among the Arawak Indians, and they quickly adopted the practice. Thus, it was most often sailors crossing the Atlantic to and from the Caribbean who indulged in the practice of smoking tobacco. They often found it helped them to pass the time on long sea voyages, and from the very beginning they often remarked that smoking tobacco seemed highly addictive—even after their sea voyages were over, they still craved it.</p>
+            <p>It became fashionable among Spanish aristocrats who smoked it or used it as snuff (snorted through the nose as a powder). Early British colonists in North America, especially in Virginia, were also among the first to encounter its use—it is believed that Sir Walter Raleigh was the first Englishman to bring tobacco back to Britain, introducing it to Queen Elizabeth in the mid-1500s. Many European doctors also believed it to have great medicinal value and recommended smoking tobacco for a wide range of health problems.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">17</span>1600s: Global Spread and Colonial Economy</h3>
+            <p>Sailors spread tobacco very quickly, and over the course of the 1600s it became widespread in port cities in Europe, especially in Holland and London. From 1625 to 1675, European consumption of tobacco rose from 20,000 pounds per year to 20 million pounds per year. It was often consumed in cafes along with coffee, chocolate, and tea, and became a favorite practice of the European bourgeoisie—one theory holds that this was related to the increasing number of Europeans who were engaged in nonmanual labor.</p>
+            <p>In the 1600s, European sailors also spread it to Africa, where tobacco was one of the goods traded for enslaved people, and where it replaced traditional stimulants like betel leaves. It also spread quickly through the Middle East, where it was at first believed to have medicinal properties—although the Ottoman Sultan banned it for a time after doctors began to realize its harmful qualities.</p>
+            <p>The North American colonies of Virginia and North Carolina, in particular, proved to have climates very well suited for growing tobacco, and in the 1600s it quickly became the most important crop for colonists to be able to sell at a profit, largely due to the burgeoning worldwide demand for it. In fact, John Smith was the first colonist to commercially raise tobacco, at the Jamestown settlement.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">18</span>1700s: Slavery and Asian Expansion</h3>
+            <p>During the 1700s in North America, tobacco became, along with cotton, one of the main crops harvested by African American enslaved people. Also in the 1700s, European traders spread it to East Asia. One historian has argued that it was the smoking of tobacco from pipes that "paved the way" for the practice of smoking opium in China—in fact, often opium was mixed with tobacco to make it easier to smoke.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">19</span>1800s: Mass Production of Cigarettes</h3>
+            <p>In the 1800s in North Carolina, James Duke invented the cigarette as it is known now, including a machine to mass-produce them. This made them easier to package, ship, and sell, making tobacco even more widely consumed in Europe and North America.</p>
+        </div>
+        
+        <div class="period">
+            <h3><span class="period-icon">20</span>1900s–Present Day: Health Crisis</h3>
+            <p>After the link between tobacco smoke and cancer was proven in the United States, consumption of tobacco declined in the West, but not in the rest of the world.</p>
+        </div>
+        
+        <button class="back-btn" onclick="hidePassports()">← Back to Commodities</button>
+    </div>
+    
+    <footer style="text-align: center; margin-top: 40px; padding: 20px; color: #7f8c8d;">
+        <p>Prof. Hauselmann | profhauselmann.org</p>
+        <p style="font-size: 0.9em; margin-top: 10px;">HIST 107: Understanding Global Connections Through Commodities</p>
+    </footer>
+    
+    <script>
+        function showPassport(commodityId) {
+            // Hide all passport cards
+            const allCards = document.querySelectorAll('.passport-card');
+            allCards.forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Hide commodity selector
+            document.querySelector('.commodity-selector').style.display = 'none';
+            document.querySelector('.intro-section').style.display = 'none';
+            
+            // Show selected passport
+            const selectedCard = document.getElementById(commodityId);
+            selectedCard.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function hidePassports() {
+            // Hide all passport cards
+            const allCards = document.querySelectorAll('.passport-card');
+            allCards.forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Show commodity selector
+            document.querySelector('.commodity-selector').style.display = 'block';
+            document.querySelector('.intro-section').style.display = 'block';
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
