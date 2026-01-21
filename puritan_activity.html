@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puritan Settlement Inquiry - Were They Selfish or Selfless?</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Garamond', 'Georgia', serif;
+            background: #f5f0e8;
+            color: #2d2520;
+            line-height: 1.8;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #3d2817 0%, #5d3a24 100%);
+            color: #f5e6d3;
+            padding: 40px 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            border: 3px solid #8b6f47;
+            position: relative;
+        }
+
+        header::before {
+            content: '⚜';
+            position: absolute;
+            top: 15px;
+            left: 30px;
+            font-size: 2em;
+            color: #8b6f47;
+        }
+
+        header::after {
+            content: '⚜';
+            position: absolute;
+            top: 15px;
+            right: 30px;
+            font-size: 2em;
+            color: #8b6f47;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: normal;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.4em;
+            font-style: italic;
+            color: #f5e6d3;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        .inquiry-question {
+            background: #8b6f47;
+            color: #f5e6d3;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-style: italic;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 15px 25px;
+            background: #f5e6d3;
+            border: 3px solid #5d3a24;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #3d2817;
+            font-family: 'Garamond', serif;
+        }
+
+        .tab-button:hover:not(:disabled) {
+            background: #8b6f47;
+            color: #f5e6d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .tab-button.active {
+            background: #5d3a24;
+            color: #f5e6d3;
+            border-color: #8b6f47;
+        }
+
+        .tab-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .content-section {
+            display: none;
+            background: #faf8f3;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            border: 3px solid #8b6f47;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .parchment-box {
+            background: #f5f0e8;
+            padding: 30px;
+            border: 2px solid #8b6f47;
+            margin: 20px 0;
+            border-radius: 3px;
+            box-shadow: inset 0 0 20px rgba(139, 111, 71, 0.1);
+            position: relative;
+        }
+
+        .parchment-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, transparent, #8b6f47, transparent);
+        }
+
+        h2 {
+            color: #3d2817;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #8b6f47;
+            padding-bottom: 10px;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+
+        h3 {
+            color: #5d3a24;
+            font-size: 1.5em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+
+        .document-box {
+            background: #fff;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 3px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            border-left: 5px solid #8b6f47;
+        }
+
+        .document-header {
+            font-weight: bold;
+            color: #3d2817;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8b6f47;
+        }
+
+        .document-source {
+            font-style: italic;
+            color: #666;
+            font-size: 0.95em;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+        }
+
+        .question-box {
+            background: #e8e3d8;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 3px;
+            border-left: 4px solid #5d3a24;
+        }
+
+        .question-label {
+            font-weight: bold;
+            color: #3d2817;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #8b6f47;
+            border-radius: 3px;
+            font-family: 'Garamond', serif;
+            font-size: 1em;
+            resize: vertical;
+            background: #fff;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+            font-family: 'Garamond', serif;
+        }
+
+        .btn-primary {
+            background: #5d3a24;
+            color: #f5e6d3;
+            border: 2px solid #8b6f47;
+        }
+
+        .btn-primary:hover {
+            background: #3d2817;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn-success {
+            background: #4a6741;
+            color: #f5e6d3;
+        }
+
+        .word-count {
+            text-align: right;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .word-count.sufficient {
+            color: #4a6741;
+            font-weight: bold;
+        }
+
+        .colonial-note {
+            background: #fff9e6;
+            border: 2px solid #8b6f47;
+            padding: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            border-radius: 3px;
+        }
+
+        .colonial-note::before {
+            content: '📜 ';
+            font-size: 1.2em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #8b6f47;
+            border-radius: 3px;
+            font-family: 'Garamond', serif;
+            font-size: 1em;
+            margin: 10px 0;
+            background: #fff;
+        }
+
+        .progress-tracker {
+            background: #5d3a24;
+            color: #f5e6d3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .progress-item {
+            padding: 5px 15px;
+            margin: 5px;
+            border-radius: 3px;
+            background: rgba(245, 230, 211, 0.2);
+        }
+
+        .progress-item.completed {
+            background: #4a6741;
+        }
+
+        .success-banner {
+            background: #4a6741;
+            color: #f5e6d3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 5px solid #8b6f47;
+        }
+
+        ul {
+            margin-left: 30px;
+            margin-top: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            header::before, header::after {
+                display: none;
+            }
+            
+            .tab-button {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+            
+            .content-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>The Puritan Settlement</h1>
+            <p class="subtitle">Massachusetts Bay Colony, 1630</p>
+        </header>
+
+        <div class="inquiry-question">
+            Central Historical Question: Were the Puritans selfish or selfless?
+        </div>
+
+        <div class="progress-tracker" id="progress-tracker" style="display: none;">
+            <div class="progress-item" id="progress-intro">Introduction</div>
+            <div class="progress-item" id="progress-docA">Document A</div>
+            <div class="progress-item" id="progress-docB">Document B</div>
+            <div class="progress-item" id="progress-final">Final Analysis</div>
+        </div>
+
+        <div class="nav-tabs" id="nav-tabs">
+            <button class="tab-button active" onclick="showTab('intro')">Introduction</button>
+            <button class="tab-button" onclick="showTab('document-a')" id="tab-docA" disabled>Document A</button>
+            <button class="tab-button" onclick="showTab('document-b')" id="tab-docB" disabled>Document B</button>
+            <button class="tab-button" onclick="showTab('analysis')" id="tab-analysis" disabled>Final Analysis</button>
+            <button class="tab-button" onclick="showTab('submit')" id="tab-submit" disabled>Submit Work</button>
+        </div>
+
+        <!-- INTRODUCTION -->
+        <div id="intro" class="content-section active">
+            <h2>Introduction: The Puritan Migration</h2>
+            
+            <div class="parchment-box">
+                <h3>Background: Who Were the Puritans?</h3>
+                <p>The Puritans were a group of English Protestants in the 16th and 17th centuries who sought to "purify" the Church of England from what they viewed as Catholic practices and corruption. They believed in direct access to God through the Bible, rather than through church hierarchy and officials.</p>
+                
+                <p style="margin-top: 15px;">By the early 1600s, facing persecution and frustrated by the pace of reform in England, many Puritans decided to leave for the New World. Some were Separatists who wanted to break completely from the Church of England—these were the Pilgrims who arrived on the Mayflower in 1620.</p>
+            </div>
+
+            <div class="parchment-box">
+                <h3>The Massachusetts Bay Colony</h3>
+                <p>Ten years after the Mayflower, in 1630, a much larger group of Puritans led by John Winthrop established the Massachusetts Bay Colony. Unlike the Pilgrims, these Puritans remained loyal to the Church of England but believed they could "purify" it from within by creating a model Christian community in America.</p>
+                
+                <p style="margin-top: 15px;">As they sailed across the Atlantic, Puritan leaders gave sermons about their mission and their vision for this new society. Today, you'll read two of these sermons to understand the Puritans' beliefs and intentions.</p>
+            </div>
+
+            <div class="colonial-note">
+                <strong>Your Task:</strong> You will analyze two primary source documents—sermons given by Puritan leaders John Winthrop and John Cotton in 1630. For each document, you'll answer sourcing questions, contextualization questions, and close reading questions. Finally, you'll use evidence from both documents to answer our central question: Were the Puritans selfish or selfless?
+            </div>
+
+            <div class="parchment-box">
+                <h3>Student Information</h3>
+                <label for="student-name"><strong>Your Name:</strong></label>
+                <input type="text" id="student-name" placeholder="Enter your full name">
+                
+                <label for="student-email" style="display: block; margin-top: 15px;"><strong>Your Email:</strong></label>
+                <input type="text" id="student-email" placeholder="your.name@my.yosemite.edu">
+            </div>
+
+            <button class="btn btn-primary" onclick="startActivity()">Begin Document Analysis →</button>
+        </div>
+
+        <!-- DOCUMENT A -->
+        <div id="document-a" class="content-section">
+            <h2>Document A: "A City Upon a Hill"</h2>
+            
+            <div class="colonial-note">
+                <strong>Before reading the document:</strong> Answer the sourcing questions below. Sourcing helps you understand the context and purpose of a primary source before you analyze its content.
+            </div>
+
+            <div class="question-box">
+                <div class="question-label">1. Sourcing: Who was John Winthrop speaking to in this sermon? What do you think is the purpose of this sermon?</div>
+                <textarea id="docA-q1" oninput="checkDocACompletion()"></textarea>
+            </div>
+
+            <div class="question-box">
+                <div class="question-label">2. Contextualization: Imagine what his audience might have been thinking and feeling as they listened to him on the ship. Describe it below.</div>
+                <textarea id="docA-q2" oninput="checkDocACompletion()"></textarea>
+            </div>
+
+            <h3 style="margin-top: 30px; text-align: center;">Now read the document carefully:</h3>
+
+            <div class="document-box">
+                <div class="document-header">Document A: "A City Upon a Hill"</div>
+                
+                <p>Now the only way to avoid this shipwreck, and to provide for our posterity, is to follow the counsel of Micah, to do justly, to love mercy, to walk humbly with our God. For this end, we must be knit together, in this work, as one man. We must entertain each other in brotherly affection. We must be willing to abridge ourselves of our superfluities, for the supply of others' necessities. We must uphold a familiar commerce together in all meekness, gentleness, patience and liberality. We must delight in each other; make others' conditions our own; rejoice together, mourn together, labor and suffer together, always having before our eyes our commission and community in the work, as members of the same body. So shall we keep the unity of the spirit in the bond of peace.</p>
+                
+                <p style="margin-top: 15px;">The Lord will be our God, and delight to dwell among us, as His own people, and will command a blessing upon us in all our ways, so that we shall see much more of His wisdom, power, goodness and truth, than formerly we have been acquainted with. We shall find that the God of Israel is among us, when ten of us shall be able to resist a thousand of our enemies; when He shall make us a praise and glory that men shall say of succeeding plantations, "may the Lord make it like that of New England."</p>
+                
+                <p style="margin-top: 15px;">For we must consider that we shall be as a city upon a hill. The eyes of all people are upon us. So that if we shall deal falsely with our God in this work we have undertaken, and so cause Him to withdraw His present help from us, we shall be made a story and a by-word through the world. We shall open the mouths of enemies to speak evil of the ways of God, and all professors for God's sake. We shall shame the faces of many of God's worthy servants, and cause their prayers to be turned into curses upon us till we be consumed out of the good land whither we are going.</p>
+                
+                <p style="margin-top: 15px;">And to shut this discourse with that exhortation of Moses, that faithful servant of the Lord, in his last farewell to Israel, Deut. 30. "Beloved, there is now set before us life and death, good and evil," in that we are commanded this day to love the Lord our God, and to love one another, to walk in his ways and to keep his Commandments and his ordinance and his laws, and the articles of our Covenant with Him, that we may live and be multiplied, and that the Lord our God may bless us in the land whither we go to possess it. But if our hearts shall turn away, so that we will not obey, but shall be seduced, and worship other Gods, our pleasure and profits, and serve them; it is propounded unto us this day, we shall surely perish out of the good land whither we pass over this vast sea to possess it. Therefore let us choose life, that we and our seed may live, by obeying His voice and cleaving to Him, for He is our life and our prosperity.</p>
+                
+                <div class="document-source">
+                    <strong>Source:</strong> John Winthrop (1588–1649), lawyer and leader of the 1630 migration of English Puritans to Massachusetts Bay Colony, delivered this famous sermon aboard the Arbella to settlers traveling to New England.
+                </div>
+            </div>
+
+            <div class="question-box" style="margin-top: 30px;">
+                <div class="question-label">3. Close Reading: What is the main idea of this speech? What do you think Winthrop means when he says, "We shall be as a City Upon a Hill?"</div>
+                <textarea id="docA-q3" oninput="checkDocACompletion()"></textarea>
+            </div>
+
+            <button class="btn btn-primary" onclick="completeDocumentA()" id="complete-docA-btn" style="display: none; margin-top: 20px;">Continue to Document B →</button>
+        </div>
+
+        <!-- DOCUMENT B -->
+        <div id="document-b" class="content-section">
+            <h2>Document B: "The Divine Right to Occupy the Land"</h2>
+            
+            <div class="colonial-note">
+                <strong>Before reading the document:</strong> Answer the sourcing questions below.
+            </div>
+
+            <div class="question-box">
+                <div class="question-label">1. Sourcing: Who was John Cotton speaking to in this sermon? Why is he speaking about settling in a new land?</div>
+                <textarea id="docB-q1" oninput="checkDocBCompletion()"></textarea>
+            </div>
+
+            <div class="question-box">
+                <div class="question-label">2. Contextualization: In this sermon, who are the 'inhabitants' in the new land? Who are the 'foreign people?'</div>
+                <textarea id="docB-q2" oninput="checkDocBCompletion()"></textarea>
+            </div>
+
+            <h3 style="margin-top: 30px; text-align: center;">Now read the document carefully:</h3>
+
+            <div class="document-box">
+                <div class="document-header">Document B: "The Divine Right to Occupy the Land"</div>
+                
+                <p><em>Moreover I will appoint a place for my people Israel, and I will plant them, that they may dwell in a place of their own, and move no more [11 Sam. 7:10]. . . .</em></p>
+                
+                <p style="margin-top: 15px;">The placing of a people in this or that country is from the appointment of the Lord. . .</p>
+                
+                <p style="margin-top: 15px;">Now, God makes room for a people three ways:</p>
+                
+                <p style="margin-top: 15px;"><strong>First,</strong> when He casts out the enemies of a people before them by lawful war with the inhabitants. . . .</p>
+                
+                <p style="margin-top: 15px;"><strong>Second,</strong> when He gives a foreign people favor in the eyes of any native people to come and sit down with them. . . .</p>
+                
+                <p style="margin-top: 15px;"><strong>Third,</strong> when He makes a country, though not altogether void of inhabitants, yet void in that place where they reside. Where there is a vacant place, there is liberty for the sons of Adam or Noah to come and inhabit, though they neither buy it nor ask their leaves. . . .</p>
+                
+                <div class="document-source">
+                    <strong>Source:</strong> Puritan leader John Cotton gave the following sermon to members of his congregation who were immigrating to America in 1630. Cotton became a respected and influential clergyman in the Massachusetts Bay Colony.
+                </div>
+            </div>
+
+            <div class="question-box" style="margin-top: 30px;">
+                <div class="question-label">3. Close Reading: What does Cotton say that God will do for the foreign people when they arrive in the new land?</div>
+                <textarea id="docB-q3" oninput="checkDocBCompletion()"></textarea>
+            </div>
+
+            <button class="btn btn-primary" onclick="completeDocumentB()" id="complete-docB-btn" style="display: none; margin-top: 20px;">Continue to Final Analysis →</button>
+        </div>
+
+        <!-- FINAL ANALYSIS -->
+        <div id="analysis" class="content-section">
+            <h2>Corroboration and Final Analysis</h2>
+            
+            <div class="parchment-box">
+                <h3>What is Corroboration?</h3>
+                <p>Corroboration means comparing multiple sources to understand different perspectives on the same event or question. By examining both Winthrop's and Cotton's sermons, we can develop a more complete understanding of Puritan beliefs and motivations.</p>
+            </div>
+
+            <div class="colonial-note">
+                <strong>Your Task:</strong> Using specific evidence from both Document A (Winthrop) and Document B (Cotton), answer the central historical question. Be sure to cite specific passages from the documents to support your answer.
+            </div>
+
+            <div class="question-box">
+                <div class="question-label">Central Question: Were the Puritans selfish or selfless?</div>
+                <p style="margin-top: 10px; font-style: italic; color: #666;">In your answer, consider:</p>
+                <ul style="font-size: 0.95em; color: #666;">
+                    <li>What evidence from Document A suggests the Puritans were selfless? Selfish?</li>
+                    <li>What evidence from Document B suggests the Puritans were selfless? Selfish?</li>
+                    <li>How did their religious beliefs shape their actions and attitudes?</li>
+                    <li>What might this tell us about how they would treat Native Americans?</li>
+                    <li>Can people be both selfless toward their own community and selfish toward outsiders?</li>
+                </ul>
+                <textarea id="final-analysis" oninput="updateWordCount('final-analysis', 'analysis-word-count')" style="min-height: 250px;"></textarea>
+                <div class="word-count" id="analysis-word-count">Word count: 0 / 300 minimum</div>
+            </div>
+
+            <button class="btn btn-primary" onclick="completeAnalysis()" id="complete-analysis-btn" style="margin-top: 20px;">Complete Analysis →</button>
+        </div>
+
+        <!-- SUBMIT WORK -->
+        <div id="submit" class="content-section">
+            <h2>Submit Your Work</h2>
+            
+            <div class="parchment-box">
+                <h3>Your Puritan Inquiry Journey</h3>
+                <p>You have completed your analysis of the Puritan sermons! Review your work below, then submit it.</p>
+            </div>
+
+            <div id="work-summary" class="parchment-box">
+                <h3>Summary of Your Responses</h3>
+                <div id="summary-content">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="parchment-box">
+                <h3>Submission Options</h3>
+                <p>You can download your work as a PDF for your records, and/or submit it directly to the database.</p>
+                
+                <button class="btn btn-success" onclick="downloadPDF()">📄 Download as PDF</button>
+                <button class="btn btn-primary" onclick="submitToSupabase()">💾 Submit to Database</button>
+            </div>
+
+            <div id="submit-confirmation" style="display: none;" class="success-banner">
+                <strong>✓ Work Submitted Successfully!</strong><br>
+                Your responses have been saved. Thank you for completing this inquiry activity!
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Supabase
+        let supabaseClient;
+        
+        try {
+            const SUPABASE_URL = 'https://bqrluqymscucfzkroyru.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y2Z6a3JveXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQwNDQ0OTksImV4cCI6MjA0OTYyMDQ5OX0.cKw7tOBxVsqVZ5MqvVz4k9h2RsmT_ECQqeRMMZsidTw';
+            
+            if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialized successfully');
+            } else {
+                console.warn('Supabase library not loaded');
+            }
+        } catch (error) {
+            console.error('Error initializing Supabase:', error);
+        }
+
+        // Game state
+        let activityState = {
+            studentName: '',
+            studentEmail: '',
+            documentA: {
+                q1: '',
+                q2: '',
+                q3: ''
+            },
+            documentB: {
+                q1: '',
+                q2: '',
+                q3: ''
+            },
+            finalAnalysis: '',
+            completed: false,
+            timestamp: null
+        };
+
+        window.startActivity = function() {
+            const name = document.getElementById('student-name').value.trim();
+            const email = document.getElementById('student-email').value.trim();
+            
+            if (!name || !email) {
+                alert('Please enter your name and email before beginning.');
+                return;
+            }
+            
+            if (!email.includes('@my.yosemite.edu')) {
+                alert('Please use your @my.yosemite.edu email address.');
+                return;
+            }
+            
+            activityState.studentName = name;
+            activityState.studentEmail = email;
+            activityState.timestamp = new Date().toISOString();
+            
+            // Show progress tracker
+            document.getElementById('progress-tracker').style.display = 'flex';
+            document.getElementById('progress-intro').classList.add('completed');
+            
+            // Enable Document A tab
+            document.getElementById('tab-docA').disabled = false;
+            showTab('document-a');
+        }
+
+        window.showTab = function(tabId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        window.checkDocACompletion = function() {
+            const q1 = document.getElementById('docA-q1').value.trim();
+            const q2 = document.getElementById('docA-q2').value.trim();
+            const q3 = document.getElementById('docA-q3').value.trim();
+            
+            if (q1 && q2 && q3) {
+                document.getElementById('complete-docA-btn').style.display = 'block';
+            } else {
+                document.getElementById('complete-docA-btn').style.display = 'none';
+            }
+        }
+
+        window.completeDocumentA = function() {
+            activityState.documentA.q1 = document.getElementById('docA-q1').value.trim();
+            activityState.documentA.q2 = document.getElementById('docA-q2').value.trim();
+            activityState.documentA.q3 = document.getElementById('docA-q3').value.trim();
+            
+            document.getElementById('progress-docA').classList.add('completed');
+            document.getElementById('tab-docB').disabled = false;
+            showTab('document-b');
+        }
+
+        window.checkDocBCompletion = function() {
+            const q1 = document.getElementById('docB-q1').value.trim();
+            const q2 = document.getElementById('docB-q2').value.trim();
+            const q3 = document.getElementById('docB-q3').value.trim();
+            
+            if (q1 && q2 && q3) {
+                document.getElementById('complete-docB-btn').style.display = 'block';
+            } else {
+                document.getElementById('complete-docB-btn').style.display = 'none';
+            }
+        }
+
+        window.completeDocumentB = function() {
+            activityState.documentB.q1 = document.getElementById('docB-q1').value.trim();
+            activityState.documentB.q2 = document.getElementById('docB-q2').value.trim();
+            activityState.documentB.q3 = document.getElementById('docB-q3').value.trim();
+            
+            document.getElementById('progress-docB').classList.add('completed');
+            document.getElementById('tab-analysis').disabled = false;
+            showTab('analysis');
+        }
+
+        window.updateWordCount = function(textareaId, countId) {
+            const textarea = document.getElementById(textareaId);
+            const countDiv = document.getElementById(countId);
+            const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+            
+            countDiv.textContent = `Word count: ${words} / 300 minimum`;
+            
+            if (words >= 300) {
+                countDiv.classList.add('sufficient');
+            } else {
+                countDiv.classList.remove('sufficient');
+            }
+        }
+
+        window.completeAnalysis = function() {
+            const analysis = document.getElementById('final-analysis').value.trim();
+            const words = analysis.split(/\s+/).filter(w => w.length > 0).length;
+            
+            if (words < 300) {
+                alert('Please write at least 300 words in your final analysis before continuing.');
+                return;
+            }
+            
+            activityState.finalAnalysis = analysis;
+            document.getElementById('progress-final').classList.add('completed');
+            document.getElementById('tab-submit').disabled = false;
+            showTab('submit');
+            
+            generateWorkSummary();
+        }
+
+        function generateWorkSummary() {
+            const summaryDiv = document.getElementById('summary-content');
+            
+            let html = `<p><strong>Student:</strong> ${activityState.studentName}</p>`;
+            html += `<p><strong>Email:</strong> ${activityState.studentEmail}</p>`;
+            html += `<p><strong>Completed:</strong> ${new Date(activityState.timestamp).toLocaleString()}</p>`;
+            
+            html += '<h4 style="margin-top: 20px;">Document A Responses:</h4>';
+            html += `<p><strong>Q1:</strong> ${activityState.documentA.q1.substring(0, 100)}...</p>`;
+            html += `<p><strong>Q2:</strong> ${activityState.documentA.q2.substring(0, 100)}...</p>`;
+            html += `<p><strong>Q3:</strong> ${activityState.documentA.q3.substring(0, 100)}...</p>`;
+            
+            html += '<h4 style="margin-top: 20px;">Document B Responses:</h4>';
+            html += `<p><strong>Q1:</strong> ${activityState.documentB.q1.substring(0, 100)}...</p>`;
+            html += `<p><strong>Q2:</strong> ${activityState.documentB.q2.substring(0, 100)}...</p>`;
+            html += `<p><strong>Q3:</strong> ${activityState.documentB.q3.substring(0, 100)}...</p>`;
+            
+            html += '<h4 style="margin-top: 20px;">Final Analysis:</h4>';
+            const words = activityState.finalAnalysis.split(/\s+/).filter(w => w.length > 0).length;
+            html += `<p>${activityState.finalAnalysis.substring(0, 200)}... (${words} words total)</p>`;
+            
+            summaryDiv.innerHTML = html;
+        }
+
+        window.submitToSupabase = async function() {
+            try {
+                if (!supabaseClient) {
+                    throw new Error('Database connection not available');
+                }
+                
+                const { data, error } = await supabaseClient
+                    .from('puritan_submissions')
+                    .insert([{
+                        student_name: activityState.studentName,
+                        student_email: activityState.studentEmail,
+                        document_a_responses: activityState.documentA,
+                        document_b_responses: activityState.documentB,
+                        final_analysis: activityState.finalAnalysis,
+                        submitted_at: new Date().toISOString()
+                    }]);
+                
+                if (error) throw error;
+                
+                document.getElementById('submit-confirmation').style.display = 'block';
+                alert('Your work has been submitted successfully!');
+            } catch (error) {
+                console.error('Error submitting:', error);
+                alert('There was an error submitting your work. Please try downloading as PDF instead.');
+            }
+        }
+
+        window.downloadPDF = function() {
+            alert('PDF download functionality requires jsPDF library to be properly loaded. Your data has been logged to console for now.');
+            console.log('Activity State:', activityState);
+        }
+
+        // Save state to localStorage periodically
+        setInterval(() => {
+            localStorage.setItem('puritanActivityState', JSON.stringify(activityState));
+        }, 30000);
+
+        // Load state on page load
+        window.onload = function() {
+            const saved = localStorage.getItem('puritanActivityState');
+            if (saved) {
+                const shouldRestore = confirm('Would you like to restore your previous session?');
+                if (shouldRestore) {
+                    activityState = JSON.parse(saved);
+                    // Restore UI state
+                    if (activityState.studentName) {
+                        document.getElementById('student-name').value = activityState.studentName;
+                        document.getElementById('student-email').value = activityState.studentEmail;
+                    }
+                    if (activityState.documentA.q1) {
+                        document.getElementById('docA-q1').value = activityState.documentA.q1;
+                        document.getElementById('docA-q2').value = activityState.documentA.q2;
+                        document.getElementById('docA-q3').value = activityState.documentA.q3;
+                    }
+                    if (activityState.documentB.q1) {
+                        document.getElementById('docB-q1').value = activityState.documentB.q1;
+                        document.getElementById('docB-q2').value = activityState.documentB.q2;
+                        document.getElementById('docB-q3').value = activityState.documentB.q3;
+                    }
+                    if (activityState.finalAnalysis) {
+                        document.getElementById('final-analysis').value = activityState.finalAnalysis;
+                    }
+                }
+            }
+        };
+    </script>
+</body>
+</html>
