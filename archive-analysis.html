@@ -370,63 +370,49 @@
             color: #2a4365;
         }
 
-        .auth-section {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
+        .breadcrumb {
+            background: #f8f9fa;
+            padding: 15px 40px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .auth-section h3 {
-            color: #856404;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .auth-form {
+        .breadcrumb-nav {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .auth-form input {
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            align-items: center;
+            gap: 8px;
             font-size: 14px;
+            flex-wrap: wrap;
         }
 
-        .auth-status {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            display: none;
+        .breadcrumb-nav a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.2s;
         }
 
-        .auth-status.show {
-            display: block;
+        .breadcrumb-nav a:hover {
+            color: #5568d3;
+            text-decoration: underline;
         }
 
-        .auth-status.error {
-            background: #f8d7da;
-            border-left-color: #dc3545;
+        .breadcrumb-separator {
+            color: #a0aec0;
+            user-select: none;
         }
 
-        .auth-status p {
-            color: #155724;
-            margin: 0;
+        .breadcrumb-current {
+            color: #4a5568;
+            font-weight: 500;
         }
 
-        .auth-status.error p {
-            color: #721c24;
-        }
+        @media (max-width: 768px) {
+            .breadcrumb {
+                padding: 12px 20px;
+            }
 
-        .form-disabled {
-            opacity: 0.6;
-            pointer-events: none;
+            .breadcrumb-nav {
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -437,23 +423,18 @@
             <p>Political Norms, Democratic Fragility, and Public Memory</p>
         </div>
 
+        <div class="breadcrumb">
+            <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="interactive-activities.html">Interactive Activities</a>
+                <span class="breadcrumb-separator">›</span>
+                <span class="breadcrumb-current">Archive Analysis</span>
+            </nav>
+        </div>
+
         <div class="content">
-            <!-- Authentication Section -->
-            <div class="auth-section" id="authSection">
-                <h3>🔐 Student Sign-In Required</h3>
-                <p style="margin-bottom: 15px; color: #856404;">Please sign in with your @my.yosemite.edu email to save your work to the database.</p>
-                <div class="auth-form">
-                    <input type="email" id="studentEmail" placeholder="your.name@my.yosemite.edu" pattern="[a-zA-Z0-9._%+-]+@my\.yosemite\.edu$">
-                    <input type="text" id="studentName" placeholder="Your Full Name">
-                    <button class="btn btn-primary" onclick="signIn()">Sign In & Load My Work</button>
-                </div>
-            </div>
-
-            <div class="auth-status" id="authStatus">
-                <p id="authMessage"></p>
-            </div>
-
-            <div id="worksheetContent" class="form-disabled">
+            <div id="worksheetContent">
             <div class="purpose-box">
                 <p><strong>Purpose:</strong> This activity asks you to analyze how historians and journalists document moments of democratic crisis. Rather than debating opinions, you will examine evidence, norms, and memory using an archive of recent events.</p>
             </div>
@@ -736,128 +717,10 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // ===== SUPABASE CONFIGURATION =====
-        // Replace these with your actual Supabase project credentials
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // e.g., 'https://xxxxx.supabase.co'
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-        
-        // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Auth state
-        let currentUser = null;
-        let currentResponseId = null;
-    </script>
-    <script>
-        // ===== AUTHENTICATION FUNCTIONS =====
-        async function signIn() {
-            const email = document.getElementById('studentEmail').value.trim();
-            const name = document.getElementById('studentName').value.trim();
-            
-            // Validate email
-            const emailPattern = /^[a-zA-Z0-9._%+-]+@my\.yosemite\.edu$/;
-            if (!emailPattern.test(email)) {
-                showAuthStatus('Please enter a valid @my.yosemite.edu email address.', true);
-                return;
-            }
-            
-            if (!name) {
-                showAuthStatus('Please enter your full name.', true);
-                return;
-            }
-            
-            // Store user info
-            currentUser = { email, name };
-            localStorage.setItem('archiveAnalysisUser', JSON.stringify(currentUser));
-            
-            // Hide auth section, show form
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('worksheetContent').classList.remove('form-disabled');
-            showAuthStatus(`Signed in as ${name} (${email})`, false);
-            
-            // Load existing work from database
-            await loadFromDatabase();
-        }
-
-        function showAuthStatus(message, isError) {
-            const status = document.getElementById('authStatus');
-            const messageEl = document.getElementById('authMessage');
-            messageEl.textContent = message;
-            status.classList.toggle('error', isError);
-            status.classList.add('show');
-            
-            if (!isError) {
-                setTimeout(() => status.classList.remove('show'), 5000);
-            }
-        }
-
-        // ===== DATABASE FUNCTIONS =====
-        async function loadFromDatabase() {
-            if (!currentUser) return;
-            
-            try {
-                // Check if user already has a response
-                const { data, error } = await supabase
-                    .from('archive_analysis_responses')
-                    .select('*')
-                    .eq('student_email', currentUser.email)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-                
-                if (error) throw error;
-                
-                if (data && data.length > 0) {
-                    const response = data[0];
-                    currentResponseId = response.id;
-                    populateForm(response);
-                    showSaveIndicator('Previous work loaded from database');
-                }
-            } catch (error) {
-                console.error('Error loading from database:', error);
-                showAuthStatus('Could not load previous work. Starting fresh.', true);
-            }
-        }
-
-        function populateForm(data) {
-            document.getElementById('archive-title').value = data.archive_title || '';
-            document.getElementById('who-created').value = data.who_created || '';
-            document.getElementById('archive-purpose').value = data.archive_purpose || '';
-            
-            document.getElementById('source-video').checked = data.source_video || false;
-            document.getElementById('source-photo').checked = data.source_photo || false;
-            document.getElementById('source-court').checked = data.source_court || false;
-            document.getElementById('source-testimony').checked = data.source_testimony || false;
-            document.getElementById('source-timeline').checked = data.source_timeline || false;
-            document.getElementById('source-social').checked = data.source_social || false;
-            document.getElementById('source-other').checked = data.source_other || false;
-            document.getElementById('source-other-text').value = data.source_other_text || '';
-            
-            document.getElementById('source-what').value = data.source_what || '';
-            document.getElementById('source-who').value = data.source_who || '';
-            document.getElementById('source-when').value = data.source_when || '';
-            document.getElementById('source-shows').value = data.source_shows || '';
-            document.getElementById('source-missing').value = data.source_missing || '';
-            
-            if (data.norm_selected) {
-                const normRadio = document.querySelector(`input[name="norm"][value="${data.norm_selected}"]`);
-                if (normRadio) normRadio.checked = true;
-            }
-            
-            document.getElementById('norm-other-text').value = data.norm_other_text || '';
-            document.getElementById('norm-explanation').value = data.norm_explanation || '';
-            document.getElementById('preservation-importance').value = data.preservation_importance || '';
-            document.getElementById('archive-democracy').value = data.archive_democracy || '';
-            document.getElementById('synthesis').value = data.synthesis || '';
-        }
-
-        async function saveToDatabase() {
-            if (!currentUser) return;
-            
+        // ===== LOCAL STORAGE FUNCTIONS =====
+        function saveToLocalStorage() {
             const formData = {
-                student_email: currentUser.email,
-                student_name: currentUser.name,
                 archive_title: document.getElementById('archive-title').value,
                 who_created: document.getElementById('who-created').value,
                 archive_purpose: document.getElementById('archive-purpose').value,
@@ -879,91 +742,72 @@
                 norm_explanation: document.getElementById('norm-explanation').value,
                 preservation_importance: document.getElementById('preservation-importance').value,
                 archive_democracy: document.getElementById('archive-democracy').value,
-                synthesis: document.getElementById('synthesis').value,
-                submission_status: 'in_progress'
+                synthesis: document.getElementById('synthesis').value
             };
-            
-            try {
-                let result;
-                if (currentResponseId) {
-                    // Update existing response
-                    result = await supabase
-                        .from('archive_analysis_responses')
-                        .update(formData)
-                        .eq('id', currentResponseId);
-                } else {
-                    // Insert new response
-                    result = await supabase
-                        .from('archive_analysis_responses')
-                        .insert([formData])
-                        .select();
-                    
-                    if (result.data && result.data.length > 0) {
-                        currentResponseId = result.data[0].id;
-                    }
+
+            localStorage.setItem('archiveAnalysisWork', JSON.stringify(formData));
+            showSaveIndicator('Work saved locally');
+        }
+
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('archiveAnalysisWork');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+
+                document.getElementById('archive-title').value = data.archive_title || '';
+                document.getElementById('who-created').value = data.who_created || '';
+                document.getElementById('archive-purpose').value = data.archive_purpose || '';
+
+                document.getElementById('source-video').checked = data.source_video || false;
+                document.getElementById('source-photo').checked = data.source_photo || false;
+                document.getElementById('source-court').checked = data.source_court || false;
+                document.getElementById('source-testimony').checked = data.source_testimony || false;
+                document.getElementById('source-timeline').checked = data.source_timeline || false;
+                document.getElementById('source-social').checked = data.source_social || false;
+                document.getElementById('source-other').checked = data.source_other || false;
+                document.getElementById('source-other-text').value = data.source_other_text || '';
+
+                document.getElementById('source-what').value = data.source_what || '';
+                document.getElementById('source-who').value = data.source_who || '';
+                document.getElementById('source-when').value = data.source_when || '';
+                document.getElementById('source-shows').value = data.source_shows || '';
+                document.getElementById('source-missing').value = data.source_missing || '';
+
+                if (data.norm_selected) {
+                    const normRadio = document.querySelector(`input[name="norm"][value="${data.norm_selected}"]`);
+                    if (normRadio) normRadio.checked = true;
                 }
-                
-                if (result.error) throw result.error;
-                
-                showSaveIndicator('Work saved to database');
-                return true;
-            } catch (error) {
-                console.error('Error saving to database:', error);
-                showAuthStatus('Error saving to database. Your work is saved locally.', true);
-                return false;
+
+                document.getElementById('norm-other-text').value = data.norm_other_text || '';
+                document.getElementById('norm-explanation').value = data.norm_explanation || '';
+                document.getElementById('preservation-importance').value = data.preservation_importance || '';
+                document.getElementById('archive-democracy').value = data.archive_democracy || '';
+                document.getElementById('synthesis').value = data.synthesis || '';
+
+                showSaveIndicator('Previous work loaded');
             }
         }
 
-        async function submitWork() {
-            if (!currentUser) {
-                alert('Please sign in first to submit your work.');
-                return;
-            }
-            
-            // Save with submitted status
-            if (!currentResponseId) {
-                await saveToDatabase();
-            }
-            
-            try {
-                const { error } = await supabase
-                    .from('archive_analysis_responses')
-                    .update({ submission_status: 'submitted' })
-                    .eq('id', currentResponseId);
-                
-                if (error) throw error;
-                
-                alert('Your work has been submitted successfully! You can still download a PDF for your records.');
-                showSaveIndicator('Work submitted successfully');
-            } catch (error) {
-                console.error('Error submitting:', error);
-                alert('There was an error submitting. Please try again or contact your instructor.');
-            }
+        function submitWork() {
+            saveToLocalStorage();
+            alert('Your work has been saved! Please download a PDF for your records and submit it according to your instructor\'s directions.');
         }
 
         // ===== AUTO-SAVE FUNCTIONALITY =====
         let saveTimeout;
-        
+
         function autoSave() {
-            if (!currentUser) return; // Don't auto-save if not signed in
-            
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                await saveToDatabase();
+            saveTimeout = setTimeout(() => {
+                saveToLocalStorage();
             }, 3000); // Save after 3 seconds of inactivity
         }
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is already signed in
-            const savedUser = localStorage.getItem('archiveAnalysisUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                document.getElementById('studentEmail').value = currentUser.email;
-                document.getElementById('studentName').value = currentUser.name;
-                signIn(); // Auto sign in
-            }
-            
+            // Load previous work if it exists
+            loadFromLocalStorage();
+
             // Add auto-save listeners to all inputs
             const inputs = document.querySelectorAll('#worksheetContent input, #worksheetContent textarea');
             inputs.forEach(input => {
@@ -1001,17 +845,9 @@
             doc.setFontSize(12);
             doc.setFont(undefined, 'normal');
             doc.text('Political Norms, Democratic Fragility, and Public Memory', margin, yPosition);
-            yPosition += 10;
-            
-            // Student info
-            if (currentUser) {
-                doc.setFontSize(10);
-                doc.text(`Student: ${currentUser.name} (${currentUser.email})`, margin, yPosition);
-                yPosition += 10;
-            }
-            
+            yPosition += 15;
+
             doc.setFontSize(11);
-            yPosition += 5;
 
             // Helper function to add wrapped text
             function addSection(title, content, isHeader = false) {
@@ -1110,10 +946,7 @@
             addSection('Final reflection:', document.getElementById('synthesis').value);
 
             // Save
-            const fileName = currentUser ? 
-                `archive-analysis-${currentUser.name.replace(/\s+/g, '-')}.pdf` : 
-                'archive-analysis-worksheet.pdf';
-            doc.save(fileName);
+            doc.save('archive-analysis-worksheet.pdf');
         }
 
         // ===== CLEAR FORM =====
@@ -1121,19 +954,8 @@
             if (confirm('Are you sure you want to clear all your work? This cannot be undone.')) {
                 document.querySelectorAll('#worksheetContent input[type="text"], #worksheetContent textarea').forEach(el => el.value = '');
                 document.querySelectorAll('#worksheetContent input[type="checkbox"], #worksheetContent input[type="radio"]').forEach(el => el.checked = false);
-                
-                if (currentUser && currentResponseId) {
-                    if (confirm('Do you also want to delete your saved work from the database?')) {
-                        supabase
-                            .from('archive_analysis_responses')
-                            .delete()
-                            .eq('id', currentResponseId)
-                            .then(() => {
-                                currentResponseId = null;
-                                showSaveIndicator('Database record deleted');
-                            });
-                    }
-                }
+                localStorage.removeItem('archiveAnalysisWork');
+                showSaveIndicator('Form cleared');
             }
         }
     </script>
