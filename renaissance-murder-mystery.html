@@ -708,6 +708,7 @@
                 </div>
 
                 <button class="btn btn-success" onclick="saveTheory()">💾 Save Your Theory</button>
+                <button class="btn btn-primary" onclick="exportResponses()" style="background: #2d5016;">📄 Export Responses</button>
                 <button class="btn btn-primary" onclick="showTab('reveal')">Ready to See the Answer →</button>
             </div>
 
@@ -958,28 +959,28 @@
             const killer = document.getElementById('killer-select').value;
             const motive = document.getElementById('motive').value;
             const evidence = document.getElementById('evidence').value;
-            
+
             if (!killer) {
                 alert('Please select a suspect!');
                 return;
             }
-            
+
             if (!motive.trim()) {
                 alert('Please explain the motive!');
                 return;
             }
-            
+
             // Get checked clues
             const clues = [];
             document.querySelectorAll('.clue-checkbox input:checked').forEach(checkbox => {
                 clues.push(checkbox.value);
             });
-            
+
             if (clues.length === 0) {
                 alert('Please select at least one clue!');
                 return;
             }
-            
+
             // Save to localStorage
             const theory = {
                 killer,
@@ -988,14 +989,79 @@
                 clues,
                 timestamp: new Date().toISOString()
             };
-            
+
             localStorage.setItem('murderMysteryTheory', JSON.stringify(theory));
-            
+
             // Show confirmation
             document.getElementById('saved-theory').style.display = 'block';
-            
+
             // Scroll to confirmation
             document.getElementById('saved-theory').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function exportResponses() {
+            const savedTheory = localStorage.getItem('murderMysteryTheory');
+
+            if (!savedTheory) {
+                alert('No theory saved yet! Please save your theory first.');
+                return;
+            }
+
+            const theory = JSON.parse(savedTheory);
+
+            // Map suspect values to full names
+            const suspectNames = {
+                'savonarola': 'Girolamo Savonarola',
+                'piero': 'Piero de\' Medici',
+                'charles': 'King Charles VIII of France',
+                'pope': 'Pope Alexander VI',
+                'lucrezia': 'Lucrezia Borgia'
+            };
+
+            // Map clue values to readable names
+            const clueNames = {
+                'botticelli': 'Botticelli painting',
+                'micah': 'Book of Micah',
+                'medici-letter': 'Medici letter fragment',
+                'lb-letter': '"L.B." letter fragment',
+                'angels': '"Angels of H" reference',
+                'location': 'Crime scene location',
+                'timing': 'Timing (Carnival 1497)',
+                'victim-connections': 'Victim\'s connections'
+            };
+
+            // Format the export text
+            const exportText = `RENAISSANCE MURDER MYSTERY - STUDENT RESPONSE
+================================================================
+
+Student Theory Submitted: ${new Date(theory.timestamp).toLocaleString()}
+
+WHO IS THE KILLER?
+${suspectNames[theory.killer] || theory.killer}
+
+WHAT WAS THEIR MOTIVE?
+${theory.motive}
+
+WHICH CLUES SUPPORT YOUR THEORY?
+${theory.clues.map(clue => '- ' + (clueNames[clue] || clue)).join('\n')}
+
+HOW DO THESE CLUES PROVE YOUR THEORY?
+${theory.evidence || '(No explanation provided)'}
+
+================================================================
+End of Response
+`;
+
+            // Create a blob and download it
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `renaissance-mystery-response-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function revealSolution() {
