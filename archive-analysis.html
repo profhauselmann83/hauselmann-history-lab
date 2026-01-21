@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive Analysis Worksheet - HIST 101</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-number {
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .question {
+            margin-bottom: 25px;
+        }
+
+        .question-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 15px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-item:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .radio-item:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .radio-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-item label {
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .archive-link {
+            display: block;
+            background: #4299e1;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+
+        .archive-link:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-tertiary {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-tertiary:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+        }
+
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .purpose-box {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .purpose-box p {
+            color: #2d3748;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .sub-questions {
+            margin-left: 20px;
+            margin-top: 15px;
+            padding-left: 15px;
+            border-left: 3px solid #cbd5e0;
+        }
+
+        .sub-question {
+            margin-bottom: 20px;
+        }
+
+        .sub-question .question-label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: 100%;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-banner {
+            background: #bee3f8;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .info-banner p {
+            color: #2c5282;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .info-banner p:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-banner strong {
+            color: #2a4365;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>HIST 101 — Archive Analysis Worksheet</h1>
+            <p>Political Norms, Democratic Fragility, and Public Memory</p>
+        </div>
+
+        <div class="content">
+            <div class="purpose-box">
+                <p><strong>Purpose:</strong> This activity asks you to analyze how historians and journalists document moments of democratic crisis. Rather than debating opinions, you will examine evidence, norms, and memory using an archive of recent events.</p>
+            </div>
+
+            <div class="info-banner">
+                <p><strong>Visit the Archive:</strong></p>
+                <p>You'll be analyzing the NPR Jan. 6 Archive. Click the button below to open it in a new tab, then return here to complete your analysis.</p>
+            </div>
+
+            <a href="https://apps.npr.org/jan-6-archive/" target="_blank" class="archive-link">
+                📚 Open NPR Jan. 6 Archive
+            </a>
+
+            <!-- Part I -->
+            <div class="section">
+                <h2><span class="section-number">I</span> Understanding the Archive</h2>
+                
+                <div class="question">
+                    <label class="question-label">Archive examined - Title or section name:</label>
+                    <input type="text" id="archive-title" placeholder="e.g., NPR Jan. 6 Archive - Timeline Section">
+                </div>
+
+                <div class="question">
+                    <label class="question-label">1. Who created this archive and how do you know? (journalists, historians, government agencies, courts, etc.)</label>
+                    <textarea id="who-created" placeholder="Consider the organization behind the archive and any evidence of their role..."></textarea>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">2. What is the purpose of this archive? (What is it trying to preserve or explain?)</label>
+                    <textarea id="archive-purpose" placeholder="Think about why this archive exists and what it aims to document..."></textarea>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">3. What types of sources are included? (Check all that apply)</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="source-video" name="sources">
+                            <label for="source-video">Video footage</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="source-photo" name="sources">
+                            <label for="source-photo">Photographs</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="source-court" name="sources">
+                            <label for="source-court">Court documents</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="source-testimony" name="sources">
+                            <label for="source-testimony">Testimony or interviews</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="source-timeline" name="sources">
+                            <label for="source-timeline">Timelines or summaries</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="source-social" name="sources">
+                            <label for="source-social">Social media content</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="source-other" name="sources">
+                            <label for="source-other">Other</label>
+                        </div>
+                    </div>
+                    <input type="text" id="source-other-text" placeholder="If 'Other', please specify..." style="margin-top: 10px;">
+                </div>
+            </div>
+
+            <!-- Part II -->
+            <div class="section">
+                <h2><span class="section-number">II</span> Close Analysis of One Source</h2>
+                
+                <div class="purpose-box">
+                    <p><strong>Choose one specific item from the archive</strong> (a video, document, image, or testimony).</p>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Describe the source:</label>
+                    <div class="sub-questions">
+                        <div class="sub-question">
+                            <label class="question-label">What is it?</label>
+                            <input type="text" id="source-what" placeholder="e.g., Video of speech, court testimony, photograph...">
+                        </div>
+                        <div class="sub-question">
+                            <label class="question-label">Who created it?</label>
+                            <input type="text" id="source-who" placeholder="e.g., News organization, eyewitness, government official...">
+                        </div>
+                        <div class="sub-question">
+                            <label class="question-label">When was it created?</label>
+                            <input type="text" id="source-when" placeholder="e.g., January 6, 2021, 2:30 PM...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">1. What does this source show clearly? (Be specific—focus on what can be directly observed or verified.)</label>
+                    <textarea id="source-shows" placeholder="Focus on concrete, observable details..."></textarea>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">2. What does this source not show or explain? (What context, perspective, or information might be missing?)</label>
+                    <textarea id="source-missing" placeholder="Consider gaps in the evidence..."></textarea>
+                </div>
+            </div>
+
+            <!-- Part III -->
+            <div class="section">
+                <h2><span class="section-number">III</span> Political Norms in Practice</h2>
+                
+                <div class="question">
+                    <label class="question-label">1. Which political norm is most clearly involved in this source? (Check one and explain below.)</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="norm-election" name="norm" value="election">
+                            <label for="norm-election">Acceptance of election results</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="norm-transfer" name="norm" value="transfer">
+                            <label for="norm-transfer">Peaceful transfer of power</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="norm-nonviolence" name="norm" value="nonviolence">
+                            <label for="norm-nonviolence">Nonviolence</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="norm-truth" name="norm" value="truth">
+                            <label for="norm-truth">Truthfulness</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="norm-respect" name="norm" value="respect">
+                            <label for="norm-respect">Respect for democratic institutions</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="norm-civic" name="norm" value="civic">
+                            <label for="norm-civic">Civic responsibility</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="norm-other" name="norm" value="other">
+                            <label for="norm-other">Other</label>
+                        </div>
+                    </div>
+                    <input type="text" id="norm-other-text" placeholder="If 'Other', please specify..." style="margin-top: 10px;">
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Explanation: How does this source show that the norm is being upheld, challenged, or violated?</label>
+                    <textarea id="norm-explanation" placeholder="Connect your source to the specific norm you identified..."></textarea>
+                </div>
+            </div>
+
+            <!-- Part IV -->
+            <div class="section">
+                <h2><span class="section-number">IV</span> Archives and Democracy</h2>
+                
+                <div class="question">
+                    <label class="question-label">1. Why is it important that this source is preserved in an archive? (What could be lost if it were ignored, deleted, or forgotten?)</label>
+                    <textarea id="preservation-importance" placeholder="Consider the role of evidence in democratic accountability..."></textarea>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">2. How does this archive help a democracy deal with disagreement without violence? (Think about evidence, legitimacy, and shared understanding.)</label>
+                    <textarea id="archive-democracy" placeholder="Think about how documentation can help resolve disputes..."></textarea>
+                </div>
+            </div>
+
+            <!-- Part V -->
+            <div class="section">
+                <h2><span class="section-number">V</span> Synthesis</h2>
+                
+                <div class="question">
+                    <label class="question-label">In 2–3 sentences: What does this archive reveal about the fragility of democracy and the role of citizens in sustaining it?</label>
+                    <textarea id="synthesis" placeholder="Synthesize your analysis into a clear, concise statement..."></textarea>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="saveWork()">💾 Save Progress</button>
+                <button class="btn btn-secondary" onclick="downloadPDF()">📥 Download PDF</button>
+                <button class="btn btn-tertiary" onclick="clearForm()">🔄 Clear Form</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="save-indicator" id="saveIndicator">
+        ✓ Work saved automatically
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Auto-save functionality
+        let saveTimeout;
+        
+        function autoSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveWork();
+            }, 2000);
+        }
+
+        // Add auto-save listeners to all inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', autoSave);
+                input.addEventListener('change', autoSave);
+            });
+
+            // Load saved work
+            loadWork();
+        });
+
+        function saveWork() {
+            const formData = {
+                archiveTitle: document.getElementById('archive-title').value,
+                whoCreated: document.getElementById('who-created').value,
+                archivePurpose: document.getElementById('archive-purpose').value,
+                sources: {
+                    video: document.getElementById('source-video').checked,
+                    photo: document.getElementById('source-photo').checked,
+                    court: document.getElementById('source-court').checked,
+                    testimony: document.getElementById('source-testimony').checked,
+                    timeline: document.getElementById('source-timeline').checked,
+                    social: document.getElementById('source-social').checked,
+                    other: document.getElementById('source-other').checked,
+                    otherText: document.getElementById('source-other-text').value
+                },
+                sourceWhat: document.getElementById('source-what').value,
+                sourceWho: document.getElementById('source-who').value,
+                sourceWhen: document.getElementById('source-when').value,
+                sourceShows: document.getElementById('source-shows').value,
+                sourceMissing: document.getElementById('source-missing').value,
+                norm: document.querySelector('input[name="norm"]:checked')?.value || '',
+                normOtherText: document.getElementById('norm-other-text').value,
+                normExplanation: document.getElementById('norm-explanation').value,
+                preservationImportance: document.getElementById('preservation-importance').value,
+                archiveDemocracy: document.getElementById('archive-democracy').value,
+                synthesis: document.getElementById('synthesis').value,
+                lastSaved: new Date().toISOString()
+            };
+
+            localStorage.setItem('archiveAnalysisWork', JSON.stringify(formData));
+            showSaveIndicator();
+        }
+
+        function loadWork() {
+            const saved = localStorage.getItem('archiveAnalysisWork');
+            if (!saved) return;
+
+            const formData = JSON.parse(saved);
+            
+            document.getElementById('archive-title').value = formData.archiveTitle || '';
+            document.getElementById('who-created').value = formData.whoCreated || '';
+            document.getElementById('archive-purpose').value = formData.archivePurpose || '';
+            
+            if (formData.sources) {
+                document.getElementById('source-video').checked = formData.sources.video || false;
+                document.getElementById('source-photo').checked = formData.sources.photo || false;
+                document.getElementById('source-court').checked = formData.sources.court || false;
+                document.getElementById('source-testimony').checked = formData.sources.testimony || false;
+                document.getElementById('source-timeline').checked = formData.sources.timeline || false;
+                document.getElementById('source-social').checked = formData.sources.social || false;
+                document.getElementById('source-other').checked = formData.sources.other || false;
+                document.getElementById('source-other-text').value = formData.sources.otherText || '';
+            }
+            
+            document.getElementById('source-what').value = formData.sourceWhat || '';
+            document.getElementById('source-who').value = formData.sourceWho || '';
+            document.getElementById('source-when').value = formData.sourceWhen || '';
+            document.getElementById('source-shows').value = formData.sourceShows || '';
+            document.getElementById('source-missing').value = formData.sourceMissing || '';
+            
+            if (formData.norm) {
+                const normRadio = document.querySelector(`input[name="norm"][value="${formData.norm}"]`);
+                if (normRadio) normRadio.checked = true;
+            }
+            
+            document.getElementById('norm-other-text').value = formData.normOtherText || '';
+            document.getElementById('norm-explanation').value = formData.normExplanation || '';
+            document.getElementById('preservation-importance').value = formData.preservationImportance || '';
+            document.getElementById('archive-democracy').value = formData.archiveDemocracy || '';
+            document.getElementById('synthesis').value = formData.synthesis || '';
+        }
+
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 20;
+            const maxWidth = pageWidth - (margin * 2);
+            let yPosition = 20;
+
+            // Title
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('HIST 101 — Archive Analysis Worksheet', margin, yPosition);
+            yPosition += 8;
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text('Political Norms, Democratic Fragility, and Public Memory', margin, yPosition);
+            yPosition += 15;
+
+            // Helper function to add wrapped text
+            function addSection(title, content, isHeader = false) {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+
+                if (isHeader) {
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(title, margin, yPosition);
+                    yPosition += 8;
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'normal');
+                } else {
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(title, margin, yPosition);
+                    yPosition += 6;
+                    doc.setFont(undefined, 'normal');
+                }
+
+                if (content) {
+                    const lines = doc.splitTextToSize(content, maxWidth);
+                    lines.forEach(line => {
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = 20;
+                        }
+                        doc.text(line, margin, yPosition);
+                        yPosition += 6;
+                    });
+                }
+                yPosition += 4;
+            }
+
+            // Part I
+            addSection('Part I: Understanding the Archive', '', true);
+            addSection('Archive Title:', document.getElementById('archive-title').value);
+            addSection('1. Who created this archive?', document.getElementById('who-created').value);
+            addSection('2. Archive purpose:', document.getElementById('archive-purpose').value);
+            
+            // Sources
+            const sources = [];
+            if (document.getElementById('source-video').checked) sources.push('Video footage');
+            if (document.getElementById('source-photo').checked) sources.push('Photographs');
+            if (document.getElementById('source-court').checked) sources.push('Court documents');
+            if (document.getElementById('source-testimony').checked) sources.push('Testimony/interviews');
+            if (document.getElementById('source-timeline').checked) sources.push('Timelines/summaries');
+            if (document.getElementById('source-social').checked) sources.push('Social media');
+            if (document.getElementById('source-other').checked) {
+                const otherText = document.getElementById('source-other-text').value;
+                sources.push(otherText ? `Other: ${otherText}` : 'Other');
+            }
+            addSection('3. Types of sources included:', sources.join(', '));
+
+            yPosition += 6;
+
+            // Part II
+            addSection('Part II: Close Analysis of One Source', '', true);
+            addSection('What is it?', document.getElementById('source-what').value);
+            addSection('Who created it?', document.getElementById('source-who').value);
+            addSection('When was it created?', document.getElementById('source-when').value);
+            addSection('1. What does this source show clearly?', document.getElementById('source-shows').value);
+            addSection('2. What does this source not show?', document.getElementById('source-missing').value);
+
+            yPosition += 6;
+
+            // Part III
+            addSection('Part III: Political Norms in Practice', '', true);
+            const selectedNorm = document.querySelector('input[name="norm"]:checked');
+            let normText = 'Not selected';
+            if (selectedNorm) {
+                const normLabel = document.querySelector(`label[for="${selectedNorm.id}"]`).textContent;
+                normText = normLabel;
+                if (selectedNorm.value === 'other') {
+                    const otherText = document.getElementById('norm-other-text').value;
+                    if (otherText) normText = otherText;
+                }
+            }
+            addSection('1. Political norm identified:', normText);
+            addSection('Explanation:', document.getElementById('norm-explanation').value);
+
+            yPosition += 6;
+
+            // Part IV
+            addSection('Part IV: Archives and Democracy', '', true);
+            addSection('1. Why is preservation important?', document.getElementById('preservation-importance').value);
+            addSection('2. How does this archive help democracy?', document.getElementById('archive-democracy').value);
+
+            yPosition += 6;
+
+            // Part V
+            addSection('Part V: Synthesis', '', true);
+            addSection('Final reflection:', document.getElementById('synthesis').value);
+
+            // Save
+            doc.save('archive-analysis-worksheet.pdf');
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all your work? This cannot be undone.')) {
+                localStorage.removeItem('archiveAnalysisWork');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
