@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive US Constitution - Hauselmann's History Lab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .breadcrumbs {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumbs a {
+            color: #1e3c72;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumbs a:hover {
+            color: #8B0000;
+            text-decoration: underline;
+        }
+
+        .breadcrumbs .separator {
+            margin: 0 10px;
+            color: #6c757d;
+            font-weight: bold;
+        }
+
+        .breadcrumbs .current {
+            color: #6c757d;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .navigation {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 3px solid #8B0000;
+        }
+
+        .nav-section {
+            margin-bottom: 20px;
+        }
+
+        .nav-section h3 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 2px solid #1e3c72;
+            color: #1e3c72;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .nav-btn:hover {
+            background: #1e3c72;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn.active {
+            background: #8B0000;
+            color: white;
+            border-color: #8B0000;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            color: #8B0000;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #8B0000;
+        }
+
+        .text-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .original-text, .explanation {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .original-text h3, .explanation h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+        }
+
+        .original-text h3::before {
+            content: "📜";
+            margin-right: 10px;
+        }
+
+        .explanation h3::before {
+            content: "💡";
+            margin-right: 10px;
+        }
+
+        .text-block {
+            line-height: 1.8;
+            color: #333;
+            font-size: 1em;
+        }
+
+        .subsection {
+            margin-bottom: 20px;
+        }
+
+        .subsection-title {
+            font-weight: bold;
+            color: #8B0000;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .text-container {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+            }
+
+            .nav-btn {
+                width: 100%;
+            }
+        }
+
+        .footer {
+            background: #1e3c72;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .section-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .nav-arrow {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-arrow:hover:not(:disabled) {
+            background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .nav-arrow:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .nav-arrow.prev::before {
+            content: "←";
+            font-size: 1.3em;
+        }
+
+        .nav-arrow.next::after {
+            content: "→";
+            font-size: 1.3em;
+        }
+
+        .nav-placeholder {
+            width: 150px;
+        }
+
+        .search-box {
+            margin: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #1e3c72;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumbs">
+            <a href="https://profhauselmann.org">🏠 Home</a>
+            <span class="separator">›</span>
+            <span class="current">Interactive Constitution</span>
+        </div>
+        
+        <div class="header">
+            <h1>🇺🇸 The United States Constitution 🇺🇸</h1>
+            <p>An Interactive Study Guide</p>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchBox" placeholder="Search the Constitution...">
+        </div>
+
+        <div class="navigation">
+            <div class="nav-section">
+                <h3>📋 Preamble & Main Articles</h3>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="showSection('preamble', this)">Preamble</button>
+                    <button class="nav-btn" onclick="showSection('article1', this)">Article I: Legislative</button>
+                    <button class="nav-btn" onclick="showSection('article2', this)">Article II: Executive</button>
+                    <button class="nav-btn" onclick="showSection('article3', this)">Article III: Judicial</button>
+                    <button class="nav-btn" onclick="showSection('article4', this)">Article IV: States</button>
+                    <button class="nav-btn" onclick="showSection('article5', this)">Article V: Amendments</button>
+                    <button class="nav-btn" onclick="showSection('article6', this)">Article VI: Supremacy</button>
+                    <button class="nav-btn" onclick="showSection('article7', this)">Article VII: Ratification</button>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>📜 Bill of Rights (Amendments I-X)</h3>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="showSection('amendment1', this)">I: Freedoms</button>
+                    <button class="nav-btn" onclick="showSection('amendment2', this)">II: Arms</button>
+                    <button class="nav-btn" onclick="showSection('amendment3', this)">III: Quartering</button>
+                    <button class="nav-btn" onclick="showSection('amendment4', this)">IV: Search</button>
+                    <button class="nav-btn" onclick="showSection('amendment5', this)">V: Rights</button>
+                    <button class="nav-btn" onclick="showSection('amendment6', this)">VI: Trial</button>
+                    <button class="nav-btn" onclick="showSection('amendment7', this)">VII: Jury</button>
+                    <button class="nav-btn" onclick="showSection('amendment8', this)">VIII: Bail</button>
+                    <button class="nav-btn" onclick="showSection('amendment9', this)">IX: Retained</button>
+                    <button class="nav-btn" onclick="showSection('amendment10', this)">X: States</button>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>⚖️ Later Amendments (XI-XXVII)</h3>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="showSection('amendment11', this)">XI: Suits</button>
+                    <button class="nav-btn" onclick="showSection('amendment12', this)">XII: Elections</button>
+                    <button class="nav-btn" onclick="showSection('amendment13', this)">XIII: Slavery</button>
+                    <button class="nav-btn" onclick="showSection('amendment14', this)">XIV: Citizenship</button>
+                    <button class="nav-btn" onclick="showSection('amendment15', this)">XV: Vote/Race</button>
+                    <button class="nav-btn" onclick="showSection('amendment16', this)">XVI: Income Tax</button>
+                    <button class="nav-btn" onclick="showSection('amendment17', this)">XVII: Senators</button>
+                    <button class="nav-btn" onclick="showSection('amendment18', this)">XVIII: Prohibition</button>
+                    <button class="nav-btn" onclick="showSection('amendment19', this)">XIX: Women Vote</button>
+                    <button class="nav-btn" onclick="showSection('amendment20', this)">XX: Terms</button>
+                    <button class="nav-btn" onclick="showSection('amendment21', this)">XXI: Repeal</button>
+                    <button class="nav-btn" onclick="showSection('amendment22', this)">XXII: Term Limits</button>
+                    <button class="nav-btn" onclick="showSection('amendment23', this)">XXIII: DC Vote</button>
+                    <button class="nav-btn" onclick="showSection('amendment24', this)">XXIV: Poll Tax</button>
+                    <button class="nav-btn" onclick="showSection('amendment25', this)">XXV: Succession</button>
+                    <button class="nav-btn" onclick="showSection('amendment26', this)">XXVI: Age 18</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Preamble -->
+            <div id="preamble" class="section">
+                <h2 class="section-title">Preamble</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquillity, provide for the common defense, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this CONSTITUTION for the United States of America.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The preamble states the purpose for which the Constitution was written, which include establishing justice, providing for the defense, ensuring the general welfare, and securing the blessings of liberty — all very vague, noble, and far-reaching in scope.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" id="prevSection" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" id="nextSection" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Article I -->
+            <div id="article1" class="section">
+                <h2 class="section-title">Article I: The Legislative Branch</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <div class="subsection">
+                                <div class="subsection-title">Section 1</div>
+                                All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Section 2: The House of Representatives</div>
+                                The House of Representatives shall be composed of Members chosen every second Year by the People of the several States...
+                                <br><br>
+                                No Person shall be a Representative who shall not have attained to the Age of twenty-five Years, and been seven Years a Citizen of the United States...
+                                <br><br>
+                                Representatives and direct Taxes shall be apportioned among the several States...according to their respective Numbers, which shall be determined by adding to the whole Number of free Persons...three-fifths of all other Persons.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Section 3: The Senate</div>
+                                The Senate of the United States shall be composed of two Senators from each State, chosen by the Legislature thereof, for six Years...
+                                <br><br>
+                                No Person shall be a Senator who shall not have attained to the Age of thirty Years, and been nine Years a Citizen of the United States...
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Section 8: Powers of Congress</div>
+                                The Congress shall have Power To lay and collect Taxes...provide for the common Defense and general Welfare...
+                                <br><br>
+                                To borrow money...regulate Commerce...coin Money...establish Post Offices...declare War...raise and support Armies...provide and maintain a Navy...
+                                <br><br>
+                                To make all Laws which shall be necessary and proper for carrying into Execution the foregoing Powers...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            <div class="subsection">
+                                <div class="subsection-title">Congressional Structure</div>
+                                Congress is given the right and power to make the laws for the nation. Congress consists of a Senate and a House of Representatives.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">House of Representatives</div>
+                                Members of the House are elected every two years. The states can decide who may vote.
+                                <br><br>
+                                Members must be 25 years old, citizens for 7 years, and live in the state they represent.
+                                <br><br>
+                                <span class="highlight">Representatives and taxes are based on population. Slaves counted as three-fifths of a person.</span> [Changed by Amendment XIV]
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">The Senate</div>
+                                Each state has two senators who serve for six years. Originally elected by state legislatures. [Changed by Amendment XVII to direct election]
+                                <br><br>
+                                Senators must be at least 30 years old, citizens for 9 years, and residents of the states they represent.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Powers Given to Congress</div>
+                                Congress has the power to:
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>Impose and collect taxes</li>
+                                    <li>Borrow money</li>
+                                    <li>Regulate trade with foreign countries and among states</li>
+                                    <li>Coin money and fix standards</li>
+                                    <li>Establish post offices</li>
+                                    <li>Declare war and support armies</li>
+                                    <li>Make all laws needed to carry out these powers</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Article II -->
+            <div id="article2" class="section">
+                <h2 class="section-title">Article II: The Executive Branch</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <div class="subsection">
+                                <div class="subsection-title">Section 1: Presidential Term</div>
+                                The executive Power shall be vested in a President of the United States of America. He shall hold his office during the Term of four years...
+                                <br><br>
+                                No person except a natural-born Citizen...shall be eligible to the office of President; neither shall any Person be eligible to that Office who shall not have attained to the Age of thirty-five years, and been fourteen Years a Resident within the United States.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Section 2: Presidential Powers</div>
+                                The President shall be Commander in Chief of the Army and Navy...
+                                <br><br>
+                                He shall have Power, by and with the Advice and Consent of the Senate, to make Treaties...and he shall nominate...Ambassadors...Judges of the supreme Court, and all other Officers of the United States...
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Section 3: Presidential Duties</div>
+                                He shall from time to time give to the Congress Information of the State of the Union...he shall take care that the Laws be faithfully executed...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            <div class="subsection">
+                                <div class="subsection-title">Presidential Requirements</div>
+                                The power to enforce laws belongs to the President, who serves a four-year term.
+                                <br><br>
+                                To become president, a person must be 35 years old, have been born in the US, and lived here for 14 years.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">The President's Powers</div>
+                                The president is commander-in-chief of the military.
+                                <br><br>
+                                The president may make treaties (with 2/3 Senate approval) and appoint ambassadors, Supreme Court Justices, and other officers (with Senate consent).
+                                <br><br>
+                                The president may grant pardons, except in cases of impeachment.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">The President's Duties</div>
+                                The president shall inform Congress on the state of the nation and recommend necessary laws.
+                                <br><br>
+                                He may call special sessions of Congress and shall receive ambassadors.
+                                <br><br>
+                                He shall ensure laws are faithfully executed.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Article III -->
+            <div id="article3" class="section">
+                <h2 class="section-title">Article III: The Judicial Branch</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <div class="subsection">
+                                <div class="subsection-title">Section 1</div>
+                                The judicial Power of the United States, shall be vested in one supreme Court, and in such inferior Courts as the Congress may from time to time ordain and establish. The Judges...shall hold their Offices during good Behavior...
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Section 2: Jurisdiction</div>
+                                The judicial Power shall extend to all Cases, in Law and Equity, arising under this Constitution, the Laws of the United States, and treaties made...
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Section 3: Treason</div>
+                                Treason against the United States, shall consist only in levying War against them, or in adhering to their Enemies, giving them Aid and Comfort. No Person shall be convicted of Treason unless on the Testimony of two Witnesses to the same overt Act, or on Confession in open Court.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            <div class="subsection">
+                                <div class="subsection-title">The Federal Courts</div>
+                                The power to try crimes under the Constitution is given to the Supreme Court and to such lower courts as Congress may establish.
+                                <br><br>
+                                Federal judges serve for life during good behavior.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Court Jurisdiction</div>
+                                The Supreme Court and lower courts may hear all cases arising under the Constitution, laws of the United States, or treaties.
+                                <br><br>
+                                The Supreme Court has original jurisdiction over cases involving ambassadors or states. Other cases come by appeal.
+                            </div>
+                            
+                            <div class="subsection">
+                                <div class="subsection-title">Treason</div>
+                                Treason is defined as waging war against the United States or giving aid to its enemies.
+                                <br><br>
+                                A person can be convicted only if two witnesses testify to the same action, or if the accused confesses in open court.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Articles IV-VII - Condensed versions -->
+            <div id="article4" class="section">
+                <h2 class="section-title">Article IV: Relations Among the States</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            Full Faith and Credit shall be given in each State to the public Acts, Records, and judicial Proceedings of every other State...
+                            <br><br>
+                            The Citizens of each State shall be entitled to all Privileges and Immunities of Citizens in the several States.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Official acts in one state, such as wills and court decisions, must be respected in all other states.
+                            <br><br>
+                            A citizen of one state may not be discriminated against by another state.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="article5" class="section">
+                <h2 class="section-title">Article V: Amending the Constitution</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The Congress, whenever two-thirds of both Houses shall deem it necessary, shall propose Amendments to this Constitution...which shall be valid...when ratified by the Legislatures of three-fourths of the several States...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The Constitution can be amended when two-thirds of both houses of Congress propose an amendment and three-fourths of the state legislatures ratify it.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="article6" class="section">
+                <h2 class="section-title">Article VI: Federal Credit and Supremacy</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            This Constitution, and the Laws of the United States which shall be made in Pursuance thereof; and all Treaties made...shall be the supreme Law of the Land...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The Constitution and both the laws and treaties made under it are the supreme law of the land, notwithstanding any state laws to the contrary.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="article7" class="section">
+                <h2 class="section-title">Article VII: Ratification</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The Ratification of the Conventions of nine States shall be sufficient for the Establishment of this Constitution...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The Constitution will go into effect as soon as it is ratified by conventions in nine states.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment I -->
+            <div id="amendment1" class="section">
+                <h2 class="section-title">Amendment I: Freedom of Expression (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            Congress shall make no law respecting an establishment of religion, or prohibiting the free exercise thereof; or abridging the freedom of speech, or of the press; or the right of the people peaceably to assemble, and to petition the Government for a redress of grievances.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Congress may not make a law either establishing a religion or preventing people from practicing theirs. 
+                            <br><br>
+                            Nor shall Congress prevent freedom of speech, press, peaceable assembly, or the right to express complaints against the government.
+                            <br><br>
+                            <span class="highlight">This is often considered the most important amendment, protecting our core democratic freedoms.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment II -->
+            <div id="amendment2" class="section">
+                <h2 class="section-title">Amendment II: The Right to Keep Weapons (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            A well-regulated Militia, being necessary to the security of a free State, the right of the people to keep and bear Arms shall not be infringed.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Because of the necessity of a well-regulated militia, the people's right to bear arms is protected.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment III -->
+            <div id="amendment3" class="section">
+                <h2 class="section-title">Amendment III: Stationing Soldiers (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            No Soldier shall, in time of peace, be quartered in any house, without the consent of the owner, nor in time of war, but in a manner to be prescribed by law.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The government may not force people to house or feed soldiers in private homes during times of peace or in time of war, unless Congress provides for it by law.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment IV -->
+            <div id="amendment4" class="section">
+                <h2 class="section-title">Amendment IV: Search Warrants (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The right of the people to be secure in their persons, houses, papers, and effects, against unreasonable searches and seizures, shall not be violated, and no Warrants shall issue, but upon probable cause...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            A search warrant must be issued by a judge. There must be a good reason for its use, and the search must be limited to the place and things described in the warrant.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment V -->
+            <div id="amendment5" class="section">
+                <h2 class="section-title">Amendment V: Rights of the Accused (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            No person shall be held to answer for a capital or otherwise infamous crime, unless on a presentment or indictment of a Grand Jury...nor shall any person be subject for the same offense to be twice put in jeopardy...nor shall be compelled in any criminal case to be a witness against himself, nor be deprived of life, liberty, or property, without due process of law...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            No person shall be held for a crime unless indicted by a grand jury.
+                            <br><br>
+                            No person can be tried twice for the same offense (double jeopardy).
+                            <br><br>
+                            No one can be forced to testify against themselves (right to remain silent).
+                            <br><br>
+                            No one can be denied due process of law or have property taken without fair compensation.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment VI -->
+            <div id="amendment6" class="section">
+                <h2 class="section-title">Amendment VI: Rights of the Accused (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            In all criminal prosecutions, the accused shall enjoy the right to a speedy and public trial, by an impartial jury...to be informed of the nature and cause of the accusation; to be confronted with the witnesses against him...and to have the Assistance of Counsel for his defence.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            People accused of crimes are entitled to a quick, public trial before an impartial jury.
+                            <br><br>
+                            The accused shall be informed of charges, have the right to confront witnesses, and have assistance finding favorable witnesses.
+                            <br><br>
+                            If they cannot afford a lawyer, the country must provide one.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment VII -->
+            <div id="amendment7" class="section">
+                <h2 class="section-title">Amendment VII: Jury Trial in Civil Cases (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            In suits at common law, where the value in controversy shall exceed twenty dollars, the right of trial by jury shall be preserved...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The right to a jury trial is guaranteed in cases where the amount in question is greater than $20.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment VIII -->
+            <div id="amendment8" class="section">
+                <h2 class="section-title">Amendment VIII: Bail and Punishment (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            Excessive bail shall not be required, nor excessive fines imposed, nor cruel and unusual punishments inflicted.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            A person accused of a crime is allowed to leave jail before trial after posting reasonable bail.
+                            <br><br>
+                            No cruel and unusual punishments such as torture are allowed.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment IX -->
+            <div id="amendment9" class="section">
+                <h2 class="section-title">Amendment IX: Powers Reserved for the People (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The enumeration of the Constitution, of certain rights, shall not be construed to deny or disparage others retained by the people.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The people maintain rights even if they are not specifically listed in this Constitution.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendment X -->
+            <div id="amendment10" class="section">
+                <h2 class="section-title">Amendment X: Powers Reserved for the States (1791)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The powers not delegated to the United States by the Constitution, nor prohibited by it to the States, are reserved to the States respectively, or to the people.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Powers not granted to the national government or denied to the states remain with the states or the people.
+                            <br><br>
+                            <span class="highlight">This establishes the principle of federalism - the division of power between national and state governments.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amendments XI-XXVI (condensed for space) -->
+            <div id="amendment11" class="section">
+                <h2 class="section-title">Amendment XI: Suits Against States (1798)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The Judicial power of the United States shall not be construed to extend to any suit in law or equity, commenced or prosecuted against one of the United States by Citizens of another State, or by Citizens or Subjects of any Foreign State.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            A citizen who wishes to bring a suit against a state must bring this suit in the courts of the state being sued.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment12" class="section">
+                <h2 class="section-title">Amendment XII: Elections of President and Vice-President (1804)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The Electors shall meet in their respective States and vote by ballot for President and Vice-President, one of whom, at least, shall not be an inhabitant of the same State with themselves...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Each elector will cast one vote for president and one for vice-president, instead of two votes without distinguishing between their choices.
+                            <br><br>
+                            This fixed the problem from the election of 1800 when Jefferson and Burr tied.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment13" class="section">
+                <h2 class="section-title">Amendment XIII: Abolition of Slavery (1865)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <strong>Section 1.</strong> Neither slavery nor involuntary servitude, except as a punishment for crime whereof the party shall have been duly convicted, shall exist within the United States, or any place subject to their jurisdiction.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Slavery may no longer exist in the United States.
+                            <br><br>
+                            <span class="highlight">This was the first of three "Reconstruction Amendments" passed after the Civil War.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment14" class="section">
+                <h2 class="section-title">Amendment XIV: Rights of Citizens Protected from the States (1868)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <strong>Section 1.</strong> All persons born or naturalized in the United States...are citizens of the United States and of the State wherein they reside. No State shall make or enforce any law which shall abridge the privileges or immunities of citizens...nor shall any State deprive any person of life, liberty, or property, without due process of law; nor deny to any person...the equal protection of the laws.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            All people (including former slaves) born in the U.S. are citizens.
+                            <br><br>
+                            No state may reduce the rights of American citizens or deny anyone due process or equal protection under the law.
+                            <br><br>
+                            <span class="highlight">This is one of the most important amendments - it has been used to protect civil rights and apply the Bill of Rights to the states.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment15" class="section">
+                <h2 class="section-title">Amendment XV: The Right to Vote (1870)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <strong>Section 1.</strong> The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            No citizens may be denied the right to vote because they were once slaves or because of their race.
+                            <br><br>
+                            This is the third Reconstruction Amendment.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment16" class="section">
+                <h2 class="section-title">Amendment XVI: Federal Income Tax (1913)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The Congress shall have power to lay and collect taxes on incomes, from whatever source derived, without apportionment among the several States, and without regard to any census or enumeration.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Congress has the power to collect income taxes without having to distribute them among states according to population.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment17" class="section">
+                <h2 class="section-title">Amendment XVII: Direct Election of Senators (1913)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The Senate of the United States shall be composed of two Senators from each State, elected by the people thereof, for six years...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The U.S. Senate shall be elected directly by the qualified voters of each state, not by state legislators.
+                            <br><br>
+                            This was a Progressive Era reform to make government more democratic.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment18" class="section">
+                <h2 class="section-title">Amendment XVIII: Prohibition (1920)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <strong>Section 1.</strong> After one year from the ratification of this article the manufacture, sale, or transportation of intoxicating liquors within...the United States...for beverage purposes is hereby prohibited.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The manufacturing, sale, transportation, and importation of alcoholic beverages in the U.S. is prohibited.
+                            <br><br>
+                            <span class="highlight">This is the only amendment that has been repealed (by Amendment XXI in 1933).</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment19" class="section">
+                <h2 class="section-title">Amendment XIX: Woman Suffrage (1920)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of sex.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Citizens may not be denied the right to vote because of their sex.
+                            <br><br>
+                            This granted women the right to vote after decades of activism.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment20" class="section">
+                <h2 class="section-title">Amendment XX: Terms of Presidents and Congressmen (1933)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <strong>Section 1.</strong> The terms of the President and Vice-President shall end at noon on the 20th day of January...and the terms of Senators and Representatives at noon on the 3d day of January...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The president's term ends at noon on January 20th; Congressional terms end on January 3rd.
+                            <br><br>
+                            This shortened the "lame duck" period after elections.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment21" class="section">
+                <h2 class="section-title">Amendment XXI: Repeal of Prohibition (1933)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <strong>Section 1.</strong> The eighteenth article of amendment to the Constitution of the United States is hereby repealed.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The amendment prohibiting the sale of alcoholic beverages is repealed.
+                            <br><br>
+                            Prohibition lasted only 13 years (1920-1933).
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment22" class="section">
+                <h2 class="section-title">Amendment XXII: Two Term Limit for Presidents (1951)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            No person shall be elected to the office of the President more than twice, and no person who has held the office of President...for more than two years of a term to which some other person was elected President shall be elected to the office of the President more than once.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The president may be elected to serve only two terms in office.
+                            <br><br>
+                            He may be elected for only one term if he has already served more than two years of another president's unfilled term.
+                            <br><br>
+                            This was passed after FDR was elected four times.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment23" class="section">
+                <h2 class="section-title">Amendment XXIII: Voting in Washington, D.C. (1961)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The District constituting the seat of Government of the United States shall appoint...a number of electors of President and Vice-President equal to the whole number of Senators and Representatives in Congress to which the District would be entitled if it were a State, but in no event more than the least populous State...
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Voters in the District of Columbia may vote for presidential electors and may have as many but no more electors than the least populous state.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment24" class="section">
+                <h2 class="section-title">Amendment XXIV: Elimination of Poll Tax (1964)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The right of citizens of the United States to vote in any primary or other election for President or Vice President...shall not be denied or abridged by the United States or any state by reason of failure to pay any poll tax or other tax.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            Failure to pay a poll or other tax cannot be used to prevent any citizen from voting in a national election.
+                            <br><br>
+                            This was part of the Civil Rights movement to protect voting rights.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment25" class="section">
+                <h2 class="section-title">Amendment XXV: Presidential Disability and Succession (1967)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            <strong>Section 1.</strong> In case of the removal of the President from office or of his death or resignation, the Vice-President shall become President.
+                            <br><br>
+                            <strong>Section 2.</strong> Whenever there is a vacancy in the office of the Vice President, the President shall nominate a Vice President who shall take the office upon confirmation by a majority vote of both houses of Congress.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The president shall be succeeded by the vice-president in case of death, removal, or resignation.
+                            <br><br>
+                            If the vice-president's office is vacant, the president may appoint a candidate who must be confirmed by majority vote of both houses.
+                            <br><br>
+                            This was used when Nixon appointed Ford as VP, and when Ford became president and appointed Rockefeller.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="amendment26" class="section">
+                <h2 class="section-title">Amendment XXVI: Vote for Eighteen Year-Old Citizens (1971)</h2>
+                <div class="text-container">
+                    <div class="original-text">
+                        <h3>Original Text</h3>
+                        <div class="text-block">
+                            The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged by the United States or any State on account of age.
+                        </div>
+                    </div>
+                    <div class="explanation">
+                        <h3>Explanation</h3>
+                        <div class="text-block">
+                            The minimum voting age in all elections is 18.
+                            <br><br>
+                            This was passed during the Vietnam War - the argument was that if 18-year-olds could be drafted, they should be able to vote.
+                        </div>
+                    </div>
+                </div>
+                <div class="section-navigation">
+                    <button class="nav-arrow prev" onclick="navigatePrevious()">
+                        <span id="prevLabel"></span>
+                    </button>
+                    <button class="nav-arrow next" onclick="navigateNext()">
+                        <span id="nextLabel"></span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <p><strong>Hauselmann's History Lab</strong></p>
+            <p>Interactive Constitution Resource • Understanding American Government</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Source: Digital History • Adapted for educational use</p>
+        </div>
+    </div>
+
+    <script>
+        // Navigation order
+        const sectionOrder = [
+            'preamble',
+            'article1', 'article2', 'article3', 'article4', 'article5', 'article6', 'article7',
+            'amendment1', 'amendment2', 'amendment3', 'amendment4', 'amendment5', 
+            'amendment6', 'amendment7', 'amendment8', 'amendment9', 'amendment10',
+            'amendment11', 'amendment12', 'amendment13', 'amendment14', 'amendment15',
+            'amendment16', 'amendment17', 'amendment18', 'amendment19', 'amendment20',
+            'amendment21', 'amendment22', 'amendment23', 'amendment24', 'amendment25', 'amendment26'
+        ];
+
+        let currentSectionIndex = 0;
+
+        // Show first section by default
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('preamble');
+            updateNavigationButtons();
+        });
+
+        function showSection(sectionId, clickedButton) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Show selected section
+            const selectedSection = document.getElementById(sectionId);
+            if (selectedSection) {
+                selectedSection.classList.add('active');
+                
+                // Update current section index
+                currentSectionIndex = sectionOrder.indexOf(sectionId);
+                
+                // Add active class to clicked button (if provided)
+                if (clickedButton) {
+                    clickedButton.classList.add('active');
+                }
+                
+                // Update navigation buttons
+                updateNavigationButtons();
+                
+                // Scroll to top of content
+                document.querySelector('.content').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevButton = document.getElementById('prevSection');
+            const nextButton = document.getElementById('nextSection');
+            const prevLabel = document.getElementById('prevLabel');
+            const nextLabel = document.getElementById('nextLabel');
+
+            // Update previous button
+            if (currentSectionIndex > 0) {
+                prevButton.disabled = false;
+                const prevSection = sectionOrder[currentSectionIndex - 1];
+                prevLabel.textContent = getSectionTitle(prevSection);
+            } else {
+                prevButton.disabled = true;
+                prevLabel.textContent = '';
+            }
+
+            // Update next button
+            if (currentSectionIndex < sectionOrder.length - 1) {
+                nextButton.disabled = false;
+                const nextSection = sectionOrder[currentSectionIndex + 1];
+                nextLabel.textContent = getSectionTitle(nextSection);
+            } else {
+                nextButton.disabled = true;
+                nextLabel.textContent = '';
+            }
+        }
+
+        function navigatePrevious() {
+            if (currentSectionIndex > 0) {
+                const prevSection = sectionOrder[currentSectionIndex - 1];
+                showSection(prevSection);
+            }
+        }
+
+        function navigateNext() {
+            if (currentSectionIndex < sectionOrder.length - 1) {
+                const nextSection = sectionOrder[currentSectionIndex + 1];
+                showSection(nextSection);
+            }
+        }
+
+        function getSectionTitle(sectionId) {
+            const titles = {
+                'preamble': 'Preamble',
+                'article1': 'Article I',
+                'article2': 'Article II',
+                'article3': 'Article III',
+                'article4': 'Article IV',
+                'article5': 'Article V',
+                'article6': 'Article VI',
+                'article7': 'Article VII',
+                'amendment1': 'Amendment I',
+                'amendment2': 'Amendment II',
+                'amendment3': 'Amendment III',
+                'amendment4': 'Amendment IV',
+                'amendment5': 'Amendment V',
+                'amendment6': 'Amendment VI',
+                'amendment7': 'Amendment VII',
+                'amendment8': 'Amendment VIII',
+                'amendment9': 'Amendment IX',
+                'amendment10': 'Amendment X',
+                'amendment11': 'Amendment XI',
+                'amendment12': 'Amendment XII',
+                'amendment13': 'Amendment XIII',
+                'amendment14': 'Amendment XIV',
+                'amendment15': 'Amendment XV',
+                'amendment16': 'Amendment XVI',
+                'amendment17': 'Amendment XVII',
+                'amendment18': 'Amendment XVIII',
+                'amendment19': 'Amendment XIX',
+                'amendment20': 'Amendment XX',
+                'amendment21': 'Amendment XXI',
+                'amendment22': 'Amendment XXII',
+                'amendment23': 'Amendment XXIII',
+                'amendment24': 'Amendment XXIV',
+                'amendment25': 'Amendment XXV',
+                'amendment26': 'Amendment XXVI'
+            };
+            return titles[sectionId] || '';
+        }
+
+        // Search functionality
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const sections = document.querySelectorAll('.section');
+            
+            if (searchTerm.length < 3) return;
+
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    section.style.display = 'block';
+                    // Highlight search terms
+                    highlightText(section, searchTerm);
+                }
+            });
+        });
+
+        function highlightText(element, term) {
+            // Simple highlighting - can be enhanced
+            const textBlocks = element.querySelectorAll('.text-block');
+            textBlocks.forEach(block => {
+                const text = block.innerHTML;
+                const regex = new RegExp(`(${term})`, 'gi');
+                block.innerHTML = text.replace(regex, '<span class="highlight">$1</span>');
+            });
+        }
+    </script>
+</body>
+</html>
