@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puritan Settlement Inquiry - Were They Selfish or Selfless?</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
@@ -415,9 +414,6 @@
                 <h3>Student Information</h3>
                 <label for="student-name"><strong>Your Name:</strong></label>
                 <input type="text" id="student-name" placeholder="Enter your full name">
-                
-                <label for="student-email" style="display: block; margin-top: 15px;"><strong>Your Email:</strong></label>
-                <input type="text" id="student-email" placeholder="your.name@my.yosemite.edu">
             </div>
 
             <button class="btn btn-primary" onclick="startActivity()">Begin Document Analysis →</button>
@@ -562,43 +558,19 @@
             </div>
 
             <div class="parchment-box">
-                <h3>Submission Options</h3>
-                <p>You can download your work as a PDF for your records, and/or submit it directly to the database.</p>
-                
-                <button class="btn btn-success" onclick="downloadPDF()">📄 Download as PDF</button>
-                <button class="btn btn-primary" onclick="submitToSupabase()">💾 Submit to Database</button>
-            </div>
+                <h3>Download Your Work</h3>
+                <p>Download your completed work as a PDF for your records and to submit to your teacher.</p>
 
-            <div id="submit-confirmation" style="display: none;" class="success-banner">
-                <strong>✓ Work Submitted Successfully!</strong><br>
-                Your responses have been saved. Thank you for completing this inquiry activity!
+                <button class="btn btn-success" onclick="downloadPDF()">📄 Download as PDF</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // Initialize Supabase
-        let supabaseClient;
-        
-        try {
-            const SUPABASE_URL = 'https://bqrluqymscucfzkroyru.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y2Z6a3JveXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQwNDQ0OTksImV4cCI6MjA0OTYyMDQ5OX0.cKw7tOBxVsqVZ5MqvVz4k9h2RsmT_ECQqeRMMZsidTw';
-            
-            if (typeof window.supabase !== 'undefined') {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase initialized successfully');
-            } else {
-                console.warn('Supabase library not loaded');
-            }
-        } catch (error) {
-            console.error('Error initializing Supabase:', error);
-        }
-
-        // Game state
+        // Activity state
         let activityState = {
             studentName: '',
-            studentEmail: '',
             documentA: {
                 q1: '',
                 q2: '',
@@ -616,26 +588,19 @@
 
         window.startActivity = function() {
             const name = document.getElementById('student-name').value.trim();
-            const email = document.getElementById('student-email').value.trim();
-            
-            if (!name || !email) {
-                alert('Please enter your name and email before beginning.');
+
+            if (!name) {
+                alert('Please enter your name before beginning.');
                 return;
             }
-            
-            if (!email.includes('@my.yosemite.edu')) {
-                alert('Please use your @my.yosemite.edu email address.');
-                return;
-            }
-            
+
             activityState.studentName = name;
-            activityState.studentEmail = email;
             activityState.timestamp = new Date().toISOString();
-            
+
             // Show progress tracker
             document.getElementById('progress-tracker').style.display = 'flex';
             document.getElementById('progress-intro').classList.add('completed');
-            
+
             // Enable Document A tab
             document.getElementById('tab-docA').disabled = false;
             showTab('document-a');
@@ -737,9 +702,8 @@
 
         function generateWorkSummary() {
             const summaryDiv = document.getElementById('summary-content');
-            
+
             let html = `<p><strong>Student:</strong> ${activityState.studentName}</p>`;
-            html += `<p><strong>Email:</strong> ${activityState.studentEmail}</p>`;
             html += `<p><strong>Completed:</strong> ${new Date(activityState.timestamp).toLocaleString()}</p>`;
             
             html += '<h4 style="margin-top: 20px;">Document A Responses:</h4>';
@@ -759,36 +723,95 @@
             summaryDiv.innerHTML = html;
         }
 
-        window.submitToSupabase = async function() {
-            try {
-                if (!supabaseClient) {
-                    throw new Error('Database connection not available');
-                }
-                
-                const { data, error } = await supabaseClient
-                    .from('puritan_submissions')
-                    .insert([{
-                        student_name: activityState.studentName,
-                        student_email: activityState.studentEmail,
-                        document_a_responses: activityState.documentA,
-                        document_b_responses: activityState.documentB,
-                        final_analysis: activityState.finalAnalysis,
-                        submitted_at: new Date().toISOString()
-                    }]);
-                
-                if (error) throw error;
-                
-                document.getElementById('submit-confirmation').style.display = 'block';
-                alert('Your work has been submitted successfully!');
-            } catch (error) {
-                console.error('Error submitting:', error);
-                alert('There was an error submitting your work. Please try downloading as PDF instead.');
-            }
-        }
 
         window.downloadPDF = function() {
-            alert('PDF download functionality requires jsPDF library to be properly loaded. Your data has been logged to console for now.');
-            console.log('Activity State:', activityState);
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                // Helper function to add text with wrapping and page breaks
+                function addText(text, size = 12, isBold = false) {
+                    doc.setFontSize(size);
+                    if (isBold) {
+                        doc.setFont(undefined, 'bold');
+                    } else {
+                        doc.setFont(undefined, 'normal');
+                    }
+
+                    const lines = doc.splitTextToSize(text, 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3; // Extra space after paragraph
+                }
+
+                // Title
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Puritan Settlement Inquiry Activity', 20, y);
+                y += 15;
+
+                // Student info
+                addText(`Student: ${activityState.studentName}`, 12, true);
+                addText(`Completed: ${new Date(activityState.timestamp).toLocaleString()}`, 10);
+                y += 5;
+
+                // Document A section
+                addText('DOCUMENT A: "A City Upon a Hill"', 14, true);
+                y += 2;
+
+                addText('Question 1: Who was John Winthrop speaking to? What is the purpose?', 11, true);
+                addText(activityState.documentA.q1, 10);
+                y += 3;
+
+                addText('Question 2: What might the audience have been thinking and feeling?', 11, true);
+                addText(activityState.documentA.q2, 10);
+                y += 3;
+
+                addText('Question 3: What is the main idea? What does "City Upon a Hill" mean?', 11, true);
+                addText(activityState.documentA.q3, 10);
+                y += 5;
+
+                // Document B section
+                addText('DOCUMENT B: "The Divine Right to Occupy the Land"', 14, true);
+                y += 2;
+
+                addText('Question 1: Who was John Cotton speaking to? Why?', 11, true);
+                addText(activityState.documentB.q1, 10);
+                y += 3;
+
+                addText('Question 2: Who are the "inhabitants" and "foreign people"?', 11, true);
+                addText(activityState.documentB.q2, 10);
+                y += 3;
+
+                addText('Question 3: What does Cotton say God will do for the foreign people?', 11, true);
+                addText(activityState.documentB.q3, 10);
+                y += 5;
+
+                // Final Analysis
+                addText('FINAL ANALYSIS: Were the Puritans selfish or selfless?', 14, true);
+                y += 2;
+                addText(activityState.finalAnalysis, 10);
+
+                // Save the PDF
+                const fileName = `Puritan_Activity_${activityState.studentName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+
+                alert('PDF downloaded successfully!');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('There was an error generating the PDF. Please make sure all fields are completed.');
+            }
         }
 
         // Save state to localStorage periodically
@@ -806,7 +829,6 @@
                     // Restore UI state
                     if (activityState.studentName) {
                         document.getElementById('student-name').value = activityState.studentName;
-                        document.getElementById('student-email').value = activityState.studentEmail;
                     }
                     if (activityState.documentA.q1) {
                         document.getElementById('docA-q1').value = activityState.documentA.q1;
