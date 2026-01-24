@@ -5,6 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schilling Revolt - Gamekeeper Dashboard</title>
     <style>
+        /* Password protection overlay */
+        #passwordOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        #passwordBox {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        #passwordBox h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        #passwordBox input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        #passwordBox button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #passwordBox button:hover {
+            background: #5568d3;
+        }
+
+        #passwordError {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #mainContent {
+            display: none;
+        }
+
+    </style>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -431,6 +498,19 @@
     </style>
 </head>
 <body>
+    <!-- Password Protection Overlay -->
+    <div id="passwordOverlay">
+        <div id="passwordBox">
+            <h2>🔒 Password Required</h2>
+            <p>This activity is password protected. Please enter the password to access the Schilling Revolt Gamekeeper Dashboard.</p>
+            <input type="password" id="passwordInput" placeholder="Enter password">
+            <button onclick="checkPassword()">Submit</button>
+            <p id="passwordError">Incorrect password. Please try again.</p>
+        </div>
+    </div>
+
+    <!-- Main Content (hidden until password is entered) -->
+    <div id="mainContent">
     <div class="container">
         <div class="header">
             <h1>🏛️ The Schilling Revolt</h1>
@@ -1206,8 +1286,44 @@
             </div>
         </div>
     </div>
+    </div> <!-- End of mainContent -->
 
     <script>
+        // Password Protection
+        const correctPassword = "BjOrKi2026!!";
+
+        function checkPassword() {
+            const inputPassword = document.getElementById('passwordInput').value;
+
+            if (inputPassword === correctPassword) {
+                // Correct password - hide overlay and show content
+                document.getElementById('passwordOverlay').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                // Store password in sessionStorage so they don't have to re-enter on refresh
+                sessionStorage.setItem('schillingAccess', 'granted');
+            } else {
+                // Incorrect password - show error
+                document.getElementById('passwordError').style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        // Allow Enter key to submit password
+        document.getElementById('passwordInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // Check if password was already entered in this session
+        window.addEventListener('DOMContentLoaded', function() {
+            if (sessionStorage.getItem('schillingAccess') === 'granted') {
+                document.getElementById('passwordOverlay').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            }
+        });
+
         // Navigation
         function showPhase(phaseId) {
             // Hide all phases
