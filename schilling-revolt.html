@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schilling Revolt - Gamekeeper Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            border-right: 2px solid #dee2e6;
+            padding: 20px;
+        }
+        
+        .content-area {
+            padding: 30px;
+        }
+        
+        .nav-button {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: left;
+        }
+        
+        .nav-button:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .nav-button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .phase-section {
+            display: none;
+        }
+        
+        .phase-section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timer-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .timer-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .card h3 {
+            color: #34495e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .checklist {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .checklist li:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .checklist li.completed {
+            background: #d4edda;
+            border-left-color: #28a745;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
+        .checklist li::before {
+            content: '☐ ';
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .checklist li.completed::before {
+            content: '☑ ';
+            color: #28a745;
+        }
+        
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .role-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .role-card h4 {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .role-card .status {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        
+        .role-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .role-card.expanded .role-details {
+            display: block;
+        }
+        
+        .die-roller {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 25px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+        }
+        
+        .die-result {
+            font-size: 4em;
+            margin: 20px 0;
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modifier-section {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .modifier-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+        }
+        
+        .modifier-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .modifier-item label {
+            flex: 1;
+            cursor: pointer;
+        }
+        
+        .outcome-box {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        
+        .outcome-box h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .demand-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .demand-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .demand-text {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .crowd-action-result {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 2px solid #dee2e6;
+            }
+            
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ The Schilling Revolt</h1>
+            <p>Gamekeeper's Dashboard - Augsburg, 1524</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <button class="nav-button active" onclick="showPhase('setup')">📋 Setup</button>
+                <button class="nav-button" onclick="showPhase('timer')">⏱️ Timer</button>
+                <button class="nav-button" onclick="showPhase('phase1')">🗣️ Phase 1 Negotiations</button>
+                <button class="nav-button" onclick="showPhase('midpoint')">🎲 Midpoint Check</button>
+                <button class="nav-button" onclick="showPhase('phase2')">🗣️ Phase 2 Negotiations</button>
+                <button class="nav-button" onclick="showPhase('final')">🎲 Final Resolution</button>
+                <button class="nav-button" onclick="showPhase('roles')">👥 Role Reference</button>
+                <button class="nav-button" onclick="showPhase('crowd')">👊 Crowd Actions</button>
+                <button class="nav-button" onclick="showPhase('debrief')">📖 Debrief</button>
+            </div>
+            
+            <div class="content-area">
+                <!-- SETUP PHASE -->
+                <div id="setup" class="phase-section active">
+                    <div class="card">
+                        <h2>Pre-Game Setup Checklist</h2>
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Important:</strong> Complete these tasks before class begins!
+                        </div>
+                        <ul class="checklist">
+                            <li onclick="toggleCheck(this)">Distribute roles to students 24 hours ahead (via Canvas or email)</li>
+                            <li onclick="toggleCheck(this)">Post Student Gamebook to Canvas for reading</li>
+                            <li onclick="toggleCheck(this)">Confirm classroom has whiteboard/chalkboard</li>
+                            <li onclick="toggleCheck(this)">Prepare nametags for students</li>
+                            <li onclick="toggleCheck(this)">Bring gavel or bell for mayors</li>
+                            <li onclick="toggleCheck(this)">Have dice ready (or use this dashboard's die roller)</li>
+                            <li onclick="toggleCheck(this)">Set up speakers for crowd noise (optional)</li>
+                            <li onclick="toggleCheck(this)">Move desks to front for mayors</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>Day-Of Checklist (First 5 Minutes)</h2>
+                        <ul class="checklist">
+                            <li onclick="toggleCheck(this)">Brief introduction: Connect to Pelz reading on radical Reformation</li>
+                            <li onclick="toggleCheck(this)">Confirm mayors (Hieronymus Imhof & Ulrich Rehlinger) understand their roles</li>
+                            <li onclick="toggleCheck(this)">Confirm Christoph Herwart understands his negotiator role</li>
+                            <li onclick="toggleCheck(this)">Confirm Conrad Peutinger will track proposals on board</li>
+                            <li onclick="toggleCheck(this)">Start crowd noise audio (optional)</li>
+                            <li onclick="toggleCheck(this)">Call council to order and begin!</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>Opening Remarks (Use This Script)</h2>
+                        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                            <p style="margin-bottom: 15px;"><strong>"We're in Augsburg, August 1524. You've just read about the radical Reformation in Pelz—about Müntzer, the Taborites, the demands for equality. That's exactly what's happening here.</strong></p>
+                            
+                            <p style="margin-bottom: 15px;">Johann Schilling has been preaching that the Bible says everyone is equal, so why do merchants have monopolies and the church pays no taxes? The city council paid him to leave quietly. But now 2,000 angry people are outside demanding he come back—and demanding a lot more.</p>
+                            
+                            <p style="margin-bottom: 15px;">This is happening ONE YEAR before the massive Peasants' War that killed 100,000 people. You're the city council. You have to decide: Do you give in? Do you compromise? Do you crack down?</p>
+                            
+                            <p><strong>What you decide today could determine whether Augsburg explodes into violence or finds a peaceful path forward. Good luck."</strong></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TIMER PHASE -->
+                <div id="timer" class="phase-section">
+                    <div class="timer-box">
+                        <h2 style="margin-bottom: 10px;">Game Timer</h2>
+                        <div class="timer-display" id="timerDisplay">75:00</div>
+                        <div style="margin-bottom: 15px;">
+                            <strong>Current Phase:</strong> <span id="currentPhaseLabel">Not Started</span>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="btn btn-primary" onclick="startTimer()">▶️ Start</button>
+                            <button class="btn btn-danger" onclick="pauseTimer()">⏸️ Pause</button>
+                            <button class="btn btn-warning" onclick="resetTimer()">🔄 Reset</button>
+                            <button class="btn btn-info" onclick="add5Minutes()">+5 Min</button>
+                            <button class="btn btn-secondary" onclick="subtract5Minutes()">-5 Min</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>Phase Time Markers</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Phase</th>
+                                    <th>Duration</th>
+                                    <th>Time Remaining</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Begin Game</strong></td>
+                                    <td>5 minutes</td>
+                                    <td>70:00 remaining</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Phase 1 Negotiations</strong></td>
+                                    <td>20-30 minutes</td>
+                                    <td>45:00 remaining</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Communication w/ Protesters</strong></td>
+                                    <td>5 minutes</td>
+                                    <td>40:00 remaining</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Phase 2 Negotiations</strong></td>
+                                    <td>20 minutes</td>
+                                    <td>20:00 remaining</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Final Resolution</strong></td>
+                                    <td>10 minutes</td>
+                                    <td>10:00 remaining</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="alert alert-info" style="margin-top: 20px;">
+                            <strong>💡 Timer Tips:</strong>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>At 45:00 - Announce crowd is growing, demand response</li>
+                                <li>At 20:00 - Move to Phase 2 negotiations</li>
+                                <li>At 10:00 - Call halt to debate, final resolution</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- PHASE 1 -->
+                <div id="phase1" class="phase-section">
+                    <div class="card">
+                        <h2>Phase 1 Negotiations (20-30 minutes)</h2>
+                        
+                        <div class="alert alert-success">
+                            <strong>🎯 Your Role:</strong> Let the mayors lead. Intervene only if debate stalls or becomes too chaotic.
+                        </div>
+                        
+                        <h3>The Four Demands</h3>
+                        
+                        <div class="demand-section">
+                            <h3>1. Religious Reform</h3>
+                            <div class="demand-text">
+                                • Return Johann Schilling<br>
+                                • Remove anti-reform preachers at Cathedral & Dominican Church
+                            </div>
+                            <p><strong>Stakes:</strong> Most common people want reform. But radical reform threatens Pope & Emperor. Conservative preachers hold line against radicalism.</p>
+                        </div>
+                        
+                        <div class="demand-section">
+                            <h3>2. Beer & Wine Taxes</h3>
+                            <div class="demand-text">
+                                • Return to old (larger) measure<br>
+                                • Abolish excise taxes on beer
+                            </div>
+                            <p><strong>Stakes:</strong> Beer tax is highly regressive but it's the city's single biggest revenue source. Can they afford to reduce it?</p>
+                        </div>
+                        
+                        <div class="demand-section">
+                            <h3>3. Merchant & Church Privileges</h3>
+                            <div class="demand-text">
+                                • Abolish merchant trading monopolies<br>
+                                • Make the church pay taxes
+                            </div>
+                            <p><strong>Stakes:</strong> Bible says everyone is equal. But merchants drive economic growth. Church has Rome's protection.</p>
+                        </div>
+                        
+                        <div class="demand-section">
+                            <h3>4. Free Kiessling</h3>
+                            <div class="demand-text">
+                                • Release Kiessling the Cloakmaker from prison
+                            </div>
+                            <p><strong>Stakes:</strong> He beat his wife and threatened to stab the mayor. Popular with crowd for unknown reasons. Dangerous precedent?</p>
+                        </div>
+                        
+                        <h3>Facilitation Tips</h3>
+                        <ul class="checklist">
+                            <li onclick="toggleCheck(this)">If chaos: Suggest mayors address demands one at a time</li>
+                            <li onclick="toggleCheck(this)">If large class: Divide into 4 groups, one per demand</li>
+                            <li onclick="toggleCheck(this)">If debate stalls: Call a brief recess for direct negotiations</li>
+                            <li onclick="toggleCheck(this)">Watch for Ulrich Arzt (mercenaries) and Stephan Eiselin (poor relief) proposals</li>
+                            <li onclick="toggleCheck(this)">Conrad Peutinger should be tracking all proposals on board</li>
+                        </ul>
+                        
+                        <div class="alert alert-warning" style="margin-top: 20px;">
+                            <strong>⏰ At 20 minutes (or if debate flags):</strong> Announce "The crowd is growing in size and demanding a response from the council!"
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MIDPOINT CHECK -->
+                <div id="midpoint" class="phase-section">
+                    <div class="card">
+                        <h2>Midpoint Communication with Protesters</h2>
+                        
+                        <div class="alert alert-info">
+                            <strong>📢 Process:</strong>
+                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                <li>Christoph Herwart addresses the (imaginary) crowd</li>
+                                <li>He explains council's concessions so far</li>
+                                <li>You calculate modifiers and roll die</li>
+                                <li>Announce crowd's response based on result</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="die-roller">
+                        <h2>Midpoint Die Roll</h2>
+                        
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 10px; font-size: 1.1em;">
+                                <strong>Dice Roll Method:</strong>
+                            </label>
+                            <div style="display: flex; gap: 15px;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="midpoint-dice-method" value="auto" checked onchange="toggleMidpointDiceMethod()">
+                                    <span>🎲 Auto Roll</span>
+                                </label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="midpoint-dice-method" value="manual" onchange="toggleMidpointDiceMethod()">
+                                    <span>🎯 Manual Input</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="modifier-section">
+                            <h3 style="color: white;">Calculate Modifiers</h3>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="mid-mod1" onchange="updateMidpointTotal()">
+                                <label for="mid-mod1">+1: Significant concessions agreed</label>
+                            </div>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="mid-mod2" onchange="updateMidpointTotal()">
+                                <label for="mid-mod2">+1: Schilling's return included</label>
+                            </div>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="mid-mod3" onchange="updateMidpointTotal()">
+                                <label for="mid-mod3">-1: Only few/modified concessions</label>
+                            </div>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="mid-mod4" onchange="updateMidpointTotal()">
+                                <label for="mid-mod4">-1: Council deeply divided</label>
+                            </div>
+                            <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.3); border-radius: 8px;">
+                                <label for="mid-custom" style="display: block; margin-bottom: 5px;">Additional Modifier (Your judgment):</label>
+                                <input type="number" id="mid-custom" value="0" onchange="updateMidpointTotal()" 
+                                       style="width: 100px; padding: 8px; font-size: 1.2em; border-radius: 4px; border: none;">
+                            </div>
+                            <div style="margin-top: 15px; font-size: 1.3em;">
+                                <strong>Total Modifier: <span id="midpointTotalMod">0</span></strong>
+                            </div>
+                        </div>
+                        
+                        <div id="midpoint-auto-section">
+                            <button class="btn btn-primary" style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;" 
+                                    onclick="rollMidpointDie()">
+                                🎲 Roll Die (2d6)
+                            </button>
+                        </div>
+                        
+                        <div id="midpoint-manual-section" style="display: none;">
+                            <div style="background: rgba(255,255,255,0.3); padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <label style="display: block; margin-bottom: 10px; font-size: 1.1em;">
+                                    <strong>Enter your physical dice roll (2d6):</strong>
+                                </label>
+                                <div style="display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap;">
+                                    <div>
+                                        <label for="mid-die1" style="display: block; margin-bottom: 5px;">Die 1:</label>
+                                        <input type="number" id="mid-die1" min="1" max="6" value="1" 
+                                               style="width: 80px; padding: 10px; font-size: 1.3em; border-radius: 4px; border: none; text-align: center;">
+                                    </div>
+                                    <div style="font-size: 2em; padding-top: 20px;">+</div>
+                                    <div>
+                                        <label for="mid-die2" style="display: block; margin-bottom: 5px;">Die 2:</label>
+                                        <input type="number" id="mid-die2" min="1" max="6" value="1" 
+                                               style="width: 80px; padding: 10px; font-size: 1.3em; border-radius: 4px; border: none; text-align: center;">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" style="font-size: 1.2em; padding: 15px 40px; margin-top: 20px;" 
+                                        onclick="calculateMidpointManual()">
+                                    ✓ Calculate Result
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="die-result" id="midpointResult"></div>
+                        
+                        <div class="outcome-box" id="midpointOutcome"></div>
+                    </div>
+                </div>
+                
+                <!-- PHASE 2 -->
+                <div id="phase2" class="phase-section">
+                    <div class="card">
+                        <h2>Phase 2 Negotiations (20 minutes)</h2>
+                        
+                        <div class="alert alert-warning">
+                            <strong>⚡ Energy Check:</strong> Based on midpoint results, the crowd may be more/less demanding. Keep negotiations focused!
+                        </div>
+                        
+                        <h3>Key Actions to Watch For</h3>
+                        <ul class="checklist">
+                            <li onclick="toggleCheck(this)">Ulrich Arzt proposes calling in Swabian League mercenaries</li>
+                            <li onclick="toggleCheck(this)">Stephan Eiselin proposes increased poor relief</li>
+                            <li onclick="toggleCheck(this)">Council finalizes position on all four demands</li>
+                            <li onclick="toggleCheck(this)">Conrad Peutinger has final proposal list on board</li>
+                        </ul>
+                        
+                        <h3>Optional: Crowd Actions</h3>
+                        <div class="alert alert-info">
+                            If using Crowd Actions, roll every 10 minutes during Phase 2. Go to "Crowd Actions" tab for roller.
+                        </div>
+                        
+                        <div class="alert alert-danger" style="margin-top: 20px;">
+                            <strong>⏰ With 10 Minutes Remaining:</strong><br>
+                            Call a halt to debate. Give Christoph Herwart chance to make final appeal to protesters, then move to Final Resolution!
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FINAL RESOLUTION -->
+                <div id="final" class="phase-section">
+                    <div class="card">
+                        <h2>Final Resolution (10 minutes)</h2>
+                        
+                        <div class="alert alert-danger">
+                            <strong>⚠️ This is it!</strong> Christoph Herwart makes final appeal to crowd, then you roll to determine outcome.
+                        </div>
+                        
+                        <h3>Council's Final Decisions</h3>
+                        <p>Review what's on the board. Check these major decisions:</p>
+                        <table style="margin-top: 15px;">
+                            <tr>
+                                <td><strong>Johann Schilling returns?</strong></td>
+                                <td>_______________</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Remove conservative preachers?</strong></td>
+                                <td>_______________</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Beer tax/measure changed?</strong></td>
+                                <td>_______________</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Merchant privileges abolished?</strong></td>
+                                <td>_______________</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Church pays taxes?</strong></td>
+                                <td>_______________</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kiessling freed?</strong></td>
+                                <td>_______________</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Additional actions?</strong></td>
+                                <td>_______________</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="die-roller">
+                        <h2>Final Die Roll</h2>
+                        
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 10px; font-size: 1.1em;">
+                                <strong>Dice Roll Method:</strong>
+                            </label>
+                            <div style="display: flex; gap: 15px;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="final-dice-method" value="auto" checked onchange="toggleFinalDiceMethod()">
+                                    <span>🎲 Auto Roll</span>
+                                </label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="final-dice-method" value="manual" onchange="toggleFinalDiceMethod()">
+                                    <span>🎯 Manual Input</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="modifier-section">
+                            <h3 style="color: white;">Calculate Modifiers</h3>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="final-mod1" onchange="updateFinalTotal()">
+                                <label for="final-mod1">+1: Arzt controls mercenaries / calls Swabian League</label>
+                            </div>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="final-mod2" onchange="updateFinalTotal()">
+                                <label for="final-mod2">+1: Additional poor relief passed</label>
+                            </div>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="final-mod3" onchange="updateFinalTotal()">
+                                <label for="final-mod3">+1: Schilling allowed to return</label>
+                            </div>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="final-mod4" onchange="updateFinalTotal()">
+                                <label for="final-mod4">-1: No beer tax/measure adjustments</label>
+                            </div>
+                            <div class="modifier-item">
+                                <input type="checkbox" id="final-mod5" onchange="updateFinalTotal()">
+                                <label for="final-mod5">-1: Kiessling stays in prison</label>
+                            </div>
+                            <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.3); border-radius: 8px;">
+                                <label for="final-custom" style="display: block; margin-bottom: 5px;">Additional Modifier (Your judgment):</label>
+                                <input type="number" id="final-custom" value="0" onchange="updateFinalTotal()" 
+                                       style="width: 100px; padding: 8px; font-size: 1.2em; border-radius: 4px; border: none;">
+                            </div>
+                            <div style="margin-top: 15px; font-size: 1.3em;">
+                                <strong>Total Modifier: <span id="finalTotalMod">0</span></strong>
+                            </div>
+                        </div>
+                        
+                        <div id="final-auto-section">
+                            <button class="btn btn-primary" style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;" 
+                                    onclick="rollFinalDie()">
+                                🎲 Roll Die (2d6)
+                            </button>
+                        </div>
+                        
+                        <div id="final-manual-section" style="display: none;">
+                            <div style="background: rgba(255,255,255,0.3); padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <label style="display: block; margin-bottom: 10px; font-size: 1.1em;">
+                                    <strong>Enter your physical dice roll (2d6):</strong>
+                                </label>
+                                <div style="display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap;">
+                                    <div>
+                                        <label for="final-die1" style="display: block; margin-bottom: 5px;">Die 1:</label>
+                                        <input type="number" id="final-die1" min="1" max="6" value="1" 
+                                               style="width: 80px; padding: 10px; font-size: 1.3em; border-radius: 4px; border: none; text-align: center;">
+                                    </div>
+                                    <div style="font-size: 2em; padding-top: 20px;">+</div>
+                                    <div>
+                                        <label for="final-die2" style="display: block; margin-bottom: 5px;">Die 2:</label>
+                                        <input type="number" id="final-die2" min="1" max="6" value="1" 
+                                               style="width: 80px; padding: 10px; font-size: 1.3em; border-radius: 4px; border: none; text-align: center;">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" style="font-size: 1.2em; padding: 15px 40px; margin-top: 20px;" 
+                                        onclick="calculateFinalManual()">
+                                    ✓ Calculate Result
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="die-result" id="finalResult"></div>
+                        
+                        <div class="outcome-box" id="finalOutcome"></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>After the Final Roll</h2>
+                        <ul class="checklist">
+                            <li onclick="toggleCheck(this)">Announce the outcome dramatically</li>
+                            <li onclick="toggleCheck(this)">Determine winners/losers based on victory objectives</li>
+                            <li onclick="toggleCheck(this)">Move to Debrief tab for discussion prompts</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- ROLES REFERENCE -->
+                <div id="roles" class="phase-section">
+                    <div class="card">
+                        <h2>Quick Role Reference</h2>
+                        
+                        <div class="alert alert-info">
+                            <strong>Key Roles to Monitor:</strong>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>Hieronymus Imhof & Ulrich Rehlinger</strong> - Mayors, lead discussion</li>
+                                <li><strong>Conrad Peutinger</strong> - Council clerk, tracks proposals</li>
+                                <li><strong>Christoph Herwart</strong> - Negotiates with crowd</li>
+                                <li><strong>Ulrich Arzt</strong> - Should propose calling mercenaries</li>
+                                <li><strong>Stephan Eiselin</strong> - Should propose poor relief</li>
+                            </ul>
+                        </div>
+                        
+                        <h3>All Roles by Priority</h3>
+                        <div class="role-grid">
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>1. Hieronymus Imhof</h4>
+                                <div class="status">Mayor (Merchant Guild)</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Pro-reform pastors, Replace with moderates, NO on merchant privileges<br>
+                                    <strong>Special:</strong> MAYOR - leads discussion
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>2. Ulrich Rehlinger</h4>
+                                <div class="status">Mayor (Patrician)</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Pro-reform, Tax the church<br>
+                                    <strong>Special:</strong> MAYOR - leads discussion
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>3. Conrad Peutinger</h4>
+                                <div class="status">Patrician</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Anti-reform, No taxes on church<br>
+                                    <strong>Special:</strong> COUNCIL CLERK - track proposals
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>4. Christoph Herwart</h4>
+                                <div class="status">Patrician</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Advocate for protesters<br>
+                                    <strong>Special:</strong> NEGOTIATOR - speaks to crowd
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>5. George Vetter</h4>
+                                <div class="status">Patrician</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Pro-reform, Abolish merchant privileges
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>6. Anton Bimmel</h4>
+                                <div class="status">Guild Master - Weavers</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Pro-reform, Free Kiessling
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>7. Philip Adler</h4>
+                                <div class="status">Guild Master - Salt</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Maintain merchant privileges, No church taxes
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>8. Ulrich Arzt</h4>
+                                <div class="status">Guild Master - Merchants</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Anti-reform<br>
+                                    <strong>Special:</strong> Should propose taking control of mercenaries
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>9. Simprecht Hoser</h4>
+                                <div class="status">Guild Master - Salt</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Pro-reform, Maintain merchant privileges
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>10. Stephan Eiselin</h4>
+                                <div class="status">Guild Master - Shopkeepers</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Anti-reform<br>
+                                    <strong>Special:</strong> Should propose poor relief
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>11. Franz Brigel</h4>
+                                <div class="status">Guild Master - Butchers</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Anti-reform, No church taxes
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>12. Daniel Hopfer</h4>
+                                <div class="status">Guild Master - Ironworkers</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Pro-reform, Tax the church
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>13. Ulrich Hieber</h4>
+                                <div class="status">Guild Master - Cloakmakers</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Pro-reform, Free Kiessling
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>14. Caspar Mair</h4>
+                                <div class="status">Guild Master - Brewers</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Anti-reform, Tax church beer
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="this.classList.toggle('expanded')">
+                                <h4>15. Hans Rehlinger</h4>
+                                <div class="status">Patrician</div>
+                                <div class="role-details">
+                                    <strong>Objectives:</strong> Anti-reform, No church taxes<br>
+                                    <strong>Special:</strong> Resist ALL demands
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p style="margin-top: 20px;"><em>Roles 16-28 available in full game materials. Click any role card to see details.</em></p>
+                    </div>
+                </div>
+                
+                <!-- CROWD ACTIONS -->
+                <div id="crowd" class="phase-section">
+                    <div class="card">
+                        <h2>Crowd Actions (Optional)</h2>
+                        
+                        <div class="alert alert-warning">
+                            <strong>📋 How This Works:</strong>
+                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                <li>Roll every 10 minutes during negotiations</li>
+                                <li>First roll determines what crowd attempts</li>
+                                <li>Second roll determines if they succeed</li>
+                                <li>Success becomes more likely as crisis drags on</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="die-roller">
+                        <h2>Crowd Action Die Roller</h2>
+                        
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 10px; font-size: 1.1em;">
+                                <strong>Dice Roll Method:</strong>
+                            </label>
+                            <div style="display: flex; gap: 15px;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="crowd-dice-method" value="auto" checked onchange="toggleCrowdDiceMethod()">
+                                    <span>🎲 Auto Roll</span>
+                                </label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="crowd-dice-method" value="manual" onchange="toggleCrowdDiceMethod()">
+                                    <span>🎯 Manual Input</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <label for="crowdAttempt" style="display: block; margin-bottom: 10px; font-size: 1.1em;">
+                                <strong>Which attempt is this?</strong>
+                            </label>
+                            <select id="crowdAttempt" style="width: 100%; padding: 10px; font-size: 1.1em; border-radius: 6px; border: none;">
+                                <option value="1">1st Attempt (early in game)</option>
+                                <option value="2">2nd Attempt</option>
+                                <option value="3">3rd Attempt</option>
+                                <option value="4">4th Attempt (late in game)</option>
+                            </select>
+                        </div>
+                        
+                        <div id="crowd-auto-section">
+                            <button class="btn btn-primary" style="font-size: 1.2em; padding: 15px 40px; margin: 20px 0;" 
+                                    onclick="rollCrowdAction()">
+                                🎲 Roll for Crowd Action
+                            </button>
+                        </div>
+                        
+                        <div id="crowd-manual-section" style="display: none;">
+                            <div style="background: rgba(255,255,255,0.3); padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <label style="display: block; margin-bottom: 10px; font-size: 1.1em;">
+                                    <strong>Enter your physical dice rolls:</strong>
+                                </label>
+                                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                                    <div>
+                                        <label for="crowd-action-roll" style="display: block; margin-bottom: 5px;"><strong>Action Roll (1d12 or 2d6):</strong></label>
+                                        <input type="number" id="crowd-action-roll" min="1" max="12" value="1" 
+                                               style="width: 100px; padding: 10px; font-size: 1.3em; border-radius: 4px; border: none; text-align: center;">
+                                    </div>
+                                    <div>
+                                        <label for="crowd-success-roll" style="display: block; margin-bottom: 5px;"><strong>Success Roll (1d12):</strong></label>
+                                        <input type="number" id="crowd-success-roll" min="1" max="12" value="1" 
+                                               style="width: 100px; padding: 10px; font-size: 1.3em; border-radius: 4px; border: none; text-align: center;">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" style="font-size: 1.2em; padding: 15px 40px;" 
+                                        onclick="calculateCrowdManual()">
+                                    ✓ Calculate Result
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="die-result" id="crowdActionResult"></div>
+                        
+                        <div class="crowd-action-result" id="crowdActionOutcome"></div>
+                    </div>
+                </div>
+                
+                <!-- DEBRIEF -->
+                <div id="debrief" class="phase-section">
+                    <div class="card">
+                        <h2>Debrief & Discussion (10-15 minutes)</h2>
+                        
+                        <div class="alert alert-success">
+                            <strong>✅ Determine Winners:</strong> Students win if their victory objectives succeeded AND they're still on the council.
+                        </div>
+                        
+                        <h3>Discussion Questions</h3>
+                        
+                        <div class="demand-section">
+                            <h3>1. Connect to Pelz Reading</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>How did religious reform demands connect to economic/political demands in this game?</li>
+                                <li>Did you see evidence of the "two Reformations" Pelz describes—official vs. popular?</li>
+                                <li>Why might Luther have turned against the peasants? What does that tell us about the Reformation?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="demand-section">
+                            <h3>2. Decision-Making Under Pressure</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>What was hardest about making these decisions?</li>
+                                <li>Did you compromise on your principles? Why or why not?</li>
+                                <li>How did the time pressure affect your choices?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="demand-section">
+                            <h3>3. Historical Thinking</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>Do you think the real council faced similar pressures?</li>
+                                <li>What surprised you about 16th-century politics?</li>
+                                <li>How might this connect to modern protests or social movements?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="demand-section">
+                            <h3>4. Power & Authority</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>Who had the most power in this scenario? The council? The crowd? The Emperor?</li>
+                                <li>Were the protesters' demands reasonable? Radical?</li>
+                                <li>How did economic interests shape religious debates?</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>What Really Happened</h2>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; line-height: 1.8;">
+                            <p style="margin-bottom: 15px;">The real Augsburg city council, led by mayor Hieronymus Imhof, immediately appointed moderate reformer Urbanus Rhegius to Schilling's position. When this didn't satisfy the crowd, the council agreed to bring Schilling back. The protesters dispersed peacefully.</p>
+                            
+                            <p style="margin-bottom: 15px;">But the council was shaken. They secretly ordered all mercenaries to gather at dawn and take a new oath of loyalty. A few weeks later, they beheaded two 60-year-old weavers (Hans Kag and Hans Speiser) accused of masterminding the rebellion, and banished a soldier's wife (Anna Fassnacht) for supporting it.</p>
+                            
+                            <p style="margin-bottom: 15px;">The swift justice reestablished authority but taught the council about the power of the crowd. Over the following months, peasants across Germany rose up with similar demands. In the German Peasants' War of 1524-1525, as many as 100,000 peasants were killed.</p>
+                            
+                            <p style="margin-bottom: 15px;"><strong>Martin Luther wrote:</strong> "Stab, smite, slay whoever can. If you die in doing it, well for you! A more blessed death can never be yours."</p>
+                            
+                            <p>The radical Reformation—the people's Reformation—drowned in blood.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>Post-Game Assignment Ideas</h2>
+                        <ul style="margin-left: 20px; line-height: 1.8;">
+                            <li><strong>Reflection Paper:</strong> "How did playing this game change your understanding of the Reformation?"</li>
+                            <li><strong>Comparative Analysis:</strong> Compare Schilling Revolt to modern protest movements</li>
+                            <li><strong>Primary Source Analysis:</strong> Read Luther's "Against the Robbing and Murdering Hordes of Peasants"</li>
+                            <li><strong>Creative Writing:</strong> Write a letter home from your character's perspective after the crisis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function showPhase(phaseId) {
+            // Hide all phases
+            document.querySelectorAll('.phase-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all buttons
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected phase
+            document.getElementById(phaseId).classList.add('active');
+            
+            // Make button active
+            event.target.classList.add('active');
+        }
+        
+        // Checklist toggle
+        function toggleCheck(element) {
+            element.classList.toggle('completed');
+        }
+        
+        // Timer functionality
+        let timerInterval;
+        let timeRemaining = 75 * 60; // 75 minutes in seconds
+        let isRunning = false;
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+            // Update phase label
+            let phaseLabel = 'Not Started';
+            if (timeRemaining <= 0) {
+                phaseLabel = 'Game Over!';
+            } else if (timeRemaining <= 10 * 60) {
+                phaseLabel = 'Final Resolution';
+            } else if (timeRemaining <= 20 * 60) {
+                phaseLabel = 'Phase 2 Negotiations';
+            } else if (timeRemaining <= 40 * 60) {
+                phaseLabel = 'Communication/Phase 2';
+            } else if (timeRemaining <= 70 * 60) {
+                phaseLabel = 'Phase 1 Negotiations';
+            } else {
+                phaseLabel = 'Begin Game';
+            }
+            document.getElementById('currentPhaseLabel').textContent = phaseLabel;
+        }
+        
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timerInterval = setInterval(() => {
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        updateTimerDisplay();
+                        
+                        // Alert at key moments
+                        if (timeRemaining === 45 * 60) {
+                            alert('⏰ 45 minutes: Crowd is growing! Demand response from council.');
+                        } else if (timeRemaining === 20 * 60) {
+                            alert('⏰ 20 minutes: Move to Phase 2 negotiations!');
+                        } else if (timeRemaining === 10 * 60) {
+                            alert('⏰ 10 minutes: Call halt to debate. Final resolution time!');
+                        }
+                    } else {
+                        pauseTimer();
+                        alert('⏰ Time\'s up! Proceed to final die roll.');
+                    }
+                }, 1000);
+            }
+        }
+        
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+        }
+        
+        function resetTimer() {
+            pauseTimer();
+            timeRemaining = 75 * 60;
+            updateTimerDisplay();
+        }
+        
+        function add5Minutes() {
+            timeRemaining += 5 * 60;
+            updateTimerDisplay();
+        }
+        
+        function subtract5Minutes() {
+            timeRemaining -= 5 * 60;
+            if (timeRemaining < 0) timeRemaining = 0;
+            updateTimerDisplay();
+        }
+        
+        // Midpoint die roll
+        function updateMidpointTotal() {
+            let total = 0;
+            if (document.getElementById('mid-mod1').checked) total += 1;
+            if (document.getElementById('mid-mod2').checked) total += 1;
+            if (document.getElementById('mid-mod3').checked) total -= 1;
+            if (document.getElementById('mid-mod4').checked) total -= 1;
+            total += parseInt(document.getElementById('mid-custom').value) || 0;
+            document.getElementById('midpointTotalMod').textContent = total > 0 ? `+${total}` : total;
+        }
+        
+        function toggleMidpointDiceMethod() {
+            const method = document.querySelector('input[name="midpoint-dice-method"]:checked').value;
+            if (method === 'auto') {
+                document.getElementById('midpoint-auto-section').style.display = 'block';
+                document.getElementById('midpoint-manual-section').style.display = 'none';
+            } else {
+                document.getElementById('midpoint-auto-section').style.display = 'none';
+                document.getElementById('midpoint-manual-section').style.display = 'block';
+            }
+        }
+        
+        function calculateMidpointManual() {
+            const die1 = parseInt(document.getElementById('mid-die1').value);
+            const die2 = parseInt(document.getElementById('mid-die2').value);
+            
+            // Validate input
+            if (die1 < 1 || die1 > 6 || die2 < 1 || die2 > 6) {
+                alert('Please enter valid die values (1-6)');
+                return;
+            }
+            
+            const baseRoll = die1 + die2;
+            const modifier = parseInt(document.getElementById('midpointTotalMod').textContent) || 0;
+            const finalRoll = baseRoll + modifier;
+            
+            displayMidpointOutcome(die1, die2, baseRoll, modifier, finalRoll);
+        }
+        
+        function rollMidpointDie() {
+            const die1 = Math.floor(Math.random() * 6) + 1;
+            const die2 = Math.floor(Math.random() * 6) + 1;
+            const baseRoll = die1 + die2;
+            const modifier = parseInt(document.getElementById('midpointTotalMod').textContent) || 0;
+            const finalRoll = baseRoll + modifier;
+            
+            displayMidpointOutcome(die1, die2, baseRoll, modifier, finalRoll);
+        }
+        
+        function displayMidpointOutcome(die1, die2, baseRoll, modifier, finalRoll) {
+            document.getElementById('midpointResult').textContent = 
+                `🎲 ${die1} + ${die2} = ${baseRoll} (${modifier >= 0 ? '+' : ''}${modifier}) = ${finalRoll}`;
+            
+            let outcome = '';
+            if (finalRoll < 1) {
+                outcome = '<h3 style="color: #dc3545;">Crowd Attacks Herwart!</h3>' +
+                    '<p>Crowd finds proposals completely unacceptable. They attack Christoph Herwart (roll to see if he survives). A new negotiator must be chosen.</p>';
+            } else if (finalRoll === 2) {
+                outcome = '<h3 style="color: #dc3545;">Completely Unacceptable</h3>' +
+                    '<p>The crowd rejects all proposals. The council must start over with their negotiations.</p>';
+            } else if (finalRoll === 3 || finalRoll === 4) {
+                outcome = '<h3 style="color: #ffc107;">Schilling is Non-Negotiable</h3>' +
+                    '<p>The crowd likes some parts of the proposal, but they absolutely insist that they will not disperse until Johann Schilling is returned.</p>';
+            } else if (finalRoll === 5) {
+                outcome = '<h3 style="color: #28a745;">One More Concession</h3>' +
+                    '<p>Crowd is happy with most of what the council is offering, but they demand at least one more significant concession.</p>';
+            } else {
+                outcome = '<h3 style="color: #17a2b8;">Emperor\'s Representative Objects</h3>' +
+                    '<p>Crowd is happy, but the Emperor\'s representative in Augsburg is not. The council must withdraw some concessions or risk imperial invasion.</p>';
+            }
+            
+            document.getElementById('midpointOutcome').innerHTML = outcome;
+        }
+        
+        // Final die roll
+        function updateFinalTotal() {
+            let total = 0;
+            if (document.getElementById('final-mod1').checked) total += 1;
+            if (document.getElementById('final-mod2').checked) total += 1;
+            if (document.getElementById('final-mod3').checked) total += 1;
+            if (document.getElementById('final-mod4').checked) total -= 1;
+            if (document.getElementById('final-mod5').checked) total -= 1;
+            total += parseInt(document.getElementById('final-custom').value) || 0;
+            document.getElementById('finalTotalMod').textContent = total > 0 ? `+${total}` : total;
+        }
+        
+        function toggleFinalDiceMethod() {
+            const method = document.querySelector('input[name="final-dice-method"]:checked').value;
+            if (method === 'auto') {
+                document.getElementById('final-auto-section').style.display = 'block';
+                document.getElementById('final-manual-section').style.display = 'none';
+            } else {
+                document.getElementById('final-auto-section').style.display = 'none';
+                document.getElementById('final-manual-section').style.display = 'block';
+            }
+        }
+        
+        function calculateFinalManual() {
+            const die1 = parseInt(document.getElementById('final-die1').value);
+            const die2 = parseInt(document.getElementById('final-die2').value);
+            
+            // Validate input
+            if (die1 < 1 || die1 > 6 || die2 < 1 || die2 > 6) {
+                alert('Please enter valid die values (1-6)');
+                return;
+            }
+            
+            const baseRoll = die1 + die2;
+            const modifier = parseInt(document.getElementById('finalTotalMod').textContent) || 0;
+            const finalRoll = baseRoll + modifier;
+            
+            displayFinalOutcome(die1, die2, baseRoll, modifier, finalRoll);
+        }
+        
+        function rollFinalDie() {
+            const die1 = Math.floor(Math.random() * 6) + 1;
+            const die2 = Math.floor(Math.random() * 6) + 1;
+            const baseRoll = die1 + die2;
+            const modifier = parseInt(document.getElementById('finalTotalMod').textContent) || 0;
+            const finalRoll = baseRoll + modifier;
+            
+            displayFinalOutcome(die1, die2, baseRoll, modifier, finalRoll);
+        }
+        
+        function displayFinalOutcome(die1, die2, baseRoll, modifier, finalRoll) {
+            document.getElementById('finalResult').textContent = 
+                `🎲 ${die1} + ${die2} = ${baseRoll} (${modifier >= 0 ? '+' : ''}${modifier}) = ${finalRoll}`;
+            
+            let outcome = '';
+            if (finalRoll < 1) {
+                outcome = '<h3 style="color: #dc3545;">🔥 FULL REVOLT - COUNCIL OVERTHROWN</h3>' +
+                    '<p><strong>Crowd invades and takes over the council, removes all patricians, and calls for new guild elections.</strong></p>' +
+                    '<p>All patricians LOSE. The Swabian League and Emperor will see this as breach of imperial authority. Hundreds will die when mercenaries crush the revolt. Nothing will change.</p>' +
+                    '<p style="margin-top: 15px;"><em>If using as prelude to Wrestling with the Reformation: Add +1 modifier to second die roll table in 1530.</em></p>';
+            } else if (finalRoll === 2) {
+                outcome = '<h3 style="color: #dc3545;">💀 VIOLENT INVASION - DEATHS</h3>' +
+                    '<p><strong>Crowd invades council chamber. Two council members are killed (roll to determine who).</strong></p>' +
+                    '<p>Those killed obviously LOSE. Similar outcome to result <1: Swabian League will crush revolt, hundreds die.</p>' +
+                    '<p style="margin-top: 15px;"><em>If using as prelude to Wrestling with the Reformation: Add +1 modifier to second die roll table in 1530.</em></p>';
+            } else if (finalRoll === 3) {
+                outcome = '<h3 style="color: #ffc107;">⚔️ MERCENARIES OVERPOWER CROWD</h3>' +
+                    '<p><strong>Crowd invades council chamber. Mercenaries overpower them and kill several protesters. Crowd disperses.</strong></p>' +
+                    '<p>Common people remain angry and disillusioned. Chances for another protest increase.</p>' +
+                    '<p style="margin-top: 15px;"><em>If using as prelude to Wrestling with the Reformation: Add -1 modifier to first die roll table in 1530.</em></p>';
+            } else if (finalRoll === 4) {
+                outcome = '<h3 style="color: #ffc107;">🎯 RINGLEADERS ARRESTED</h3>' +
+                    '<p><strong>Mercenaries infiltrate crowd and identify ringleaders, who they promptly arrest and later execute. Crowd disperses.</strong></p>' +
+                    '<p>Common people remain angry and disillusioned. Chances for another protest increase.</p>' +
+                    '<p style="margin-top: 15px;"><em>If using as prelude to Wrestling with the Reformation: Add -1 modifier to first die roll table in 1530.</em></p>';
+            } else {
+                outcome = '<h3 style="color: #28a745;">✅ PEACEFUL RESOLUTION</h3>' +
+                    '<p><strong>Protests end peacefully. Crowd goes home.</strong></p>' +
+                    '<p>Determine winners based on victory objectives. Council remains intact.</p>';
+            }
+            
+            // Add additional warnings
+            if (finalRoll < 3) {
+                outcome += '<div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">' +
+                    '<strong>⚠️ Important:</strong> If council voted to tax the church or abolish merchant privileges, ' +
+                    'the Emperor and Swabian League will intervene with overwhelming force. This is how peasant revolts always end.</div>';
+            }
+            
+            document.getElementById('finalOutcome').innerHTML = outcome;
+        }
+        
+        // Crowd actions
+        function toggleCrowdDiceMethod() {
+            const method = document.querySelector('input[name="crowd-dice-method"]:checked').value;
+            if (method === 'auto') {
+                document.getElementById('crowd-auto-section').style.display = 'block';
+                document.getElementById('crowd-manual-section').style.display = 'none';
+            } else {
+                document.getElementById('crowd-auto-section').style.display = 'none';
+                document.getElementById('crowd-manual-section').style.display = 'block';
+            }
+        }
+        
+        function calculateCrowdManual() {
+            const actionRoll = parseInt(document.getElementById('crowd-action-roll').value);
+            const successRoll = parseInt(document.getElementById('crowd-success-roll').value);
+            
+            // Validate input
+            if (actionRoll < 1 || actionRoll > 12 || successRoll < 1 || successRoll > 12) {
+                alert('Please enter valid die values (1-12)');
+                return;
+            }
+            
+            const attemptNum = parseInt(document.getElementById('crowdAttempt').value);
+            displayCrowdOutcome(actionRoll, successRoll, attemptNum);
+        }
+        
+        function rollCrowdAction() {
+            const attemptNum = parseInt(document.getElementById('crowdAttempt').value);
+            
+            // Roll for what they attempt (1d12 or 2d6)
+            const actionRoll = Math.floor(Math.random() * 12) + 1;
+            
+            // Roll for success (1d12)
+            const successRoll = Math.floor(Math.random() * 12) + 1;
+            
+            displayCrowdOutcome(actionRoll, successRoll, attemptNum);
+        }
+        
+        function displayCrowdOutcome(actionRoll, successRoll, attemptNum) {
+            // Determine success threshold based on attempt number
+            let successThreshold;
+            if (attemptNum === 1) successThreshold = 8;
+            else if (attemptNum === 2) successThreshold = 7;
+            else if (attemptNum === 3) successThreshold = 6;
+            else successThreshold = 5;
+            
+            const success = successRoll >= successThreshold;
+            
+            const actions = [
+                {
+                    action: 'Invade the home of Philip Adler',
+                    fail: 'Adler\'s personal guard repels the crowd. Crowd is subdued but continues to insist on demands.',
+                    success: 'Adler\'s mansion is completely looted. <strong>Adler is removed from the game.</strong>'
+                },
+                {
+                    action: 'Invade the home of Philip Adler',
+                    fail: 'Adler\'s personal guard repels the crowd. Crowd is subdued but continues to insist on demands.',
+                    success: 'Adler\'s mansion is completely looted. <strong>Adler is removed from the game.</strong>'
+                },
+                {
+                    action: 'Invade the offices of the Merchant\'s Guild',
+                    fail: 'Guards repel the crowd, killing several. Crowd is subdued and more likely to accept compromise.',
+                    success: 'A cask with 100 gold coins is stolen. <strong>Hieronymus Imhof is removed from office of mayor.</strong>'
+                },
+                {
+                    action: 'Throw rocks through windows of Council House',
+                    fail: 'The rocks miss the windows. Mercenaries quickly arrest perpetrators.',
+                    success: 'Rock strikes council member sitting closest to door. <strong>They are removed from the game.</strong>'
+                },
+                {
+                    action: 'Break Kiessling the Cloakmaker out of prison',
+                    fail: 'Perpetrators are quickly captured and imprisoned. Rest of crowd continues protest.',
+                    success: '<strong>Kiessling is now free</strong> and riling up the crowd with calls to kill all council members.'
+                },
+                {
+                    action: 'Break into the nearby Dominican church',
+                    fail: 'Priests bar the door and preach about hell awaiting those who threaten sacred space. Crowd subdued.',
+                    success: 'All gold and silver mass dishes stolen and a Latin Bible is set on fire.'
+                },
+                {
+                    action: 'Loot a cartload of goods from Bavarian merchant',
+                    fail: 'This turns city shopkeepers against the crowd. About 1/3 go home. Rest more likely to compromise.',
+                    success: 'This will chill trade. More people will go hungry. <strong>Council must promise more food for poor.</strong>'
+                },
+                {
+                    action: 'Convince mercenary guards to join the mob',
+                    fail: 'Mercenaries hold firm, but demand a pay raise later. <strong>Beer tax reduction now off the table.</strong>',
+                    success: '<strong>The mob is now stronger—and has weapons.</strong>'
+                },
+                {
+                    action: 'Break into the Gentlemen\'s Drinking Club',
+                    fail: 'Disappointed, thirsty crowd is even more riled up. <strong>Better make concessions, fast!</strong>',
+                    success: 'Beer and wine shared among crowd. They\'re distracted and less angry. <strong>Opportunity for a deal?</strong>'
+                },
+                {
+                    action: 'Gain control of the town armory',
+                    fail: 'Some mercenaries moved to protect armory. <strong>Council house is now more vulnerable.</strong>',
+                    success: '<strong>DANGEROUS:</strong> Crowd is now armed. Council must <strong>immediately concede two demands</strong> to prevent invasion!'
+                },
+                {
+                    action: 'Declare Augsburg a theocracy with Schilling as ruler',
+                    fail: 'Crowd is starting to turn against radical agitators. More likely to accept few concessions and go home.',
+                    success: '<strong>Stop all discussion!</strong> Come up with two convincing reasons why Schilling as ruler is bad.'
+                },
+                {
+                    action: 'Take over Cathedral to make it Protestant preaching house',
+                    fail: 'Failure shows traditionalists are stronger. <strong>Cannot remove conservative preachers or tax church.</strong>',
+                    success: 'Crowd has achieved goal to remove conservative preachers from pulpit.'
+                }
+            ];
+            
+            const selectedAction = actions[actionRoll - 1];
+            
+            let resultHtml = `<h3 style="color: #2c3e50; margin-bottom: 15px;">Crowd Action Roll</h3>`;
+            resultHtml += `<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">`;
+            resultHtml += `<strong>Action Roll:</strong> ${actionRoll}<br>`;
+            resultHtml += `<strong>Success Roll:</strong> ${successRoll} (needed ${successThreshold}+)<br>`;
+            resultHtml += `<strong>Result:</strong> ${success ? '<span style="color: #28a745;">SUCCESS</span>' : '<span style="color: #dc3545;">FAILED</span>'}`;
+            resultHtml += `</div>`;
+            
+            resultHtml += `<div style="padding: 20px; background: ${success ? '#d4edda' : '#f8d7da'}; border-radius: 8px; border-left: 4px solid ${success ? '#28a745' : '#dc3545'};">`;
+            resultHtml += `<h4 style="margin-bottom: 10px; color: #2c3e50;">The crowd is attempting to: ${selectedAction.action}</h4>`;
+            resultHtml += `<p style="margin: 0; color: #2c3e50;">${success ? selectedAction.success : selectedAction.fail}</p>`;
+            resultHtml += `</div>`;
+            
+            document.getElementById('crowdActionResult').innerHTML = `🎲 Action: ${actionRoll} | Success: ${successRoll}`;
+            document.getElementById('crowdActionOutcome').innerHTML = resultHtml;
+        }
+        
+        // Initialize
+        updateTimerDisplay();
+        updateMidpointTotal();
+        updateFinalTotal();
+    </script>
+</body>
+</html>
