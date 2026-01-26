@@ -72,6 +72,33 @@
             text-decoration: underline;
         }
 
+        .worksheet-nav {
+            background-color: #e8f4f8;
+            padding: 12px 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .worksheet-nav span {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .worksheet-nav a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .worksheet-nav a.active {
+            color: #2c3e50;
+            text-decoration: underline;
+        }
+
         .progress-bar {
             background-color: #ecf0f1;
             height: 10px;
@@ -282,6 +309,13 @@
         <a href="research-hist101.html">← Back to HIST 101 Research Guide</a>
     </div>
 
+    <div class="worksheet-nav">
+        <span>Worksheet Pages:</span>
+        <a href="hist101-research-worksheet-page1.html">Page 1 (Steps 1-2)</a>
+        <a href="hist101-research-worksheet-page2.html">Page 2 (Steps 3-4)</a>
+        <a class="active" href="hist101-research-worksheet-page3.html">Page 3 (Steps 5-6)</a>
+    </div>
+
     <!-- Progress Bar -->
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -380,11 +414,17 @@
         <div class="button-group">
             <button class="btn btn-warning" onclick="goBack()">← Back to Steps 3-4</button>
             <button class="btn btn-success" onclick="saveProgress()">💾 Save Progress</button>
+            <button class="btn btn-secondary" onclick="exportPDF()">📄 Export Steps 5-6 as PDF</button>
         </div>
 
         <div id="saveMessage"></div>
     </div>
 
+<footer>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <footer>
         <p>Prof. Hauselmann | profhauselmann.org</p>
     </footer>
@@ -439,6 +479,130 @@ function loadSavedData() {
 function goBack() {
     saveProgress();
     window.location.href = 'hist101-research-worksheet-page2.html';
+}
+
+function exportPDF() {
+    const studentName = prompt('Enter your name for the PDF:');
+    if (!studentName) return;
+
+    const data = collectFormData();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let y = 20;
+    const lineHeight = 7;
+    const pageWidth = 190;
+
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.text('Research Paper Planning Worksheet', 105, y, { align: 'center' });
+    y += 10;
+
+    doc.setFontSize(12);
+    doc.text('Steps 5-6: Atlantic Articles + Haass Framework', 105, y, { align: 'center' });
+    y += 15;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Student: ${studentName}`, 20, y);
+    y += 8;
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y);
+    y += 12;
+
+    doc.setFontSize(13);
+    doc.setFont(undefined, 'bold');
+    doc.text('STEP 5: The Atlantic Articles', 20, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text('Article 1 Title:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic1_title || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 2;
+
+    doc.text('Article 1 Author:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic1_author || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 2;
+
+    doc.text('Article 1 Central Claim:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic1_claim || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 3;
+
+    doc.text('Article 1 Norm Connection:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic1_norm || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 3;
+
+    if (y > 250) {
+        doc.addPage();
+        y = 20;
+    }
+
+    doc.text('Article 2 Title:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic2_title || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 2;
+
+    doc.text('Article 2 Author:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic2_author || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 2;
+
+    doc.text('Article 2 Central Claim:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic2_claim || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 3;
+
+    doc.text('Article 2 Norm Connection:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic2_norm || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 3;
+
+    if (y > 250) {
+        doc.addPage();
+        y = 20;
+    }
+
+    doc.text('Atlantic Reflection:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic_reflection || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 3;
+
+    doc.text('Atlantic Connection:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.atlantic_connection || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 3;
+
+    if (y > 250) {
+        doc.addPage();
+        y = 20;
+    }
+
+    doc.setFontSize(13);
+    doc.setFont(undefined, 'bold');
+    doc.text('STEP 6: Haass Framework', 20, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text('Obligation:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.haass_obligation || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 2;
+
+    doc.text('Key Idea/Quotation:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.haass_quote || '[Not answered]', pageWidth - 25), 25, y);
+    y += lineHeight * 3;
+
+    doc.text('Evaluation:', 20, y);
+    y += 6;
+    doc.text(doc.splitTextToSize(data.haass_evaluation || '[Not answered]', pageWidth - 25), 25, y);
+
+    doc.save(`research-worksheet-steps5-6-${studentName.replace(/\\s+/g, '_')}.pdf`);
 }
 </script>
 </body>
