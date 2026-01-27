@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>What Counts as Knowledge in 1660? — Micro-Reacting Game</title>
+  <style>
+    :root { --bg:#0b0c10; --panel:#11131a; --text:#e8e8ea; --muted:#b6b7be; --line:#2a2e3a; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:var(--text); }
+    a { color:inherit; }
+    header { padding:18px 18px 10px; border-bottom:1px solid var(--line); background:linear-gradient(180deg, #0f1220, #0b0c10); }
+    header h1 { margin:0; font-size:18px; letter-spacing:.2px; }
+    header p { margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.3; }
+    main { display:grid; grid-template-columns: 340px 1fr; gap:14px; padding:14px; max-width:1200px; margin:0 auto; }
+    @media (max-width: 920px){ main{ grid-template-columns: 1fr; } }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; }
+    .btn { cursor:pointer; border:1px solid var(--line); background:#171a24; color:var(--text); padding:9px 10px; border-radius:10px; font-size:13px; }
+    .btn:hover { filter:brightness(1.08); }
+    .btn.primary { background:#1c2a50; border-color:#2b3b6f; }
+    .btn.danger { background:#4b1d1d; border-color:#6c2a2a; }
+    .btn.ghost { background:transparent; }
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border:1px solid var(--line); border-radius:999px; font-size:12px; color:var(--muted); }
+    .k { color:#d8d8df; font-weight:600; }
+    label { font-size:12px; color:var(--muted); display:block; margin:10px 0 6px; }
+    input, select, textarea { width:100%; box-sizing:border-box; border:1px solid var(--line); background:#0f1220; color:var(--text); border-radius:10px; padding:10px; font-size:13px; }
+    textarea { min-height:90px; resize:vertical; }
+    h2 { margin:0 0 10px; font-size:15px; }
+    h3 { margin:14px 0 8px; font-size:13px; color:#d8d8df; }
+    .muted { color:var(--muted); font-size:13px; line-height:1.35; }
+    .divider { height:1px; background:var(--line); margin:12px 0; }
+    .phase { border-left:4px solid #2b3b6f; padding-left:10px; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 520px){ .grid2{ grid-template-columns:1fr; } }
+    .roleBox { border:1px dashed #343a4a; border-radius:12px; padding:12px; background:#0f1220; }
+    .roleTitle { font-weight:700; margin:0 0 6px; }
+    .tag { display:inline-block; font-size:11px; padding:4px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); margin-right:6px; }
+    .list { margin:6px 0 0; padding-left:18px; color:var(--muted); font-size:13px; }
+    .bigTimer { font-variant-numeric: tabular-nums; font-size:22px; font-weight:800; }
+    .log { max-height:250px; overflow:auto; border:1px solid var(--line); border-radius:12px; padding:10px; background:#0f1220; }
+    .log p { margin:0 0 8px; font-size:13px; color:var(--muted); }
+    .twoCol { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
+    @media (max-width: 920px){ .twoCol{ grid-template-columns:1fr; } }
+    .voteGrid { display:grid; grid-template-columns: 1fr; gap:10px; }
+    .voteItem { border:1px solid var(--line); border-radius:12px; padding:10px; background:#0f1220; }
+    .voteItem .q { font-weight:700; margin-bottom:8px; }
+    .bar { height:10px; border-radius:999px; background:#141827; border:1px solid var(--line); overflow:hidden; }
+    .bar > div { height:100%; background:#2b3b6f; width:0%; transition:width .25s ease; }
+    .small { font-size:12px; color:var(--muted); }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; padding:2px 6px; border:1px solid var(--line); border-radius:6px; background:#0f1220; color:#d8d8df; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>What Counts as Knowledge in 1660?</h1>
+  <p>Micro-Reacting / Hybrid Simulation — epistemic authority after civil war. Use locally (no server) or extend later for live syncing.</p>
+</header>
+
+<main>
+  <!-- LEFT COLUMN -->
+  <section class="card">
+    <h2>Session Setup</h2>
+    <div class="muted">
+      Pick a <span class="k">session code</span> so you can run multiple groups. This page stores data in your browser under that code.
+    </div>
+
+    <label>Session code (e.g., HIST105-A / Period2)</label>
+    <input id="sessionCode" placeholder="Enter a session code…" />
+
+    <div class="row" style="margin-top:10px;">
+      <button class="btn primary" id="btnLoad">Load / Create</button>
+      <button class="btn" id="btnReset">Reset Session</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Role Assignment</h2>
+    <div class="muted">Use random assignment for quick play, or pick a role manually.</div>
+
+    <label>Your name</label>
+    <input id="playerName" placeholder="Student name (or group name)..." />
+
+    <label>Choose role (optional)</label>
+    <select id="roleSelect"></select>
+
+    <div class="row" style="margin-top:10px;">
+      <button class="btn primary" id="btnJoinRandom">Join (Random Role)</button>
+      <button class="btn" id="btnJoinManual">Join (Selected Role)</button>
+      <button class="btn ghost" id="btnShowRole">Show My Role Card</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Phase + Timer</h2>
+    <div class="phase">
+      <div class="row" style="align-items:center; justify-content:space-between;">
+        <div>
+          <div class="small">Current phase</div>
+          <div class="k" id="phaseName">—</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="small">Timer</div>
+          <div class="bigTimer" id="timerDisplay">00:00</div>
+        </div>
+      </div>
+
+      <label>Minutes for timer</label>
+      <input id="timerMinutes" type="number" min="1" value="10" />
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="btnStart">Start</button>
+        <button class="btn" id="btnPause">Pause</button>
+        <button class="btn" id="btnStop">Stop</button>
+      </div>
+
+      <label>Advance phase</label>
+      <div class="row">
+        <button class="btn" id="btnPrevPhase">◀ Prev</button>
+        <button class="btn primary" id="btnNextPhase">Next ▶</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Event Cards</h2>
+    <div class="muted">Trigger a surprise to shift alliances. Great for keeping outcomes contingent.</div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn" id="btnDrawEvent">Draw Event</button>
+      <button class="btn ghost" id="btnClearEvent">Clear</button>
+    </div>
+    <div class="roleBox" style="margin-top:10px;">
+      <div class="roleTitle" id="eventTitle">No event yet</div>
+      <div class="muted" id="eventBody">—</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Facilitator Log</h2>
+    <div class="muted">Quick notes for what happened (useful for debrief).</div>
+    <label>Add note</label>
+    <textarea id="noteText" placeholder="Example: Aristotelians offered university chairs in exchange for censorship clause…"></textarea>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn primary" id="btnAddNote">Add Note</button>
+      <button class="btn ghost" id="btnExport">Export Notes</button>
+    </div>
+    <div class="log" id="logBox" style="margin-top:10px;"></div>
+  </section>
+
+  <!-- RIGHT COLUMN -->
+  <section class="card">
+    <div class="twoCol">
+      <div>
+        <h2>Room Screen</h2>
+        <div class="muted">
+          Use this on the projector. Students can open the same page on their phones.
+          <br/>If you want true shared state across devices, I can upgrade this to Supabase syncing.
+        </div>
+
+        <div class="divider"></div>
+
+        <h2>Phase Script</h2>
+        <div class="roleBox" id="phaseScript">
+          <div class="roleTitle">Load a session to begin</div>
+          <div class="muted">Enter a session code on the left and click <span class="kbd">Load / Create</span>.</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2>Decisions + Vote</h2>
+        <div class="muted">Students vote on their devices. Results tally on this screen (per browser/session).</div>
+
+        <div class="voteGrid" id="voteGrid"></div>
+
+        <div class="row" style="margin-top:10px;">
+          <button class="btn primary" id="btnOpenVote">Open Voting</button>
+          <button class="btn" id="btnCloseVote">Close Voting</button>
+          <button class="btn ghost" id="btnClearVotes">Clear Votes</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2>Student Voting Panel</h2>
+        <div class="roleBox">
+          <div class="muted">
+            On student devices, after joining a role, they can vote here. (You can also hide this section on the projector by collapsing it in the browser.)
+          </div>
+
+          <label>Your role (auto)</label>
+          <input id="myRoleReadout" disabled />
+
+          <label>Vote Q1: University adopts experimental science?</label>
+          <select id="voteQ1">
+            <option value="">—</option>
+            <option value="YES">YES</option>
+            <option value="NO">NO</option>
+            <option value="YES_WITH_LIMITS">YES, with limits</option>
+          </select>
+
+          <label>Vote Q2: When observation conflicts with Scripture/tradition…</label>
+          <select id="voteQ2">
+            <option value="">—</option>
+            <option value="OBSERVATION_PREVAILS">Observation prevails</option>
+            <option value="SCRIPTURE_PREVAILS">Scripture/tradition prevails</option>
+            <option value="CASE_BY_CASE">Case-by-case compromise</option>
+          </select>
+
+          <label>Vote Q3: Who gets funding + legitimacy?</label>
+          <select id="voteQ3">
+            <option value="">—</option>
+            <option value="UNIVERSITIES_ARISTOTELIANS">Universities / Aristotelians</option>
+            <option value="EXPERIMENTAL_SOCIETY">Experimental Society</option>
+            <option value="INSTRUMENT_MAKERS">Instrument-makers & artisans</option>
+            <option value="RELIGIOUS_OVERSIGHT">Religious authorities</option>
+            <option value="PATRONS_MERCHANTS">Political patrons / merchants</option>
+            <option value="PUBLIC_COUNCIL">Public council / commoners’ oversight</option>
+          </select>
+
+          <label>Optional: one-sentence justification (for debrief)</label>
+          <input id="voteWhy" placeholder="Because…" />
+
+          <div class="row" style="margin-top:10px;">
+            <button class="btn primary" id="btnSubmitVote">Submit Vote</button>
+            <button class="btn ghost" id="btnClearMyVote">Clear My Vote</button>
+          </div>
+
+          <div class="muted" id="voteStatus" style="margin-top:8px;">Voting is closed.</div>
+        </div>
+      </div>
+
+      <div>
+        <h2>Role Cards</h2>
+        <div class="muted">Click a role to show its aims and negotiation levers.</div>
+        <div id="rolesContainer" class="grid2"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/** -----------------------------
+ *  DATA
+ *  ----------------------------- */
+const ROLES = [
+  {
+    id: "ARISTOTELIANS",
+    name: "Aristotelian Natural Philosophers",
+    tags: ["Institutional legitimacy", "Logic & tradition", "University power"],
+    aims: [
+      "Preserve the university curriculum grounded in Aristotle and scholastic reasoning.",
+      "Allow controlled observation only as a support to established theory.",
+      "Limit “dangerous novelty” that could destabilize social and moral order."
+    ],
+    leverage: [
+      "Offer academic positions / credentials to allies.",
+      "Argue chaos follows when tradition is discarded (post–civil war anxiety).",
+      "Propose a compromise: experimental work permitted only under university supervision."
+    ]
+  },
+  {
+    id: "EXPERIMENTALISTS",
+    name: "Experimentalists (Boyle/Bacon camp)",
+    tags: ["Experiment", "Replication", "Utility"],
+    aims: [
+      "Make experiment and repeatable observation central to knowledge.",
+      "Reduce the authority of inherited texts when evidence contradicts them.",
+      "Win patronage for a formal experimental society and public demonstrations."
+    ],
+    leverage: [
+      "Promise practical payoffs: navigation, medicine, metallurgy, agriculture.",
+      "Demand open publication and shared methods.",
+      "Form alliances with instrument-makers and patrons."
+    ]
+  },
+  {
+    id: "RELIGIOUS",
+    name: "Religious Authorities",
+    tags: ["Moral order", "Scripture", "Censure power"],
+    aims: [
+      "Ensure natural knowledge does not undermine faith or social order.",
+      "Maintain the right to censure or restrict claims judged heretical or destabilizing.",
+      "Encourage a ‘two books’ compromise: nature and Scripture, interpreted carefully."
+    ],
+    leverage: [
+      "Threaten reputational consequences, bans, and loss of legitimacy.",
+      "Offer protection to scholars who accept doctrinal boundaries.",
+      "Push a case-by-case tribunal to evaluate controversial claims."
+    ]
+  },
+  {
+    id: "INSTRUMENT_MAKERS",
+    name: "Instrument-Makers & Artisans",
+    tags: ["Hands-on skill", "Instruments", "Proof"],
+    aims: [
+      "Demand recognition: instruments extend human senses and create new evidence.",
+      "Secure funding for workshops, materials, apprenticeships, and patents.",
+      "Win seats at the table—knowledge should not be only for elites."
+    ],
+    leverage: [
+      "Provide (or withhold) demonstrations: air pump, microscope, telescope.",
+      "Argue that practical know-how built the modern world.",
+      "Align with experimentalists OR patrons depending on best deal."
+    ]
+  },
+  {
+    id: "PATRONS",
+    name: "Political Patrons (nobles, Parliament, merchants)",
+    tags: ["Funding", "State power", "Profit & security"],
+    aims: [
+      "Fund whatever increases state power and commercial advantage.",
+      "Avoid destabilizing religious or political controversy.",
+      "Attach conditions to money: secrecy, patents, censorship, or public credit."
+    ],
+    leverage: [
+      "Offer grants, appointments, printing licenses, and protection.",
+      "Demand useful results and measurable outcomes.",
+      "Play factions against each other to get the best bargain."
+    ]
+  },
+  {
+    id: "COMMONERS",
+    name: "Skeptical Commoners (public voice)",
+    tags: ["Public legitimacy", "Suspicion of elites", "Social impact"],
+    aims: [
+      "Ask who benefits from “truth” and who pays the costs.",
+      "Challenge elite monopolies over knowledge and institutions.",
+      "Push for transparency: public demonstrations, plain language, accountability."
+    ],
+    leverage: [
+      "Shape public opinion: rumor, petitions, public support or unrest.",
+      "Demand that new knowledge serve common life, not just rulers.",
+      "Expose hypocrisy: post-war trauma makes authority questionable."
+    ]
+  }
+];
+
+const PHASES = [
+  {
+    name: "Opening (5–10 min)",
+    script: [
+      "Each faction gives a 60–90 second statement: What counts as knowledge, and who should decide?",
+      "Facilitator prompt: “After civil war, who do you trust to define truth—church, university, experiment, or the public?”"
+    ]
+  },
+  {
+    name: "Caucus (10 min)",
+    script: [
+      "Factions meet privately: define non-negotiables and bargaining chips.",
+      "Write 1–2 demands you will trade, and 1 red line you will not cross."
+    ]
+  },
+  {
+    name: "Debate (15–25 min)",
+    script: [
+      "Open-floor debate focused on the 3 decision questions.",
+      "Encourage cross-examination: ask opponents to defend methods and authority.",
+      "Facilitator move: call on instrument-makers and commoners early to avoid “elite-only” debate."
+    ]
+  },
+  {
+    name: "Negotiation / Recess (10–15 min)",
+    script: [
+      "Backroom alliance-building.",
+      "Patrons should attach conditions to funding; religious authorities can offer protection or threaten censure.",
+      "Aim: produce a ‘Resolution’ that can pass a vote."
+    ]
+  },
+  {
+    name: "Vote (5–10 min)",
+    script: [
+      "Open voting. Students submit votes + a one-sentence justification.",
+      "After results: ask each faction to explain why they supported or opposed the winning outcome."
+    ]
+  },
+  {
+    name: "Debrief (10–15 min)",
+    script: [
+      "Who gained authority? Who lost it?",
+      "What kinds of ‘truth’ became legitimate—and why?",
+      "Bridge: English Civil War → divine authority shaken; Scientific Revolution → epistemic authority shaken; French Revolution → political authority remade."
+    ]
+  }
+];
+
+const EVENTS = [
+  {
+    title: "A public demonstration stuns the room",
+    body: "An instrument-maker produces a new device (air pump, microscope, telescope). The demonstration is persuasive, but opponents argue it is a trick. Experimentalists gain momentum unless Aristotelians can frame it as unreliable."
+  },
+  {
+    title: "Censorship warning",
+    body: "Religious authorities announce that certain claims will be investigated for heresy or moral danger. Scholars may continue only with doctrinal boundaries. Patrons worry about public unrest."
+  },
+  {
+    title: "Funding offer with strings attached",
+    body: "A powerful patron offers money—IF results are useful, and IF the work is controlled (secrecy/patents/censorship). Choose: accept conditions or refuse and lose support."
+  },
+  {
+    title: "Pamphlet war erupts",
+    body: "A flood of printed pamphlets spreads competing claims. Public opinion becomes a battleground. Commoners can mobilize petitions, while elites fight for legitimacy."
+  },
+  {
+    title: "Instrument failure scandal",
+    body: "A key instrument breaks or gives conflicting results. Aristotelians argue this proves observation is unstable. Experimentalists must pivot to replication and method."
+  },
+  {
+    title: "Post-war anxiety returns",
+    body: "Rumors of unrest and plots circulate. Leaders fear chaos. ‘Order’ becomes a persuasive argument. Who uses this to strengthen their case?"
+  }
+];
+
+/** -----------------------------
+ *  STORAGE HELPERS
+ *  ----------------------------- */
+function keyFor(sessionCode){ return `sr1660::${sessionCode}`; }
+
+function defaultState(){
+  return {
+    phaseIndex: 0,
+    timer: { running:false, remainingSec:0, startedAt:null },
+    event: null,
+    notes: [],
+    players: {}, // name -> {roleId}
+    votingOpen: false,
+    votes: {} // name -> {q1,q2,q3,why,roleId,ts}
+  };
+}
+
+function loadState(sessionCode){
+  const raw = localStorage.getItem(keyFor(sessionCode));
+  return raw ? JSON.parse(raw) : defaultState();
+}
+function saveState(sessionCode, state){
+  localStorage.setItem(keyFor(sessionCode), JSON.stringify(state));
+}
+
+/** -----------------------------
+ *  UI WIRING
+ *  ----------------------------- */
+const el = (id)=>document.getElementById(id);
+
+let SESSION = null;
+let STATE = null;
+let myRoleId = null;
+let timerInterval = null;
+
+function populateRoleSelect(){
+  const sel = el("roleSelect");
+  sel.innerHTML = `<option value="">— Select role —</option>` + ROLES.map(r=>`<option value="${r.id}">${r.name}</option>`).join("");
+}
+
+function renderRoles(){
+  const box = el("rolesContainer");
+  box.innerHTML = "";
+  ROLES.forEach(r=>{
+    const div = document.createElement("div");
+    div.className = "roleBox";
+    div.innerHTML = `
+      <div class="roleTitle">${r.name}</div>
+      <div style="margin-bottom:8px;">${r.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+      <div class="row">
+        <button class="btn" data-role="${r.id}">Open</button>
+      </div>
+    `;
+    div.querySelector("button").addEventListener("click", ()=>showRoleCard(r.id));
+    box.appendChild(div);
+  });
+}
+
+function showRoleCard(roleId){
+  const r = ROLES.find(x=>x.id===roleId);
+  if(!r) return;
+  const html = `
+    <div class="roleTitle">${r.name}</div>
+    <div style="margin-bottom:8px;">${r.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    <h3>Aims</h3>
+    <ul class="list">${r.aims.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul>
+    <h3>Negotiation levers</h3>
+    <ul class="list">${r.leverage.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul>
+  `;
+  // Reuse the "phaseScript" box as the main reading panel for projector convenience.
+  el("phaseScript").innerHTML = html;
+}
+
+function renderPhase(){
+  const phase = PHASES[STATE.phaseIndex] || PHASES[0];
+  el("phaseName").textContent = phase.name;
+  el("phaseScript").innerHTML = `
+    <div class="roleTitle">${escapeHtml(phase.name)}</div>
+    <ul class="list">${phase.script.map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ul>
+    <div class="divider"></div>
+    <div class="muted"><span class="k">Bridge:</span> English Civil War → divine authority shaken; Scientific Revolution → epistemic authority shaken; French Revolution → political authority remade.</div>
+  `;
+}
+
+function renderEvent(){
+  if(!STATE.event){
+    el("eventTitle").textContent = "No event yet";
+    el("eventBody").textContent = "—";
+    return;
+  }
+  el("eventTitle").textContent = STATE.event.title;
+  el("eventBody").textContent = STATE.event.body;
+}
+
+function renderLog(){
+  const box = el("logBox");
+  box.innerHTML = STATE.notes.length
+    ? STATE.notes.map(n=>`<p>• ${escapeHtml(n)}</p>`).join("")
+    : `<p>No notes yet.</p>`;
+}
+
+function renderVoting(){
+  el("voteStatus").textContent = STATE.votingOpen ? "Voting is OPEN." : "Voting is closed.";
+  const grid = el("voteGrid");
+
+  const counts = tallyVotes();
+  const total = counts.total;
+
+  const q1 = buildBars("Q1: Adopt experimental science?", counts.q1, total);
+  const q2 = buildBars("Q2: Observation vs Scripture/tradition?", counts.q2, total);
+  const q3 = buildBars("Q3: Funding + legitimacy goes to…", counts.q3, total);
+
+  grid.innerHTML = q1 + q2 + q3 + `
+    <div class="voteItem">
+      <div class="q">Total votes</div>
+      <div class="k">${total}</div>
+      <div class="small">Tip: ask factions to justify the *method* behind their votes, not just preferences.</div>
+    </div>
+  `;
+}
+
+function buildBars(title, obj, total){
+  const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  const bars = entries.map(([k,v])=>{
+    const pct = total ? Math.round((v/total)*100) : 0;
+    return `
+      <div style="margin:8px 0;">
+        <div class="small"><span class="k">${escapeHtml(k)}</span> — ${v} (${pct}%)</div>
+        <div class="bar"><div style="width:${pct}%;"></div></div>
+      </div>
+    `;
+  }).join("");
+  return `
+    <div class="voteItem">
+      <div class="q">${escapeHtml(title)}</div>
+      ${bars || `<div class="small">No votes yet.</div>`}
+    </div>
+  `;
+}
+
+function tallyVotes(){
+  const q1 = {}, q2 = {}, q3 = {};
+  let total = 0;
+  Object.values(STATE.votes).forEach(v=>{
+    if(!v) return;
+    total++;
+    q1[v.q1 || "—"] = (q1[v.q1 || "—"]||0)+1;
+    q2[v.q2 || "—"] = (q2[v.q2 || "—"]||0)+1;
+    q3[v.q3 || "—"] = (q3[v.q3 || "—"]||0)+1;
+  });
+  return { q1, q2, q3, total };
+}
+
+function updateMyRoleReadout(){
+  el("myRoleReadout").value = myRoleId ? (ROLES.find(r=>r.id===myRoleId)?.name || myRoleId) : "";
+}
+
+/** -----------------------------
+ *  TIMER
+ *  ----------------------------- */
+function setTimerDisplay(sec){
+  const mm = String(Math.floor(sec/60)).padStart(2,"0");
+  const ss = String(sec%60).padStart(2,"0");
+  el("timerDisplay").textContent = `${mm}:${ss}`;
+}
+function timerTick(){
+  if(!STATE.timer.running) return;
+  STATE.timer.remainingSec--;
+  if(STATE.timer.remainingSec <= 0){
+    STATE.timer.remainingSec = 0;
+    STATE.timer.running = false;
+    clearInterval(timerInterval);
+    timerInterval = null;
+    alert("Time!");
+  }
+  save();
+  setTimerDisplay(STATE.timer.remainingSec);
+}
+
+function startTimer(){
+  const mins = parseInt(el("timerMinutes").value || "10", 10);
+  if(!STATE.timer.remainingSec || STATE.timer.remainingSec === 0){
+    STATE.timer.remainingSec = mins * 60;
+  }
+  STATE.timer.running = true;
+  save();
+  setTimerDisplay(STATE.timer.remainingSec);
+  if(!timerInterval) timerInterval = setInterval(timerTick, 1000);
+}
+function pauseTimer(){
+  STATE.timer.running = false;
+  save();
+}
+function stopTimer(){
+  STATE.timer.running = false;
+  STATE.timer.remainingSec = 0;
+  save();
+  setTimerDisplay(0);
+}
+
+/** -----------------------------
+ *  GAME ACTIONS
+ *  ----------------------------- */
+function save(){
+  if(!SESSION) return;
+  saveState(SESSION, STATE);
+}
+
+function requireSession(){
+  if(!SESSION){
+    alert("Load or create a session first.");
+    return false;
+  }
+  return true;
+}
+
+function joinRole(roleId){
+  if(!requireSession()) return;
+  const name = el("playerName").value.trim();
+  if(!name){ alert("Enter your name."); return; }
+
+  STATE.players[name] = { roleId };
+  myRoleId = roleId;
+  save();
+  updateMyRoleReadout();
+  showRoleCard(roleId);
+  renderVoting();
+}
+
+function joinRandomRole(){
+  const usedCounts = {};
+  Object.values(STATE.players).forEach(p=>{
+    usedCounts[p.roleId] = (usedCounts[p.roleId]||0)+1;
+  });
+  // pick role with lowest count to balance
+  let min = Infinity;
+  let choices = [];
+  ROLES.forEach(r=>{
+    const c = usedCounts[r.id] || 0;
+    if(c < min){ min = c; choices = [r.id]; }
+    else if(c === min){ choices.push(r.id); }
+  });
+  const roleId = choices[Math.floor(Math.random()*choices.length)];
+  joinRole(roleId);
+}
+
+function drawEvent(){
+  if(!requireSession()) return;
+  const ev = EVENTS[Math.floor(Math.random()*EVENTS.length)];
+  STATE.event = ev;
+  save();
+  renderEvent();
+}
+
+function addNote(){
+  if(!requireSession()) return;
+  const text = el("noteText").value.trim();
+  if(!text) return;
+  STATE.notes.unshift(text);
+  el("noteText").value = "";
+  save();
+  renderLog();
+}
+
+function exportNotes(){
+  if(!requireSession()) return;
+  const payload = {
+    session: SESSION,
+    phase: PHASES[STATE.phaseIndex]?.name,
+    event: STATE.event,
+    notes: STATE.notes,
+    votes: STATE.votes
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `sr1660_${SESSION}_export.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function submitVote(){
+  if(!requireSession()) return;
+  const name = el("playerName").value.trim();
+  if(!name){ alert("Enter your name (same as when you joined)."); return; }
+  if(!STATE.votingOpen){ alert("Voting is closed."); return; }
+
+  const p = STATE.players[name];
+  if(!p){ alert("You haven’t joined a role yet."); return; }
+  const roleId = p.roleId;
+
+  const q1 = el("voteQ1").value;
+  const q2 = el("voteQ2").value;
+  const q3 = el("voteQ3").value;
+  const why = el("voteWhy").value.trim();
+
+  STATE.votes[name] = { q1, q2, q3, why, roleId, ts: Date.now() };
+  save();
+  renderVoting();
+  el("voteStatus").textContent = "Vote submitted.";
+}
+
+function clearMyVote(){
+  if(!requireSession()) return;
+  const name = el("playerName").value.trim();
+  if(!name) return;
+  delete STATE.votes[name];
+  save();
+  renderVoting();
+  el("voteStatus").textContent = STATE.votingOpen ? "Voting is OPEN." : "Voting is closed.";
+}
+
+function openVoting(){ if(requireSession()){ STATE.votingOpen = true; save(); renderVoting(); } }
+function closeVoting(){ if(requireSession()){ STATE.votingOpen = false; save(); renderVoting(); } }
+function clearVotes(){
+  if(!requireSession()) return;
+  if(!confirm("Clear all votes for this session?")) return;
+  STATE.votes = {};
+  save();
+  renderVoting();
+}
+
+function resetSession(){
+  const code = el("sessionCode").value.trim();
+  if(!code){ alert("Enter a session code."); return; }
+  if(!confirm(`Reset session "${code}"? This clears players, votes, notes, event.`)) return;
+  localStorage.removeItem(keyFor(code));
+  if(SESSION === code){
+    SESSION = null; STATE = null; myRoleId = null;
+    location.reload();
+  }
+}
+
+/** -----------------------------
+ *  PHASE CONTROL
+ *  ----------------------------- */
+function prevPhase(){
+  if(!requireSession()) return;
+  STATE.phaseIndex = Math.max(0, STATE.phaseIndex - 1);
+  save(); renderPhase();
+}
+function nextPhase(){
+  if(!requireSession()) return;
+  STATE.phaseIndex = Math.min(PHASES.length - 1, STATE.phaseIndex + 1);
+  save(); renderPhase();
+}
+
+/** -----------------------------
+ *  UTIL
+ *  ----------------------------- */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/** -----------------------------
+ *  INIT
+ *  ----------------------------- */
+populateRoleSelect();
+renderRoles();
+setTimerDisplay(0);
+
+el("btnLoad").addEventListener("click", ()=>{
+  const code = el("sessionCode").value.trim();
+  if(!code){ alert("Enter a session code."); return; }
+  SESSION = code;
+  STATE = loadState(code);
+  save(); // ensure created
+  renderPhase();
+  renderEvent();
+  renderLog();
+  renderVoting();
+  stopTimer();
+  alert(`Session loaded: ${code}`);
+});
+
+el("btnReset").addEventListener("click", resetSession);
+
+el("btnJoinRandom").addEventListener("click", ()=>{
+  if(!requireSession()) return;
+  joinRandomRole();
+});
+el("btnJoinManual").addEventListener("click", ()=>{
+  if(!requireSession()) return;
+  const roleId = el("roleSelect").value;
+  if(!roleId){ alert("Select a role first."); return; }
+  joinRole(roleId);
+});
+el("btnShowRole").addEventListener("click", ()=>{
+  if(!myRoleId){ alert("Join a role first."); return; }
+  showRoleCard(myRoleId);
+});
+
+el("btnStart").addEventListener("click", startTimer);
+el("btnPause").addEventListener("click", pauseTimer);
+el("btnStop").addEventListener("click", stopTimer);
+
+el("btnPrevPhase").addEventListener("click", prevPhase);
+el("btnNextPhase").addEventListener("click", nextPhase);
+
+el("btnDrawEvent").addEventListener("click", drawEvent);
+el("btnClearEvent").addEventListener("click", ()=>{
+  if(!requireSession()) return;
+  STATE.event = null; save(); renderEvent();
+});
+
+el("btnAddNote").addEventListener("click", addNote);
+el("btnExport").addEventListener("click", exportNotes);
+
+el("btnOpenVote").addEventListener("click", openVoting);
+el("btnCloseVote").addEventListener("click", closeVoting);
+el("btnClearVotes").addEventListener("click", clearVotes);
+
+el("btnSubmitVote").addEventListener("click", submitVote);
+el("btnClearMyVote").addEventListener("click", clearMyVote);
+
+el("playerName").addEventListener("input", ()=>{
+  if(!requireSession()) return;
+  const name = el("playerName").value.trim();
+  const p = STATE?.players?.[name];
+  myRoleId = p?.roleId || myRoleId;
+  updateMyRoleReadout();
+});
+</script>
+</body>
+</html>
