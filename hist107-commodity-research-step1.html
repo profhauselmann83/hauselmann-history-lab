@@ -313,6 +313,7 @@
 
     <div class="section">
         <div class="user-info">
+            <span id="user-status">Working offline (your work is saved in this browser).</span>
             <span>Logged in as: <strong id="user-email"></strong></span>
             <button class="btn btn-danger" onclick="logout()">Logout</button>
         </div>
@@ -418,9 +419,9 @@
 
         async function checkAuth() {
             const userStr = localStorage.getItem('student_user')
-            if (!userStr) {
-                window.location.href = 'student-login.html'
-                return
+            if (userStr) {
+                currentUser = JSON.parse(userStr)
+                document.getElementById('user-status').textContent = `Logged in as: ${currentUser.email}`
             }
 
             currentUser = JSON.parse(userStr)
@@ -440,14 +441,19 @@
                 element.addEventListener('input', updateProgress)
                 element.addEventListener('change', updateProgress)
             })
+            })
+
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('input', updateProgress)
+                element.addEventListener('change', updateProgress)
+            })
 
             await loadWork()
             updateProgress()
         }
 
-        async function logout() {
-            localStorage.removeItem('student_user')
-            window.location.href = 'student-login.html'
+            await loadWork()
+            updateProgress()
         }
 
         function updateProgress() {
@@ -476,7 +482,6 @@
                 : document.getElementById('commodity-name').value
 
             const data = {
-                user_id: currentUser.id,
                 question_interpretation: document.getElementById('question-interpretation').value,
                 key_terms: document.getElementById('key-terms').value,
                 commodity_name: commodityName,
@@ -488,9 +493,17 @@
                 pre_imperial_trade: document.getElementById('pre-imperial-trade').value
             }
 
+            if (!currentUser) {
+                localStorage.setItem('hist107_commodity_research', JSON.stringify(data))
+                if (!silent) {
+                    showMessage('✅ Progress saved locally in this browser.', 'success')
+                }
+                return
+            }
+
             const { error } = await supabaseClient
                 .from('hist107_commodity_research')
-                .upsert(data, { onConflict: 'user_id' })
+                .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
 
             if (!silent) {
                 if (error) {
@@ -502,6 +515,26 @@
         }
 
         async function loadWork() {
+            if (!currentUser) {
+                const saved = localStorage.getItem('hist107_commodity_research')
+                if (!saved) return
+                const data = JSON.parse(saved)
+
+                document.getElementById('question-interpretation').value = data.question_interpretation || ''
+                document.getElementById('key-terms').value = data.key_terms || ''
+                document.getElementById('commodity-name').value = data.commodity_name_selection || ''
+                document.getElementById('commodity-other').value = data.commodity_other || ''
+                document.getElementById('commodity-overview').value = data.commodity_overview || ''
+                document.getElementById('pre-imperial-production').value = data.pre_imperial_production || ''
+                document.getElementById('pre-imperial-control').value = data.pre_imperial_control || ''
+                document.getElementById('pre-imperial-trade').value = data.pre_imperial_trade || ''
+
+                if (data.commodity_name_selection === 'Other') {
+                    document.getElementById('other-commodity-group').style.display = 'block'
+                }
+                return
+            }
+
             const { data, error } = await supabaseClient
                 .from('hist107_commodity_research')
                 .select('*')
