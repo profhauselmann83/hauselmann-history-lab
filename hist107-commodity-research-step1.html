@@ -403,6 +403,7 @@
     <div class="section">
         <div class="button-group">
             <button class="btn btn-success" onclick="saveWork()">💾 Save Progress</button>
+            <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
             <button class="btn btn-secondary" onclick="exportWork()">📄 Export as Text File</button>
         </div>
     </div>
@@ -411,6 +412,7 @@
         <p>Prof. Hauselmann | profhauselmann.org</p>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4MTM2NzYsImV4cCI6MjA1MjM4OTY3Nn0.KFQV8a5XKy1aq0pFHCF_XYLBGwDmBJNp8OpFJIrMu1w'
@@ -422,6 +424,8 @@
             const userStr = localStorage.getItem('student_user')
             if (userStr) {
                 currentUser = JSON.parse(userStr)
+            }
+
             }
 
             }
@@ -440,6 +444,12 @@
                     otherGroup.style.display = 'none'
                 }
                 updateProgress()
+            })
+
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('input', updateProgress)
+                element.addEventListener('change', updateProgress)
+            })
             })
 
             document.querySelectorAll('input, select, textarea').forEach(element => {
@@ -584,33 +594,115 @@
             const commodityName = document.getElementById('commodity-name').value === 'Other'
                 ? document.getElementById('commodity-other').value
                 : document.getElementById('commodity-name').value
+            const { jsPDF } = window.jspdf
+            const doc = new jsPDF()
 
-            let output = 'HIST 107 - COMMODITY RESEARCH: UNDERSTANDING YOUR QUESTION\n'
-            output += '='.repeat(70) + '\n\n'
+            const lineHeight = 7
+            const pageWidth = 190
+            let y = 20
 
-            output += 'STEP 1: UNDERSTANDING THE BIG QUESTION\n'
-            output += '-'.repeat(70) + '\n'
-            output += 'Central Question: "How did this raw material become a global commodity,\n'
-            output += 'and what does that process reveal about capitalism, empire, and globalization?"\n\n'
-            output += `My Interpretation:\n${document.getElementById('question-interpretation').value}\n\n`
-            output += `Key Terms (Capitalism, Empire, Globalization):\n${document.getElementById('key-terms').value}\n\n`
+            doc.setFontSize(16)
+            doc.setFont(undefined, 'bold')
+            doc.text('HIST 107 Commodity Research Worksheet', 105, y, { align: 'center' })
+            y += 10
 
-            output += 'STEP 2: DEFINING THE COMMODITY & ITS EARLY HISTORY\n'
-            output += '-'.repeat(70) + '\n'
-            output += `Commodity: ${commodityName}\n\n`
-            output += `Overview:\n${document.getElementById('commodity-overview').value}\n\n`
-            output += 'Pre-Imperial Context:\n'
-            output += `  Production Location:\n  ${document.getElementById('pre-imperial-production').value}\n\n`
-            output += `  Control of Production/Exchange:\n  ${document.getElementById('pre-imperial-control').value}\n\n`
-            output += `  Scale of Trade:\n  ${document.getElementById('pre-imperial-trade').value}\n`
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'normal')
+            doc.text('Steps 1-2: Understanding the Question & Defining the Commodity', 105, y, { align: 'center' })
+            y += 15
 
-            const blob = new Blob([output], { type: 'text/plain' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = `Commodity_Research_Steps1-2_${commodityName || 'draft'}_${new Date().toISOString().split('T')[0]}.txt`
-            a.click()
-            URL.revokeObjectURL(url)
+            doc.setFontSize(10)
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
+            y += 12
+
+            doc.setFontSize(14)
+            doc.setFont(undefined, 'bold')
+            doc.text('STEP 1: Understanding the Big Question', 20, y)
+            y += 10
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+            doc.text('Central Question:', 20, y)
+            y += 7
+            const centralLines = doc.splitTextToSize(
+                'How did this raw material become a global commodity, and what does that process reveal about capitalism, empire, and globalization?',
+                pageWidth - 25
+            )
+            doc.text(centralLines, 25, y)
+            y += centralLines.length * lineHeight + 8
+
+            doc.text('My Interpretation:', 20, y)
+            y += 7
+            const interpretation = doc.splitTextToSize(
+                document.getElementById('question-interpretation').value || '[Not answered]',
+                pageWidth - 25
+            )
+            doc.text(interpretation, 25, y)
+            y += interpretation.length * lineHeight + 8
+
+            doc.text('Key Terms (Capitalism, Empire, Globalization):', 20, y)
+            y += 7
+            const keyTerms = doc.splitTextToSize(
+                document.getElementById('key-terms').value || '[Not answered]',
+                pageWidth - 25
+            )
+            doc.text(keyTerms, 25, y)
+            y += keyTerms.length * lineHeight + 12
+
+            if (y > 250) {
+                doc.addPage()
+                y = 20
+            }
+
+            doc.setFontSize(14)
+            doc.setFont(undefined, 'bold')
+            doc.text('STEP 2: Defining the Commodity & Its Early History', 20, y)
+            y += 10
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+            doc.text(`Commodity: ${commodityName || '[Not selected]'}`, 20, y)
+            y += 10
+
+            doc.text('Overview:', 20, y)
+            y += 7
+            const overview = doc.splitTextToSize(
+                document.getElementById('commodity-overview').value || '[Not answered]',
+                pageWidth - 25
+            )
+            doc.text(overview, 25, y)
+            y += overview.length * lineHeight + 8
+
+            doc.text('Pre-Imperial Context:', 20, y)
+            y += 7
+
+            doc.text('Production Location:', 25, y)
+            y += 7
+            const production = doc.splitTextToSize(
+                document.getElementById('pre-imperial-production').value || '[Not answered]',
+                pageWidth - 30
+            )
+            doc.text(production, 30, y)
+            y += production.length * lineHeight + 6
+
+            doc.text('Control of Production/Exchange:', 25, y)
+            y += 7
+            const control = doc.splitTextToSize(
+                document.getElementById('pre-imperial-control').value || '[Not answered]',
+                pageWidth - 30
+            )
+            doc.text(control, 30, y)
+            y += control.length * lineHeight + 6
+
+            doc.text('Scale of Trade:', 25, y)
+            y += 7
+            const trade = doc.splitTextToSize(
+                document.getElementById('pre-imperial-trade').value || '[Not answered]',
+                pageWidth - 30
+            )
+            doc.text(trade, 30, y)
+
+            doc.save(`Commodity_Research_Steps1-2_${commodityName || 'draft'}_${new Date().toISOString().split('T')[0]}.pdf`)
 
             showMessage('Exported successfully!', 'success')
         }
