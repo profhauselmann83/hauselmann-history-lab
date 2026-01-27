@@ -314,6 +314,8 @@
     <div class="section">
         <div class="user-info">
             <span id="user-status">Working offline (your work is saved in this browser).</span>
+            <span>Logged in as: <strong id="user-email"></strong></span>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
         </div>
         <div id="status-message"></div>
     </div>
@@ -422,6 +424,9 @@
                 document.getElementById('user-status').textContent = `Logged in as: ${currentUser.email}`
             }
 
+            currentUser = JSON.parse(userStr)
+            document.getElementById('user-email').textContent = currentUser.email
+
             document.getElementById('commodity-name').addEventListener('change', function() {
                 const otherGroup = document.getElementById('other-commodity-group')
                 if (this.value === 'Other') {
@@ -436,6 +441,16 @@
                 element.addEventListener('input', updateProgress)
                 element.addEventListener('change', updateProgress)
             })
+            })
+
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('input', updateProgress)
+                element.addEventListener('change', updateProgress)
+            })
+
+            await loadWork()
+            updateProgress()
+        }
 
             await loadWork()
             updateProgress()
