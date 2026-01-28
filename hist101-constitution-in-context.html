@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Constitution in Context - HIST 101</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+
+        .breadcrumb {
+            background: #f8f9fa;
+            padding: 15px 40px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb-nav a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-nav a:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator { color: #a0aec0; user-select: none; }
+        .breadcrumb-current { color: #4a5568; font-weight: 500; }
+
+        .content { padding: 40px; }
+
+        .purpose-box {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #4299e1;
+        }
+        .purpose-box p { color: #2d3748; font-size: 14px; line-height: 1.7; }
+
+        .info-banner {
+            background: #bee3f8;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .info-banner p {
+            color: #2c5282;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .info-banner p:last-child { margin-bottom: 0; }
+        .info-banner strong { color: #2a4365; }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #1e3c72;
+            margin-bottom: 18px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-number {
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .callout {
+            background: white;
+            padding: 14px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            margin: 12px 0 18px 0;
+        }
+
+        .callout h3 {
+            color: #2d3748;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .excerpt {
+            background: #f0f9ff;
+            border-left: 4px solid #0284c7;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin: 12px 0 18px 0;
+            color: #0c4a6e;
+        }
+
+        .excerpt .label {
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: block;
+            color: #0c4a6e;
+        }
+
+        .question { margin-bottom: 22px; }
+
+        .question-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 15px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea { min-height: 110px; resize: vertical; }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary { background: #48bb78; color: white; }
+        .btn-primary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-secondary { background: #667eea; color: white; }
+        .btn-secondary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-tertiary { background: #ed8936; color: white; }
+        .btn-tertiary:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+        }
+
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .content { padding: 20px; }
+            .section { padding: 20px; }
+            .header h1 { font-size: 24px; }
+            .button-group { flex-direction: column; }
+            .btn { min-width: 100%; }
+            .breadcrumb { padding: 12px 20px; }
+            .breadcrumb-nav { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>HIST 101 — The Constitution in Context</h1>
+            <p>Historical Problems, Contemporary Problems, and Civic Obligations</p>
+        </div>
+
+        <div class="breadcrumb">
+            <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="interactive-activities.html">Interactive Activities</a>
+                <span class="breadcrumb-separator">›</span>
+                <span class="breadcrumb-current">Constitution in Context</span>
+            </nav>
+        </div>
+
+        <div class="content">
+            <div id="worksheetContent">
+
+                <div class="purpose-box">
+                    <p><strong>Purpose:</strong> This activity asks you to connect constitutional text to the problems it was designed to solve (1787 and beyond) and to the problems it helps shape today. You’ll practice historical thinking (context + purpose) while also reflecting on civic obligations (what democracy requires of citizens, not just what citizens are owed).</p>
+                </div>
+
+                <div class="info-banner">
+                    <p><strong>Instructions:</strong> For each section below, read the historical problem, the excerpt, and the contemporary problem. Then answer the questions in complete sentences. Save your work and download a PDF to submit.</p>
+                    <p><strong>Tip:</strong> Aim for <em>specific</em> answers (what problem, what mechanism, what obligation, what tradeoff).</p>
+                </div>
+
+                <div class="section" style="background:#f0f9ff; border-left: 4px solid #0284c7;">
+                    <h2 style="color:#0c4a6e;"><span class="section-number" style="background:#0284c7;">A</span> Student Information</h2>
+
+                    <div class="question">
+                        <label class="question-label">Name(s):</label>
+                        <input type="text" id="student-names" placeholder="First and last name(s)">
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">Class meeting time:</label>
+                        <input type="text" id="class-time" placeholder="e.g., MW 11:10–12:35">
+                    </div>
+                </div>
+
+                <!-- 1. PREAMBLE -->
+                <div class="section">
+                    <h2><span class="section-number">1</span> Preamble — “We the People”</h2>
+
+                    <div class="callout">
+                        <h3>Historical Problem (1787)</h3>
+                        <p>Under the Articles of Confederation, the U.S. was more like 13 separate countries than one nation. Congress was weak, and there was no unified vision of justice, security, or welfare.</p>
+                    </div>
+
+                    <div class="excerpt">
+                        <span class="label">Text (Preamble)</span>
+                        “We the People of the United States, in order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defence, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution…”
+                    </div>
+
+                    <div class="callout">
+                        <h3>Contemporary Problem</h3>
+                        <p>Who counts as “the people”? Debates over immigration, voting rights, and equal protection show that this question is still contested.</p>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">1) What vision of unity or shared purpose is described here?</label>
+                        <textarea id="preamble-q1" placeholder="Identify the goals in the Preamble and what they suggest about national purpose..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">2) How does this Preamble try to solve the problem of disunity in 1787?</label>
+                        <textarea id="preamble-q2" placeholder="Explain how the language shifts authority and sets a national framework..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">3) Today, what obligations do citizens have to help fulfill goals like justice, peace, or liberty?</label>
+                        <textarea id="preamble-q3" placeholder="Connect to civic obligations: being informed, compromise, rejecting violence, respecting outcomes, etc."></textarea>
+                    </div>
+                </div>
+
+                <!-- 2. NECESSARY & PROPER -->
+                <div class="section">
+                    <h2><span class="section-number">2</span> Article I, Section 8 — Necessary and Proper Clause</h2>
+
+                    <div class="callout">
+                        <h3>Historical Problem (1780s)</h3>
+                        <p>The national government under the Articles couldn’t tax, regulate trade, or enforce laws. It was too weak to meet national needs.</p>
+                    </div>
+
+                    <div class="excerpt">
+                        <span class="label">Text (Necessary and Proper Clause)</span>
+                        “The Congress shall have Power To… make all Laws which shall be necessary and proper for carrying into Execution the foregoing Powers…”
+                    </div>
+
+                    <div class="callout">
+                        <h3>Contemporary Problem</h3>
+                        <p>How far should Congress’s power go? From creating a national bank to passing civil rights laws, Congress often uses this “elastic clause” to expand its reach.</p>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">1) How does this clause strengthen the federal government compared to the Articles of Confederation?</label>
+                        <textarea id="np-q1" placeholder="Explain how flexibility/implementation power changes what the national government can do..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">2) What kinds of citizen obligations (e.g., paying taxes, following federal laws) flow from this expanded power?</label>
+                        <textarea id="np-q2" placeholder="List concrete obligations and explain why they follow from congressional authority..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">3) Do you think Congress today has too much, too little, or just enough authority? Why?</label>
+                        <textarea id="np-q3" placeholder="Make a claim and support it with reasoning (and an example if you can)."></textarea>
+                    </div>
+                </div>
+
+                <!-- 3. PRESIDENTIAL OATH -->
+                <div class="section">
+                    <h2><span class="section-number">3</span> Article II — Presidential Oath</h2>
+
+                    <div class="callout">
+                        <h3>Historical Problem (1787)</h3>
+                        <p>Americans feared a king-like ruler but also needed a strong executive to enforce laws and lead effectively.</p>
+                    </div>
+
+                    <div class="excerpt">
+                        <span class="label">Text (Presidential Oath)</span>
+                        “I do solemnly swear (or affirm) that I will faithfully execute the Office of President of the United States, and will… preserve, protect and defend the Constitution of the United States.”
+                    </div>
+
+                    <div class="callout">
+                        <h3>Contemporary Problem</h3>
+                        <p>Presidents swear loyalty to the Constitution, not a party or individual. But moments like Watergate or January 6 test whether leaders—and citizens—put the system above personal or partisan loyalty.</p>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">1) How does the oath limit the president’s power?</label>
+                        <textarea id="oath-q1" placeholder="Explain what the oath commits the president to (and what it does NOT commit them to)."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">2) Why is it important that the president promises to defend the Constitution specifically?</label>
+                        <textarea id="oath-q2" placeholder="Think: rule of law, institutions, limits, legitimacy, peaceful transfer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">3) What obligations do leaders—and citizens—have when they disagree with election outcomes or government decisions?</label>
+                        <textarea id="oath-q3" placeholder="Focus on norms: acceptance, lawful challenge, nonviolence, informed debate, respect for institutions..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 4. JUDICIAL INDEPENDENCE -->
+                <div class="section">
+                    <h2><span class="section-number">4</span> Article III — Judicial Independence</h2>
+
+                    <div class="callout">
+                        <h3>Historical Problem (Colonial Era)</h3>
+                        <p>Under British rule, judges often answered to the king, not the law. The Framers wanted courts that were independent from politics.</p>
+                    </div>
+
+                    <div class="excerpt">
+                        <span class="label">Text (Lifetime Tenure)</span>
+                        “The Judges, both of the supreme and inferior Courts, shall hold their Offices during good Behaviour…”
+                    </div>
+
+                    <div class="callout">
+                        <h3>Contemporary Problem</h3>
+                        <p>Today, lifetime appointments are debated. Some see them as necessary for impartial justice, others argue they make the Court unaccountable.</p>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">1) Why would lifetime tenure solve the problem of judges being pressured by politicians?</label>
+                        <textarea id="judicial-q1" placeholder="Explain the mechanism: independence from elections/appointments/retaliation..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">2) What obligations do citizens have when court decisions are controversial or unpopular?</label>
+                        <textarea id="judicial-q2" placeholder="Consider: lawful disagreement, civic engagement, understanding decisions, peaceful protest, voting, etc."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">3) How does judicial independence protect rights—and also test our willingness to accept outcomes we dislike?</label>
+                        <textarea id="judicial-q3" placeholder="Explain the tradeoff: independence vs. accountability; legitimacy vs. frustration."></textarea>
+                    </div>
+                </div>
+
+                <!-- 5. SUPREMACY CLAUSE -->
+                <div class="section">
+                    <h2><span class="section-number">5</span> Article VI — Supremacy Clause</h2>
+
+                    <div class="callout">
+                        <h3>Historical Problem (1780s)</h3>
+                        <p>Under the Articles, states often ignored national laws, making unity impossible.</p>
+                    </div>
+
+                    <div class="excerpt">
+                        <span class="label">Text (Supremacy Clause)</span>
+                        “This Constitution, and the Laws of the United States… shall be the supreme Law of the Land; and the Judges in every State shall be bound thereby…”
+                    </div>
+
+                    <div class="callout">
+                        <h3>Contemporary Problem</h3>
+                        <p>States sometimes resist federal authority—over desegregation in the 1950s, immigration policy, or abortion laws today.</p>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">1) How does this clause solve the problem of states undermining national unity?</label>
+                        <textarea id="supremacy-q1" placeholder="Explain how supremacy creates a final authority and a consistent legal baseline..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">2) What obligations do states and citizens have when federal and state laws conflict?</label>
+                        <textarea id="supremacy-q2" placeholder="Think: rule of law, courts, lawful challenge, compliance vs. change through institutions..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">3) Can you think of a modern issue where this balance of power is being tested? Briefly explain.</label>
+                        <textarea id="supremacy-q3" placeholder="Name an issue and explain how state vs. federal power shows up in it."></textarea>
+                    </div>
+                </div>
+
+                <!-- Synthesis -->
+                <div class="section" style="background:#fdf2f8; border-left:4px solid #db2777;">
+                    <h2 style="color:#831843;"><span class="section-number" style="background:#db2777;">6</span> Synthesis</h2>
+
+                    <div class="question">
+                        <label class="question-label">In 4–6 sentences: What is one constitutional “design choice” (from this worksheet) that you think matters most today—and what citizen obligation is needed to make it work?</label>
+                        <textarea id="synthesis" placeholder="Example structure: Design choice → why it exists → modern tension → obligation that sustains it."></textarea>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="submitWork()">✅ Submit Final Work</button>
+                    <button class="btn btn-secondary" onclick="downloadPDF()">📥 Download PDF</button>
+                    <button class="btn btn-tertiary" onclick="clearForm()">🔄 Clear Form</button>
+                </div>
+
+            </div><!-- End worksheetContent -->
+        </div>
+    </div>
+
+    <div class="save-indicator" id="saveIndicator">✓ Work saved automatically</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // =========================
+        // LOCAL STORAGE (NEW KEY)
+        // =========================
+        const STORAGE_KEY = 'constitutionInContextWork';
+
+        function saveToLocalStorage() {
+            const formData = {
+                student_names: document.getElementById('student-names').value,
+                class_time: document.getElementById('class-time').value,
+
+                preamble_q1: document.getElementById('preamble-q1').value,
+                preamble_q2: document.getElementById('preamble-q2').value,
+                preamble_q3: document.getElementById('preamble-q3').value,
+
+                np_q1: document.getElementById('np-q1').value,
+                np_q2: document.getElementById('np-q2').value,
+                np_q3: document.getElementById('np-q3').value,
+
+                oath_q1: document.getElementById('oath-q1').value,
+                oath_q2: document.getElementById('oath-q2').value,
+                oath_q3: document.getElementById('oath-q3').value,
+
+                judicial_q1: document.getElementById('judicial-q1').value,
+                judicial_q2: document.getElementById('judicial-q2').value,
+                judicial_q3: document.getElementById('judicial-q3').value,
+
+                supremacy_q1: document.getElementById('supremacy-q1').value,
+                supremacy_q2: document.getElementById('supremacy-q2').value,
+                supremacy_q3: document.getElementById('supremacy-q3').value,
+
+                synthesis: document.getElementById('synthesis').value
+            };
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+            showSaveIndicator('Work saved locally');
+        }
+
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (!savedData) return;
+
+            const data = JSON.parse(savedData);
+
+            document.getElementById('student-names').value = data.student_names || '';
+            document.getElementById('class-time').value = data.class_time || '';
+
+            document.getElementById('preamble-q1').value = data.preamble_q1 || '';
+            document.getElementById('preamble-q2').value = data.preamble_q2 || '';
+            document.getElementById('preamble-q3').value = data.preamble_q3 || '';
+
+            document.getElementById('np-q1').value = data.np_q1 || '';
+            document.getElementById('np-q2').value = data.np_q2 || '';
+            document.getElementById('np-q3').value = data.np_q3 || '';
+
+            document.getElementById('oath-q1').value = data.oath_q1 || '';
+            document.getElementById('oath-q2').value = data.oath_q2 || '';
+            document.getElementById('oath-q3').value = data.oath_q3 || '';
+
+            document.getElementById('judicial-q1').value = data.judicial_q1 || '';
+            document.getElementById('judicial-q2').value = data.judicial_q2 || '';
+            document.getElementById('judicial-q3').value = data.judicial_q3 || '';
+
+            document.getElementById('supremacy-q1').value = data.supremacy_q1 || '';
+            document.getElementById('supremacy-q2').value = data.supremacy_q2 || '';
+            document.getElementById('supremacy-q3').value = data.supremacy_q3 || '';
+
+            document.getElementById('synthesis').value = data.synthesis || '';
+
+            showSaveIndicator('Previous work loaded');
+        }
+
+        function submitWork() {
+            saveToLocalStorage();
+            alert('Your work has been saved! Please download a PDF for your records and submit it according to your instructor’s directions.');
+        }
+
+        // =========================
+        // AUTO-SAVE
+        // =========================
+        let saveTimeout;
+        function autoSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => saveToLocalStorage(), 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            const inputs = document.querySelectorAll('#worksheetContent input, #worksheetContent textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', autoSave);
+                input.addEventListener('change', autoSave);
+            });
+        });
+
+        // =========================
+        // SAVE INDICATOR
+        // =========================
+        function showSaveIndicator(message = 'Work saved') {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.textContent = '✓ ' + message;
+            indicator.classList.add('show');
+            setTimeout(() => indicator.classList.remove('show'), 2000);
+        }
+
+        // =========================
+        // PDF DOWNLOAD
+        // =========================
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 20;
+            const maxWidth = pageWidth - (margin * 2);
+            let y = 20;
+
+            // Title
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('HIST 101 — The Constitution in Context', margin, y);
+            y += 8;
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text('Historical Problems, Contemporary Problems, and Civic Obligations', margin, y);
+            y += 12;
+
+            doc.setFontSize(11);
+
+            function ensureSpace(lines = 1) {
+                if (y + (lines * 6) > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+            }
+
+            function addHeader(text) {
+                ensureSpace(2);
+                doc.setFontSize(13);
+                doc.setFont(undefined, 'bold');
+                doc.text(text, margin, y);
+                y += 8;
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+            }
+
+            function addQA(label, value) {
+                ensureSpace(2);
+                doc.setFont(undefined, 'bold');
+                doc.text(label, margin, y);
+                y += 6;
+                doc.setFont(undefined, 'normal');
+
+                const v = value ? String(value) : '';
+                const lines = doc.splitTextToSize(v, maxWidth);
+                lines.forEach(line => {
+                    ensureSpace(1);
+                    doc.text(line, margin, y);
+                    y += 6;
+                });
+                y += 4;
+            }
+
+            // Student info
+            addHeader('Student Information');
+            addQA('Name(s):', document.getElementById('student-names').value);
+            addQA('Class meeting time:', document.getElementById('class-time').value);
+
+            // Section 1
+            addHeader('1) Preamble — “We the People”');
+            addQA('Q1: Vision of unity/shared purpose:', document.getElementById('preamble-q1').value);
+            addQA('Q2: Solving disunity in 1787:', document.getElementById('preamble-q2').value);
+            addQA('Q3: Citizen obligations today:', document.getElementById('preamble-q3').value);
+
+            // Section 2
+            addHeader('2) Article I, Section 8 — Necessary and Proper');
+            addQA('Q1: Strengthens federal government vs. Articles:', document.getElementById('np-q1').value);
+            addQA('Q2: Citizen obligations from expanded power:', document.getElementById('np-q2').value);
+            addQA('Q3: Congress authority today (claim + why):', document.getElementById('np-q3').value);
+
+            // Section 3
+            addHeader('3) Article II — Presidential Oath');
+            addQA('Q1: How the oath limits power:', document.getElementById('oath-q1').value);
+            addQA('Q2: Why defend the Constitution specifically:', document.getElementById('oath-q2').value);
+            addQA('Q3: Obligations in disagreement/election outcomes:', document.getElementById('oath-q3').value);
+
+            // Section 4
+            addHeader('4) Article III — Judicial Independence');
+            addQA('Q1: Why lifetime tenure reduces pressure:', document.getElementById('judicial-q1').value);
+            addQA('Q2: Citizen obligations with unpopular decisions:', document.getElementById('judicial-q2').value);
+            addQA('Q3: Protects rights + tests acceptance:', document.getElementById('judicial-q3').value);
+
+            // Section 5
+            addHeader('5) Article VI — Supremacy Clause');
+            addQA('Q1: Solving states undermining unity:', document.getElementById('supremacy-q1').value);
+            addQA('Q2: Obligations when laws conflict:', document.getElementById('supremacy-q2').value);
+            addQA('Q3: Modern issue testing balance of power:', document.getElementById('supremacy-q3').value);
+
+            // Synthesis
+            addHeader('6) Synthesis');
+            addQA('Reflection:', document.getElementById('synthesis').value);
+
+            doc.save('constitution-in-context.pdf');
+        }
+
+        // =========================
+        // CLEAR FORM
+        // =========================
+        function clearForm() {
+            if (!confirm('Are you sure you want to clear all your work? This cannot be undone.')) return;
+
+            document.querySelectorAll('#worksheetContent input[type="text"], #worksheetContent textarea')
+                .forEach(el => el.value = '');
+
+            localStorage.removeItem(STORAGE_KEY);
+            showSaveIndicator('Form cleared');
+        }
+    </script>
+</body>
+</html>
