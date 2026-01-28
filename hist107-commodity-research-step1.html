@@ -287,6 +287,20 @@
         <a href="research.html">← Back to Research Tools</a>
     </div>
 
+    <div class="section" style="background-color: #f0f9ff; border-left: 4px solid #3498db;">
+        <h2 style="border-bottom-color: #3498db;">Student Information</h2>
+        <div style="display: flex; gap: 20px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="student-name">Student Name:</label>
+                <input type="text" id="student-name" placeholder="First and last name">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="section-number">Section Number:</label>
+                <input type="text" id="section-number" placeholder="e.g., 107-01">
+            </div>
+        </div>
+    </div>
+
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
     </div>
@@ -452,6 +466,8 @@
                 : document.getElementById('commodity-name').value
 
             const data = {
+                student_name: document.getElementById('student-name').value,
+                section_number: document.getElementById('section-number').value,
                 question_interpretation: document.getElementById('question-interpretation').value,
                 key_terms: document.getElementById('key-terms').value,
                 commodity_name: commodityName,
@@ -490,6 +506,8 @@
                 if (!saved) return
                 const data = JSON.parse(saved)
 
+                document.getElementById('student-name').value = data.student_name || ''
+                document.getElementById('section-number').value = data.section_number || ''
                 document.getElementById('question-interpretation').value = data.question_interpretation || ''
                 document.getElementById('key-terms').value = data.key_terms || ''
                 document.getElementById('commodity-name').value = data.commodity_name_selection || ''
@@ -513,6 +531,8 @@
 
             if (error || !data) return
 
+            document.getElementById('student-name').value = data.student_name || ''
+            document.getElementById('section-number').value = data.section_number || ''
             document.getElementById('question-interpretation').value = data.question_interpretation || ''
             document.getElementById('key-terms').value = data.key_terms || ''
             document.getElementById('commodity-name').value = data.commodity_name_selection || ''
@@ -549,6 +569,16 @@
             y += 15
 
             doc.setFontSize(10)
+            const studentName = document.getElementById('student-name').value
+            const sectionNumber = document.getElementById('section-number').value
+            if (studentName) {
+                doc.text(`Student: ${studentName}`, 20, y)
+                y += 8
+            }
+            if (sectionNumber) {
+                doc.text(`Section: ${sectionNumber}`, 20, y)
+                y += 8
+            }
             doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
             y += 12
 
@@ -651,8 +681,10 @@
 
             let text = 'HIST 107 Commodity Research Worksheet\n'
             text += 'Steps 1-2: Understanding the Question & Defining the Commodity\n'
-            text += `Date: ${new Date().toLocaleDateString()}\n`
             text += '='.repeat(60) + '\n\n'
+            text += `Student Name: ${document.getElementById('student-name').value}\n`
+            text += `Section Number: ${document.getElementById('section-number').value}\n`
+            text += `Date: ${new Date().toLocaleDateString()}\n\n`
 
             text += 'STEP 1: Understanding the Big Question\n'
             text += '-'.repeat(40) + '\n\n'
