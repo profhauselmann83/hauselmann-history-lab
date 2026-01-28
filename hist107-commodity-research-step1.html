@@ -291,6 +291,15 @@
         <div class="progress-fill" id="progressFill"></div>
     </div>
 
+    <div class="section">
+        <h2>Instructions</h2>
+        <p>For each step below, read the prompts carefully and answer the questions in complete sentences. When you are finished, save your work and download a PDF to submit.</p>
+        <div class="info-box">
+            <strong>IMPORTANT NOTE:</strong> The "Save Final Work" button saves your answers in your browser. It does not turn anything in automatically. After clicking it, you must download the PDF and print the file to bring to class.
+        </div>
+        <p><em>Tip: Aim for specific, detailed answers that demonstrate your understanding of the commodity's historical significance.</em></p>
+    </div>
+
     <div id="status-message"></div>
 
     <div class="section">
@@ -374,9 +383,9 @@
 
     <div class="section">
         <div class="button-group">
-            <button class="btn btn-success" onclick="saveWork()">💾 Save Progress</button>
+            <button class="btn btn-success" onclick="saveWork()">💾 Save Final Work</button>
             <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
-            <button class="btn btn-secondary" onclick="exportWork()">📄 Export as Text File</button>
+            <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
         </div>
     </div>
 
@@ -398,12 +407,6 @@
                 currentUser = JSON.parse(userStr)
             }
 
-            }
-
-            }
-
-            currentUser = JSON.parse(userStr)
-
             document.getElementById('commodity-name').addEventListener('change', function() {
                 const otherGroup = document.getElementById('other-commodity-group')
                 if (this.value === 'Other') {
@@ -418,40 +421,6 @@
                 element.addEventListener('input', updateProgress)
                 element.addEventListener('change', updateProgress)
             })
-            })
-
-            document.querySelectorAll('input, select, textarea').forEach(element => {
-                element.addEventListener('input', updateProgress)
-                element.addEventListener('change', updateProgress)
-            })
-            })
-
-            document.querySelectorAll('input, select, textarea').forEach(element => {
-                element.addEventListener('input', updateProgress)
-                element.addEventListener('change', updateProgress)
-            })
-            })
-
-            document.querySelectorAll('input, select, textarea').forEach(element => {
-                element.addEventListener('input', updateProgress)
-                element.addEventListener('change', updateProgress)
-            })
-            })
-
-            document.querySelectorAll('input, select, textarea').forEach(element => {
-                element.addEventListener('input', updateProgress)
-                element.addEventListener('change', updateProgress)
-            })
-            })
-
-            document.querySelectorAll('input, select, textarea').forEach(element => {
-                element.addEventListener('input', updateProgress)
-                element.addEventListener('change', updateProgress)
-            })
-
-            await loadWork()
-            updateProgress()
-        }
 
             await loadWork()
             updateProgress()
@@ -673,6 +642,51 @@
             doc.save(`Commodity_Research_Steps1-2_${commodityName || 'draft'}_${new Date().toISOString().split('T')[0]}.pdf`)
 
             showMessage('Exported successfully!', 'success')
+        }
+
+        function exportText() {
+            const commodityName = document.getElementById('commodity-name').value === 'Other'
+                ? document.getElementById('commodity-other').value
+                : document.getElementById('commodity-name').value
+
+            let text = 'HIST 107 Commodity Research Worksheet\n'
+            text += 'Steps 1-2: Understanding the Question & Defining the Commodity\n'
+            text += `Date: ${new Date().toLocaleDateString()}\n`
+            text += '='.repeat(60) + '\n\n'
+
+            text += 'STEP 1: Understanding the Big Question\n'
+            text += '-'.repeat(40) + '\n\n'
+            text += 'Central Question:\n'
+            text += 'How did this raw material become a global commodity, and what does that process reveal about capitalism, empire, and globalization?\n\n'
+            text += 'My Interpretation:\n'
+            text += (document.getElementById('question-interpretation').value || '[Not answered]') + '\n\n'
+            text += 'Key Terms (Capitalism, Empire, Globalization):\n'
+            text += (document.getElementById('key-terms').value || '[Not answered]') + '\n\n'
+
+            text += 'STEP 2: Defining the Commodity & Its Early History\n'
+            text += '-'.repeat(40) + '\n\n'
+            text += `Commodity: ${commodityName || '[Not selected]'}\n\n`
+            text += 'Overview:\n'
+            text += (document.getElementById('commodity-overview').value || '[Not answered]') + '\n\n'
+            text += 'Pre-Imperial Context:\n\n'
+            text += 'Production Location:\n'
+            text += (document.getElementById('pre-imperial-production').value || '[Not answered]') + '\n\n'
+            text += 'Control of Production/Exchange:\n'
+            text += (document.getElementById('pre-imperial-control').value || '[Not answered]') + '\n\n'
+            text += 'Scale of Trade:\n'
+            text += (document.getElementById('pre-imperial-trade').value || '[Not answered]') + '\n'
+
+            const blob = new Blob([text], { type: 'text/plain' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `Commodity_Research_Steps1-2_${commodityName || 'draft'}_${new Date().toISOString().split('T')[0]}.txt`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+            showMessage('Text file exported successfully!', 'success')
         }
 
         function showMessage(message, type) {
