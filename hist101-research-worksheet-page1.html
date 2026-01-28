@@ -338,6 +338,20 @@
         <a href="hist101-research-worksheet-page4.html">Page 4 (Interview Guide)</a>
     </div>
 
+    <div class="section" style="background-color: #f0f9ff; border-left: 4px solid #3498db;">
+        <h2 style="border-bottom-color: #3498db;">Student Information</h2>
+        <div style="display: flex; gap: 20px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="studentName">Student Name:</label>
+                <input type="text" id="studentName" placeholder="First and last name">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="sectionNumber">Section Number:</label>
+                <input type="text" id="sectionNumber" placeholder="e.g., 101-01">
+            </div>
+        </div>
+    </div>
+
     <!-- Progress Bar -->
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -485,7 +499,11 @@ window.addEventListener('DOMContentLoaded', function() {
 function saveProgress() {
     const data = collectFormData();
     localStorage.setItem('researchWorksheet_step1', JSON.stringify(data));
-    
+    localStorage.setItem('researchWorksheet_studentInfo', JSON.stringify({
+        studentName: document.getElementById('studentName').value,
+        sectionNumber: document.getElementById('sectionNumber').value
+    }));
+
     const messageDiv = document.getElementById('saveMessage');
     messageDiv.innerHTML = '<div class="alert alert-success">✅ Progress saved successfully!</div>';
     setTimeout(() => {
@@ -495,29 +513,37 @@ function saveProgress() {
 
 function loadSavedData() {
     const saved = localStorage.getItem('researchWorksheet_step1');
-    if (!saved) return;
-    
-    const data = JSON.parse(saved);
-    
-    // Restore text inputs and selects
-    if (data.questionUnderstanding) document.getElementById('questionUnderstanding').value = data.questionUnderstanding;
-    if (data.normSelected) document.getElementById('normSelected').value = data.normSelected;
-    if (data.normImportance) document.getElementById('normImportance').value = data.normImportance;
-    if (data.historicalIssue) document.getElementById('historicalIssue').value = data.historicalIssue;
-    
-    // Restore checkboxes
-    if (data.timePeriods) {
-        data.timePeriods.forEach(period => {
-            const checkbox = document.querySelector(`input[value="${period}"]`);
-            if (checkbox) checkbox.checked = true;
-        });
+    if (saved) {
+        const data = JSON.parse(saved);
+
+        // Restore text inputs and selects
+        if (data.questionUnderstanding) document.getElementById('questionUnderstanding').value = data.questionUnderstanding;
+        if (data.normSelected) document.getElementById('normSelected').value = data.normSelected;
+        if (data.normImportance) document.getElementById('normImportance').value = data.normImportance;
+        if (data.historicalIssue) document.getElementById('historicalIssue').value = data.historicalIssue;
+
+        // Restore checkboxes
+        if (data.timePeriods) {
+            data.timePeriods.forEach(period => {
+                const checkbox = document.querySelector(`input[value="${period}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+
+        if (data.groups) {
+            data.groups.forEach(group => {
+                const checkbox = document.querySelector(`input[value="${group}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
     }
-    
-    if (data.groups) {
-        data.groups.forEach(group => {
-            const checkbox = document.querySelector(`input[value="${group}"]`);
-            if (checkbox) checkbox.checked = true;
-        });
+
+    // Restore student info from shared storage
+    const studentInfo = localStorage.getItem('researchWorksheet_studentInfo');
+    if (studentInfo) {
+        const info = JSON.parse(studentInfo);
+        if (info.studentName) document.getElementById('studentName').value = info.studentName;
+        if (info.sectionNumber) document.getElementById('sectionNumber').value = info.sectionNumber;
     }
 }
 
@@ -578,33 +604,38 @@ function goToSteps56() {
 }
 
 function exportPDF() {
-    const studentName = prompt('Enter your name for the PDF:');
+    const studentName = document.getElementById('studentName').value.trim() || prompt('Enter your name for the PDF:');
     if (!studentName) return;
-    
+    const sectionNumber = document.getElementById('sectionNumber').value.trim();
+
     const data = collectFormData();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
+
     let y = 20;
     const lineHeight = 7;
     const pageWidth = 190;
-    
+
     // Title
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.text('Research Paper Planning Worksheet', 105, y, { align: 'center' });
     y += 10;
-    
+
     doc.setFontSize(12);
     doc.text('Steps 1-2: Big Question & Historical Context', 105, y, { align: 'center' });
     y += 15;
-    
-    // Student name
+
+    // Student info
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     doc.text(`Student: ${studentName}`, 20, y);
-    y += 10;
-    
+    y += 8;
+    if (sectionNumber) {
+        doc.text(`Section: ${sectionNumber}`, 20, y);
+        y += 8;
+    }
+
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y);
     y += 15;
     
