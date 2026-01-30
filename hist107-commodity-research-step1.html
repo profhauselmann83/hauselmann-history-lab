@@ -404,7 +404,9 @@
             <button class="btn btn-success" onclick="saveWork()">💾 Save Final Work</button>
             <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
             <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+            <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
         </div>
+        <div id="submitMessage"></div>
     </div>
 
     <footer>
@@ -730,6 +732,220 @@
             msgDiv.innerHTML = type === 'success'
                 ? `<div class="alert alert-success">${message}</div>`
                 : `<div class="alert alert-error">${message}</div>`
+        }
+
+        async function submitToSupabase() {
+            const studentName = document.getElementById('student-name').value.trim();
+            const sectionNumber = document.getElementById('section-number').value.trim();
+
+            if (!studentName) {
+                alert('Please enter your name before submitting.');
+                document.getElementById('student-name').focus();
+                return;
+            }
+
+            if (!sectionNumber) {
+                alert('Please enter your section number before submitting.');
+                document.getElementById('section-number').focus();
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('submitMessage');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Submitting...';
+            messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>';
+
+            try {
+                const pdfBlob = await generatePDFBlob();
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+                const commodityName = document.getElementById('commodity-name').value === 'Other'
+                    ? document.getElementById('commodity-other').value
+                    : document.getElementById('commodity-name').value;
+                const fileName = `hist107-commodity-steps1-2/${sectionNumber}/${sanitizedName}_${commodityName}_${timestamp}.pdf`;
+
+                const { data: uploadData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    throw new Error(`Upload failed: ${uploadError.message}`);
+                }
+
+                const { data: urlData } = supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .getPublicUrl(fileName);
+
+                const formData = {
+                    question_interpretation: document.getElementById('question-interpretation').value,
+                    key_terms: document.getElementById('key-terms').value,
+                    commodity_name: commodityName,
+                    commodity_overview: document.getElementById('commodity-overview').value,
+                    pre_imperial_production: document.getElementById('pre-imperial-production').value,
+                    pre_imperial_control: document.getElementById('pre-imperial-control').value,
+                    pre_imperial_trade: document.getElementById('pre-imperial-trade').value
+                };
+
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: 'hist107-commodity-steps1-2',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    });
+
+                if (dbError) {
+                    console.warn('Metadata save warning:', dbError.message);
+                }
+
+                messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your worksheet has been sent to Prof. Hauselmann.</div>';
+                submitBtn.textContent = '✓ Submitted';
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                messageDiv.innerHTML = `<div class="alert alert-error">❌ Submission failed: ${error.message}. Please try again or export the PDF and email it to your professor.</div>`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Submit to Professor';
+            }
+        }
+
+        function generatePDFBlob() {
+            return new Promise((resolve) => {
+                const commodityName = document.getElementById('commodity-name').value === 'Other'
+                    ? document.getElementById('commodity-other').value
+                    : document.getElementById('commodity-name').value;
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const lineHeight = 7;
+                const pageWidth = 190;
+                let y = 20;
+
+                doc.setFontSize(16);
+                doc.setFont(undefined, 'bold');
+                doc.text('HIST 107 Commodity Research Worksheet', 105, y, { align: 'center' });
+                y += 10;
+
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                doc.text('Steps 1-2: Understanding the Question & Defining the Commodity', 105, y, { align: 'center' });
+                y += 15;
+
+                doc.setFontSize(10);
+                const studentName = document.getElementById('student-name').value;
+                const sectionNumber = document.getElementById('section-number').value;
+                if (studentName) {
+                    doc.text(`Student: ${studentName}`, 20, y);
+                    y += 8;
+                }
+                if (sectionNumber) {
+                    doc.text(`Section: ${sectionNumber}`, 20, y);
+                    y += 8;
+                }
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y);
+                y += 12;
+
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('STEP 1: Understanding the Big Question', 20, y);
+                y += 10;
+
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text('Central Question:', 20, y);
+                y += 7;
+                const centralLines = doc.splitTextToSize(
+                    'How did this raw material become a global commodity, and what does that process reveal about capitalism, empire, and globalization?',
+                    pageWidth - 25
+                );
+                doc.text(centralLines, 25, y);
+                y += centralLines.length * lineHeight + 8;
+
+                doc.text('My Interpretation:', 20, y);
+                y += 7;
+                const interpretation = doc.splitTextToSize(
+                    document.getElementById('question-interpretation').value || '[Not answered]',
+                    pageWidth - 25
+                );
+                doc.text(interpretation, 25, y);
+                y += interpretation.length * lineHeight + 8;
+
+                doc.text('Key Terms (Capitalism, Empire, Globalization):', 20, y);
+                y += 7;
+                const keyTerms = doc.splitTextToSize(
+                    document.getElementById('key-terms').value || '[Not answered]',
+                    pageWidth - 25
+                );
+                doc.text(keyTerms, 25, y);
+                y += keyTerms.length * lineHeight + 12;
+
+                if (y > 250) {
+                    doc.addPage();
+                    y = 20;
+                }
+
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('STEP 2: Defining the Commodity & Its Early History', 20, y);
+                y += 10;
+
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Commodity: ${commodityName || '[Not selected]'}`, 20, y);
+                y += 10;
+
+                doc.text('Overview:', 20, y);
+                y += 7;
+                const overview = doc.splitTextToSize(
+                    document.getElementById('commodity-overview').value || '[Not answered]',
+                    pageWidth - 25
+                );
+                doc.text(overview, 25, y);
+                y += overview.length * lineHeight + 8;
+
+                doc.text('Pre-Imperial Context:', 20, y);
+                y += 7;
+
+                doc.text('Production Location:', 25, y);
+                y += 7;
+                const production = doc.splitTextToSize(
+                    document.getElementById('pre-imperial-production').value || '[Not answered]',
+                    pageWidth - 30
+                );
+                doc.text(production, 30, y);
+                y += production.length * lineHeight + 6;
+
+                doc.text('Control of Production/Exchange:', 25, y);
+                y += 7;
+                const control = doc.splitTextToSize(
+                    document.getElementById('pre-imperial-control').value || '[Not answered]',
+                    pageWidth - 30
+                );
+                doc.text(control, 30, y);
+                y += control.length * lineHeight + 6;
+
+                doc.text('Scale of Trade:', 25, y);
+                y += 7;
+                const trade = doc.splitTextToSize(
+                    document.getElementById('pre-imperial-trade').value || '[Not answered]',
+                    pageWidth - 30
+                );
+                doc.text(trade, 30, y);
+
+                resolve(doc.output('blob'));
+            });
         }
 
         checkAuth()
