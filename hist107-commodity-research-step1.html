@@ -419,6 +419,10 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4MTM2NzYsImV4cCI6MjA1MjM4OTY3Nn0.KFQV8a5XKy1aq0pFHCF_XYLBGwDmBJNp8OpFJIrMu1w'
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
+        // Submission cutoff date - set to null for no deadline, or use format: 'YYYY-MM-DDTHH:MM:SS'
+        // Example: '2026-03-15T23:59:59' for March 15, 2026 at 11:59 PM
+        const SUBMISSION_CUTOFF = null
+
         let currentUser = null
 
         async function checkAuth() {
@@ -735,6 +739,16 @@
         }
 
         async function submitToSupabase() {
+            // Check if submission deadline has passed
+            if (SUBMISSION_CUTOFF) {
+                const cutoffDate = new Date(SUBMISSION_CUTOFF)
+                const now = new Date()
+                if (now > cutoffDate) {
+                    alert('The submission deadline has passed. Please contact your professor if you need an extension.')
+                    return
+                }
+            }
+
             const studentName = document.getElementById('student-name').value.trim();
             const sectionNumber = document.getElementById('section-number').value.trim();
 

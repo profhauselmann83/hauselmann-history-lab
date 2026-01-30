@@ -467,10 +467,34 @@
                     <td><span class="worksheet-type ${sub.worksheet_type.startsWith('hist101') ? 'type-hist101' : 'type-hist107'}">${formatWorksheetType(sub.worksheet_type)}</span></td>
                     <td>${formatDate(sub.submitted_at)}</td>
                     <td>
-                        ${sub.file_url ? `<a href="${sub.file_url}" target="_blank" class="download-btn">Download PDF</a>` : '-'}
+                        ${sub.file_path ? `<button onclick="downloadFile('${escapeHtml(sub.file_path)}')" class="download-btn">Download PDF</button>` : '-'}
                     </td>
                 </tr>
             `).join('');
+        }
+
+        async function downloadFile(filePath) {
+            try {
+                // Try to get a signed URL (works for private buckets)
+                const { data, error } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+                if (error) {
+                    // Fall back to public URL
+                    const { data: publicData } = supabaseClient
+                        .storage
+                        .from('student-submissions')
+                        .getPublicUrl(filePath);
+                    window.open(publicData.publicUrl, '_blank');
+                } else {
+                    window.open(data.signedUrl, '_blank');
+                }
+            } catch (err) {
+                console.error('Download error:', err);
+                alert('Error downloading file: ' + err.message);
+            }
         }
 
         function formatWorksheetType(type) {
