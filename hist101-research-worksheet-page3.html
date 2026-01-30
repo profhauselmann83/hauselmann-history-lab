@@ -430,9 +430,11 @@
             <button class="btn btn-warning" onclick="goBack()">← Back to Steps 3-4</button>
             <button class="btn btn-success" onclick="saveProgress()">💾 Save Progress</button>
             <button class="btn btn-secondary" onclick="exportPDF()">📄 Export Steps 5-6 as PDF</button>
+            <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
             <button class="btn btn-primary" onclick="goNext()">Next: Interview Guide →</button>
         </div>
 
+        <div id="submitMessage"></div>
         <div id="saveMessage"></div>
     </div>
 
@@ -441,11 +443,12 @@
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <footer>
-        <p>Prof. Hauselmann | profhauselmann.org</p>
-    </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// Supabase configuration
+const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window.addEventListener('DOMContentLoaded', function() {
     loadSavedData();
 });
@@ -641,6 +644,210 @@ function exportPDF() {
     doc.text(doc.splitTextToSize(data.haass_evaluation || '[Not answered]', pageWidth - 25), 25, y);
 
     doc.save(`research-worksheet-steps5-6-${studentName.replace(/\\s+/g, '_')}.pdf`);
+}
+
+async function submitToSupabase() {
+    const studentName = document.getElementById('studentName').value.trim();
+    const sectionNumber = document.getElementById('sectionNumber').value.trim();
+
+    if (!studentName) {
+        alert('Please enter your name before submitting.');
+        document.getElementById('studentName').focus();
+        return;
+    }
+
+    if (!sectionNumber) {
+        alert('Please enter your section number before submitting.');
+        document.getElementById('sectionNumber').focus();
+        return;
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    const messageDiv = document.getElementById('submitMessage');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Submitting...';
+    messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>';
+
+    try {
+        const pdfBlob = await generatePDFBlob();
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `hist101-worksheet-steps5-6/${sectionNumber}/${sanitizedName}_${timestamp}.pdf`;
+
+        const { data: uploadData, error: uploadError } = await supabaseClient
+            .storage
+            .from('student-submissions')
+            .upload(fileName, pdfBlob, {
+                contentType: 'application/pdf',
+                upsert: false
+            });
+
+        if (uploadError) {
+            throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+
+        const { data: urlData } = supabaseClient
+            .storage
+            .from('student-submissions')
+            .getPublicUrl(fileName);
+
+        const formData = collectFormData();
+        const { error: dbError } = await supabaseClient
+            .from('worksheet_submissions')
+            .insert({
+                student_name: studentName,
+                section_number: sectionNumber,
+                worksheet_type: 'hist101-research-steps5-6',
+                file_path: fileName,
+                file_url: urlData.publicUrl,
+                form_data: formData,
+                submitted_at: new Date().toISOString()
+            });
+
+        if (dbError) {
+            console.warn('Metadata save warning:', dbError.message);
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your worksheet has been sent to Prof. Hauselmann.</div>';
+        submitBtn.textContent = '✓ Submitted';
+
+    } catch (error) {
+        console.error('Submission error:', error);
+        messageDiv.innerHTML = `<div class="alert" style="background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545;">❌ Submission failed: ${error.message}. Please try again or export the PDF and email it to your professor.</div>`;
+        submitBtn.disabled = false;
+        submitBtn.textContent = '📤 Submit to Professor';
+    }
+}
+
+function generatePDFBlob() {
+    return new Promise((resolve) => {
+        const studentName = document.getElementById('studentName').value.trim();
+        const sectionNumber = document.getElementById('sectionNumber').value.trim();
+        const data = collectFormData();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        let y = 20;
+        const lineHeight = 7;
+        const pageWidth = 190;
+
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.text('Research Paper Planning Worksheet', 105, y, { align: 'center' });
+        y += 10;
+
+        doc.setFontSize(12);
+        doc.text('Steps 5-6: Atlantic Articles + Haass Framework', 105, y, { align: 'center' });
+        y += 15;
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Student: ${studentName}`, 20, y);
+        y += 8;
+        if (sectionNumber) {
+            doc.text(`Section: ${sectionNumber}`, 20, y);
+            y += 8;
+        }
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y);
+        y += 12;
+
+        doc.setFontSize(13);
+        doc.setFont(undefined, 'bold');
+        doc.text('STEP 5: The Atlantic Articles', 20, y);
+        y += 8;
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text('Article 1 Title:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic1_title || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 2;
+
+        doc.text('Article 1 Author:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic1_author || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 2;
+
+        doc.text('Article 1 Central Claim:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic1_claim || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 3;
+
+        doc.text('Article 1 Norm Connection:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic1_norm || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 3;
+
+        if (y > 250) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.text('Article 2 Title:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic2_title || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 2;
+
+        doc.text('Article 2 Author:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic2_author || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 2;
+
+        doc.text('Article 2 Central Claim:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic2_claim || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 3;
+
+        doc.text('Article 2 Norm Connection:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic2_norm || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 3;
+
+        if (y > 250) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.text('Atlantic Reflection:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic_reflection || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 3;
+
+        doc.text('Atlantic Connection:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.atlantic_connection || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 3;
+
+        if (y > 250) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.setFontSize(13);
+        doc.setFont(undefined, 'bold');
+        doc.text('STEP 6: Haass Framework', 20, y);
+        y += 8;
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text('Obligation:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.haass_obligation || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 2;
+
+        doc.text('Key Idea/Quotation:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.haass_quote || '[Not answered]', pageWidth - 25), 25, y);
+        y += lineHeight * 3;
+
+        doc.text('Evaluation:', 20, y);
+        y += 6;
+        doc.text(doc.splitTextToSize(data.haass_evaluation || '[Not answered]', pageWidth - 25), 25, y);
+
+        resolve(doc.output('blob'));
+    });
 }
 </script>
 </body>
