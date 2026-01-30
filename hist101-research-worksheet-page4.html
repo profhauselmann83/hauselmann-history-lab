@@ -466,7 +466,9 @@
             <button class="btn btn-warning" onclick="goBack()">← Back to Steps 5-6</button>
             <button class="btn btn-success" onclick="saveProgress()">💾 Save Progress</button>
             <button class="btn btn-secondary" onclick="exportPDF()">📄 Export Interview Guide as PDF</button>
+            <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
         </div>
+        <div id="submitMessage"></div>
         <div id="saveMessage"></div>
     </div>
 
@@ -475,7 +477,13 @@
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     window.addEventListener('DOMContentLoaded', function() {
         loadSavedData();
         updateProgress();
@@ -679,6 +687,180 @@
         doc.text(doc.splitTextToSize(data.submission_notes || '[Not answered]', pageWidth - 25), 25, y);
 
         doc.save(`hist101-interview-guide-${studentName.replace(/\\s+/g, '_')}.pdf`);
+    }
+
+    async function submitToSupabase() {
+        const studentName = document.getElementById('studentNameTop').value.trim() || document.getElementById('student_name').value.trim();
+        const sectionNumber = document.getElementById('sectionNumber').value.trim();
+
+        if (!studentName) {
+            alert('Please enter your name before submitting.');
+            document.getElementById('studentNameTop').focus();
+            return;
+        }
+
+        if (!sectionNumber) {
+            alert('Please enter your section number before submitting.');
+            document.getElementById('sectionNumber').focus();
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('submitMessage');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Submitting...';
+        messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>';
+
+        try {
+            const pdfBlob = await generatePDFBlob();
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+            const fileName = `hist101-interview-guide/${sectionNumber}/${sanitizedName}_${timestamp}.pdf`;
+
+            const { data: uploadData, error: uploadError } = await supabaseClient
+                .storage
+                .from('student-submissions')
+                .upload(fileName, pdfBlob, {
+                    contentType: 'application/pdf',
+                    upsert: false
+                });
+
+            if (uploadError) {
+                throw new Error(`Upload failed: ${uploadError.message}`);
+            }
+
+            const { data: urlData } = supabaseClient
+                .storage
+                .from('student-submissions')
+                .getPublicUrl(fileName);
+
+            const formData = collectFormData();
+            const { error: dbError } = await supabaseClient
+                .from('worksheet_submissions')
+                .insert({
+                    student_name: studentName,
+                    section_number: sectionNumber,
+                    worksheet_type: 'hist101-interview-guide',
+                    file_path: fileName,
+                    file_url: urlData.publicUrl,
+                    form_data: formData,
+                    submitted_at: new Date().toISOString()
+                });
+
+            if (dbError) {
+                console.warn('Metadata save warning:', dbError.message);
+            }
+
+            messageDiv.innerHTML = '<div class="alert" style="background-color: #d4edda; color: #155724; border-left: 4px solid #27ae60;">✅ Successfully submitted! Your interview guide has been sent to Prof. Hauselmann.</div>';
+            submitBtn.textContent = '✓ Submitted';
+
+        } catch (error) {
+            console.error('Submission error:', error);
+            messageDiv.innerHTML = `<div class="alert" style="background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545;">❌ Submission failed: ${error.message}. Please try again or export the PDF and email it to your professor.</div>`;
+            submitBtn.disabled = false;
+            submitBtn.textContent = '📤 Submit to Professor';
+        }
+    }
+
+    function generatePDFBlob() {
+        return new Promise((resolve) => {
+            const studentName = document.getElementById('studentNameTop').value.trim() || document.getElementById('student_name').value.trim() || 'student';
+            const sectionNumber = document.getElementById('sectionNumber').value.trim();
+            const data = collectFormData();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            let y = 20;
+            const lineHeight = 7;
+            const pageWidth = 190;
+
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('HIST 101 Interview Guide', 105, y, { align: 'center' });
+            y += 10;
+
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Student: ${studentName}`, 20, y);
+            y += 7;
+            if (sectionNumber) {
+                doc.text(`Section: ${sectionNumber}`, 20, y);
+                y += 7;
+            }
+            doc.text(`Interviewee: ${data.interviewee_name || '[Not answered]'}`, 20, y);
+            y += 7;
+            doc.text(`Date & Location: ${data.interview_date || '[Not answered]'}`, 20, y);
+            y += 7;
+            doc.text(`Duration: ${data.interview_duration || '[Not answered]'}`, 20, y);
+            y += 12;
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Connection to Topic', 20, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(doc.splitTextToSize(data.topic_connection || '[Not answered]', pageWidth - 25), 25, y);
+            y += lineHeight * 3;
+
+            doc.text('Interview Goals', 20, y);
+            y += 7;
+            doc.text(doc.splitTextToSize(data.interview_goals || '[Not answered]', pageWidth - 25), 25, y);
+            y += lineHeight * 3;
+
+            if (y > 250) {
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Selected Questions', 20, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            if (data.selected_questions && data.selected_questions.length) {
+                data.selected_questions.forEach((item) => {
+                    doc.text(`• ${item}`, 25, y);
+                    y += 6;
+                });
+            } else {
+                doc.text('[None selected]', 25, y);
+                y += 6;
+            }
+            y += 6;
+
+            doc.text('Custom Questions', 20, y);
+            y += 7;
+            doc.text(doc.splitTextToSize(data.custom_questions || '[Not answered]', pageWidth - 25), 25, y);
+            y += lineHeight * 3;
+
+            if (y > 250) {
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Transcript (Excerpt)', 20, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(doc.splitTextToSize(data.transcript || '[Not answered]', pageWidth - 25), 25, y);
+            y += lineHeight * 3;
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Submission Checklist Notes', 20, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(doc.splitTextToSize(data.submission_notes || '[Not answered]', pageWidth - 25), 25, y);
+
+            resolve(doc.output('blob'));
+        });
     }
     </script>
 </body>
