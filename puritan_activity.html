@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puritan Settlement Inquiry - Were They Selfish or Selfless?</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -414,6 +415,8 @@
                 <h3>Student Information</h3>
                 <label for="student-name"><strong>Your Name:</strong></label>
                 <input type="text" id="student-name" placeholder="Enter your full name">
+                <label for="section-number"><strong>Section Number:</strong></label>
+                <input type="text" id="section-number" placeholder="Enter your section number (e.g., 101, 102)">
             </div>
 
             <button class="btn btn-primary" onclick="startActivity()">Begin Document Analysis →</button>
@@ -559,15 +562,30 @@
 
             <div class="parchment-box">
                 <h3>Download Your Work</h3>
-                <p>Download your completed work as a PDF for your records and to submit to your teacher.</p>
-
+                <p>Download your completed work as a PDF for your records.</p>
                 <button class="btn btn-success" onclick="downloadPDF()">📄 Download as PDF</button>
+            </div>
+
+            <div class="parchment-box">
+                <h3>Submit to Professor</h3>
+                <p>Click the button below to submit your completed work directly to Prof. Hauselmann.</p>
+                <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+                <div id="submitMessage" style="margin-top: 15px;"></div>
             </div>
         </div>
 
     </div>
 
     <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Submission cutoff date - set to null for no deadline, or use format: 'YYYY-MM-DDTHH:MM:SS'
+        // Example: '2026-03-15T23:59:59' for March 15, 2026 at 11:59 PM
+        const SUBMISSION_CUTOFF = null;
+
         // Activity state
         let activityState = {
             studentName: '',
@@ -812,6 +830,162 @@
                 console.error('Error generating PDF:', error);
                 alert('There was an error generating the PDF. Please make sure all fields are completed.');
             }
+        }
+
+        window.submitToSupabase = async function() {
+            // Check if submission deadline has passed
+            if (SUBMISSION_CUTOFF) {
+                const cutoffDate = new Date(SUBMISSION_CUTOFF);
+                const now = new Date();
+                if (now > cutoffDate) {
+                    alert('The submission deadline has passed. Please contact your professor if you need an extension.');
+                    return;
+                }
+            }
+
+            const studentName = activityState.studentName || document.getElementById('student-name').value.trim();
+            const sectionNumber = document.getElementById('section-number').value.trim();
+
+            if (!studentName) {
+                alert('Please enter your name before submitting.');
+                return;
+            }
+
+            if (!sectionNumber) {
+                alert('Please enter your section number before submitting.');
+                document.getElementById('section-number').focus();
+                return;
+            }
+
+            if (!activityState.finalAnalysis) {
+                alert('Please complete all sections before submitting.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('submitMessage');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Submitting...';
+            messageDiv.innerHTML = '<div class="colonial-note" style="background-color: #fff3cd;">Generating and uploading your PDF...</div>';
+
+            try {
+                const pdfBlob = await generatePDFBlob();
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+                const fileName = `hist101-puritan-activity/${sectionNumber}/${sanitizedName}_${timestamp}.pdf`;
+
+                const { error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    throw new Error(`Upload failed: ${uploadError.message}`);
+                }
+
+                const { data: urlData } = supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .getPublicUrl(fileName);
+
+                await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: 'hist101-puritan-activity',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
+                        form_data: activityState,
+                        submitted_at: new Date().toISOString()
+                    });
+
+                messageDiv.innerHTML = '<div class="success-banner">✅ Successfully submitted! Your work has been sent to Prof. Hauselmann.</div>';
+                submitBtn.textContent = '✓ Submitted';
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                messageDiv.innerHTML = `<div class="colonial-note" style="background-color: #f8d7da; border-left-color: #dc3545;">❌ Submission failed: ${error.message}. Please try again or download the PDF and email it to your professor.</div>`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Submit to Professor';
+            }
+        }
+
+        function generatePDFBlob() {
+            return new Promise((resolve) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                function addText(text, size = 12, isBold = false) {
+                    doc.setFontSize(size);
+                    if (isBold) {
+                        doc.setFont(undefined, 'bold');
+                    } else {
+                        doc.setFont(undefined, 'normal');
+                    }
+
+                    const lines = doc.splitTextToSize(text, 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3;
+                }
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Puritan Settlement Inquiry Activity', 20, y);
+                y += 15;
+
+                addText(`Student: ${activityState.studentName}`, 12, true);
+                addText(`Section: ${document.getElementById('section-number').value.trim()}`, 12, true);
+                addText(`Completed: ${new Date(activityState.timestamp).toLocaleString()}`, 10);
+                y += 5;
+
+                addText('DOCUMENT A: "A City Upon a Hill"', 14, true);
+                y += 2;
+                addText('Question 1: Who was John Winthrop speaking to? What is the purpose?', 11, true);
+                addText(activityState.documentA.q1, 10);
+                y += 3;
+                addText('Question 2: What might the audience have been thinking and feeling?', 11, true);
+                addText(activityState.documentA.q2, 10);
+                y += 3;
+                addText('Question 3: What is the main idea? What does "City Upon a Hill" mean?', 11, true);
+                addText(activityState.documentA.q3, 10);
+                y += 5;
+
+                addText('DOCUMENT B: "The Divine Right to Occupy the Land"', 14, true);
+                y += 2;
+                addText('Question 1: Who was John Cotton speaking to? Why?', 11, true);
+                addText(activityState.documentB.q1, 10);
+                y += 3;
+                addText('Question 2: Who are the "inhabitants" and "foreign people"?', 11, true);
+                addText(activityState.documentB.q2, 10);
+                y += 3;
+                addText('Question 3: What does Cotton say God will do for the foreign people?', 11, true);
+                addText(activityState.documentB.q3, 10);
+                y += 5;
+
+                addText('FINAL ANALYSIS: Were the Puritans selfish or selfless?', 14, true);
+                y += 2;
+                addText(activityState.finalAnalysis, 10);
+
+                resolve(doc.output('blob'));
+            });
         }
 
         // Save state to localStorage periodically
