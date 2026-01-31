@@ -173,6 +173,20 @@
         let allPosts = []
         let currentSearchTerm = ''
         let currentCategory = 'all'
+function escapeHtml(str = '') {
+    return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;')
+}
+
+function makeExcerpt(text = '', maxChars = 500) {
+    const clean = String(text).trim().replace(/\s+/g, ' ')
+    if (clean.length <= maxChars) return clean
+    return clean.slice(0, maxChars).trimEnd() + '…'
+}
 
         async function loadBlogPosts() {
             const container = document.getElementById('blog-container')
@@ -210,25 +224,25 @@
             filterContainer.innerHTML = categories.map(cat => `
                 <button 
                     class="filter-btn ${cat === 'all' ? 'active' : ''}" 
-                    onclick="filterByCategory('${cat}')"
+                    onclick="filterByCategory('${cat}', this)"
+
                 >
                     ${cat === 'all' ? 'All Posts' : cat}
                 </button>
             `).join('')
         }
 
-        function filterByCategory(category) {
-            currentCategory = category
-            
-            // Update active button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active')
-            })
-            event.target.classList.add('active')
-            
-            // Apply filters
-            applyFilters()
-        }
+        function filterByCategory(category, btnEl) {
+    currentCategory = category
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active')
+    })
+    if (btnEl) btnEl.classList.add('active')
+
+    applyFilters()
+}
+
 
         function searchPosts() {
             currentSearchTerm = document.getElementById('search-input').value.toLowerCase()
@@ -268,38 +282,62 @@
             }
         }
 
-        function displayPosts(posts) {
-            const container = document.getElementById('blog-container')
+       function displayPosts(posts) {
+    const container = document.getElementById('blog-container')
 
-            if (posts.length === 0) {
-                container.innerHTML = `
-                    <div class="no-results">
-                        <p>No posts found matching your search.</p>
-                        <p>Try different keywords or browse all posts.</p>
-                    </div>
-                `
-                return
-            }
+    if (posts.length === 0) {
+        container.innerHTML = `
+            <div class="no-results">
+                <p>No posts found matching your search.</p>
+                <p>Try different keywords or browse all posts.</p>
+            </div>
+        `
+        return
+    }
 
-            container.innerHTML = posts.map(post => `
-                <article class="blog-post">
-                    <h2>${post.title}</h2>
-                    <div class="blog-meta">
-                        <strong>Posted:</strong> ${new Date(post.published_date).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                        })}
-                        ${post.category ? `<span class="tag">${post.category}</span>` : ''}
-                    </div>
-                    <div class="blog-content">
-                        ${post.content.split('\n').map(paragraph => 
-                            paragraph.trim() ? `<p>${paragraph}</p>` : ''
-                        ).join('')}
-                    </div>
-                </article>
-            `).join('')
-        }
+    container.innerHTML = posts.map(post => {
+        const published = new Date(post.published_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        })
+
+        const title = escapeHtml(post.title ?? '')
+        const category = escapeHtml(post.category ?? '')
+        const contentText = post.content ?? ''
+
+        const previewText = makeExcerpt(contentText, 500)
+        const hasMore = contentText.trim().length > previewText.trim().length
+
+        const previewHtml = `<p>${escapeHtml(previewText)}</p>`
+
+        const fullHtml = contentText
+            .split('\n')
+            .map(p => p.trim() ? `<p>${escapeHtml(p)}</p>` : '')
+            .join('')
+
+        return `
+            <article class="blog-post">
+                <h2>${title}</h2>
+                <div class="blog-meta">
+                    <strong>Posted:</strong> ${published}
+                    ${post.category ? `<span class="tag">${category}</span>` : ''}
+                </div>
+
+                <div class="blog-preview">
+                    ${previewHtml}
+                </div>
+
+                ${hasMore ? `<button class="read-more-btn" type="button" data-action="toggle">Read more</button>` : ''}
+
+                <div class="blog-full hidden">
+                    ${fullHtml}
+                </div>
+            </article>
+        `
+    }).join('')
+}
+
 
         // Set up search input listener
         document.addEventListener('DOMContentLoaded', () => {
