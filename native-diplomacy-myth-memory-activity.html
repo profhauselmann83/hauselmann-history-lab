@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Myth, Memory, and Power — HIST 101</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .breadcrumb {
+      background: #f8f9fa;
+      padding: 15px 40px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .breadcrumb-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb-nav a {
+      color: #667eea;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .breadcrumb-nav a:hover {
+      color: #5568d3;
+      text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+      color: #a0aec0;
+      user-select: none;
+    }
+
+    .breadcrumb-current {
+      color: #4a5568;
+      font-weight: 500;
+    }
+
+    .content { padding: 40px; }
+
+    .purpose-box {
+      background: #edf2f7;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      border-left: 4px solid #4299e1;
+    }
+
+    .purpose-box p {
+      color: #2d3748;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .info-banner {
+      background: #bee3f8;
+      border-left: 4px solid #4299e1;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+
+    .info-banner p {
+      color: #2c5282;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .info-banner p:last-child { margin-bottom: 0; }
+    .info-banner strong { color: #2a4365; }
+
+    .section {
+      margin-bottom: 40px;
+      padding: 25px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border-left: 4px solid #667eea;
+    }
+
+    .section h2 {
+      color: #1e3c72;
+      margin-bottom: 20px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-number {
+      background: #667eea;
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      flex: 0 0 auto;
+    }
+
+    .question { margin-bottom: 25px; }
+
+    .question-label {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 10px;
+      display: block;
+      font-size: 15px;
+    }
+
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    input[type="text"]:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea { min-height: 110px; resize: vertical; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .content { padding: 20px; }
+      .section { padding: 20px; }
+      .header h1 { font-size: 24px; }
+      .breadcrumb { padding: 12px 20px; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .radio-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .radio-item:hover {
+      border-color: #667eea;
+      background: #f7fafc;
+    }
+
+    .radio-item input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    .radio-item label {
+      cursor: pointer;
+      font-size: 14px;
+      flex: 1;
+      color: #2d3748;
+      line-height: 1.4;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px;
+      background: white;
+      border-radius: 6px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .checkbox-item:hover {
+      border-color: #667eea;
+      background: #f7fafc;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    .checkbox-item label {
+      cursor: pointer;
+      font-size: 14px;
+      flex: 1;
+      color: #2d3748;
+      line-height: 1.4;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+      background: white;
+      display: none;
+      font-size: 14px;
+    }
+
+    .feedback.ok {
+      border-color: rgba(72, 187, 120, 0.55);
+      background: rgba(72, 187, 120, 0.12);
+      color: #22543d;
+    }
+
+    .feedback.bad {
+      border-color: rgba(229, 62, 62, 0.55);
+      background: rgba(229, 62, 62, 0.10);
+      color: #742a2a;
+    }
+
+    .small-hint {
+      margin-top: 8px;
+      color: #4a5568;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .btn-primary { background: #48bb78; color: white; }
+    .btn-primary:hover {
+      background: #38a169;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+    }
+
+    .btn-secondary { background: #667eea; color: white; }
+    .btn-secondary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-tertiary { background: #ed8936; color: white; }
+    .btn-tertiary:hover {
+      background: #dd6b20;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+    }
+
+    .save-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #48bb78;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      z-index: 1000;
+    }
+
+    .save-indicator.show {
+      display: flex;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .submission-box {
+      background: #0b1020;
+      color: #e5e7eb;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .scoreline {
+      margin-top: 10px;
+      color: #4a5568;
+      font-size: 13px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(102,126,234,0.12);
+      color: #2a4365;
+      border: 1px solid rgba(102,126,234,0.25);
+      vertical-align: middle;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>HIST 101 — Myth, Memory, and Power</h1>
+      <p>Native diplomacy, origin stories, and how historical narratives legitimize authority</p>
+    </div>
+
+    <div class="breadcrumb">
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="activities.html">Interactive Activities</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Myth, Memory, and Power</span>
+      </nav>
+    </div>
+
+    <div class="content" id="activityContent">
+      <div class="purpose-box">
+        <p><strong>Purpose:</strong> This activity helps you practice historical thinking by comparing interpretations.
+          You’ll check your understanding, then write short responses that connect this week’s lectures to the theme
+          <strong>Empire, Liberty, and Dissent</strong>.
+        </p>
+      </div>
+
+      <div class="info-banner">
+        <p><strong>Instructions:</strong> Work through the sections in order. Your work saves automatically in your browser.
+          At the end, click <strong>Generate Submission</strong> and paste the result into Canvas (or follow your instructor’s directions).
+        </p>
+      </div>
+
+      <!-- SECTION 0: STUDENT INFO -->
+      <div class="section">
+        <h2><span class="section-number">0</span> Student Info</h2>
+
+        <div class="question">
+          <div class="two-col">
+            <div>
+              <label class="question-label">Name</label>
+              <input type="text" id="student-name" placeholder="First Last">
+            </div>
+            <div>
+              <label class="question-label">Section / Period</label>
+              <input type="text" id="student-section" placeholder="e.g., HIST 101 - Section 03">
+            </div>
+          </div>
+          <p class="small-hint">Tip: This will be included in your generated submission.</p>
+        </div>
+      </div>
+
+      <!-- SECTION I: MC Q1 -->
+      <div class="section">
+        <h2><span class="section-number">I</span> Interpretation Check <span class="tag">Multiple Choice</span></h2>
+
+        <div class="question">
+          <label class="question-label">Q1. Which statement best captures the shared argument made by the authors?</label>
+
+          <div class="radio-group">
+            <div class="radio-item">
+              <input type="radio" id="q1A" name="q1" value="A">
+              <label for="q1A"><strong>A.</strong> Early colonial history was mostly peaceful until Europeans expanded westward</label>
+            </div>
+            <div class="radio-item">
+              <input type="radio" id="q1B" name="q1" value="B">
+              <label for="q1B"><strong>B.</strong> Native peoples were passive victims with little political influence</label>
+            </div>
+            <div class="radio-item">
+              <input type="radio" id="q1C" name="q1" value="C">
+              <label for="q1C"><strong>C.</strong> Popular origin stories simplify and obscure complex relationships of power</label>
+            </div>
+            <div class="radio-item">
+              <input type="radio" id="q1D" name="q1" value="D">
+              <label for="q1D"><strong>D.</strong> English colonists deliberately planned to remove Native peoples from the start</label>
+            </div>
+          </div>
+
+          <div class="button-group" style="margin-top: 18px;">
+            <button class="btn btn-primary" onclick="checkQ1()">✅ Check Answer</button>
+            <button class="btn btn-secondary" onclick="resetQ1()">↩ Reset</button>
+          </div>
+
+          <div class="feedback" id="q1Feedback"></div>
+        </div>
+      </div>
+
+      <!-- SECTION II: CHOOSE TWO -->
+      <div class="section">
+        <h2><span class="section-number">II</span> Close Reading + Sorting <span class="tag">Choose Two</span></h2>
+
+        <div class="question">
+          <label class="question-label">Select the <strong>two</strong> statements both authors would most strongly support:</label>
+
+          <div class="checkbox-group">
+            <div class="checkbox-item">
+              <input type="checkbox" id="q2_1" name="q2" value="1">
+              <label for="q2_1">Native diplomacy shaped colonial survival and governance</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="q2_2" name="q2" value="2">
+              <label for="q2_2">Colonial success depended entirely on European institutions</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="q2_3" name="q2" value="3">
+              <label for="q2_3">Origin stories legitimize possession of land and political authority</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="q2_4" name="q2" value="4">
+              <label for="q2_4">Indigenous societies lacked political organization</label>
+            </div>
+          </div>
+
+          <div class="button-group" style="margin-top: 18px;">
+            <button class="btn btn-primary" onclick="checkQ2()">✅ Check Selection</button>
+            <button class="btn btn-secondary" onclick="resetQ2()">↩ Reset</button>
+          </div>
+
+          <div class="feedback" id="q2Feedback"></div>
+          <div class="scoreline" id="scoreLine"></div>
+        </div>
+      </div>
+
+      <!-- SECTION III: SHORT RESPONSE -->
+      <div class="section">
+        <h2><span class="section-number">III</span> Interpretation Lens <span class="tag">Short Response</span></h2>
+
+        <div class="question">
+          <label class="question-label">Choose one prompt and respond in <strong>3–4 sentences</strong>. Use at least one specific idea from the reading(s).</label>
+          <select id="sr1Choice">
+            <option value="">-- Select one --</option>
+            <option value="Puritan self-government">How does this interpretation complicate the way colonial self-government is usually taught?</option>
+            <option value="Empty land">How does the discussion of Native diplomacy challenge the idea of “empty land”?</option>
+          </select>
+        </div>
+
+        <div class="question">
+          <label class="question-label">Your response</label>
+          <textarea id="sr1" placeholder="3–4 sentences. Be specific."></textarea>
+          <p class="small-hint">Tip: Focus on what changes when you shift the story’s viewpoint or purpose.</p>
+        </div>
+      </div>
+
+      <!-- SECTION IV: BRIDGE -->
+      <div class="section">
+        <h2><span class="section-number">IV</span> Bridge to Lecture 2 <span class="tag">Reflection</span></h2>
+
+        <div class="question">
+          <label class="question-label">In 2–3 sentences: How might these early stories about cooperation, order, and legitimacy shape later colonial reactions to British authority?</label>
+          <textarea id="sr2" placeholder="Connect this to Empire, Liberty, and Dissent."></textarea>
+        </div>
+      </div>
+
+      <!-- SECTION V: SUBMIT -->
+      <div class="section">
+        <h2><span class="section-number">V</span> Submit</h2>
+
+        <div class="purpose-box" style="margin-bottom: 15px;">
+          <p><strong>Submit directions:</strong> Click <strong>Generate Submission</strong>, then copy/paste the text into Canvas (or follow your instructor’s directions).
+            You may also download a PDF copy for your records.
+          </p>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" onclick="generateSubmission()">✅ Generate Submission</button>
+          <button class="btn btn-secondary" onclick="copySubmission()">📋 Copy</button>
+          <button class="btn btn-tertiary" onclick="downloadPDF()">📥 Download PDF</button>
+        </div>
+
+        <div class="submission-box" id="submissionBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-indicator" id="saveIndicator">✓ Work saved automatically</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    // ===== ANSWER KEYS =====
+    const KEY_Q1 = "C";
+    const KEY_Q2 = new Set(["1", "3"]);
+
+    // ===== LOCAL STORAGE KEY =====
+    const STORAGE_KEY = "hist101MythMemoryPower";
+
+    // ===== SAVE INDICATOR =====
+    function showSaveIndicator(message = "Work saved automatically") {
+      const indicator = document.getElementById("saveIndicator");
+      indicator.textContent = "✓ " + message;
+      indicator.classList.add("show");
+      setTimeout(() => indicator.classList.remove("show"), 1800);
+    }
+
+    // ===== AUTO SAVE (DEBOUNCED) =====
+    let saveTimeout;
+    function autoSave() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(saveToLocalStorage, 1200);
+    }
+
+    function saveToLocalStorage() {
+      const data = {
+        student_name: document.getElementById("student-name").value,
+        student_section: document.getElementById("student-section").value,
+        q1: document.querySelector('input[name="q1"]:checked')?.value || null,
+        q2: Array.from(document.querySelectorAll('input[name="q2"]:checked')).map(x => x.value),
+        sr1Choice: document.getElementById("sr1Choice").value,
+        sr1: document.getElementById("sr1").value,
+        sr2: document.getElementById("sr2").value
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      showSaveIndicator("Work saved locally");
+      updateScoreLine();
+    }
+
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      try {
+        const data = JSON.parse(saved);
+
+        document.getElementById("student-name").value = data.student_name || "";
+        document.getElementById("student-section").value = data.student_section || "";
+
+        if (data.q1) {
+          const r = document.querySelector(`input[name="q1"][value="${data.q1}"]`);
+          if (r) r.checked = true;
+        }
+
+        if (Array.isArray(data.q2)) {
+          data.q2.forEach(v => {
+            const c = document.querySelector(`input[name="q2"][value="${v}"]`);
+            if (c) c.checked = true;
+          });
+        }
+
+        document.getElementById("sr1Choice").value = data.sr1Choice || "";
+        document.getElementById("sr1").value = data.sr1 || "";
+        document.getElementById("sr2").value = data.sr2 || "";
+
+        showSaveIndicator("Previous work loaded");
+        updateScoreLine();
+      } catch (e) {
+        // ignore malformed storage
+      }
+    }
+
+    // ===== Q1 CHECK =====
+    function setFeedback(elId, ok, msg) {
+      const el = document.getElementById(elId);
+      el.className = "feedback " + (ok ? "ok" : "bad");
+      el.style.display = "block";
+      el.textContent = msg;
+    }
+
+    function checkQ1() {
+      const v = document.querySelector('input[name="q1"]:checked')?.value || null;
+      if (!v) {
+        setFeedback("q1Feedback", false, "Choose an answer first.");
+        return;
+      }
+      if (v === KEY_Q1) {
+        setFeedback("q1Feedback", true, "Correct. The shared emphasis is on how simplified origin stories can hide complexity and legitimize power.");
+      } else {
+        setFeedback(
+          "q1Feedback",
+          false,
+          "Not quite. Re-read where the authors discuss myth-making and what gets obscured. The focus is on narrative power and legitimacy—not on total peace or a single inevitable plan."
+        );
+      }
+      autoSave();
+    }
+
+    function resetQ1() {
+      document.querySelectorAll('input[name="q1"]').forEach(r => r.checked = false);
+      const fb = document.getElementById("q1Feedback");
+      fb.style.display = "none";
+      fb.textContent = "";
+      autoSave();
+    }
+
+    // ===== Q2 CHECK =====
+    function getQ2Set() {
+      return new Set(Array.from(document.querySelectorAll('input[name="q2"]:checked')).map(x => x.value));
+    }
+
+    function checkQ2() {
+      const set = getQ2Set();
+      const chosen = Array.from(set);
+
+      if (chosen.length !== 2) {
+        setFeedback("q2Feedback", false, "Select exactly TWO statements, then check again.");
+        updateScoreLine();
+        autoSave();
+        return;
+      }
+
+      let correct = (set.size === KEY_Q2.size);
+      for (const item of KEY_Q2) if (!set.has(item)) correct = false;
+
+      if (correct) {
+        setFeedback("q2Feedback", true, "Correct. Both highlight Native agency/diplomacy and the way stories justify land and authority.");
+      } else {
+        setFeedback(
+          "q2Feedback",
+          false,
+          "Not quite. Ask: which choices show Native political agency AND the power of origin stories? Avoid choices that assume Europeans did everything or that Native politics were absent."
+        );
+      }
+      updateScoreLine();
+      autoSave();
+    }
+
+    function resetQ2() {
+      document.querySelectorAll('input[name="q2"]').forEach(c => c.checked = false);
+      const fb = document.getElementById("q2Feedback");
+      fb.style.display = "none";
+      fb.textContent = "";
+      updateScoreLine();
+      autoSave();
+    }
+
+    // ===== SCORE LINE =====
+    function updateScoreLine() {
+      const q1 = document.querySelector('input[name="q1"]:checked')?.value || null;
+      const q2 = getQ2Set();
+      let score = 0;
+
+      if (q1 === KEY_Q1) score++;
+
+      let q2Correct = (q2.size === 2);
+      if (q2Correct) {
+        for (const item of KEY_Q2) if (!q2.has(item)) q2Correct = false;
+      }
+      if (q2Correct) score++;
+
+      const el = document.getElementById("scoreLine");
+      el.textContent = `Quick Check Score (optional): ${score} / 2`;
+    }
+
+    // ===== SUBMISSION =====
+    function generateSubmissionText() {
+      const name = document.getElementById("student-name").value.trim() || "(no name provided)";
+      const section = document.getElementById("student-section").value.trim() || "(no section provided)";
+      const q1 = document.querySelector('input[name="q1"]:checked')?.value || "(no answer)";
+
+      const q2Labels = {
+        "1": "Native diplomacy shaped colonial survival and governance",
+        "2": "Colonial success depended entirely on European institutions",
+        "3": "Origin stories legitimize possession of land and political authority",
+        "4": "Indigenous societies lacked political organization"
+      };
+      const q2 = Array.from(document.querySelectorAll('input[name="q2"]:checked')).map(x => x.value);
+      const q2Text = q2.length ? q2.map(v => `- ${q2Labels[v]}`).join("\n") : "(no selections)";
+
+      const sr1Choice = document.getElementById("sr1Choice").value || "(no prompt selected)";
+      const sr1 = document.getElementById("sr1").value.trim() || "(no response)";
+      const sr2 = document.getElementById("sr2").value.trim() || "(no response)";
+
+      // scoring summary
+      const q1Correct = (q1 === KEY_Q1);
+      const set = new Set(q2);
+      let q2Correct = (set.size === 2);
+      if (q2Correct) {
+        for (const item of KEY_Q2) if (!set.has(item)) q2Correct = false;
+      }
+      const score = (q1Correct ? 1 : 0) + (q2Correct ? 1 : 0);
+
+      return `Myth, Memory, and Power — Submission
+
+Name: ${name}
+Section: ${section}
+
+Q1 Answer: ${q1}
+Q2 Selections:
+${q2Text}
+
+Interpretation Lens (Prompt chosen): ${sr1Choice}
+Response:
+${sr1}
+
+Bridge to Lecture 2:
+${sr2}
+
+Quick Check Score: ${score} / 2
+`;
+    }
+
+    function generateSubmission() {
+      const text = generateSubmissionText();
+      const box = document.getElementById("submissionBox");
+      box.textContent = text;
+      box.style.display = "block";
+      autoSave();
+      box.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function copySubmission() {
+      const box = document.getElementById("submissionBox");
+      if (!box.textContent.trim()) {
+        alert("Generate the submission first.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(box.textContent);
+        showSaveIndicator("Copied to clipboard");
+      } catch (e) {
+        alert("Copy failed. Please highlight the text and copy manually.");
+      }
+    }
+
+    // ===== PDF DOWNLOAD =====
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 18;
+      const maxWidth = pageWidth - (margin * 2);
+      let y = 20;
+
+      function addLine(text, size = 11, bold = false, extraSpace = 0) {
+        doc.setFontSize(size);
+        doc.setFont(undefined, bold ? 'bold' : 'normal');
+        const lines = doc.splitTextToSize(text, maxWidth);
+        for (const line of lines) {
+          if (y > 275) { doc.addPage(); y = 20; }
+          doc.text(line, margin, y);
+          y += 6;
+        }
+        y += extraSpace;
+      }
+
+      addLine("HIST 101 — Myth, Memory, and Power", 16, true, 2);
+      addLine("Native diplomacy, origin stories, and legitimacy", 11, false, 6);
+
+      const submission = generateSubmissionText();
+      addLine(submission, 10, false, 0);
+
+      doc.save("hist101-myth-memory-power.pdf");
+    }
+
+    // ===== INITIALIZE =====
+    document.addEventListener("DOMContentLoaded", () => {
+      loadFromLocalStorage();
+
+      // autosave for inputs
+      const inputs = document.querySelectorAll('#activityContent input, #activityContent textarea, #activityContent select');
+      inputs.forEach(el => {
+        el.addEventListener('input', autoSave);
+        el.addEventListener('change', autoSave);
+      });
+
+      // limit Q2 checkboxes to 2 selections (soft guard)
+      document.querySelectorAll('input[name="q2"]').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const checked = document.querySelectorAll('input[name="q2"]:checked');
+          if (checked.length > 2) {
+            cb.checked = false;
+            showSaveIndicator("Choose only two");
+          }
+          autoSave();
+        });
+      });
+
+      updateScoreLine();
+    });
+  </script>
+</body>
+</html>
