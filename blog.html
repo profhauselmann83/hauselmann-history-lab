@@ -366,50 +366,6 @@ function excerptFromHtml(html = '', maxChars = 500) {
 }
 
 
-    container.innerHTML = posts.map(post => {
-        const published = new Date(post.published_date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        })
-
-        const title = escapeHtml(post.title ?? '')
-        const category = escapeHtml(post.category ?? '')
-        const contentText = post.content ?? ''
-
-        const previewText = makeExcerpt(contentText, 500)
-        const hasMore = contentText.trim().length > previewText.trim().length
-
-        const previewHtml = `<p>${escapeHtml(previewText)}</p>`
-
-        const fullHtml = contentText
-            .split('\n')
-            .map(p => p.trim() ? `<p>${escapeHtml(p)}</p>` : '')
-            .join('')
-
-        return `
-            <article class="blog-post">
-                <h2>${title}</h2>
-                <div class="blog-meta">
-                    <strong>Posted:</strong> ${published}
-                    ${post.category ? `<span class="tag">${category}</span>` : ''}
-                </div>
-
-                <div class="blog-preview">
-                    ${previewHtml}
-                </div>
-
-                ${hasMore ? `<button class="read-more-btn" type="button" data-action="toggle">Read more</button>` : ''}
-
-                <div class="blog-full hidden">
-                    ${fullHtml}
-                </div>
-            </article>
-        `
-    }).join('')
-}
-
-
         // Set up search input listener
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('search-input')
@@ -427,12 +383,16 @@ document.addEventListener('click', (e) => {
 
     const postEl = btn.closest('.blog-post')
     const fullEl = postEl.querySelector('.blog-full')
+    const previewEl = postEl.querySelector('.blog-preview')
 
-    const isHidden = fullEl.classList.contains('hidden')
+    const opening = fullEl.classList.contains('hidden')
+
     fullEl.classList.toggle('hidden')
+    previewEl.classList.toggle('hidden', opening)
 
-    btn.textContent = isHidden ? 'Read less' : 'Read more'
+    btn.textContent = opening ? 'Read less' : 'Read more'
 })
+
 
         // Load blog posts when page loads
         loadBlogPosts()
