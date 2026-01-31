@@ -129,6 +129,24 @@
             border-radius: 5px;
             color: #7f8c8d;
         }
+        .read-more-btn {
+    margin-top: 12px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+}
+.read-more-btn:hover {
+    opacity: 0.9;
+}
+.blog-full.hidden {
+    display: none;
+}
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -350,6 +368,18 @@ function makeExcerpt(text = '', maxChars = 500) {
                 searchTimeout = setTimeout(searchPosts, 300)
             })
         })
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="toggle"]')
+    if (!btn) return
+
+    const postEl = btn.closest('.blog-post')
+    const fullEl = postEl.querySelector('.blog-full')
+
+    const isHidden = fullEl.classList.contains('hidden')
+    fullEl.classList.toggle('hidden')
+
+    btn.textContent = isHidden ? 'Read less' : 'Read more'
+})
 
         // Load blog posts when page loads
         loadBlogPosts()
