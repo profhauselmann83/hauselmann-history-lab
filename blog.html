@@ -219,6 +219,23 @@ function excerptFromHtml(html = '', maxChars = 500) {
     const text = (tmp.textContent || tmp.innerText || '').trim()
     return makeExcerpt(text, maxChars)
 }
+        function addParagraphsToHtml(html = '') {
+    const trimmed = String(html).trim()
+
+    // If content already has <p> or <br>, leave it alone
+    if (/<\s*p[\s>]/i.test(trimmed) || /<\s*br\s*\/?>/i.test(trimmed)) {
+        return trimmed
+    }
+
+    // Convert blank lines into paragraphs
+    const paragraphs = trimmed
+        .split(/\n\s*\n+/)
+        .map(p => p.trim())
+        .filter(Boolean)
+
+    return `<p>${paragraphs.join('</p><p>')}</p>`
+}
+
         async function loadBlogPosts() {
             const container = document.getElementById('blog-container')
             
@@ -338,6 +355,8 @@ function excerptFromHtml(html = '', maxChars = 500) {
 
         // content is HTML (so <em>, <strong>, <a> render)
         const contentHtml = post.content ?? ''
+        const fullHtml = addParagraphsToHtml(contentHtml)
+
 
         // preview is text extracted from that HTML
         const previewText = excerptFromHtml(contentHtml, 500)
@@ -358,7 +377,9 @@ function excerptFromHtml(html = '', maxChars = 500) {
                 <button class="read-more-btn" type="button" data-action="toggle">Read more</button>
 
                 <div class="blog-full hidden">
-                    ${contentHtml}
+    ${fullHtml}
+</div>
+
                 </div>
             </article>
         `
