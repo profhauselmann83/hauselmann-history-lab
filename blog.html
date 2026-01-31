@@ -154,10 +154,6 @@
   display: none;
 }
 
-        .blog-preview.hidden {
-    display: none;
-}
-
 
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -355,7 +351,7 @@ function excerptFromHtml(html = '', maxChars = 500) {
             }
         }
 
-      function displayPosts(posts) {
+     function displayPosts(posts) {
     const container = document.getElementById('blog-container')
 
     if (posts.length === 0) {
@@ -378,11 +374,34 @@ function excerptFromHtml(html = '', maxChars = 500) {
         const title = escapeHtml(post.title ?? '')
         const category = escapeHtml(post.category ?? '')
 
-        // TEMP DEBUG (remove later)
-if ((post.title || '').toLowerCase().includes('democracy in the public space')) {
-  console.log('DPS RAW (first 500):', contentHtml.slice(0, 500))
-  console.log('DPS FULLHTML (first 500):', fullHtml.slice(0, 500))
+        const contentHtml = post.content ?? ''
+        const fullHtml = addParagraphsToHtml(contentHtml)
+
+        const previewText = excerptFromHtml(contentHtml, 500)
+        const previewHtml = `<p>${escapeHtml(previewText)}</p>`
+
+        return `
+            <article class="blog-post">
+                <h2>${title}</h2>
+                <div class="blog-meta">
+                    <strong>Posted:</strong> ${published}
+                    ${post.category ? `<span class="tag">${category}</span>` : ''}
+                </div>
+
+                <div class="blog-preview">
+                    ${previewHtml}
+                </div>
+
+                <button class="read-more-btn" type="button" data-action="toggle">Read more</button>
+
+                <div class="blog-full hidden">
+                    ${fullHtml}
+                </div>
+            </article>
+        `
+    }).join('')
 }
+
 
 
         // content is HTML (so <em>, <strong>, <a> render)
