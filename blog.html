@@ -105,6 +105,10 @@
         .blog-content {
             line-height: 1.6;
         }
+        .blog-full p {
+    margin: 0 0 1em 0;
+}
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -223,33 +227,38 @@ function excerptFromHtml(html = '', maxChars = 500) {
     const trimmed = String(html).trim()
     if (!trimmed) return ''
 
-    // If content already has <p> or <br>, leave it alone
-    if (/<\s*p[\s>]/i.test(trimmed) || /<\s*br\s*\/?>/i.test(trimmed)) {
+    // If it already has <p> tags, we’ll keep them
+    if (/<\s*p[\s>]/i.test(trimmed)) {
         return trimmed
     }
 
-    // If it contains blank-line paragraph breaks, use those
-    if (/\n\s*\n+/.test(trimmed)) {
-        const parts = trimmed
-            .split(/\n\s*\n+/)
-            .map(p => p.trim())
-            .filter(Boolean)
-        return `<p>${parts.join('</p><p>')}</p>`
-    }
+    // Convert common HTML “paragraph break” patterns into newlines we can split on
+    let normalized = trimmed
 
-    // Otherwise, if it has single newlines, treat them as paragraph breaks
-    // (this is likely your DPS post)
-    if (/\n/.test(trimmed)) {
-        const parts = trimmed
-            .split(/\n+/)
-            .map(p => p.trim())
-            .filter(Boolean)
-        return `<p>${parts.join('</p><p>')}</p>`
-    }
+    // Treat double <br> as a paragraph break
+    normalized = normalized.replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '\n\n')
 
-    // Fallback: one paragraph
-    return `<p>${trimmed}</p>`
+    // Treat single <br> as a line break
+    normalized = normalized.replace(/<br\s*\/?>/gi, '\n')
+
+    // Treat adjacent div blocks as paragraph breaks
+    normalized = normalized.replace(/<\/div>\s*<div[^>]*>/gi, '\n\n')
+
+    // Remove the outer div wrappers if present (optional but helps)
+    normalized = normalized.replace(/^<div[^>]*>/i, '')
+    normalized = normalized.replace(/<\/div>$/i, '')
+
+    // Now split on blank lines first, otherwise on single newlines
+    const parts = normalized.includes('\n\n')
+        ? normalized.split(/\n\s*\n+/)
+        : normalized.split(/\n+/)
+
+    const cleaned = parts.map(p => p.trim()).filter(Boolean)
+
+    // Wrap each chunk in <p>…</p>
+    return `<p>${cleaned.join('</p><p>')}</p>`
 }
+
 
 
         async function loadBlogPosts() {
