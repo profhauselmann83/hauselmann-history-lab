@@ -1185,6 +1185,16 @@ Your statistical authority carries enormous weight. If you support Snow's waterb
     }
   
     window.downloadPDF = function() {
+        // Validate student information before allowing PDF download
+        if (!activityState.studentName || !activityState.studentName.trim()) {
+            alert('Please enter your full name in the Introduction section before downloading the PDF.');
+            return;
+        }
+        if (!activityState.sectionNumber || !activityState.sectionNumber.trim()) {
+            alert('Please enter your section number in the Introduction section before downloading the PDF.');
+            return;
+        }
+
         try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -1282,18 +1292,28 @@ Your statistical authority carries enormous weight. If you support Snow's waterb
     window.submitToSupabase = async function() {
         const submitBtn = document.getElementById('submitBtn');
         const messageDiv = document.getElementById('submitMessage');
-  
+
+        // Validate student information before allowing submission
+        if (!activityState.studentName || !activityState.studentName.trim()) {
+            alert('Please enter your full name in the Introduction section before submitting.');
+            return;
+        }
+        if (!activityState.sectionNumber || !activityState.sectionNumber.trim()) {
+            alert('Please enter your section number in the Introduction section before submitting.');
+            return;
+        }
+
         // Initialize Supabase if it hasn't been initialized yet
         if (!supabaseClient) {
             initSupabase();
         }
-        
+
         // Check if Supabase is available
         if (!supabaseClient) {
             messageDiv.innerHTML = '<div class="warning-banner" style="background-color: #8b0000;">❌ Unable to connect to submission system. Please download the PDF and email it to your professor instead.</div>';
             return;
         }
-  
+
         if (!activityState.motion.title) {
             alert('Please complete all sections before submitting.');
             return;
