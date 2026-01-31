@@ -219,22 +219,38 @@ function excerptFromHtml(html = '', maxChars = 500) {
     const text = (tmp.textContent || tmp.innerText || '').trim()
     return makeExcerpt(text, maxChars)
 }
-        function addParagraphsToHtml(html = '') {
+      function addParagraphsToHtml(html = '') {
     const trimmed = String(html).trim()
+    if (!trimmed) return ''
 
     // If content already has <p> or <br>, leave it alone
     if (/<\s*p[\s>]/i.test(trimmed) || /<\s*br\s*\/?>/i.test(trimmed)) {
         return trimmed
     }
 
-    // Convert blank lines into paragraphs
-    const paragraphs = trimmed
-        .split(/\n\s*\n+/)
-        .map(p => p.trim())
-        .filter(Boolean)
+    // If it contains blank-line paragraph breaks, use those
+    if (/\n\s*\n+/.test(trimmed)) {
+        const parts = trimmed
+            .split(/\n\s*\n+/)
+            .map(p => p.trim())
+            .filter(Boolean)
+        return `<p>${parts.join('</p><p>')}</p>`
+    }
 
-    return `<p>${paragraphs.join('</p><p>')}</p>`
+    // Otherwise, if it has single newlines, treat them as paragraph breaks
+    // (this is likely your DPS post)
+    if (/\n/.test(trimmed)) {
+        const parts = trimmed
+            .split(/\n+/)
+            .map(p => p.trim())
+            .filter(Boolean)
+        return `<p>${parts.join('</p><p>')}</p>`
+    }
+
+    // Fallback: one paragraph
+    return `<p>${trimmed}</p>`
 }
+
 
         async function loadBlogPosts() {
             const container = document.getElementById('blog-container')
