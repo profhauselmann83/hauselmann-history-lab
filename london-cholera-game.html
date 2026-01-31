@@ -12,6 +12,94 @@
             box-sizing: border-box;
         }
 
+    /* Password Protection Overlay */
+    .password-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #2c1810 0%, #4a3428 100%);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .password-overlay.hidden {
+        display: none;
+    }
+
+    .password-box {
+        background: #faf8f3;
+        padding: 50px;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        border: 4px solid #8b6f47;
+        text-align: center;
+        max-width: 450px;
+        width: 90%;
+    }
+
+    .password-box h2 {
+        color: #1a0f0a;
+        font-size: 1.8em;
+        margin-bottom: 10px;
+        font-family: 'Georgia', serif;
+    }
+
+    .password-box .lock-icon {
+        font-size: 3em;
+        margin-bottom: 15px;
+    }
+
+    .password-box p {
+        color: #3d2817;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .password-box input[type="password"] {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #8b6f47;
+        border-radius: 5px;
+        font-family: 'Georgia', serif;
+        font-size: 1.1em;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .password-box input[type="password"]:focus {
+        outline: none;
+        border-color: #3d2817;
+    }
+
+    .password-box .password-btn {
+        width: 100%;
+        padding: 15px 30px;
+        background: #3d2817;
+        color: #f4e4c1;
+        border: none;
+        border-radius: 5px;
+        font-family: 'Georgia', serif;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .password-box .password-btn:hover {
+        background: #1a0f0a;
+    }
+
+    .password-box .error-message {
+        color: #8b0000;
+        margin-top: 15px;
+        font-weight: bold;
+        display: none;
+    }
+
     body {
         font-family: 'Georgia', serif;
         background: linear-gradient(135deg, #2c1810 0%, #4a3428 100%);
@@ -431,6 +519,18 @@
 </style>
 </head>
 <body>
+    <!-- Password Protection Overlay -->
+    <div class="password-overlay" id="password-overlay">
+        <div class="password-box">
+            <div class="lock-icon">🔒</div>
+            <h2>Activity Locked</h2>
+            <p>This activity is currently password protected. Please enter the password provided by your professor to access the simulation.</p>
+            <input type="password" id="activity-password" placeholder="Enter password" onkeypress="if(event.key === 'Enter') checkPassword()">
+            <button class="password-btn" onclick="checkPassword()">Unlock Activity</button>
+            <p class="error-message" id="password-error">Incorrect password. Please try again.</p>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>London 1854</h1>
@@ -754,7 +854,33 @@
 
 <script>
     console.log('Script starting to load...');
-    
+
+    // Password Protection
+    // The password can be changed by the professor as needed
+    const ACTIVITY_PASSWORD = 'cholera1854';
+
+    // Check if already unlocked in this session
+    if (sessionStorage.getItem('londonCholeraUnlocked') === 'true') {
+        document.getElementById('password-overlay').classList.add('hidden');
+    }
+
+    function checkPassword() {
+        const passwordInput = document.getElementById('activity-password');
+        const errorMessage = document.getElementById('password-error');
+
+        if (passwordInput.value === ACTIVITY_PASSWORD) {
+            // Password correct - hide overlay and store in session
+            document.getElementById('password-overlay').classList.add('hidden');
+            sessionStorage.setItem('londonCholeraUnlocked', 'true');
+            errorMessage.style.display = 'none';
+        } else {
+            // Password incorrect - show error
+            errorMessage.style.display = 'block';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    }
+
     // Define critical functions FIRST before anything else
     function showTab(tabName) {
         console.log('showTab called with:', tabName);
