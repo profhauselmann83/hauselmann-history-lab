@@ -204,11 +204,11 @@
         let currentCategory = 'all'
 function escapeHtml(str = '') {
     return String(str)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
 }
 
 function makeExcerpt(text = '', maxChars = 500) {
@@ -334,9 +334,9 @@ function excerptFromHtml(html = '', maxChars = 500) {
             // Filter by search term
             if (currentSearchTerm) {
                 filteredPosts = filteredPosts.filter(post => {
-                    const titleMatch = post.title.toLowerCase().includes(currentSearchTerm)
-                    const contentMatch = post.content.toLowerCase().includes(currentSearchTerm)
-                    const categoryMatch = post.category && post.category.toLowerCase().includes(currentSearchTerm)
+                    const titleMatch = (post.title ?? '').toLowerCase().includes(currentSearchTerm)
+                    const contentMatch = (post.content ?? '').toLowerCase().includes(currentSearchTerm)
+                    const categoryMatch = (post.category ?? '').toLowerCase().includes(currentSearchTerm)
                     return titleMatch || contentMatch || categoryMatch
                 })
             }
