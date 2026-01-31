@@ -5,8 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>London 1854: Cesspits, Cholera and Conflict</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -444,8 +442,8 @@
         <a href="index.html">← Home</a> | <a href="activities.html">Interactive Activities</a>
     </div>
 
-    <div class="progress-tracker" id="progress-tracker">
-        <div class="progress-item" id="progress-intro">Introduction</div>
+    <div class="progress-tracker" id="progress-tracker" style="display: flex;">
+        <div class="progress-item completed" id="progress-intro">Introduction</div>
         <div class="progress-item" id="progress-role">Role Selection</div>
         <div class="progress-item" id="progress-character">Character Study</div>
         <div class="progress-item" id="progress-argument">Your Argument</div>
@@ -455,7 +453,7 @@
 
     <div class="nav-tabs">
         <button class="tab-button active" onclick="showTab('intro')">Introduction</button>
-        <button class="tab-button" onclick="showTab('role-select')" id="tab-role" disabled>Select Role</button>
+        <button class="tab-button" onclick="showTab('role-select')" id="tab-role">Select Role</button>
         <button class="tab-button" onclick="showTab('character')" id="tab-character" disabled>Your Character</button>
         <button class="tab-button" onclick="showTab('argument')" id="tab-argument" disabled>Build Argument</button>
         <button class="tab-button" onclick="showTab('motion')" id="tab-motion" disabled>Draft Motion</button>
@@ -504,15 +502,9 @@
         </div>
 
         <div class="victorian-box">
-            <h3>Student Information</h3>
-            <label for="student-name"><strong>Your Name:</strong></label>
-            <input type="text" id="student-name" placeholder="Enter your full name">
-            
-            <label for="section-number"><strong>Section Number:</strong></label>
-            <input type="text" id="section-number" placeholder="Enter your section number (e.g., 101, 102)">
+            <h3>Ready to Begin?</h3>
+            <p>Click the "Select Role" tab above to choose your character and begin the simulation!</p>
         </div>
-
-        <button class="btn btn-primary" onclick="startActivity()">Enter the Committee Room →</button>
     </div>
 
     <!-- ROLE SELECTION -->
@@ -750,10 +742,50 @@
 </div>
 
 <script>
+    alert('Script is loading!');
+    
+    // Define critical functions FIRST before anything else
+    function showTab(tabName) {
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(tabName).classList.add('active');
+        if (typeof event !== 'undefined' && event.target) {
+            event.target.classList.add('active');
+        }
+        window.scrollTo(0, 0);
+    }
+
+    function selectRole(roleKey) {
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        if (typeof event !== 'undefined' && event.currentTarget) {
+            event.currentTarget.classList.add('selected');
+        }
+        activityState.selectedRole = roleKey;
+        activityState.roleFaction = roleData[roleKey].faction;
+        document.getElementById('role-confirmation').style.display = 'block';
+        document.getElementById('selected-role-name').textContent = roleData[roleKey].name + ' (' + roleData[roleKey].faction + ')';
+        document.getElementById('role-confirmation').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     // Supabase configuration
     const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabaseClient = null;
+    
+    // Try to initialize Supabase, but don't break if it fails
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    } catch (error) {
+        console.log('Supabase not available:', error);
+    }
 
     // Activity state
     let activityState = {
@@ -790,98 +822,145 @@
             bio: `You were born in 1805 and have since served as the Senior Churchwarden of the Vestry of St. James, Westminster. This role, which you approach with a blend of devotion and diligence, has earned you deep respect in the community.
 As a staunch Anticontagionist, you hold firmly to the belief that cholera spreads through miasma, or bad air, rather than by waterborne means. This conviction shapes your approach to combating the outbreak.
 
-Your interest in social reform is personal. As the son of a once-struggling cobbler, you witnessed first-hand the plight of the impoverished. Your father’s eventual rise to own a small shop instilled in you a belief that improvement of the working class is both possible and necessary.`, objectives: `You and the other Anticontagionist members believe cholera can be explained by:
+Your interest in social reform is personal. As the son of a once-struggling cobbler, you witnessed first-hand the plight of the impoverished. Your father's eventual rise to own a small shop instilled in you a belief that improvement of the working class is both possible and necessary.`,
+            objectives: `You and the other Anticontagionist members believe cholera can be explained by:
 
 - The epidemic constitution of the atmosphere
 - Local atmospheric conditions (temperature, humidity, air pressure)
 - Physical and chemical factors in the environment
 - Moral and social conditions of the working poor
 - Overcrowding and poor ventilation
-- Lack of cleanliness and sanitation`, responsibilities: `As Committee Chairman, you will:
+- Lack of cleanliness and sanitation`,
+            responsibilities: `As Committee Chairman, you will:
 - Preside over committee meetings with the vice-chair and secretary
 - Advance the Anticontagionist argument with data and analysis
 - Present arguments based on the work of James Kay-Shuttleworth and Friedrich Engels
-- Propose motions to improve working class conditions: shorter hours, better education, improved sanitation, increased ventilation`, powers: 'As chairman, you wield significant structural authority in framing the debate. While you must ensure everyone speaks, including opponents, you can strategically control speaking order and discussion topics.' }, 'george-buzzard': { name: 'George Buzzard', position: 'Committee Vice-Chairman · Physician', faction: 'Anticontagionist', bio: `Born in 1800, you received your medical training at Guy’s Hospital in London, one of the premier medical institutions of the age. Your practice has brought you into contact with all levels of society, from the wealthy merchants to the poorest laborers.
+- Propose motions to improve working class conditions: shorter hours, better education, improved sanitation, increased ventilation`,
+            powers: 'As chairman, you wield significant structural authority in framing the debate. While you must ensure everyone speaks, including opponents, you can strategically control speaking order and discussion topics.'
+        },
+        'george-buzzard': {
+            name: 'George Buzzard',
+            position: 'Committee Vice-Chairman · Physician',
+            faction: 'Anticontagionist',
+            bio: `Born in 1800, you received your medical training at Guy's Hospital in London, one of the premier medical institutions of the age. Your practice has brought you into contact with all levels of society, from the wealthy merchants to the poorest laborers.
 
 You firmly believe cholera arises from a combination of atmospheric conditions and local environmental factors. The filth, overcrowding, and poor ventilation in the working-class districts create the perfect conditions for disease to flourish.
 
-Your medical expertise gives weight to your arguments, and you are skilled at presenting complex medical concepts in ways the layperson can understand.`, objectives: `As an Anticontagionist physician, you believe:
+Your medical expertise gives weight to your arguments, and you are skilled at presenting complex medical concepts in ways the layperson can understand.`,
+            objectives: `As an Anticontagionist physician, you believe:
 
 - Cholera is not contagious person-to-person
-- Disease arises from “epidemic constitution of the atmosphere”
+- Disease arises from "epidemic constitution of the atmosphere"
 - Local filth and overcrowding worsen outbreaks
 - Quarantines are ineffective and economically harmful
-- Environmental improvements are the key to prevention`, responsibilities: `You will:
+- Environmental improvements are the key to prevention`,
+            responsibilities: `You will:
 - Support Chairman Crane in presiding over meetings
 - Present medical evidence supporting miasma theory
 - Challenge contagionist medical claims
 - Propose motions for sanitary improvements and better ventilation
-- Use your medical authority to frame the scientific debate`, powers: 'Your medical credentials give you authority in scientific debates. Use your expertise to validate anticontagionist arguments and question the methodology of contagionist investigators.' }, 'john-pugh': { name: 'John Pugh', position: 'Churchwarden · Social Reformer', faction: 'Anticontagionist', bio: `Born in 1808, you have dedicated your life to the moral and material improvement of the working poor. You serve as a churchwarden and are deeply involved in parish charitable work.
+- Use your medical authority to frame the scientific debate`,
+            powers: 'Your medical credentials give you authority in scientific debates. Use your expertise to validate anticontagionist arguments and question the methodology of contagionist investigators.'
+        },
+        'john-pugh': {
+            name: 'John Pugh',
+            position: 'Churchwarden · Social Reformer',
+            faction: 'Anticontagionist',
+            bio: `Born in 1808, you have dedicated your life to the moral and material improvement of the working poor. You serve as a churchwarden and are deeply involved in parish charitable work.
 
 You see the cholera outbreak not merely as a medical crisis but as a symptom of broader social inequality. The disease strikes hardest in neighborhoods where people live in degrading conditions, work excessive hours, and lack access to education.
 
-You believe that true prevention requires addressing the root causes: poverty, ignorance, and moral degradation. Simply removing a pump or implementing quarantines treats symptoms, not causes.`, objectives: `Your focus is on social reform:
+You believe that true prevention requires addressing the root causes: poverty, ignorance, and moral degradation. Simply removing a pump or implementing quarantines treats symptoms, not causes.`,
+            objectives: `Your focus is on social reform:
 
 - Improve housing conditions for the working class
 - Expand educational opportunities
 - Reduce working hours to allow for rest and moral improvement
 - Promote temperance and moral education
-- Address the degrading conditions that breed disease`, responsibilities: `You will:
+- Address the degrading conditions that breed disease`,
+            responsibilities: `You will:
 - Advocate for comprehensive social reform
 - Present evidence linking poverty and disease
 - Propose motions for education and housing improvements
 - Emphasize the moral dimension of the crisis
-- Coordinate with other Anticontagionists on reform measures`, powers: 'Your moral authority and deep knowledge of the parish gives you credibility when discussing the lived experiences of the poor. Use this to humanize the statistics and frame the debate in moral terms.' }, 'john-snow': { name: 'Dr. John Snow', position: 'Physician · Epidemiological Investigator', faction: 'Contagionist', bio: `Born in 1813 in York, you are a physician who has spent years investigating cholera outbreaks. You pioneered the use of chloroform as an anesthetic and have a reputation for careful, methodical research.
+- Coordinate with other Anticontagionists on reform measures`,
+            powers: 'Your moral authority and deep knowledge of the parish gives you credibility when discussing the lived experiences of the poor. Use this to humanize the statistics and frame the debate in moral terms.'
+        },
+        'john-snow': {
+            name: 'Dr. John Snow',
+            position: 'Physician · Epidemiological Investigator',
+            faction: 'Contagionist',
+            bio: `Born in 1813 in York, you are a physician who has spent years investigating cholera outbreaks. You pioneered the use of chloroform as an anesthetic and have a reputation for careful, methodical research.
 
 You have been mapping every cholera case in Soho and have discovered a striking pattern: nearly all victims either used the Broad Street Pump or had contact with someone who did. Your data suggests the pump water is contaminated.
 
-This is a radical claim that challenges the prevailing miasma theory. Many in the medical establishment dismiss your ideas, but you have confidence in your evidence. The truth is in the data.`, objectives: `As the leading contagionist investigator:
+This is a radical claim that challenges the prevailing miasma theory. Many in the medical establishment dismiss your ideas, but you have confidence in your evidence. The truth is in the data.`,
+            objectives: `As the leading contagionist investigator:
 
 - Prove cholera spreads through contaminated water
 - Present your dot map showing cases clustering around the Broad Street Pump
 - Demonstrate that the Broad Street Pump is the source
 - Convince the committee to remove the pump handle
-- Challenge miasma theory with statistical evidence`, responsibilities: `You will:
+- Challenge miasma theory with statistical evidence`,
+            responsibilities: `You will:
 - Present your detailed case investigation and mapping data
 - Explain specific cases that prove waterborne transmission
 - Propose removing the Broad Street Pump handle immediately
 - Refute miasmatist atmospheric arguments with hard evidence
-- Advocate for investigating all water sources in affected areas`, powers: 'Your systematic data collection and mapping methodology is unprecedented. Use your statistical evidence to make an irrefutable case. Your dot map is your most powerful weapon.' }, 'henry-whitehead': { name: 'Reverend Henry Whitehead', position: 'Curate of St. Luke\'s Parish', faction: 'Contagionist', bio: `Born in 1825, you are the young curate of St. Luke’s Parish in Soho. Initially, you were skeptical of Dr. Snow’s waterborne theory and believed in miasma. However, your pastoral duties during the outbreak changed your mind.
+- Advocate for investigating all water sources in affected areas`,
+            powers: 'Your systematic data collection and mapping methodology is unprecedented. Use your statistical evidence to make an irrefutable case. Your dot map is your most powerful weapon.'
+        },
+        'henry-whitehead': {
+            name: 'Reverend Henry Whitehead',
+            position: 'Curate of St. Luke\'s Parish',
+            faction: 'Contagionist',
+            bio: `Born in 1825, you are the young curate of St. Luke's Parish in Soho. Initially, you were skeptical of Dr. Snow's waterborne theory and believed in miasma. However, your pastoral duties during the outbreak changed your mind.
 
-As you visited the sick and dying, you conducted careful interviews with families. You discovered patterns that Snow’s maps didn’t show: specific cases that proved the pump connection, including the famous case of the Widow from Hampstead who preferred Broad Street water.
+As you visited the sick and dying, you conducted careful interviews with families. You discovered patterns that Snow's maps didn't show: specific cases that proved the pump connection, including the famous case of the Widow from Hampstead who preferred Broad Street water.
 
-Your intimate knowledge of the neighborhood and its residents gives you insights that statistics alone cannot provide. You know these people by name, know their habits, know their stories.`, objectives: `Your goals as a pastoral investigator:
+Your intimate knowledge of the neighborhood and its residents gives you insights that statistics alone cannot provide. You know these people by name, know their habits, know their stories.`,
+            objectives: `Your goals as a pastoral investigator:
 
-- Support Dr. Snow’s waterborne theory with community testimony
+- Support Dr. Snow's waterborne theory with community testimony
 - Present specific case studies that prove the pump connection
-- Use your trusted position to validate Snow’s findings
+- Use your trusted position to validate Snow's findings
 - Show how local knowledge confirms statistical patterns
-- Advocate for immediate pump removal to save lives`, responsibilities: `You will:
+- Advocate for immediate pump removal to save lives`,
+            responsibilities: `You will:
 - Present detailed case studies from your pastoral visits
 - Describe the patterns you observed in the neighborhood
 - Explain why certain families were spared and others struck
-- Support Snow’s motion to remove the pump handle
-- Use your moral authority to make an urgent appeal for action`, powers: 'Your pastoral role gives you access and trust that scientists lack. People tell clergy things they won't tell doctors. Use your case studies to put human faces on Snow's statistics.' }, 'william-farr': { name: 'William Farr', position: 'Superintendent of Statistics · Medical Statistician', faction: 'Contagionist', bio: `Born in 1807, you are the Superintendent of Statistics at the General Register Office. You compile mortality data for all of England and Wales. Your statistical work has made you one of the most respected medical authorities in Britain.
+- Support Snow's motion to remove the pump handle
+- Use your moral authority to make an urgent appeal for action`,
+            powers: 'Your pastoral role gives you access and trust that scientists lack. People tell clergy things they won't tell doctors. Use your case studies to put human faces on Snow's statistics.'
+        },
+        'william-farr': {
+            name: 'William Farr',
+            position: 'Superintendent of Statistics · Medical Statistician',
+            faction: 'Contagionist',
+            bio: `Born in 1807, you are the Superintendent of Statistics at the General Register Office. You compile mortality data for all of England and Wales. Your statistical work has made you one of the most respected medical authorities in Britain.
 
-You were initially a believer in miasma theory and developed the “elevation theory”—that cholera mortality correlated with altitude above the Thames. However, the Soho outbreak has shaken your confidence. The data doesn’t fit the elevation pattern here.
+You were initially a believer in miasma theory and developed the "elevation theory"—that cholera mortality correlated with altitude above the Thames. However, the Soho outbreak has shaken your confidence. The data doesn't fit the elevation pattern here.
 
-Your statistical authority carries enormous weight. If you support Snow’s waterborne theory, others will listen. But you must be convinced by the evidence, not swayed by emotion.`, objectives: `As the nation’s chief medical statistician:
+Your statistical authority carries enormous weight. If you support Snow's waterborne theory, others will listen. But you must be convinced by the evidence, not swayed by emotion.`,
+            objectives: `As the nation's chief medical statistician:
 
 - Analyze mortality data to determine the true pattern of spread
 - Evaluate both miasmatist and contagionist evidence objectively
 - Determine whether elevation theory or waterborne theory better explains this outbreak
 - Lend your statistical authority to the correct theory
-- Propose evidence-based public health measures`, responsibilities: `You will:
+- Propose evidence-based public health measures`,
+            responsibilities: `You will:
 - Present comprehensive mortality statistics for the outbreak
 - Analyze spatial patterns in the death data
 - Compare this outbreak to previous cholera waves
 - Evaluate competing theories against the statistical evidence
 - Propose motions based on rigorous data analysis`,
-  powers: 'Your official position and statistical expertise make you perhaps the most authoritative voice on the committee. Your endorsement or rejection of a theory could determine the debate’s outcome.'
-  }
-  };
+            powers: 'Your official position and statistical expertise make you perhaps the most authoritative voice on the committee. Your endorsement or rejection of a theory could determine the debate's outcome.'
+        }
+    };
 
-    function startActivity() {
+    window.startActivity = function() {
         const name = document.getElementById('student-name').value.trim();
         const section = document.getElementById('section-number').value.trim();
   
@@ -901,47 +980,8 @@ Your statistical authority carries enormous weight. If you support Snow’s wate
         showTab('role-select');
     }
   
-    function showTab(tabName) {
-        document.querySelectorAll('.content-section').forEach(section => {
-            section.classList.remove('active');
-        });
-
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        document.getElementById(tabName).classList.add('active');
-
-        // Find and highlight the correct tab button
-        const tabButton = document.querySelector(`.tab-button[onclick*="${tabName}"]`);
-        if (tabButton) {
-            tabButton.classList.add('active');
-        }
-
-        window.scrollTo(0, 0);
-    }
   
-    function selectRole(roleKey) {
-        // Remove selection from all cards
-        document.querySelectorAll('.role-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Add selection to clicked card
-        event.currentTarget.classList.add('selected');
-        
-        activityState.selectedRole = roleKey;
-        activityState.roleFaction = roleData[roleKey].faction;
-        
-        // Show confirmation
-        document.getElementById('role-confirmation').style.display = 'block';
-        document.getElementById('selected-role-name').textContent = roleData[roleKey].name + ' (' + roleData[roleKey].faction + ')';
-        
-        // Scroll to confirmation
-        document.getElementById('role-confirmation').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  
-    function confirmRole() {
+    window.confirmRole = function() {
         document.getElementById('progress-role').classList.add('completed');
         document.getElementById('tab-character').disabled = false;
         
@@ -986,7 +1026,7 @@ Your statistical authority carries enormous weight. If you support Snow’s wate
         `;
     }
   
-    function checkCharacterCompletion() {
+    window.checkCharacterCompletion = function() {
         const q1 = document.getElementById('char-q1').value.trim();
         const q2 = document.getElementById('char-q2').value.trim();
         const q3 = document.getElementById('char-q3').value.trim();
@@ -996,7 +1036,7 @@ Your statistical authority carries enormous weight. If you support Snow’s wate
         }
     }
   
-    function completeCharacter() {
+    window.completeCharacter = function() {
         activityState.characterStudy.q1 = document.getElementById('char-q1').value.trim();
         activityState.characterStudy.q2 = document.getElementById('char-q2').value.trim();
         activityState.characterStudy.q3 = document.getElementById('char-q3').value.trim();
@@ -1007,7 +1047,7 @@ Your statistical authority carries enormous weight. If you support Snow’s wate
         showTab('argument');
     }
   
-    function updateWordCount(textareaId, countId) {
+    window.updateWordCount = function(textareaId, countId) {
         const textarea = document.getElementById(textareaId);
         const countDiv = document.getElementById(countId);
         const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
@@ -1040,7 +1080,7 @@ Your statistical authority carries enormous weight. If you support Snow’s wate
         }
     }
   
-    function completeArgument() {
+    window.completeArgument = function() {
         activityState.argument.theory = document.getElementById('arg-theory').value.trim();
         activityState.argument.evidence = document.getElementById('arg-evidence').value.trim();
         activityState.argument.analysis = document.getElementById('arg-analysis').value.trim();
@@ -1065,7 +1105,7 @@ Your statistical authority carries enormous weight. If you support Snow’s wate
         }
     }
   
-    function completeMotion() {
+    window.completeMotion = function() {
         activityState.motion.title = document.getElementById('motion-title').value.trim();
         activityState.motion.text = document.getElementById('motion-text').value.trim();
         activityState.motion.justification = document.getElementById('motion-justification').value.trim();
@@ -1345,23 +1385,14 @@ Your statistical authority carries enormous weight. If you support Snow’s wate
         localStorage.setItem('londonCholeraState', JSON.stringify(activityState));
     }, 30000);
   
-    // Load state on page load
-    window.onload = function() {
-        const saved = localStorage.getItem('londonCholeraState');
-        if (saved) {
-            const shouldRestore = confirm('Would you like to restore your previous session?');
-            if (shouldRestore) {
-                activityState = JSON.parse(saved);
-                // Restore UI state
-                if (activityState.studentName) {
-                    document.getElementById('student-name').value = activityState.studentName;
-                    document.getElementById('section-number').value = activityState.sectionNumber;
-                }
-                // Restore other fields as needed
-            }
-        }
-    };
-    </script>
+
+
+
+</script>
+
+<!-- Load external libraries at the end so they don't block the main functionality -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 </body>
 </html>
