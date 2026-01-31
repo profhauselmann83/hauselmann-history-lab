@@ -146,6 +146,14 @@
 .blog-full.hidden {
     display: none;
 }
+        .blog-preview.hidden {
+  display: none;
+}
+
+        .blog-preview.hidden {
+    display: none;
+}
+
 
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -205,7 +213,12 @@ function makeExcerpt(text = '', maxChars = 500) {
     if (clean.length <= maxChars) return clean
     return clean.slice(0, maxChars).trimEnd() + '…'
 }
-
+function excerptFromHtml(html = '', maxChars = 500) {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    const text = (tmp.textContent || tmp.innerText || '').trim()
+    return makeExcerpt(text, maxChars)
+}
         async function loadBlogPosts() {
             const container = document.getElementById('blog-container')
             
@@ -300,7 +313,7 @@ function makeExcerpt(text = '', maxChars = 500) {
             }
         }
 
-       function displayPosts(posts) {
+      function displayPosts(posts) {
     const container = document.getElementById('blog-container')
 
     if (posts.length === 0) {
@@ -312,6 +325,46 @@ function makeExcerpt(text = '', maxChars = 500) {
         `
         return
     }
+
+    container.innerHTML = posts.map(post => {
+        const published = new Date(post.published_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        })
+
+        const title = escapeHtml(post.title ?? '')
+        const category = escapeHtml(post.category ?? '')
+
+        // content is HTML (so <em>, <strong>, <a> render)
+        const contentHtml = post.content ?? ''
+
+        // preview is text extracted from that HTML
+        const previewText = excerptFromHtml(contentHtml, 500)
+        const previewHtml = `<p>${escapeHtml(previewText)}</p>`
+
+        return `
+            <article class="blog-post">
+                <h2>${title}</h2>
+                <div class="blog-meta">
+                    <strong>Posted:</strong> ${published}
+                    ${post.category ? `<span class="tag">${category}</span>` : ''}
+                </div>
+
+                <div class="blog-preview">
+                    ${previewHtml}
+                </div>
+
+                <button class="read-more-btn" type="button" data-action="toggle">Read more</button>
+
+                <div class="blog-full hidden">
+                    ${contentHtml}
+                </div>
+            </article>
+        `
+    }).join('')
+}
+
 
     container.innerHTML = posts.map(post => {
         const published = new Date(post.published_date).toLocaleDateString('en-US', {
