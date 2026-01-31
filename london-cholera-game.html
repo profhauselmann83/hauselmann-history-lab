@@ -502,9 +502,20 @@
         </div>
 
         <div class="victorian-box">
-            <h3>Ready to Begin?</h3>
-            <p>Click the "Select Role" tab above to choose your character and begin the simulation!</p>
+            <h3>Student Information</h3>
+            <label for="student-name"><strong>Your Name:</strong></label>
+            <input type="text" id="student-name" placeholder="Enter your full name">
+            
+            <label for="section-number"><strong>Section Number:</strong></label>
+            <input type="text" id="section-number" placeholder="Enter your section number (e.g., 101, 102)">
         </div>
+
+        <div class="victorian-box">
+            <h3>Ready to Begin?</h3>
+            <p>Click "Enter the Committee Room" below to start the simulation!</p>
+        </div>
+        
+        <button class="btn btn-primary" onclick="startActivity()">Enter the Committee Room →</button>
     </div>
 
     <!-- ROLE SELECTION -->
@@ -783,13 +794,12 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
     let supabaseClient = null;
     
-    // Try to initialize Supabase, but don't break if it fails
-    try {
-        if (typeof supabase !== 'undefined') {
+    // Supabase will be initialized after the library loads at the end of the page
+    function initSupabase() {
+        if (typeof supabase !== 'undefined' && !supabaseClient) {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase initialized successfully');
         }
-    } catch (error) {
-        console.log('Supabase not available:', error);
     }
 
     // Activity state
@@ -986,6 +996,31 @@ Your statistical authority carries enormous weight. If you support Snow's waterb
     }
   
   
+    window.startActivity = function() {
+        const name = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+
+        if (!name) {
+            alert('Please enter your name before beginning.');
+            return;
+        }
+
+        if (!section) {
+            alert('Please enter your section number before beginning.');
+            return;
+        }
+
+        activityState.studentName = name;
+        activityState.sectionNumber = section;
+        activityState.timestamp = new Date().toISOString();
+
+        document.getElementById('progress-tracker').style.display = 'flex';
+        document.getElementById('progress-intro').classList.add('completed');
+        document.getElementById('tab-role').disabled = false;
+
+        showTab('role-select');
+    }
+
     window.confirmRole = function() {
         document.getElementById('progress-role').classList.add('completed');
         document.getElementById('tab-character').disabled = false;
@@ -1248,6 +1283,17 @@ Your statistical authority carries enormous weight. If you support Snow's waterb
         const submitBtn = document.getElementById('submitBtn');
         const messageDiv = document.getElementById('submitMessage');
   
+        // Initialize Supabase if it hasn't been initialized yet
+        if (!supabaseClient) {
+            initSupabase();
+        }
+        
+        // Check if Supabase is available
+        if (!supabaseClient) {
+            messageDiv.innerHTML = '<div class="warning-banner" style="background-color: #8b0000;">❌ Unable to connect to submission system. Please download the PDF and email it to your professor instead.</div>';
+            return;
+        }
+  
         if (!activityState.motion.title) {
             alert('Please complete all sections before submitting.');
             return;
@@ -1398,6 +1444,10 @@ Your statistical authority carries enormous weight. If you support Snow's waterb
 <!-- Load external libraries at the end so they don't block the main functionality -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // Initialize Supabase now that the library has loaded
+    initSupabase();
+</script>
 
 </body>
 </html>
