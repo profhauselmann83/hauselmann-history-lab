@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loewen Graphic Reader</title>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #0b1020;
+      color: #e5e7eb;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(11,16,32,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      padding: 10px 12px;
+    }
+
+    .banner {
+      background: rgba(52, 152, 219, 0.18);
+      border: 1px solid rgba(52, 152, 219, 0.35);
+      color: #dbeafe;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      line-height: 1.35;
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .left-controls, .right-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      background: #667eea;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .meta {
+      font-size: 14px;
+      color: rgba(229,231,235,0.85);
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 14px 12px 24px;
+    }
+
+    .pages {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-top: 12px;
+    }
+
+    .page {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;      /* responsive */
+      height: auto;     /* keep aspect */
+      display: block;
+      border-radius: 8px;
+    }
+
+    .loading {
+      opacity: 0.85;
+      font-size: 14px;
+      padding: 12px;
+    }
+
+    .error {
+      background: rgba(229, 62, 62, 0.12);
+      border: 1px solid rgba(229, 62, 62, 0.45);
+      color: #fecaca;
+      border-radius: 10px;
+      padding: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wrap">
+      <div class="banner">
+        <strong>Reading tip:</strong> This is a large-format graphic PDF. It will work on phones, but it’s
+        easiest on a tablet or laptop. On a phone: rotate to landscape + use Zoom.
+      </div>
+
+      <div class="controls">
+        <div class="left-controls">
+          <button id="zoomOut">− Zoom</button>
+          <button id="zoomIn">+ Zoom</button>
+          <button id="fitWidth">Fit width</button>
+        </div>
+        <div class="right-controls meta">
+          <span id="status">Loading…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="message"></div>
+    <div id="pages" class="pages"></div>
+  </div>
+
+  <!-- PDF.js (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.js"></script>
+
+  <script>
+    // === 1) SET THIS PATH to your hosted PDF ===
+    // If loewen-reader.html is in the site root, and the PDF is in /readings/, this is correct:
+    const PDF_URL = "./readings/loewen-graphic-chap3.pdf";
+
+    // === 2) PDF.js worker config ===
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.js";
+
+    const pagesEl = document.getElementById("pages");
+    const statusEl = document.getElementById("status");
+    const msgEl = document.getElementById("message");
+
+    const zoomOutBtn = document.getElementById("zoomOut");
+    const zoomInBtn  = document.getElementById("zoomIn");
+    const fitWidthBtn = document.getElementById("fitWidth");
+
+    let pdfDoc = null;
+    let scale = 1.25;          // starting zoom (tune if you want)
+    let baseScale = 1.25;      // "fit width" baseline
+    const MAX_SCALE = 3.0;
+    const MIN_SCALE = 0.75;
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function showError(text) {
+      msgEl.innerHTML = `<div class="error">${text}</div>`;
+    }
+
+    // Render one page into its canvas at the current scale
+    async function renderPage(pageNum) {
+      const pageWrapper = document.getElementById(`page-${pageNum}`);
+      const canvas = pageWrapper.querySelector("canvas");
+      const loading = pageWrapper.querySelector(".loading");
+
+      loading.textContent = `Rendering page ${pageNum}…`;
+
+      const page = await pdfDoc.getPage(pageNum);
+
+      // Use a viewport based on a scale; we will render at devicePixelRatio for crisp text.
+      const viewport = page.getViewport({ scale });
+
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      await page.render({
+        canvasContext: ctx,
+        viewport
+      }).promise;
+
+      loading.textContent = "";
+    }
+
+    // (Re)render all currently loaded pages
+    async function rerenderAll() {
+      if (!pdfDoc) return;
+      setStatus(`Re-rendering at ${Math.round(scale * 100)}%…`);
+
+      const total = pdfDoc.numPages;
+      for (let i = 1; i <= total; i++) {
+        await renderPage(i);
+      }
+      setStatus(`Ready • ${total} pages • Zoom ${Math.round(scale * 100)}%`);
+    }
+
+    function clampScale(v) {
+      return Math.max(MIN_SCALE, Math.min(MAX_SCALE, v));
+    }
+
+    function createPageSlots(totalPages) {
+      pagesEl.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const div = document.createElement("div");
+        div.className = "page";
+        div.id = `page-${i}`;
+        div.innerHTML = `
+          <div class="loading">Preparing page ${i}…</div>
+          <canvas aria-label="PDF page ${i}"></canvas>
+        `;
+        pagesEl.appendChild(div);
+      }
+    }
+
+    // Compute a reasonable "fit width" scale based on container width
+    async function computeFitWidthScale() {
+      if (!pdfDoc) return baseScale;
+
+      // Use page 1 as reference
+      const page = await pdfDoc.getPage(1);
+      const viewportAt1 = page.getViewport({ scale: 1 });
+
+      // Available width is the page wrapper's inner width
+      const firstWrapper = document.getElementById("page-1");
+      const wrapWidth = firstWrapper.clientWidth - 20; // a little padding buffer
+
+      const fit = wrapWidth / viewportAt1.width;
+      baseScale = clampScale(fit);
+      return baseScale;
+    }
+
+    async function init() {
+      try {
+        setStatus("Loading PDF…");
+        const loadingTask = pdfjsLib.getDocument({ url: PDF_URL });
+        pdfDoc = await loadingTask.promise;
+
+        const total = pdfDoc.numPages;
+        createPageSlots(total);
+
+        // Fit width once on load (nice for mobile)
+        scale = await computeFitWidthScale();
+        scale = clampScale(scale);
+
+        // Render all pages (simple + reliable)
+        setStatus(`Rendering ${total} pages…`);
+        for (let i = 1; i <= total; i++) {
+          await renderPage(i);
+          setStatus(`Rendering… ${i} / ${total}`);
+        }
+        setStatus(`Ready • ${total} pages • Zoom ${Math.round(scale * 100)}%`);
+
+        // Controls
+        zoomInBtn.addEventListener("click", async () => {
+          scale = clampScale(scale + 0.15);
+          await rerenderAll();
+        });
+
+        zoomOutBtn.addEventListener("click", async () => {
+          scale = clampScale(scale - 0.15);
+          await rerenderAll();
+        });
+
+        fitWidthBtn.addEventListener("click", async () => {
+          scale = await computeFitWidthScale();
+          await rerenderAll();
+        });
+
+        // Re-fit on resize (helpful when phone rotates)
+        let resizeTimer;
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(async () => {
+            const newFit = await computeFitWidthScale();
+            // If user hasn't manually zoomed far away, keep it mostly fit-to-width
+            if (Math.abs(scale - baseScale) < 0.3) {
+              scale = newFit;
+              await rerenderAll();
+            }
+          }, 250);
+        });
+
+      } catch (err) {
+        console.error(err);
+        showError(
+          "Could not load the PDF. " +
+          "Common causes: the PDF path is wrong, the PDF isn’t public, or the server blocks cross-origin access. " +
+          "Check that the PDF URL opens directly in your browser: " + PDF_URL
+        );
+        setStatus("Load failed");
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
