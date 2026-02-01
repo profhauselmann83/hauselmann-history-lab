@@ -331,6 +331,27 @@
       box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
     }
 
+    .btn-success { background: #27ae60; color: white; }
+    .btn-success:hover {
+      background: #229954;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+    }
+
+    .submission-actions .btn-primary { background: #3498db; color: white; }
+    .submission-actions .btn-primary:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    }
+
+    .submission-actions .btn-secondary { background: #34495e; color: white; }
+    .submission-actions .btn-secondary:hover {
+      background: #2c3e50;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 73, 94, 0.4);
+    }
+
     .save-indicator {
       position: fixed;
       bottom: 20px;
@@ -423,7 +444,7 @@
         <li>James Loewen's <em>3. The First Thanksgiving</em></li>
           </ul>
         <p>Work through the sections in order. Your work saves automatically in your browser.
-          At the end, click <strong>Generate Submission</strong> and paste the result into Canvas (or follow your instructor’s directions).
+          At the end, click <strong>Submit to Professor</strong> and paste the generated text into Canvas (or follow your instructor’s directions).
         </p>
       </div>
 
@@ -552,15 +573,15 @@
         <h2><span class="section-number">V</span> Submit</h2>
 
         <div class="purpose-box" style="margin-bottom: 15px;">
-          <p><strong>Submit directions:</strong> Click <strong>Generate Submission</strong>, then copy/paste the text into Canvas (or follow your instructor’s directions).
-            You may also download a PDF copy for your records.
+          <p><strong>Submit directions:</strong> Click <strong>Submit to Professor</strong> to generate your submission and copy it to your clipboard, then paste it into Canvas (or follow your instructor’s directions).
+            You can also use <strong>Export as PDF</strong> for a personal copy.
           </p>
         </div>
 
-        <div class="button-group">
-          <button class="btn btn-primary" onclick="generateSubmission()">✅ Generate Submission</button>
-          <button class="btn btn-secondary" onclick="copySubmission()">📋 Copy</button>
-          <button class="btn btn-tertiary" onclick="downloadPDF()">📥 Download PDF</button>
+        <div class="button-group submission-actions">
+          <button class="btn btn-success" onclick="saveProgress()">💾 Save Progress</button>
+          <button class="btn btn-secondary" onclick="exportPDF()">📄 Export as PDF</button>
+          <button class="btn btn-primary" onclick="submitToProfessor()" id="submitBtn">📤 Submit to Professor</button>
         </div>
 
         <div class="submission-box" id="submissionBox"></div>
@@ -595,7 +616,7 @@
       saveTimeout = setTimeout(saveToLocalStorage, 1200);
     }
 
-    function saveToLocalStorage() {
+    function saveToLocalStorage(message = "Work saved locally") {
       const data = {
         student_name: document.getElementById("student-name").value,
         student_section: document.getElementById("student-section").value,
@@ -606,8 +627,16 @@
         sr2: document.getElementById("sr2").value
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      showSaveIndicator("Work saved locally");
+      showSaveIndicator(message);
       updateScoreLine();
+    }
+
+    function saveProgress() {
+      saveToLocalStorage("Progress saved");
+    }
+
+    function exportPDF() {
+      downloadPDF();
     }
 
     function loadFromLocalStorage() {
@@ -790,6 +819,15 @@ Quick Check Score: ${score} / 2
       box.style.display = "block";
       autoSave();
       box.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function submitToProfessor() {
+      generateSubmission();
+      try {
+        await copySubmission();
+      } catch (error) {
+        console.warn("Submit copy warning:", error);
+      }
     }
 
     async function copySubmission() {
