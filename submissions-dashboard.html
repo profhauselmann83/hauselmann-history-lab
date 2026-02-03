@@ -249,6 +249,64 @@
             color: #27ae60;
             font-weight: 600;
         }
+        /* Downloaded checkbox styles */
+        .downloaded-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+        .downloaded-label.checked {
+            color: #9b59b6;
+            font-weight: 600;
+        }
+        .download-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #9b59b6;
+        }
+        .downloaded-cell {
+            text-align: center;
+        }
+        /* Selection checkbox styles */
+        .select-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #3498db;
+        }
+        .select-cell {
+            text-align: center;
+            width: 50px;
+        }
+        /* Download selected button */
+        .download-selected-btn {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .download-selected-btn:hover {
+            background-color: #8e44ad;
+        }
+        .download-selected-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .selection-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
         @media (max-width: 768px) {
             .filters {
                 flex-direction: column;
@@ -309,6 +367,10 @@
                 <h3>Reviewed</h3>
                 <div class="number" id="reviewedCount">-</div>
             </div>
+            <div class="stat-card">
+                <h3>Downloaded</h3>
+                <div class="number" id="downloadedCount">-</div>
+            </div>
         </div>
 
         <div class="filters">
@@ -350,24 +412,38 @@
                     <option value="reviewed">Reviewed</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label>Download Status</label>
+                <select id="filterDownloaded" onchange="applyFilters()">
+                    <option value="">All</option>
+                    <option value="not-downloaded">Not Downloaded</option>
+                    <option value="downloaded">Downloaded</option>
+                </select>
+            </div>
             <button class="refresh-btn" onclick="loadSubmissions()">Refresh</button>
+            <div class="selection-info">
+                <span id="selectedCount">0 selected</span>
+                <button class="download-selected-btn" id="downloadSelectedBtn" onclick="downloadSelected()" disabled>Download Selected</button>
+            </div>
         </div>
 
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
+                        <th class="select-cell"><input type="checkbox" class="select-checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
                         <th>Student Name</th>
                         <th>Section</th>
                         <th>Worksheet</th>
                         <th>Submitted</th>
                         <th>Reviewed</th>
+                        <th>Downloaded</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="submissionsTable">
                     <tr>
-                        <td colspan="6" class="loading">Loading submissions...</td>
+                        <td colspan="8" class="loading">Loading submissions...</td>
                     </tr>
                 </tbody>
             </table>
@@ -383,6 +459,8 @@
         const DASHBOARD_PASSWORD = 'hauselmann2026';
 
         let allSubmissions = [];
+        let selectedSubmissions = new Set(); // Track selected submission IDs
+        let currentFilteredSubmissions = []; // Track currently displayed submissions
 
         // Toggle reviewed status for a submission (saves to Supabase)
         async function toggleReviewed(submissionId) {
@@ -436,6 +514,185 @@
             }
         }
 
+        // Toggle downloaded status for a submission (saves to Supabase)
+        async function toggleDownloaded(submissionId) {
+            const submission = allSubmissions.find(s => s.id === submissionId);
+            if (!submission) return;
+
+            const newStatus = !submission.is_downloaded;
+
+            // Update UI immediately
+            const checkbox = document.getElementById(`downloaded-${submissionId}`);
+            const label = document.getElementById(`downloaded-label-${submissionId}`);
+            if (checkbox && label) {
+                checkbox.checked = newStatus;
+                if (newStatus) {
+                    label.classList.add('checked');
+                    label.querySelector('span').textContent = 'Yes';
+                } else {
+                    label.classList.remove('checked');
+                    label.querySelector('span').textContent = 'No';
+                }
+            }
+
+            // Update in Supabase
+            try {
+                const { error } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .update({ is_downloaded: newStatus })
+                    .eq('id', submissionId);
+
+                if (error) throw error;
+
+                submission.is_downloaded = newStatus;
+                updateStats();
+
+            } catch (err) {
+                console.error('Error updating downloaded status:', err);
+                // Revert UI on error
+                if (checkbox && label) {
+                    checkbox.checked = !newStatus;
+                    if (!newStatus) {
+                        label.classList.add('checked');
+                        label.querySelector('span').textContent = 'Yes';
+                    } else {
+                        label.classList.remove('checked');
+                        label.querySelector('span').textContent = 'No';
+                    }
+                }
+                alert('Error saving downloaded status. Please try again.');
+            }
+        }
+
+        // Toggle selection for a single submission
+        function toggleSelect(submissionId) {
+            if (selectedSubmissions.has(submissionId)) {
+                selectedSubmissions.delete(submissionId);
+            } else {
+                selectedSubmissions.add(submissionId);
+            }
+            updateSelectedCount();
+            updateSelectAllCheckbox();
+        }
+
+        // Toggle select all (for currently filtered submissions)
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            if (selectAllCheckbox.checked) {
+                // Select all currently filtered submissions
+                currentFilteredSubmissions.forEach(sub => {
+                    if (sub.file_path) { // Only select ones with files
+                        selectedSubmissions.add(sub.id);
+                        const checkbox = document.getElementById(`select-${sub.id}`);
+                        if (checkbox) checkbox.checked = true;
+                    }
+                });
+            } else {
+                // Deselect all currently filtered submissions
+                currentFilteredSubmissions.forEach(sub => {
+                    selectedSubmissions.delete(sub.id);
+                    const checkbox = document.getElementById(`select-${sub.id}`);
+                    if (checkbox) checkbox.checked = false;
+                });
+            }
+            updateSelectedCount();
+        }
+
+        // Update the select all checkbox state
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const selectableSubmissions = currentFilteredSubmissions.filter(s => s.file_path);
+            const selectedInView = selectableSubmissions.filter(s => selectedSubmissions.has(s.id));
+
+            if (selectableSubmissions.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (selectedInView.length === selectableSubmissions.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (selectedInView.length > 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        }
+
+        // Update the selected count display
+        function updateSelectedCount() {
+            const count = selectedSubmissions.size;
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+            document.getElementById('downloadSelectedBtn').disabled = count === 0;
+        }
+
+        // Download all selected submissions
+        async function downloadSelected() {
+            if (selectedSubmissions.size === 0) return;
+
+            const btn = document.getElementById('downloadSelectedBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Downloading...';
+
+            let downloadCount = 0;
+            const toDownload = Array.from(selectedSubmissions);
+
+            for (const submissionId of toDownload) {
+                const submission = allSubmissions.find(s => s.id === submissionId);
+                if (submission && submission.file_path) {
+                    try {
+                        const { data, error } = await supabaseClient
+                            .storage
+                            .from('student-submissions')
+                            .createSignedUrl(submission.file_path, 3600);
+
+                        if (!error && data) {
+                            // Open in new tab
+                            window.open(data.signedUrl, '_blank');
+                            downloadCount++;
+
+                            // Mark as downloaded
+                            if (!submission.is_downloaded) {
+                                await supabaseClient
+                                    .from('worksheet_submissions')
+                                    .update({ is_downloaded: true })
+                                    .eq('id', submissionId);
+                                submission.is_downloaded = true;
+
+                                // Update UI
+                                const label = document.getElementById(`downloaded-label-${submissionId}`);
+                                const checkbox = document.getElementById(`downloaded-${submissionId}`);
+                                if (label && checkbox) {
+                                    checkbox.checked = true;
+                                    label.classList.add('checked');
+                                    label.querySelector('span').textContent = 'Yes';
+                                }
+                            }
+
+                            // Small delay between downloads to prevent popup blocking
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                        }
+                    } catch (err) {
+                        console.error('Error downloading:', err);
+                    }
+                }
+            }
+
+            // Clear selection after download
+            selectedSubmissions.clear();
+            updateSelectedCount();
+            updateStats();
+            applyFilters(); // Re-render to update checkboxes
+
+            btn.disabled = false;
+            btn.textContent = originalText;
+
+            if (downloadCount > 0) {
+                alert(`Downloaded ${downloadCount} file(s). They should open in new tabs.`);
+            }
+        }
+
         function checkPassword() {
             const password = document.getElementById('passwordInput').value;
             if (password === DASHBOARD_PASSWORD) {
@@ -462,7 +719,7 @@
 
         async function loadSubmissions() {
             const tbody = document.getElementById('submissionsTable');
-            tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading submissions...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading submissions...</td></tr>';
 
             try {
                 const { data, error } = await supabaseClient
@@ -481,7 +738,7 @@
                 console.error('Error loading submissions:', error);
                 document.getElementById('errorMessage').textContent = 'Error loading submissions: ' + error.message;
                 document.getElementById('errorMessage').classList.remove('hidden');
-                tbody.innerHTML = '<tr><td colspan="6" class="no-data">Error loading data. Please try again.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="no-data">Error loading data. Please try again.</td></tr>';
             }
         }
 
@@ -494,12 +751,14 @@
             const todayCount = allSubmissions.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
 
             const reviewedCount = allSubmissions.filter(s => !!s.is_reviewed).length;
+            const downloadedCount = allSubmissions.filter(s => !!s.is_downloaded).length;
 
             document.getElementById('totalCount').textContent = total;
             document.getElementById('hist101Count').textContent = hist101;
             document.getElementById('hist107Count').textContent = hist107;
             document.getElementById('todayCount').textContent = todayCount;
             document.getElementById('reviewedCount').textContent = reviewedCount;
+            document.getElementById('downloadedCount').textContent = downloadedCount;
         }
 
         function populateSectionFilter() {
@@ -551,21 +810,35 @@
                 filtered = filtered.filter(s => !s.is_reviewed);
             }
 
+            const downloadedFilter = document.getElementById('filterDownloaded').value;
+            if (downloadedFilter === 'downloaded') {
+                filtered = filtered.filter(s => !!s.is_downloaded);
+            } else if (downloadedFilter === 'not-downloaded') {
+                filtered = filtered.filter(s => !s.is_downloaded);
+            }
+
+            currentFilteredSubmissions = filtered;
             renderTable(filtered);
+            updateSelectAllCheckbox();
         }
 
         function renderTable(submissions) {
             const tbody = document.getElementById('submissionsTable');
 
             if (submissions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="no-data">No submissions found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="no-data">No submissions found.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = submissions.map(sub => {
                 const reviewed = !!sub.is_reviewed;
+                const downloaded = !!sub.is_downloaded;
+                const selected = selectedSubmissions.has(sub.id);
                 return `
                 <tr>
+                    <td class="select-cell">
+                        ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="select-${sub.id}" ${selected ? 'checked' : ''} onchange="toggleSelect(${sub.id})">` : ''}
+                    </td>
                     <td><strong>${escapeHtml(sub.student_name || 'Unknown')}</strong></td>
                     <td>${escapeHtml(sub.section_number || '-')}</td>
                     <td><span class="worksheet-type ${sub.worksheet_type.startsWith('hist101') ? 'type-hist101' : 'type-hist107'}">${formatWorksheetType(sub.worksheet_type)}</span></td>
@@ -574,6 +847,12 @@
                         <label id="review-label-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="toggleReviewed(${sub.id})">
                             <input type="checkbox" id="review-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
                             <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                        </label>
+                    </td>
+                    <td class="downloaded-cell">
+                        <label id="downloaded-label-${sub.id}" class="downloaded-label ${downloaded ? 'checked' : ''}" onclick="toggleDownloaded(${sub.id})">
+                            <input type="checkbox" id="downloaded-${sub.id}" class="download-checkbox" ${downloaded ? 'checked' : ''}>
+                            <span>${downloaded ? 'Yes' : 'No'}</span>
                         </label>
                     </td>
                     <td>
