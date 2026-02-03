@@ -383,42 +383,21 @@
         const DASHBOARD_PASSWORD = 'hauselmann2026';
 
         let allSubmissions = [];
-        let reviewedSubmissions = {}; // Track reviewed status by submission ID
 
-        // Load reviewed status from localStorage
-        function loadReviewedStatus() {
-            try {
-                const stored = localStorage.getItem('reviewedSubmissions');
-                if (stored) {
-                    reviewedSubmissions = JSON.parse(stored);
-                }
-            } catch (e) {
-                console.error('Error loading reviewed status:', e);
-                reviewedSubmissions = {};
-            }
-        }
+        // Toggle reviewed status for a submission (saves to Supabase)
+        async function toggleReviewed(submissionId) {
+            // Find the submission and get current status
+            const submission = allSubmissions.find(s => s.id === submissionId);
+            if (!submission) return;
 
-        // Save reviewed status to localStorage
-        function saveReviewedStatus() {
-            try {
-                localStorage.setItem('reviewedSubmissions', JSON.stringify(reviewedSubmissions));
-            } catch (e) {
-                console.error('Error saving reviewed status:', e);
-            }
-        }
+            const newStatus = !submission.is_reviewed;
 
-        // Toggle reviewed status for a submission
-        function toggleReviewed(submissionId) {
-            reviewedSubmissions[submissionId] = !reviewedSubmissions[submissionId];
-            saveReviewedStatus();
-            updateStats();
-
-            // Update the checkbox and label in the UI
+            // Update UI immediately for responsiveness
             const checkbox = document.getElementById(`review-${submissionId}`);
             const label = document.getElementById(`review-label-${submissionId}`);
             if (checkbox && label) {
-                checkbox.checked = reviewedSubmissions[submissionId];
-                if (reviewedSubmissions[submissionId]) {
+                checkbox.checked = newStatus;
+                if (newStatus) {
                     label.classList.add('checked');
                     label.querySelector('span').textContent = 'Reviewed';
                 } else {
@@ -426,11 +405,35 @@
                     label.querySelector('span').textContent = 'Mark';
                 }
             }
-        }
 
-        // Check if a submission is reviewed
-        function isReviewed(submissionId) {
-            return !!reviewedSubmissions[submissionId];
+            // Update in Supabase
+            try {
+                const { error } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .update({ is_reviewed: newStatus })
+                    .eq('id', submissionId);
+
+                if (error) throw error;
+
+                // Update local data
+                submission.is_reviewed = newStatus;
+                updateStats();
+
+            } catch (err) {
+                console.error('Error updating review status:', err);
+                // Revert UI on error
+                if (checkbox && label) {
+                    checkbox.checked = !newStatus;
+                    if (!newStatus) {
+                        label.classList.add('checked');
+                        label.querySelector('span').textContent = 'Reviewed';
+                    } else {
+                        label.classList.remove('checked');
+                        label.querySelector('span').textContent = 'Mark';
+                    }
+                }
+                alert('Error saving review status. Please try again.');
+            }
         }
 
         function checkPassword() {
@@ -454,7 +457,6 @@
         function showDashboard() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            loadReviewedStatus();
             loadSubmissions();
         }
 
@@ -491,7 +493,7 @@
             const today = new Date().toISOString().split('T')[0];
             const todayCount = allSubmissions.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
 
-            const reviewedCount = allSubmissions.filter(s => isReviewed(s.id)).length;
+            const reviewedCount = allSubmissions.filter(s => !!s.is_reviewed).length;
 
             document.getElementById('totalCount').textContent = total;
             document.getElementById('hist101Count').textContent = hist101;
@@ -544,9 +546,9 @@
             }
 
             if (reviewedFilter === 'reviewed') {
-                filtered = filtered.filter(s => isReviewed(s.id));
+                filtered = filtered.filter(s => !!s.is_reviewed);
             } else if (reviewedFilter === 'unreviewed') {
-                filtered = filtered.filter(s => !isReviewed(s.id));
+                filtered = filtered.filter(s => !s.is_reviewed);
             }
 
             renderTable(filtered);
@@ -561,7 +563,7 @@
             }
 
             tbody.innerHTML = submissions.map(sub => {
-                const reviewed = isReviewed(sub.id);
+                const reviewed = !!sub.is_reviewed;
                 return `
                 <tr>
                     <td><strong>${escapeHtml(sub.student_name || 'Unknown')}</strong></td>
