@@ -6,6 +6,7 @@
     <title>Student Submissions Dashboard | Prof. Hauselmann</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -626,71 +627,107 @@
             document.getElementById('downloadSelectedBtn').disabled = count === 0;
         }
 
-        // Download all selected submissions
+        // Download all selected submissions as a single merged PDF
         async function downloadSelected() {
             if (selectedSubmissions.size === 0) return;
 
             const btn = document.getElementById('downloadSelectedBtn');
             const originalText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = 'Downloading...';
 
-            let downloadCount = 0;
             const toDownload = Array.from(selectedSubmissions);
+            const totalCount = toDownload.length;
 
-            for (const submissionId of toDownload) {
-                const submission = allSubmissions.find(s => s.id === submissionId);
-                if (submission && submission.file_path) {
-                    try {
-                        const { data, error } = await supabaseClient
-                            .storage
-                            .from('student-submissions')
-                            .createSignedUrl(submission.file_path, 3600);
+            try {
+                // Create a new PDF document to merge into
+                const mergedPdf = await PDFLib.PDFDocument.create();
+                let successCount = 0;
 
-                        if (!error && data) {
-                            // Open in new tab
-                            window.open(data.signedUrl, '_blank');
-                            downloadCount++;
+                for (let i = 0; i < toDownload.length; i++) {
+                    const submissionId = toDownload[i];
+                    btn.textContent = `Merging ${i + 1}/${totalCount}...`;
 
-                            // Mark as downloaded
-                            if (!submission.is_downloaded) {
-                                await supabaseClient
-                                    .from('worksheet_submissions')
-                                    .update({ is_downloaded: true })
-                                    .eq('id', submissionId);
-                                submission.is_downloaded = true;
+                    const submission = allSubmissions.find(s => s.id === submissionId);
+                    if (submission && submission.file_path) {
+                        try {
+                            // Get signed URL for the PDF
+                            const { data, error } = await supabaseClient
+                                .storage
+                                .from('student-submissions')
+                                .createSignedUrl(submission.file_path, 3600);
 
-                                // Update UI
-                                const label = document.getElementById(`downloaded-label-${submissionId}`);
-                                const checkbox = document.getElementById(`downloaded-${submissionId}`);
-                                if (label && checkbox) {
-                                    checkbox.checked = true;
-                                    label.classList.add('checked');
-                                    label.querySelector('span').textContent = 'Yes';
+                            if (!error && data) {
+                                // Fetch the PDF file
+                                const response = await fetch(data.signedUrl);
+                                const pdfBytes = await response.arrayBuffer();
+
+                                // Load the PDF and copy its pages
+                                const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+                                const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+                                pages.forEach(page => mergedPdf.addPage(page));
+
+                                successCount++;
+
+                                // Mark as downloaded in database
+                                if (!submission.is_downloaded) {
+                                    await supabaseClient
+                                        .from('worksheet_submissions')
+                                        .update({ is_downloaded: true })
+                                        .eq('id', submissionId);
+                                    submission.is_downloaded = true;
+
+                                    // Update UI
+                                    const label = document.getElementById(`downloaded-label-${submissionId}`);
+                                    const checkbox = document.getElementById(`downloaded-${submissionId}`);
+                                    if (label && checkbox) {
+                                        checkbox.checked = true;
+                                        label.classList.add('checked');
+                                        label.querySelector('span').textContent = 'Yes';
+                                    }
                                 }
                             }
-
-                            // Small delay between downloads to prevent popup blocking
-                            await new Promise(resolve => setTimeout(resolve, 300));
+                        } catch (err) {
+                            console.error(`Error processing PDF for ${submission.student_name}:`, err);
                         }
-                    } catch (err) {
-                        console.error('Error downloading:', err);
                     }
                 }
+
+                if (successCount > 0) {
+                    btn.textContent = 'Creating PDF...';
+
+                    // Save and download the merged PDF
+                    const mergedPdfBytes = await mergedPdf.save();
+                    const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                    const url = URL.createObjectURL(blob);
+
+                    // Create download link
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const timestamp = new Date().toISOString().split('T')[0];
+                    a.download = `submissions_${timestamp}_${successCount}_files.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    alert(`Successfully merged ${successCount} PDF(s) into one file.`);
+                } else {
+                    alert('No PDFs could be downloaded. Please try again.');
+                }
+
+            } catch (err) {
+                console.error('Error merging PDFs:', err);
+                alert('Error merging PDFs: ' + err.message);
             }
 
             // Clear selection after download
             selectedSubmissions.clear();
             updateSelectedCount();
             updateStats();
-            applyFilters(); // Re-render to update checkboxes
+            applyFilters();
 
             btn.disabled = false;
             btn.textContent = originalText;
-
-            if (downloadCount > 0) {
-                alert(`Downloaded ${downloadCount} file(s). They should open in new tabs.`);
-            }
         }
 
         function checkPassword() {
