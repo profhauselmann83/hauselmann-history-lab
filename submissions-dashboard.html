@@ -223,6 +223,32 @@
         .hidden {
             display: none !important;
         }
+        /* Review checkbox styles */
+        .review-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #27ae60;
+        }
+        .review-checkbox:checked {
+            background-color: #27ae60;
+        }
+        .reviewed-cell {
+            text-align: center;
+        }
+        .reviewed-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+        .reviewed-label.checked {
+            color: #27ae60;
+            font-weight: 600;
+        }
         @media (max-width: 768px) {
             .filters {
                 flex-direction: column;
@@ -279,6 +305,10 @@
                 <h3>Today</h3>
                 <div class="number" id="todayCount">-</div>
             </div>
+            <div class="stat-card">
+                <h3>Reviewed</h3>
+                <div class="number" id="reviewedCount">-</div>
+            </div>
         </div>
 
         <div class="filters">
@@ -312,6 +342,14 @@
                 <label>Search Student</label>
                 <input type="text" id="searchStudent" placeholder="Student name..." oninput="applyFilters()">
             </div>
+            <div class="filter-group">
+                <label>Review Status</label>
+                <select id="filterReviewed" onchange="applyFilters()">
+                    <option value="">All</option>
+                    <option value="unreviewed">Not Reviewed</option>
+                    <option value="reviewed">Reviewed</option>
+                </select>
+            </div>
             <button class="refresh-btn" onclick="loadSubmissions()">Refresh</button>
         </div>
 
@@ -323,12 +361,13 @@
                         <th>Section</th>
                         <th>Worksheet</th>
                         <th>Submitted</th>
+                        <th>Reviewed</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="submissionsTable">
                     <tr>
-                        <td colspan="5" class="loading">Loading submissions...</td>
+                        <td colspan="6" class="loading">Loading submissions...</td>
                     </tr>
                 </tbody>
             </table>
@@ -344,6 +383,58 @@
         const DASHBOARD_PASSWORD = 'hauselmann2026';
 
         let allSubmissions = [];
+
+        // Toggle reviewed status for a submission (saves to Supabase)
+        async function toggleReviewed(submissionId) {
+            // Find the submission and get current status
+            const submission = allSubmissions.find(s => s.id === submissionId);
+            if (!submission) return;
+
+            const newStatus = !submission.is_reviewed;
+
+            // Update UI immediately for responsiveness
+            const checkbox = document.getElementById(`review-${submissionId}`);
+            const label = document.getElementById(`review-label-${submissionId}`);
+            if (checkbox && label) {
+                checkbox.checked = newStatus;
+                if (newStatus) {
+                    label.classList.add('checked');
+                    label.querySelector('span').textContent = 'Reviewed';
+                } else {
+                    label.classList.remove('checked');
+                    label.querySelector('span').textContent = 'Mark';
+                }
+            }
+
+            // Update in Supabase
+            try {
+                const { error } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .update({ is_reviewed: newStatus })
+                    .eq('id', submissionId);
+
+                if (error) throw error;
+
+                // Update local data
+                submission.is_reviewed = newStatus;
+                updateStats();
+
+            } catch (err) {
+                console.error('Error updating review status:', err);
+                // Revert UI on error
+                if (checkbox && label) {
+                    checkbox.checked = !newStatus;
+                    if (!newStatus) {
+                        label.classList.add('checked');
+                        label.querySelector('span').textContent = 'Reviewed';
+                    } else {
+                        label.classList.remove('checked');
+                        label.querySelector('span').textContent = 'Mark';
+                    }
+                }
+                alert('Error saving review status. Please try again.');
+            }
+        }
 
         function checkPassword() {
             const password = document.getElementById('passwordInput').value;
@@ -371,7 +462,7 @@
 
         async function loadSubmissions() {
             const tbody = document.getElementById('submissionsTable');
-            tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading submissions...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading submissions...</td></tr>';
 
             try {
                 const { data, error } = await supabaseClient
@@ -390,7 +481,7 @@
                 console.error('Error loading submissions:', error);
                 document.getElementById('errorMessage').textContent = 'Error loading submissions: ' + error.message;
                 document.getElementById('errorMessage').classList.remove('hidden');
-                tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading data. Please try again.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="no-data">Error loading data. Please try again.</td></tr>';
             }
         }
 
@@ -402,10 +493,13 @@
             const today = new Date().toISOString().split('T')[0];
             const todayCount = allSubmissions.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
 
+            const reviewedCount = allSubmissions.filter(s => !!s.is_reviewed).length;
+
             document.getElementById('totalCount').textContent = total;
             document.getElementById('hist101Count').textContent = hist101;
             document.getElementById('hist107Count').textContent = hist107;
             document.getElementById('todayCount').textContent = todayCount;
+            document.getElementById('reviewedCount').textContent = reviewedCount;
         }
 
         function populateSectionFilter() {
@@ -429,6 +523,7 @@
             const typeFilter = document.getElementById('filterType').value;
             const sectionFilter = document.getElementById('filterSection').value;
             const searchFilter = document.getElementById('searchStudent').value.toLowerCase();
+            const reviewedFilter = document.getElementById('filterReviewed').value;
 
             let filtered = allSubmissions;
 
@@ -450,6 +545,12 @@
                 );
             }
 
+            if (reviewedFilter === 'reviewed') {
+                filtered = filtered.filter(s => !!s.is_reviewed);
+            } else if (reviewedFilter === 'unreviewed') {
+                filtered = filtered.filter(s => !s.is_reviewed);
+            }
+
             renderTable(filtered);
         }
 
@@ -457,21 +558,29 @@
             const tbody = document.getElementById('submissionsTable');
 
             if (submissions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="no-data">No submissions found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="no-data">No submissions found.</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = submissions.map(sub => `
+            tbody.innerHTML = submissions.map(sub => {
+                const reviewed = !!sub.is_reviewed;
+                return `
                 <tr>
                     <td><strong>${escapeHtml(sub.student_name || 'Unknown')}</strong></td>
                     <td>${escapeHtml(sub.section_number || '-')}</td>
                     <td><span class="worksheet-type ${sub.worksheet_type.startsWith('hist101') ? 'type-hist101' : 'type-hist107'}">${formatWorksheetType(sub.worksheet_type)}</span></td>
                     <td>${formatDate(sub.submitted_at)}</td>
+                    <td class="reviewed-cell">
+                        <label id="review-label-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="toggleReviewed(${sub.id})">
+                            <input type="checkbox" id="review-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
+                            <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                        </label>
+                    </td>
                     <td>
                         ${sub.file_path ? `<button onclick="downloadFile('${escapeHtml(sub.file_path)}')" class="download-btn">Download PDF</button>` : '-'}
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         async function downloadFile(filePath) {
