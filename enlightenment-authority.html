@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authority, Truth, and the Enlightenment - Game Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+            background: #2d1b0e;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #f4e8d0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.05"/></svg>');
+            border: 3px solid #8b7355;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 100px rgba(101,67,33,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to bottom, #654321 0%, #4a3219 100%);
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(139,115,85,0.3) 50px, rgba(139,115,85,0.3) 51px),
+                linear-gradient(to bottom, #654321 0%, #4a3219 100%);
+            color: #f4e8d0;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 4px double #8b7355;
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-weight: normal;
+            letter-spacing: 2px;
+            font-variant: small-caps;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-style: italic;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            background: linear-gradient(to bottom, #e8d7ba 0%, #d4c4a8 100%);
+            border-right: 3px double #8b7355;
+            padding: 20px;
+            box-shadow: inset -5px 0 15px rgba(101,67,33,0.1);
+        }
+        
+        .content-area {
+            padding: 30px;
+            background: #f4e8d0;
+        }
+        
+        .nav-button {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f4e8d0;
+            border: 2px solid #8b7355;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: left;
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+            box-shadow: 2px 2px 5px rgba(101,67,33,0.2);
+        }
+        
+        .nav-button:hover {
+            background: #e8d7ba;
+            border-color: #654321;
+            transform: translateX(5px);
+            box-shadow: 3px 3px 8px rgba(101,67,33,0.3);
+        }
+        
+        .nav-button.active {
+            background: #654321;
+            color: #f4e8d0;
+            border-color: #8b7355;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .phase-section {
+            display: none;
+        }
+        
+        .phase-section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timer-box {
+            background: linear-gradient(to bottom, #8b4513 0%, #654321 100%);
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(139,115,85,0.2) 100px, rgba(139,115,85,0.2) 101px),
+                linear-gradient(to bottom, #8b4513 0%, #654321 100%);
+            color: #f4e8d0;
+            padding: 25px;
+            border: 3px double #8b7355;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.1);
+        }
+        
+        .timer-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+            font-family: 'Georgia', serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            color: #f4e8d0;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: 2px solid #8b7355;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.4);
+        }
+        
+        .btn-primary {
+            background: #2d5016;
+            color: #f4e8d0;
+            border-color: #1a3009;
+        }
+        
+        .btn-danger {
+            background: #8b1a1a;
+            color: #f4e8d0;
+            border-color: #5c0f0f;
+        }
+        
+        .btn-warning {
+            background: #b8860b;
+            color: #2d1b0e;
+            border-color: #8b6914;
+        }
+        
+        .btn-info {
+            background: #2f4f4f;
+            color: #f4e8d0;
+            border-color: #1c2f2f;
+        }
+        
+        .btn-secondary {
+            background: #4a4a4a;
+            color: #f4e8d0;
+            border-color: #2a2a2a;
+        }
+        
+        .card {
+            background: #faf7f0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="paper"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" /></filter><rect width="100" height="100" filter="url(%23paper)" opacity="0.03"/></svg>');
+            border: 2px solid #8b7355;
+            border-radius: 0;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(101,67,33,0.2), inset 0 0 50px rgba(139,115,85,0.05);
+        }
+        
+        .card h2 {
+            color: #3d2817;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8b7355;
+            font-weight: normal;
+            font-variant: small-caps;
+            letter-spacing: 1px;
+        }
+        
+        .card h3 {
+            color: #4a3219;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: normal;
+            font-variant: small-caps;
+        }
+        
+        .checklist {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f4e8d0;
+            border-radius: 0;
+            border-left: 3px solid #654321;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 1px 1px 3px rgba(101,67,33,0.2);
+        }
+        
+        .checklist li:hover {
+            background: #e8d7ba;
+            transform: translateX(5px);
+        }
+        
+        .checklist li.completed {
+            background: #d4edda;
+            border-left-color: #2d5016;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
+        .checklist li::before {
+            content: '☐ ';
+            font-size: 1.2em;
+            margin-right: 10px;
+            color: #654321;
+        }
+        
+        .checklist li.completed::before {
+            content: '☑ ';
+            color: #2d5016;
+        }
+        
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .role-card {
+            background: linear-gradient(to bottom, #654321 0%, #4a3219 100%);
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(139,115,85,0.2) 50px, rgba(139,115,85,0.2) 51px),
+                linear-gradient(to bottom, #654321 0%, #4a3219 100%);
+            color: #f4e8d0;
+            padding: 20px;
+            border: 2px solid #8b7355;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
+        
+        .role-card.selected {
+            border: 3px solid #b8860b;
+            box-shadow: 0 0 20px rgba(184, 134, 11, 0.6);
+        }
+        
+        .role-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.3em;
+            color: #f4e8d0;
+            font-variant: small-caps;
+            font-weight: normal;
+        }
+        
+        .role-card .worldview {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        .role-card .objectives {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border: 1px solid rgba(139,115,85,0.5);
+            border-radius: 0;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 0;
+            margin-bottom: 15px;
+            font-weight: 500;
+            border: 2px solid;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .alert-warning {
+            background: #fff8dc;
+            border-color: #b8860b;
+            color: #5d4a0c;
+        }
+        
+        .alert-danger {
+            background: #ffe4e1;
+            border-color: #8b1a1a;
+            color: #5c0f0f;
+        }
+        
+        .alert-success {
+            background: #f0f8e8;
+            border-color: #2d5016;
+            color: #1a3009;
+        }
+        
+        .alert-info {
+            background: #e6f3f5;
+            border-color: #2f4f4f;
+            color: #1c2f2f;
+        }
+        
+        .case-section {
+            margin: 25px 0;
+            padding: 25px;
+            background: #f4e8d0;
+            border-radius: 0;
+            border: 2px solid #8b7355;
+            box-shadow: inset 0 0 20px rgba(101,67,33,0.05);
+        }
+        
+        .case-section h3 {
+            color: #3d2817;
+            margin-bottom: 15px;
+            margin-top: 0;
+            font-variant: small-caps;
+            font-weight: normal;
+        }
+        
+        .case-text {
+            font-size: 1.05em;
+            line-height: 1.7;
+            color: #3d2817;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #faf7f0;
+            border-radius: 0;
+            border-left: 3px solid #654321;
+            font-style: italic;
+        }
+        
+        .prompt-questions {
+            background: rgba(101, 67, 33, 0.1);
+            padding: 15px;
+            border-radius: 0;
+            margin-top: 15px;
+            border: 1px solid #8b7355;
+        }
+        
+        .prompt-questions h4 {
+            color: #654321;
+            margin-bottom: 10px;
+            font-variant: small-caps;
+            font-weight: normal;
+        }
+        
+        .prompt-questions ul {
+            margin-left: 20px;
+        }
+        
+        .decision-tracker {
+            background: #faf7f0;
+            padding: 20px;
+            border-radius: 0;
+            margin-top: 20px;
+            border: 2px solid #8b7355;
+        }
+        
+        .group-decision {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f4e8d0;
+            border-radius: 0;
+            border: 1px solid #8b7355;
+        }
+        
+        .group-decision h4 {
+            margin-bottom: 10px;
+            color: #3d2817;
+            font-variant: small-caps;
+            font-weight: normal;
+        }
+        
+        .decision-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 2px solid #8b7355;
+            border-radius: 0;
+            font-size: 1em;
+            background: #faf7f0;
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+        }
+        
+        .score-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .score-card {
+            padding: 20px;
+            border-radius: 0;
+            text-align: center;
+            color: #f4e8d0;
+            font-weight: bold;
+            border: 2px solid;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+        }
+        
+        .score-card.role-a {
+            background: linear-gradient(to bottom, #8b0000 0%, #5c0000 100%);
+            border-color: #3d0000;
+        }
+        
+        .score-card.role-b {
+            background: linear-gradient(to bottom, #b8860b 0%, #8b6914 100%);
+            border-color: #5d4408;
+        }
+        
+        .score-card.role-c {
+            background: linear-gradient(to bottom, #1e3a8a 0%, #15295a 100%);
+            border-color: #0d1b3d;
+        }
+        
+        .score-card.role-d {
+            background: linear-gradient(to bottom, #6b21a8 0%, #4a1772 100%);
+            border-color: #2d0e47;
+        }
+        
+        .score-card h3 {
+            color: #f4e8d0;
+            margin-bottom: 10px;
+            font-variant: small-caps;
+            font-weight: normal;
+        }
+        
+        .score-number {
+            font-size: 2.5em;
+            margin: 10px 0;
+            font-family: 'Georgia', serif;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 2px solid #8b7355;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #8b7355;
+        }
+        
+        th {
+            background: #e8d7ba;
+            font-weight: 600;
+            color: #3d2817;
+            font-variant: small-caps;
+            letter-spacing: 1px;
+        }
+        
+        tbody tr:hover {
+            background: #f4e8d0;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 3px double #8b7355;
+            }
+            
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ Authority, Truth, and the Enlightenment</h1>
+            <p>Who Gets to Decide What Is True? (1550–1750)</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <button class="nav-button active" onclick="showPhase('setup')">📋 Setup</button>
+                <button class="nav-button" onclick="showPhase('roles')">👥 Assign Roles</button>
+                <button class="nav-button" onclick="showPhase('timer')">⏱️ Timer</button>
+                <button class="nav-button" onclick="showPhase('case1')">⚡ Case 1: Torture</button>
+                <button class="nav-button" onclick="showPhase('case2')">📜 Case 2: Tradition</button>
+                <button class="nav-button" onclick="showPhase('case3')">👑 Case 3: Divine Right</button>
+                <button class="nav-button" onclick="showPhase('case4')">🔮 Case 4: Witchcraft</button>
+                <button class="nav-button" onclick="showPhase('case5')">🔬 Case 5: Science</button>
+                <button class="nav-button" onclick="showPhase('tracker')">📊 Decision Tracker</button>
+                <button class="nav-button" onclick="showPhase('debrief')">📖 Debrief</button>
+            </div>
+            
+            <div class="content-area">
+                <!-- SETUP PHASE -->
+                <div id="setup" class="phase-section active">
+                    <div class="card">
+                        <h2>Activity Setup</h2>
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Core Question:</strong> When authority is challenged, what replaces it?
+                        </div>
+                        
+                        <h3>Purpose</h3>
+                        <p style="line-height: 1.7; margin-bottom: 15px;">
+                            Students experience the shift from authority-based reasoning to evidence- and reason-based reasoning 
+                            by inhabiting different early modern worldviews—and discovering that they do not resolve disputes the same way.
+                        </p>
+                        
+                        <div class="alert alert-info">
+                            <strong>This is not about "getting the right answer."</strong><br>
+                            It is about <em>how decisions are justified</em>.
+                        </div>
+                        
+                        <h3>Pre-Class Checklist</h3>
+                        <ul class="checklist">
+                            <li onclick="toggleCheck(this)">Divide class into 3-5 person groups (or assign individual roles)</li>
+                            <li onclick="toggleCheck(this)">Decide whether to use secret objectives (increases drama)</li>
+                            <li onclick="toggleCheck(this)">Prepare to write key words on board (tradition, evidence, fear, order, conscience, reform)</li>
+                            <li onclick="toggleCheck(this)">Review the 5 cases and select 2-4 to use (witchcraft + torture recommended if short on time)</li>
+                            <li onclick="toggleCheck(this)">Print or project role descriptions for students</li>
+                        </ul>
+                        
+                        <h3>Opening Script (2 minutes)</h3>
+                        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #2196f3; margin-top: 15px;">
+                            <p style="margin-bottom: 15px;">
+                                "Up to now, we've talked about authority breaking—in religion, in politics, in science. 
+                                But that breaking doesn't happen cleanly."
+                            </p>
+                            <p style="margin-bottom: 15px;">
+                                "For a long time, multiple ways of deciding truth exist at the same time—and they conflict."
+                            </p>
+                            <p style="margin-bottom: 15px;">
+                                "Today, you're going to step into that conflict."
+                            </p>
+                            <p>
+                                <strong>"Your task is not to be modern. Your task is to be historical."</strong>
+                            </p>
+                        </div>
+                        
+                        <h3>Activity Structure</h3>
+                        <table style="margin-top: 15px;">
+                            <thead>
+                                <tr>
+                                    <th>Phase</th>
+                                    <th>Duration</th>
+                                    <th>Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Introduction</td>
+                                    <td>2 min</td>
+                                    <td>Frame the activity</td>
+                                </tr>
+                                <tr>
+                                    <td>Role Assignment</td>
+                                    <td>3 min</td>
+                                    <td>Groups choose/receive roles</td>
+                                </tr>
+                                <tr>
+                                    <td>Case Discussion</td>
+                                    <td>5-7 min/case</td>
+                                    <td>Deliberate → Declare → Consequences</td>
+                                </tr>
+                                <tr>
+                                    <td>Debrief</td>
+                                    <td>10-15 min</td>
+                                    <td>Reflection and historical connection</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- ROLES PHASE -->
+                <div id="roles" class="phase-section">
+                    <div class="card">
+                        <h2>Role Selection</h2>
+                        
+                        <div class="alert alert-warning">
+                            <strong>Instructions:</strong> Each group selects one worldview role. Click to select and view full details.
+                        </div>
+                        
+                        <div class="role-grid">
+                            <div class="role-card" onclick="selectRole('A', this)">
+                                <h3>🟥 Role A</h3>
+                                <div class="worldview">Traditional Authority Defender</div>
+                                <p style="font-style: italic; font-size: 0.9em;">"If we question this, what stops everything else from collapsing?"</p>
+                                <div class="objectives">
+                                    <strong>Core Fear:</strong> Disorder<br>
+                                    <strong>Win If:</strong> Authority survives intact<br>
+                                    <strong>Key Thinkers:</strong> Bossuet, Hobbes
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="selectRole('B', this)">
+                                <h3>🟨 Role B</h3>
+                                <div class="worldview">Religious Conscience Advocate</div>
+                                <p style="font-style: italic; font-size: 0.9em;">"Authority must align with God's will—even if institutions are wrong."</p>
+                                <div class="objectives">
+                                    <strong>Core Fear:</strong> Divine judgment<br>
+                                    <strong>Win If:</strong> Conscience overrides blind obedience<br>
+                                    <strong>Key Thinkers:</strong> Luther, Calvin, Rutherford
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="selectRole('C', this)">
+                                <h3>🟦 Role C</h3>
+                                <div class="worldview">Enlightenment Rationalist</div>
+                                <p style="font-style: italic; font-size: 0.9em;">"Claims must justify themselves."</p>
+                                <div class="objectives">
+                                    <strong>Core Fear:</strong> Injustice built on ignorance<br>
+                                    <strong>Win If:</strong> Evidence and reason prevail<br>
+                                    <strong>Key Thinkers:</strong> Bacon, Voltaire, Hume
+                                </div>
+                            </div>
+                            
+                            <div class="role-card" onclick="selectRole('D', this)">
+                                <h3>🟪 Role D</h3>
+                                <div class="worldview">Political Authority / Magistrate</div>
+                                <p style="font-style: italic; font-size: 0.9em;">"I don't have time for philosophy. I need order."</p>
+                                <div class="objectives">
+                                    <strong>Core Fear:</strong> Immediate collapse<br>
+                                    <strong>Win If:</strong> Order is preserved today<br>
+                                    <strong>Key Thinkers:</strong> Machiavelli, Montesquieu
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="selectedRolesDisplay" style="margin-top: 30px;">
+                            <h3>Selected Roles:</h3>
+                            <div id="roleAssignments" style="padding: 15px; background: #f8f9fa; border-radius: 8px; min-height: 50px;">
+                                <em>No roles selected yet. Click role cards above to assign to groups.</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TIMER PHASE -->
+                <div id="timer" class="phase-section">
+                    <div class="timer-box">
+                        <h2 style="margin-bottom: 10px;">Activity Timer</h2>
+                        <div class="timer-display" id="timerDisplay">40:00</div>
+                        <div style="margin-bottom: 15px;">
+                            <strong>Current Phase:</strong> <span id="currentPhaseLabel">Not Started</span>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="btn btn-primary" onclick="startTimer()">▶️ Start</button>
+                            <button class="btn btn-danger" onclick="pauseTimer()">⏸️ Pause</button>
+                            <button class="btn btn-warning" onclick="resetTimer()">🔄 Reset</button>
+                            <button class="btn btn-info" onclick="add5Minutes()">+5 Min</button>
+                            <button class="btn btn-secondary" onclick="subtract5Minutes()">-5 Min</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>Recommended Timing</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Activity</th>
+                                    <th>Duration</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Full Version (3-4 cases)</strong></td>
+                                    <td>35-40 min</td>
+                                    <td>5-7 min per case + debrief</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Compressed (2 cases)</strong></td>
+                                    <td>12-15 min</td>
+                                    <td>Witchcraft + Torture recommended</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Per Case:</strong></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>- Group Deliberation</td>
+                                    <td>4-5 min</td>
+                                    <td>Decide + justify</td>
+                                </tr>
+                                <tr>
+                                    <td>- Public Declaration</td>
+                                    <td>1-2 min/group</td>
+                                    <td>"We decide ___ because ___"</td>
+                                </tr>
+                                <tr>
+                                    <td>- Instructor Interruption</td>
+                                    <td>30 sec</td>
+                                    <td>Announce consequences</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- CASE 1: TORTURE -->
+                <div id="case1" class="phase-section">
+                    <div class="card">
+                        <h2>Case 1: A Confession Obtained Under Torture</h2>
+                        
+                        <div class="case-text">
+                            A man is accused of a serious crime—treason, heresy, or murder. There are rumors, but no physical evidence. 
+                            After several days of imprisonment, he is subjected to prolonged torture. Eventually, he confesses in detail. 
+                            He names accomplices. He begs forgiveness. He says what the authorities want to hear.
+                            <br><br>
+                            The court records note that the confession was "freely given"—after the torture ended. There is no other evidence. 
+                            But the confession brings closure. The crowd is reassured. The authorities can move on.
+                        </div>
+                        
+                        <div class="prompt-questions">
+                            <h4>Prompt Questions:</h4>
+                            <ul>
+                                <li>Is the confession valid?</li>
+                                <li>Does torture reveal truth or produce obedience?</li>
+                                <li>What matters more: certainty or stability?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>Role Positions</h3>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B0000;">
+                                <strong>🟥 Traditional Authority:</strong> A confession obtained under torture is valid because it restores order. 
+                                Better a resolved injustice than a society unraveling from doubt.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #DAA520;">
+                                <strong>🟨 Religious Conscience:</strong> Torture corrupts truth and offends God. A confession wrung from pain 
+                                is not testimony—it is desperation. An unjust verdict endangers not just bodies, but salvation.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #4169E1;">
+                                <strong>🟦 Enlightenment Rationalist:</strong> A confession under torture proves nothing. Pain produces obedience, 
+                                not truth. Truth cannot be beaten out of a human being.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B008B;">
+                                <strong>🟪 Political Authority:</strong> The confession is useful. It ends unrest. Whether it is true matters 
+                                less than whether the matter is settled. The court cannot afford paralysis.
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="recordDecision(1)" style="margin-top: 20px;">
+                            📝 Record Group Decisions
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- CASE 2: TRADITION -->
+                <div id="case2" class="phase-section">
+                    <div class="card">
+                        <h2>Case 2: A Law Justified by Tradition</h2>
+                        
+                        <div class="case-text">
+                            A harsh punishment is enforced for a minor offense—public shaming, mutilation, or execution. 
+                            When questioned, officials respond simply: this is how it has always been done. The law is old. 
+                            Older than anyone alive. Older than memory.
+                            <br><br>
+                            Some argue it is cruel. Others say it deters crime. Most people obey it without thinking. 
+                            No one can remember who wrote the law. But everyone knows what happens if it is broken.
+                        </div>
+                        
+                        <div class="prompt-questions">
+                            <h4>Prompt Questions:</h4>
+                            <ul>
+                                <li>Does age equal legitimacy?</li>
+                                <li>Who benefits from this law continuing?</li>
+                                <li>What happens if laws must justify themselves?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>Role Positions</h3>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B0000;">
+                                <strong>🟥 Traditional Authority:</strong> A law that has endured generations carries legitimacy by its very survival. 
+                                What has endured has proven its worth.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #DAA520;">
+                                <strong>🟨 Religious Conscience:</strong> Tradition alone cannot justify injustice. If a law violates God's moral order, 
+                                its age only deepens the sin. God does not bless cruelty simply because it is old.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #4169E1;">
+                                <strong>🟦 Enlightenment Rationalist:</strong> A law must serve human well-being. Custom explains laws; reason must justify them.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B008B;">
+                                <strong>🟪 Political Authority:</strong> The law exists because it works—or at least has not caused collapse. 
+                                Stability is a public good.
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="recordDecision(2)" style="margin-top: 20px;">
+                            📝 Record Group Decisions
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- CASE 3: DIVINE RIGHT -->
+                <div id="case3" class="phase-section">
+                    <div class="card">
+                        <h2>Case 3: A Ruler Claiming Divine Right</h2>
+                        
+                        <div class="case-text">
+                            A king faces growing resistance. Taxes are unpopular. Religious tensions are rising. 
+                            Critics claim the king is abusing power. In response, the ruler makes a clear statement:
+                            <br><br>
+                            <em style="font-size: 1.1em;">"My authority comes directly from God. To obey me is to obey divine will. 
+                            To resist me is rebellion against heaven."</em>
+                            <br><br>
+                            Supporters nod. Dissenters grow quiet. But not everyone is convinced. Some believe God would never endorse injustice. 
+                            Others fear that disagreement itself invites chaos.
+                        </div>
+                        
+                        <div class="prompt-questions">
+                            <h4>Prompt Questions:</h4>
+                            <ul>
+                                <li>Can authority exist without accountability?</li>
+                                <li>Who decides whether the ruler is legitimate?</li>
+                                <li>What happens if subjects disagree?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>Role Positions</h3>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B0000;">
+                                <strong>🟥 Traditional Authority:</strong> The ruler's authority comes from God, and questioning it invites disorder. 
+                                Without obedience, society dissolves.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #DAA520;">
+                                <strong>🟨 Religious Conscience:</strong> A ruler who violates God's law forfeits divine legitimacy. 
+                                No earthly crown outranks divine judgment.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #4169E1;">
+                                <strong>🟦 Enlightenment Rationalist:</strong> Authority must be justified by consent and reason, not divine claims 
+                                that cannot be verified. Claims beyond examination invite abuse.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B008B;">
+                                <strong>🟪 Political Authority:</strong> Public challenges to authority destabilize the state. 
+                                Legitimacy matters less than control.
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="recordDecision(3)" style="margin-top: 20px;">
+                            📝 Record Group Decisions
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- CASE 4: WITCHCRAFT -->
+                <div id="case4" class="phase-section">
+                    <div class="card">
+                        <h2>Case 4: A Witchcraft Accusation</h2>
+                        
+                        <div class="case-text">
+                            A woman is accused of witchcraft. No one saw her cast a spell. But neighbors testify that livestock died 
+                            after she passed by. A child fell ill. Someone dreamed she was present. The community is frightened. 
+                            The harvest has failed. Something feels wrong.
+                            <br><br>
+                            The accused denies everything. There is no physical proof. But fear is spreading.
+                            <br><br>
+                            Some argue disbelief risks God's wrath. Others worry the accusation itself is dangerous.
+                        </div>
+                        
+                        <div class="prompt-questions">
+                            <h4>Prompt Questions:</h4>
+                            <ul>
+                                <li>What counts as evidence?</li>
+                                <li>Is fear itself a danger?</li>
+                                <li>Is disbelief more destabilizing than belief?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>Role Positions</h3>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B0000;">
+                                <strong>🟥 Traditional Authority:</strong> Communal testimony reflects collective wisdom. Fear itself signals danger. 
+                                Inaction is itself a threat.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #DAA520;">
+                                <strong>🟨 Religious Conscience:</strong> False accusations offend God. But ignoring witchcraft invites divine wrath. 
+                                We must fear God more than rumor.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #4169E1;">
+                                <strong>🟦 Enlightenment Rationalist:</strong> There is no empirical evidence for witchcraft. Dreams and misfortune prove nothing. 
+                                A society ruled by fear is already unjust.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B008B;">
+                                <strong>🟪 Political Authority:</strong> Public fear must be managed. Ignoring accusations risks unrest. 
+                                Fear spreads faster than truth.
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="recordDecision(4)" style="margin-top: 20px;">
+                            📝 Record Group Decisions
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- CASE 5: SCIENCE -->
+                <div id="case5" class="phase-section">
+                    <div class="card">
+                        <h2>Case 5: A Scientific Claim Contradicted by Evidence</h2>
+                        
+                        <div class="case-text">
+                            A respected authority—a scholar, cleric, or court-appointed expert—teaches a well-established truth. 
+                            It appears in books. It has been taught for generations. It fits scripture and tradition.
+                            <br><br>
+                            But new observations contradict it. Measurements don't align. Experiments suggest something else is happening.
+                            <br><br>
+                            The authority dismisses the data. The challenger is younger. Less powerful. But the evidence persists.
+                        </div>
+                        
+                        <div class="prompt-questions">
+                            <h4>Prompt Questions:</h4>
+                            <ul>
+                                <li>Does expertise outweigh data?</li>
+                                <li>Who gets to challenge whom?</li>
+                                <li>What happens if everyone questions everything?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>Role Positions</h3>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B0000;">
+                                <strong>🟥 Traditional Authority:</strong> Established knowledge exists for a reason. If everyone questions everything, 
+                                authority collapses. Doubt is contagious.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #DAA520;">
+                                <strong>🟨 Religious Conscience:</strong> Truth comes from God, but human interpretations can err. 
+                                Reason must serve moral truth.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #4169E1;">
+                                <strong>🟦 Enlightenment Rationalist:</strong> Evidence outweighs authority. Knowledge advances through questioning. 
+                                Progress requires doubt.
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #8B008B;">
+                                <strong>🟪 Political Authority:</strong> Public challenges to authority destabilize institutions. New ideas must be managed carefully. 
+                                Truth at the wrong moment can be dangerous.
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="recordDecision(5)" style="margin-top: 20px;">
+                            📝 Record Group Decisions
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- DECISION TRACKER -->
+                <div id="tracker" class="phase-section">
+                    <div class="card">
+                        <h2>Decision Tracker & Scoring</h2>
+                        
+                        <div class="alert alert-info">
+                            <strong>How Scoring Works:</strong> Each role earns points when decisions align with their worldview and objectives. 
+                            The game reveals how different ways of justifying truth lead to different outcomes.
+                        </div>
+                        
+                        <div class="score-display">
+                            <div class="score-card role-a">
+                                <h3>🟥 Traditional Authority</h3>
+                                <div class="score-number" id="scoreA">0</div>
+                                <div>Authority Intact</div>
+                            </div>
+                            
+                            <div class="score-card role-b">
+                                <h3>🟨 Religious Conscience</h3>
+                                <div class="score-number" id="scoreB">0</div>
+                                <div>Conscience Over Obedience</div>
+                            </div>
+                            
+                            <div class="score-card role-c">
+                                <h3>🟦 Enlightenment</h3>
+                                <div class="score-number" id="scoreC">0</div>
+                                <div>Reason Prevails</div>
+                            </div>
+                            
+                            <div class="score-card role-d">
+                                <h3>🟪 Political Authority</h3>
+                                <div class="score-number" id="scoreD">0</div>
+                                <div>Order Preserved</div>
+                            </div>
+                        </div>
+                        
+                        <div id="decisionHistory" style="margin-top: 30px;">
+                            <h3>Decision History</h3>
+                            <div id="historyContent" style="padding: 15px; background: #f8f9fa; border-radius: 8px; min-height: 100px;">
+                                <em>No decisions recorded yet.</em>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-warning" onclick="resetScores()" style="margin-top: 20px;">
+                            🔄 Reset All Scores
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- DEBRIEF -->
+                <div id="debrief" class="phase-section">
+                    <div class="card">
+                        <h2>Debrief & Discussion</h2>
+                        
+                        <div class="alert alert-success">
+                            <strong>✅ The Enlightenment Problem:</strong> By the final case, students should feel this clearly:<br>
+                            <em>If authority, tradition, religion, fear, and expertise can all be questioned... what holds society together?</em>
+                        </div>
+                        
+                        <h3>Escalation Logic</h3>
+                        <ul style="margin-left: 20px; line-height: 1.8;">
+                            <li><strong>Case 1 (Torture):</strong> Feels procedural and concrete → justice system</li>
+                            <li><strong>Case 2 (Tradition):</strong> Challenges legitimacy of law itself</li>
+                            <li><strong>Case 3 (Divine Right):</strong> Attacks the foundation of political authority</li>
+                            <li><strong>Case 4 (Witchcraft):</strong> Exposes fear as a social force</li>
+                            <li><strong>Case 5 (Science):</strong> Destabilizes knowledge itself</li>
+                        </ul>
+                        
+                        <div class="case-section">
+                            <h3>1. Connection to Course Content</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>How did these different worldviews show up in the Reformation?</li>
+                                <li>Where do we see traditional authority vs. conscience in the religious conflicts we've studied?</li>
+                                <li>How does this activity help explain why the Enlightenment led to political revolutions?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>2. Decision-Making Process</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>What was hardest about staying in your role's worldview?</li>
+                                <li>When did you want to "break character" and use modern reasoning?</li>
+                                <li>Did any case make you sympathize with a worldview you initially disagreed with?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>3. Historical Thinking</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>Why might reasonable people in the past have supported torture, traditional laws, or witchcraft trials?</li>
+                                <li>What were they afraid of losing if they changed their approach?</li>
+                                <li>How does understanding their fears change how we judge their actions?</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="case-section">
+                            <h3>4. Modern Connections</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>Do we still see conflicts between these worldviews today?</li>
+                                <li>When do we prioritize stability over change? Evidence over tradition?</li>
+                                <li>Are there modern equivalents to "witchcraft accusations"—fears that spread despite lack of evidence?</li>
+                            </ul>
+                        </div>
+                        
+                        <h3>Key Takeaway</h3>
+                        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #2196f3; margin-top: 15px;">
+                            <p style="margin-bottom: 15px;">
+                                <strong>The Enlightenment did not simply replace one set of answers with better ones.</strong>
+                            </p>
+                            <p>
+                                It transformed <em>how answers were justified</em>—and in doing so, it made the political revolutions 
+                                that followed both possible and inevitable.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Role selection tracking
+        let selectedRoles = {
+            'A': [],
+            'B': [],
+            'C': [],
+            'D': []
+        };
+        
+        let groupCounter = 1;
+        
+        function selectRole(role, element) {
+            const groupName = `Group ${groupCounter}`;
+            selectedRoles[role].push(groupName);
+            groupCounter++;
+            
+            // Visual feedback
+            element.classList.add('selected');
+            setTimeout(() => element.classList.remove('selected'), 1000);
+            
+            updateRoleAssignments();
+        }
+        
+        function updateRoleAssignments() {
+            let html = '';
+            for (let role in selectedRoles) {
+                if (selectedRoles[role].length > 0) {
+                    let roleNames = {
+                        'A': '🟥 Traditional Authority',
+                        'B': '🟨 Religious Conscience',
+                        'C': '🟦 Enlightenment Rationalist',
+                        'D': '🟪 Political Authority'
+                    };
+                    html += `<div style="margin-bottom: 10px;"><strong>${roleNames[role]}:</strong> ${selectedRoles[role].join(', ')}</div>`;
+                }
+            }
+            document.getElementById('roleAssignments').innerHTML = html || '<em>No roles selected yet.</em>';
+        }
+        
+        // Navigation
+        function showPhase(phaseId) {
+            document.querySelectorAll('.phase-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(phaseId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Checklist
+        function toggleCheck(element) {
+            element.classList.toggle('completed');
+        }
+        
+        // Timer
+        let timerInterval;
+        let timeRemaining = 40 * 60;
+        let isRunning = false;
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+            let phaseLabel = 'Not Started';
+            if (timeRemaining <= 0) {
+                phaseLabel = 'Activity Complete!';
+            } else if (timeRemaining <= 10 * 60) {
+                phaseLabel = 'Debrief Time';
+            } else if (timeRemaining <= 15 * 60) {
+                phaseLabel = 'Final Cases';
+            } else if (timeRemaining <= 30 * 60) {
+                phaseLabel = 'Mid-Activity Cases';
+            } else {
+                phaseLabel = 'Initial Cases';
+            }
+            document.getElementById('currentPhaseLabel').textContent = phaseLabel;
+        }
+        
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timerInterval = setInterval(() => {
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        updateTimerDisplay();
+                    } else {
+                        pauseTimer();
+                        alert('⏰ Time for debrief!');
+                    }
+                }, 1000);
+            }
+        }
+        
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+        }
+        
+        function resetTimer() {
+            pauseTimer();
+            timeRemaining = 40 * 60;
+            updateTimerDisplay();
+        }
+        
+        function add5Minutes() {
+            timeRemaining += 5 * 60;
+            updateTimerDisplay();
+        }
+        
+        function subtract5Minutes() {
+            timeRemaining -= 5 * 60;
+            if (timeRemaining < 0) timeRemaining = 0;
+            updateTimerDisplay();
+        }
+        
+        // Decision tracking and scoring
+        let scores = { A: 0, B: 0, C: 0, D: 0 };
+        let decisionLog = [];
+        
+        function recordDecision(caseNum) {
+            console.log('recordDecision called for case', caseNum);
+            
+            const caseNames = {
+                1: 'Torture',
+                2: 'Tradition',
+                3: 'Divine Right',
+                4: 'Witchcraft',
+                5: 'Science'
+            };
+            
+            // Check if any roles have been assigned
+            let hasRoles = false;
+            for (let role in selectedRoles) {
+                if (selectedRoles[role].length > 0) {
+                    hasRoles = true;
+                    break;
+                }
+            }
+            
+            if (!hasRoles) {
+                // Show visible message on page instead of alert
+                const messageDiv = document.createElement('div');
+                messageDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff8dc; border: 3px solid #8b1a1a; padding: 30px; max-width: 500px; z-index: 10000; box-shadow: 0 0 50px rgba(0,0,0,0.5);';
+                messageDiv.innerHTML = `
+                    <h2 style="color: #8b1a1a; margin-bottom: 15px; font-variant: small-caps;">⚠️ No Roles Assigned Yet!</h2>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">Please follow these steps:</p>
+                    <ol style="margin-left: 20px; line-height: 1.8;">
+                        <li>Click <strong>"👥 Assign Roles"</strong> in the left sidebar</li>
+                        <li>Click on each role card (A, B, C, or D) to assign groups</li>
+                        <li>Each click creates a new group with that role</li>
+                        <li>Then come back to this case and click "Record Group Decisions" again</li>
+                    </ol>
+                    <button onclick="this.parentElement.remove()" style="margin-top: 20px; padding: 10px 20px; background: #654321; color: #f4e8d0; border: 2px solid #8b7355; cursor: pointer; font-size: 1em; font-family: inherit;">
+                        Got It!
+                    </button>
+                `;
+                document.body.appendChild(messageDiv);
+                return;
+            }
+            
+            // Create decision entry form
+            const roleNames = {
+                'A': '🟥 Traditional Authority',
+                'B': '🟨 Religious Conscience',
+                'C': '🟦 Enlightenment Rationalist',
+                'D': '🟪 Political Authority'
+            };
+            
+            let formHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #faf7f0; border: 3px solid #654321; padding: 30px; max-width: 600px; max-height: 80vh; overflow-y: auto; z-index: 10000; box-shadow: 0 0 50px rgba(0,0,0,0.5);">
+                    <h2 style="color: #3d2817; margin-bottom: 15px; font-variant: small-caps;">Record Decisions: Case ${caseNum} - ${caseNames[caseNum]}</h2>
+                    <p style="margin-bottom: 20px; font-style: italic;">Enter what each group decided and their reasoning:</p>
+                    <form id="decisionForm">
+            `;
+            
+            for (let role in selectedRoles) {
+                if (selectedRoles[role].length > 0) {
+                    const groupList = selectedRoles[role].join(', ');
+                    formHTML += `
+                        <div style="margin-bottom: 20px; padding: 15px; background: #f4e8d0; border: 2px solid #8b7355;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #3d2817;">
+                                ${roleNames[role]} (${groupList}):
+                            </label>
+                            <textarea id="decision_${role}" rows="3" style="width: 100%; padding: 10px; border: 2px solid #8b7355; font-family: inherit; background: #faf7f0; resize: vertical;" placeholder="Enter their decision and reasoning..."></textarea>
+                        </div>
+                    `;
+                }
+            }
+            
+            formHTML += `
+                        <div style="margin-top: 20px; text-align: right;">
+                            <button type="button" onclick="document.getElementById('decisionFormContainer').remove()" 
+                                    style="margin-right: 10px; padding: 10px 20px; background: #4a4a4a; color: #f4e8d0; border: 2px solid #8b7355; cursor: pointer; font-size: 1em; font-family: inherit;">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    style="padding: 10px 20px; background: #2d5016; color: #f4e8d0; border: 2px solid #1a3009; cursor: pointer; font-size: 1em; font-family: inherit;">
+                                Save Decisions
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            const formContainer = document.createElement('div');
+            formContainer.id = 'decisionFormContainer';
+            formContainer.innerHTML = formHTML;
+            document.body.appendChild(formContainer);
+            
+            // Handle form submission
+            document.getElementById('decisionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Form submitted');
+                
+                let decisions = '';
+                let decisionCount = 0;
+                
+                for (let role in selectedRoles) {
+                    if (selectedRoles[role].length > 0) {
+                        const decisionElement = document.getElementById('decision_' + role);
+                        console.log('Checking role', role, 'element:', decisionElement);
+                        
+                        if (decisionElement) {
+                            const decision = decisionElement.value.trim();
+                            console.log('Decision for role', role, ':', decision);
+                            
+                            if (decision !== '') {
+                                const groupList = selectedRoles[role].join(', ');
+                                decisions += `${roleNames[role]} (${groupList}):\n${decision}\n\n`;
+                                decisionCount++;
+                                
+                                // Award points based on keywords in decision
+                                const lowerDecision = decision.toLowerCase();
+                                
+                                // Role A (Traditional Authority)
+                                if (role === 'A') {
+                                    scores.A++;
+                                }
+                                if (lowerDecision.includes('order') || lowerDecision.includes('stability') || 
+                                    lowerDecision.includes('tradition') || lowerDecision.includes('authority') ||
+                                    lowerDecision.includes('obedience')) {
+                                    scores.A++;
+                                }
+                                
+                                // Role B (Religious Conscience)
+                                if (role === 'B') {
+                                    scores.B++;
+                                }
+                                if (lowerDecision.includes('god') || lowerDecision.includes('divine') || 
+                                    lowerDecision.includes('moral') || lowerDecision.includes('conscience') ||
+                                    lowerDecision.includes('sin') || lowerDecision.includes('scripture')) {
+                                    scores.B++;
+                                }
+                                
+                                // Role C (Enlightenment)
+                                if (role === 'C') {
+                                    scores.C++;
+                                }
+                                if (lowerDecision.includes('evidence') || lowerDecision.includes('reason') || 
+                                    lowerDecision.includes('proof') || lowerDecision.includes('rational') ||
+                                    lowerDecision.includes('observe') || lowerDecision.includes('experiment')) {
+                                    scores.C++;
+                                }
+                                
+                                // Role D (Political Authority)
+                                if (role === 'D') {
+                                    scores.D++;
+                                }
+                                if (lowerDecision.includes('control') || lowerDecision.includes('prevent') || 
+                                    lowerDecision.includes('manage') || lowerDecision.includes('pragmatic') ||
+                                    lowerDecision.includes('unrest')) {
+                                    scores.D++;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                console.log('Decision count:', decisionCount);
+                console.log('Decisions:', decisions);
+                
+                // Remove form
+                const formContainer = document.getElementById('decisionFormContainer');
+                if (formContainer) {
+                    formContainer.remove();
+                }
+                
+                if (decisionCount > 0) {
+                    decisionLog.push({
+                        case: caseNum,
+                        name: caseNames[caseNum],
+                        decisions: decisions
+                    });
+                    
+                    console.log('Updating scores and history');
+                    updateScores();
+                    updateHistory();
+                    
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #f0f8e8; border: 3px solid #2d5016; padding: 30px; max-width: 500px; z-index: 10000; box-shadow: 0 0 50px rgba(0,0,0,0.5);';
+                    messageDiv.innerHTML = `
+                        <h2 style="color: #2d5016; margin-bottom: 15px; font-variant: small-caps;">✅ Decisions Recorded!</h2>
+                        <p style="margin-bottom: 10px;"><strong>Case ${caseNum}: ${caseNames[caseNum]}</strong></p>
+                        <p style="margin-bottom: 15px;">${decisionCount} group(s) responded.</p>
+                        <p style="margin-bottom: 15px;">Go to <strong>"📊 Decision Tracker"</strong> to see all decisions and scores.</p>
+                        <button onclick="this.parentElement.remove(); showPhase('tracker'); document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active')); document.querySelectorAll('.nav-button')[6].classList.add('active');" 
+                                style="margin-right: 10px; padding: 10px 20px; background: #654321; color: #f4e8d0; border: 2px solid #8b7355; cursor: pointer; font-size: 1em; font-family: inherit;">
+                            View Tracker
+                        </button>
+                        <button onclick="this.parentElement.remove()" 
+                                style="padding: 10px 20px; background: #4a4a4a; color: #f4e8d0; border: 2px solid #8b7355; cursor: pointer; font-size: 1em; font-family: inherit;">
+                            Close
+                        </button>
+                    `;
+                    document.body.appendChild(messageDiv);
+                    console.log('Success message shown');
+                } else {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ffe4e1; border: 3px solid #8b1a1a; padding: 30px; max-width: 400px; z-index: 10000; box-shadow: 0 0 50px rgba(0,0,0,0.5);';
+                    messageDiv.innerHTML = `
+                        <h2 style="color: #8b1a1a; margin-bottom: 15px; font-variant: small-caps;">No Decisions Entered</h2>
+                        <p style="margin-bottom: 15px;">Please try again and enter decisions for at least one group.</p>
+                        <button onclick="this.parentElement.remove()" style="padding: 10px 20px; background: #654321; color: #f4e8d0; border: 2px solid #8b7355; cursor: pointer; font-size: 1em; font-family: inherit;">
+                            OK
+                        </button>
+                    `;
+                    document.body.appendChild(messageDiv);
+                    console.log('No decisions message shown');
+                }
+            });
+        }
+        
+        function updateScores() {
+            document.getElementById('scoreA').textContent = scores.A;
+            document.getElementById('scoreB').textContent = scores.B;
+            document.getElementById('scoreC').textContent = scores.C;
+            document.getElementById('scoreD').textContent = scores.D;
+        }
+        
+        function updateHistory() {
+            let html = '';
+            decisionLog.forEach((entry, index) => {
+                html += `<div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #667eea;">
+                    <strong>Case ${entry.case}: ${entry.name}</strong><br>
+                    <pre style="margin-top: 10px; white-space: pre-wrap; font-family: inherit;">${entry.decisions}</pre>
+                </div>`;
+            });
+            document.getElementById('historyContent').innerHTML = html || '<em>No decisions recorded yet.</em>';
+        }
+        
+        function resetScores() {
+            if (confirm('Are you sure you want to reset all scores and decisions?')) {
+                scores = { A: 0, B: 0, C: 0, D: 0 };
+                decisionLog = [];
+                updateScores();
+                updateHistory();
+            }
+        }
+        
+        // Initialize
+        updateTimerDisplay();
+    </script>
+</body>
+</html>
