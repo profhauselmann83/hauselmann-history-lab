@@ -581,7 +581,16 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+        // ============================================================
+        // ADMIN PASSWORD - Change this to your desired password
+        // Note: This is visible in page source, suitable for low-security use
+        // ============================================================
+        const ADMIN_PASSWORD = 'hist107admin'
+        const ADMIN_EMAIL = 'hauselmannh@yosemite.edu'
+        // ============================================================
+
         let currentUser = null
+        let isLocalAuth = false  // Track if using local password auth
 
         // Check authentication on page load
         async function checkAuth() {
@@ -608,17 +617,27 @@
 
         async function handleLogin(event) {
             event.preventDefault()
-            
+
             const email = document.getElementById('email').value
             const password = document.getElementById('password').value
 
+            // First, check for local admin password
+            if (password === ADMIN_PASSWORD) {
+                currentUser = { email: email || ADMIN_EMAIL }
+                isLocalAuth = true
+                showDashboard()
+                loadAllData()
+                return
+            }
+
+            // If local password didn't match, try Supabase authentication
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
             })
 
             if (error) {
-                showMessage('Login failed: ' + error.message, 'error', 'login-message')
+                showMessage('Login failed: Incorrect password', 'error', 'login-message')
                 return
             }
 
@@ -666,8 +685,11 @@
         }
 
         async function handleLogout() {
-            await supabaseClient.auth.signOut()
+            if (!isLocalAuth) {
+                await supabaseClient.auth.signOut()
+            }
             currentUser = null
+            isLocalAuth = false
             document.getElementById('login-screen').style.display = 'block'
             document.getElementById('dashboard').style.display = 'none'
         }
