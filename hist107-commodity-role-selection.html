@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Commodity & Role Selection | HIST 107 Group Project</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+```
+    header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+    }
+
+    header p {
+        margin: 0;
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+
+    nav {
+        background-color: #34495e;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: bold;
+    }
+
+    nav a:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb {
+        background-color: white;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        font-size: 0.9em;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+
+    .progress-bar {
+        background-color: #ecf0f1;
+        height: 10px;
+        border-radius: 5px;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background-color: #27ae60;
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 5px;
+    }
+
+    .section {
+        background-color: white;
+        padding: 25px;
+        margin: 20px 0;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        margin-top: 0;
+    }
+
+    h3 {
+        color: #2c3e50;
+        margin-top: 20px;
+    }
+
+    .info-box {
+        background-color: #e8f4f8;
+        padding: 20px;
+        border-left: 4px solid #3498db;
+        margin: 20px 0;
+        border-radius: 3px;
+    }
+
+    .info-box strong {
+        color: #2c3e50;
+    }
+
+    .warning-box {
+        background-color: #fff3cd;
+        padding: 20px;
+        border-left: 4px solid #ffc107;
+        margin: 20px 0;
+        border-radius: 3px;
+    }
+
+    .role-card {
+        background-color: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 15px 0;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .role-card:hover {
+        border-color: #3498db;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .role-card.selected {
+        border-color: #27ae60;
+        background-color: #d4edda;
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    }
+
+    .role-card h4 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-size: 1.2em;
+    }
+
+    .role-card ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    .role-card li {
+        margin: 5px 0;
+        color: #555;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        font-size: 1.05em;
+    }
+
+    .form-group select,
+    .form-group textarea,
+    .form-group input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #bdc3c7;
+        border-radius: 5px;
+        font-size: 1em;
+        font-family: 'Open Sans', sans-serif;
+        transition: border-color 0.3s;
+    }
+
+    .form-group select:focus,
+    .form-group textarea:focus,
+    .form-group input[type="text"]:focus {
+        outline: none;
+        border-color: #3498db;
+    }
+
+    .form-group textarea {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .help-text {
+        font-size: 0.9em;
+        color: #7f8c8d;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        font-size: 1em;
+        font-weight: 600;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .btn-primary {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+    }
+
+    .btn-success {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #229954;
+    }
+
+    .btn-secondary {
+        background-color: #34495e;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #2c3e50;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 5px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-left: 4px solid #27ae60;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-left: 4px solid #e74c3c;
+    }
+
+    footer {
+        text-align: center;
+        margin-top: 40px;
+        color: #7f8c8d;
+        padding: 20px 0;
+    }
+
+    @media (max-width: 768px) {
+        body {
+            padding: 10px;
+        }
+
+        header {
+            padding: 20px;
+        }
+
+        .section {
+            padding: 15px;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <header>
+        <h1>🎯 Commodity & Role Selection</h1>
+        <p>HIST 107 Group Project: Shared Commodity, Divided Lenses</p>
+    </header>
+
+```
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+</nav>
+
+<div class="breadcrumb">
+    <a href="research-hist107.html">← Back to HIST 107 Research Guide</a>
+</div>
+
+<div class="section" style="background-color: #f0f9ff; border-left: 4px solid #3498db;">
+    <h2 style="border-bottom-color: #3498db;">Student Information</h2>
+    <div style="display: flex; gap: 20px;">
+        <div class="form-group" style="flex: 1;">
+            <label for="student-name">Student Name:</label>
+            <input type="text" id="student-name" placeholder="First and last name">
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label for="section-number">Section Number:</label>
+            <input type="text" id="section-number" placeholder="e.g., 107-01">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="group-members">Group Members (list all names, including yourself):</label>
+        <textarea id="group-members" style="min-height: 80px;" placeholder="List all group members' names, one per line"></textarea>
+        <div class="help-text">Include all 3-4 members of your research group</div>
+    </div>
+</div>
+
+<div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<div class="section">
+    <h2>Instructions</h2>
+    <p>This is the first step in your semester-long collaborative research project. You will select a commodity to study and choose your analytical lens (role) within your group.</p>
+    
+    <div class="warning-box">
+        <strong>⚠️ IMPORTANT:</strong> No two students in the same group may have the same analytical lens. Coordinate with your group members before making your selection.
+    </div>
+
+    <p><strong>What you'll do on this page:</strong></p>
+    <ol>
+        <li>Select the commodity your group will study together</li>
+        <li>Choose your individual analytical lens/role</li>
+        <li>Define what that role means and what questions you'll investigate</li>
+        <li>Save and submit your choices to Prof. Hauselmann</li>
+    </ol>
+</div>
+
+<div id="status-message"></div>
+
+<div class="section">
+    <h2>STEP 1: Select Your Group's Commodity</h2>
+
+    <div class="info-box">
+        <strong>Remember:</strong> Your entire group studies the same commodity, but each member investigates it through a different analytical lens.
+    </div>
+
+    <div class="form-group">
+        <label for="commodity-name">Your Group's Commodity:</label>
+        <select id="commodity-name">
+            <option value="">-- Select your group's commodity --</option>
+            <option value="Sugar">Sugar</option>
+            <option value="Coffee">Coffee</option>
+            <option value="Rubber">Rubber</option>
+            <option value="Chili Peppers">Chili Peppers</option>
+            <option value="Chocolate">Chocolate</option>
+            <option value="Oil">Oil</option>
+            <option value="Bananas">Bananas</option>
+            <option value="Tomatoes">Tomatoes</option>
+            <option value="Cocoa">Cocoa</option>
+            <option value="Silver">Silver</option>
+            <option value="Indigo">Indigo</option>
+            <option value="Tea">Tea</option>
+            <option value="Palm Oil">Palm Oil</option>
+            <option value="Cannabis">Cannabis</option>
+            <option value="Tobacco">Tobacco</option>
+            <option value="Opium">Opium</option>
+            <option value="Other">Other (specify below)</option>
+        </select>
+    </div>
+
+    <div class="form-group" id="other-commodity-group" style="display: none;">
+        <label for="commodity-other">Specify your commodity:</label>
+        <input type="text" id="commodity-other" placeholder="Enter your approved commodity">
+    </div>
+</div>
+
+<div class="section">
+    <h2>STEP 2: Choose Your Analytical Lens</h2>
+
+    <div class="info-box">
+        <strong>Your Role:</strong> Each student in your group must choose ONE of the four analytical lenses below. No two students in the same group can have the same role.
+    </div>
+
+    <p><strong>Click on a role to select it:</strong></p>
+
+    <div class="role-card" onclick="selectRole('production')">
+        <h4>🌱 Production & Environment</h4>
+        <p><strong>Your focus:</strong></p>
+        <ul>
+            <li>Growing/extraction regions and geographical conditions</li>
+            <li>Ecological transformation caused by commodity production</li>
+            <li>Pre-imperial production systems and indigenous knowledge</li>
+            <li>Environmental consequences of intensive cultivation/extraction</li>
+        </ul>
+    </div>
+
+    <div class="role-card" onclick="selectRole('labor')">
+        <h4>⚒️ Labor & Coercion</h4>
+        <p><strong>Your focus:</strong></p>
+        <ul>
+            <li>Enslaved, indentured, or wage labor systems</li>
+            <li>Violence, discipline, and methods of control</li>
+            <li>Resistance, rebellion, and worker agency</li>
+            <li>Living and working conditions of laborers</li>
+        </ul>
+    </div>
+
+    <div class="role-card" onclick="selectRole('empire')">
+        <h4>🏛️ Empire, State & Corporations</h4>
+        <p><strong>Your focus:</strong></p>
+        <ul>
+            <li>State policies, laws, and regulations</li>
+            <li>Chartered companies and corporate power</li>
+            <li>Military or legal coercion and enforcement</li>
+            <li>Colonial administration and governance</li>
+        </ul>
+    </div>
+
+    <div class="role-card" onclick="selectRole('circulation')">
+        <h4>🌍 Circulation & Consumption</h4>
+        <p><strong>Your focus:</strong></p>
+        <ul>
+            <li>Trade routes, shipping networks, and infrastructure</li>
+            <li>Financial systems, credit, and speculation</li>
+            <li>Global demand and marketing</li>
+            <li>Cultural meaning and consumer practices</li>
+        </ul>
+    </div>
+
+    <input type="hidden" id="selected-role" value="">
+</div>
+
+<div class="section">
+    <h2>STEP 3: Define Your Role</h2>
+
+    <div class="info-box">
+        <strong>Reflection Prompt:</strong> Now that you've chosen your analytical lens, spend some time thinking about what this role means for your research.
+    </div>
+
+    <div class="form-group">
+        <label for="role-definition">What does your chosen lens mean to you? What will you be investigating?</label>
+        <textarea id="role-definition" placeholder="In your own words, explain what your analytical lens focuses on and what kinds of questions you'll be asking about your commodity..."></textarea>
+        <div class="help-text">Think about: What aspects of the commodity's history will you focus on? What kinds of sources will you need to find? What questions will guide your research?</div>
+    </div>
+
+    <div class="form-group">
+        <label for="key-questions">What are 3-5 specific historical questions your lens will help answer?</label>
+        <textarea id="key-questions" placeholder="List the key questions that will guide your research from this perspective...&#10;&#10;Example: Where was coffee originally grown, and how did cultivation spread globally?"></textarea>
+        <div class="help-text">These questions should be specific to your analytical lens and will guide your source selection for Component 1.</div>
+    </div>
+
+    <div class="form-group">
+        <label for="source-types">What types of sources do you think will be most valuable for your lens?</label>
+        <textarea id="source-types" placeholder="Consider primary sources like: government documents, plantation records, worker testimonies, trade ledgers, maps, photographs, etc."></textarea>
+        <div class="help-text">Think about what kinds of evidence would help you answer your questions. Be specific.</div>
+    </div>
+
+    <div class="form-group">
+        <label for="lens-connections">How does your lens connect to capitalism, empire, and globalization?</label>
+        <textarea id="lens-connections" placeholder="Explain how your analytical focus helps reveal the broader themes of this project..."></textarea>
+        <div class="help-text">All lenses should connect back to the central question about capitalism, empire, and globalization—but each does so differently.</div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="button-group">
+        <button class="btn btn-success" onclick="saveWork()">💾 Save Final Work</button>
+        <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
+        <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+        <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+    </div>
+    <div id="submitMessage"></div>
+</div>
+
+<footer>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    const SUBMISSION_CUTOFF = null
+
+    let currentUser = null
+
+    const roleNames = {
+        'production': 'Production & Environment',
+        'labor': 'Labor & Coercion',
+        'empire': 'Empire, State & Corporations',
+        'circulation': 'Circulation & Consumption'
+    }
+
+    async function checkAuth() {
+        const userStr = localStorage.getItem('student_user')
+        if (userStr) {
+            currentUser = JSON.parse(userStr)
+        }
+
+        document.getElementById('commodity-name').addEventListener('change', function() {
+            const otherGroup = document.getElementById('other-commodity-group')
+            if (this.value === 'Other') {
+                otherGroup.style.display = 'block'
+            } else {
+                otherGroup.style.display = 'none'
+            }
+            updateProgress()
+        })
+
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('input', updateProgress)
+            element.addEventListener('change', updateProgress)
+        })
+
+        await loadWork()
+        updateProgress()
+    }
+
+    function selectRole(roleId) {
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.classList.remove('selected')
+        })
+
+        event.currentTarget.classList.add('selected')
+        document.getElementById('selected-role').value = roleId
+        updateProgress()
+    }
+
+    function updateProgress() {
+        const total = 7
+        let completed = 0
+
+        if (document.getElementById('student-name').value.trim().length > 0) completed++
+        if (document.getElementById('group-members').value.trim().length > 0) completed++
+
+        const selectedCommodity = document.getElementById('commodity-name').value
+        const otherCommodity = document.getElementById('commodity-other').value
+        if (selectedCommodity && (selectedCommodity !== 'Other' || otherCommodity.trim().length > 0)) completed++
+
+        if (document.getElementById('selected-role').value.length > 0) completed++
+        if (document.getElementById('role-definition').value.length > 20) completed++
+        if (document.getElementById('key-questions').value.length > 20) completed++
+        if (document.getElementById('source-types').value.length > 20) completed++
+
+        const percentage = (completed / total) * 100
+        document.getElementById('progressFill').style.width = percentage + '%'
+    }
+
+    async function saveWork(silent = false) {
+        const commodityName = document.getElementById('commodity-name').value === 'Other'
+            ? document.getElementById('commodity-other').value
+            : document.getElementById('commodity-name').value
+
+        const selectedRole = document.getElementById('selected-role').value
+
+        const data = {
+            student_name: document.getElementById('student-name').value,
+            section_number: document.getElementById('section-number').value,
+            group_members: document.getElementById('group-members').value,
+            commodity_name: commodityName,
+            commodity_name_selection: document.getElementById('commodity-name').value,
+            commodity_other: document.getElementById('commodity-other').value,
+            selected_role: selectedRole,
+            role_name: roleNames[selectedRole] || '',
+            role_definition: document.getElementById('role-definition').value,
+            key_questions: document.getElementById('key-questions').value,
+            source_types: document.getElementById('source-types').value,
+            lens_connections: document.getElementById('lens-connections').value
+        }
+
+        if (!currentUser) {
+            localStorage.setItem('hist107_role_selection', JSON.stringify(data))
+            if (!silent) {
+                showMessage('✅ Progress saved locally in this browser.', 'success')
+            }
+            return
+        }
+
+        const { error } = await supabaseClient
+            .from('hist107_role_selection')
+            .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
+
+        if (!silent) {
+            if (error) {
+                showMessage('Error saving: ' + error.message, 'error')
+            } else {
+                showMessage('✅ Progress saved successfully!', 'success')
+            }
+        }
+    }
+
+    async function loadWork() {
+        if (!currentUser) {
+            const saved = localStorage.getItem('hist107_role_selection')
+            if (!saved) return
+            const data = JSON.parse(saved)
+
+            document.getElementById('student-name').value = data.student_name || ''
+            document.getElementById('section-number').value = data.section_number || ''
+            document.getElementById('group-members').value = data.group_members || ''
+            document.getElementById('commodity-name').value = data.commodity_name_selection || ''
+            document.getElementById('commodity-other').value = data.commodity_other || ''
+            document.getElementById('selected-role').value = data.selected_role || ''
+            document.getElementById('role-definition').value = data.role_definition || ''
+            document.getElementById('key-questions').value = data.key_questions || ''
+            document.getElementById('source-types').value = data.source_types || ''
+            document.getElementById('lens-connections').value = data.lens_connections || ''
+
+            if (data.commodity_name_selection === 'Other') {
+                document.getElementById('other-commodity-group').style.display = 'block'
+            }
+
+            if (data.selected_role) {
+                document.querySelectorAll('.role-card').forEach(card => {
+                    if (card.getAttribute('onclick').includes(data.selected_role)) {
+                        card.classList.add('selected')
+                    }
+                })
+            }
+            return
+        }
+
+        const { data, error } = await supabaseClient
+            .from('hist107_role_selection')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single()
+
+        if (error || !data) return
+
+        document.getElementById('student-name').value = data.student_name || ''
+        document.getElementById('section-number').value = data.section_number || ''
+        document.getElementById('group-members').value = data.group_members || ''
+        document.getElementById('commodity-name').value = data.commodity_name_selection || ''
+        document.getElementById('commodity-other').value = data.commodity_other || ''
+        document.getElementById('selected-role').value = data.selected_role || ''
+        document.getElementById('role-definition').value = data.role_definition || ''
+        document.getElementById('key-questions').value = data.key_questions || ''
+        document.getElementById('source-types').value = data.source_types || ''
+        document.getElementById('lens-connections').value = data.lens_connections || ''
+
+        if (data.commodity_name_selection === 'Other') {
+            document.getElementById('other-commodity-group').style.display = 'block'
+        }
+
+        if (data.selected_role) {
+            document.querySelectorAll('.role-card').forEach(card => {
+                if (card.getAttribute('onclick').includes(data.selected_role)) {
+                    card.classList.add('selected')
+                }
+            })
+        }
+    }
+
+    function exportWork() {
+        const commodityName = document.getElementById('commodity-name').value === 'Other'
+            ? document.getElementById('commodity-other').value
+            : document.getElementById('commodity-name').value
+        const selectedRole = document.getElementById('selected-role').value
+        const roleName = roleNames[selectedRole] || '[Not selected]'
+
+        const { jsPDF } = window.jspdf
+        const doc = new jsPDF()
+
+        const lineHeight = 7
+        const pageWidth = 190
+        const pageHeight = 280
+        let y = 20
+
+        function checkPageOverflow(neededSpace) {
+            if (y + neededSpace > pageHeight) {
+                doc.addPage()
+                y = 20
+            }
+        }
+
+        function addWrappedText(text, x, maxWidth) {
+            const lines = doc.splitTextToSize(text, maxWidth)
+            lines.forEach((line) => {
+                if (y + lineHeight > pageHeight) {
+                    doc.addPage()
+                    y = 20
+                }
+                doc.text(line, x, y)
+                y += lineHeight
+            })
+        }
+
+        doc.setFontSize(16)
+        doc.setFont(undefined, 'bold')
+        doc.text('HIST 107 Commodity & Role Selection', 105, y, { align: 'center' })
+        y += 10
+
+        doc.setFontSize(12)
+        doc.setFont(undefined, 'normal')
+        doc.text('Group Project: Shared Commodity, Divided Lenses', 105, y, { align: 'center' })
+        y += 15
+
+        doc.setFontSize(10)
+        const studentName = document.getElementById('student-name').value
+        const sectionNumber = document.getElementById('section-number').value
+        if (studentName) {
+            doc.text(`Student: ${studentName}`, 20, y)
+            y += 8
+        }
+        if (sectionNumber) {
+            doc.text(`Section: ${sectionNumber}`, 20, y)
+            y += 8
+        }
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
+        y += 12
+
+        checkPageOverflow(15)
+        doc.setFontSize(12)
+        doc.setFont(undefined, 'bold')
+        doc.text('Group Information', 20, y)
+        y += 8
+
+        doc.setFontSize(10)
+        doc.setFont(undefined, 'normal')
+        doc.text(`Commodity: ${commodityName || '[Not selected]'}`, 20, y)
+        y += 8
+
+        doc.text('Group Members:', 20, y)
+        y += 7
+        addWrappedText(
+            document.getElementById('group-members').value || '[Not listed]',
+            25,
+            pageWidth - 25
+        )
+        y += 10
+
+        checkPageOverflow(20)
+        doc.setFontSize(12)
+        doc.setFont(undefined, 'bold')
+        doc.text('My Analytical Lens', 20, y)
+        y += 8
+
+        doc.setFontSize(10)
+        doc.setFont(undefined, 'normal')
+        doc.text(`Selected Role: ${roleName}`, 20, y)
+        y += 10
+
+        checkPageOverflow(15)
+        doc.text('What this lens means to me:', 20, y)
+        y += 7
+        addWrappedText(
+            document.getElementById('role-definition').value || '[Not answered]',
+            25,
+            pageWidth - 25
+        )
+        y += 8
+
+        checkPageOverflow(15)
+        doc.text('Key Historical Questions:', 20, y)
+        y += 7
+        addWrappedText(
+            document.getElementById('key-questions').value || '[Not answered]',
+            25,
+            pageWidth - 25
+        )
+        y += 8
+
+        checkPageOverflow(15)
+        doc.text('Valuable Source Types:', 20, y)
+        y += 7
+        addWrappedText(
+            document.getElementById('source-types').value || '[Not answered]',
+            25,
+            pageWidth - 25
+        )
+        y += 8
+
+        checkPageOverflow(15)
+        doc.text('Connections to Capitalism, Empire & Globalization:', 20, y)
+        y += 7
+        addWrappedText(
+            document.getElementById('lens-connections').value || '[Not answered]',
+            25,
+            pageWidth - 25
+        )
+
+        doc.save(`HIST107_Role_Selection_${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`)
+
+        showMessage('PDF exported successfully!', 'success')
+    }
+
+    function exportText() {
+        const commodityName = document.getElementById('commodity-name').value === 'Other'
+            ? document.getElementById('commodity-other').value
+            : document.getElementById('commodity-name').value
+        const selectedRole = document.getElementById('selected-role').value
+        const roleName = roleNames[selectedRole] || '[Not selected]'
+
+        let text = 'HIST 107 Commodity & Role Selection\n'
+        text += 'Group Project: Shared Commodity, Divided Lenses\n'
+        text += '='.repeat(60) + '\n\n'
+        text += `Student Name: ${document.getElementById('student-name').value}\n`
+        text += `Section Number: ${document.getElementById('section-number').value}\n`
+        text += `Date: ${new Date().toLocaleDateString()}\n\n`
+
+        text += 'GROUP INFORMATION\n'
+        text += '-'.repeat(40) + '\n'
+        text += `Commodity: ${commodityName || '[Not selected]'}\n\n`
+        text += 'Group Members:\n'
+        text += (document.getElementById('group-members').value || '[Not listed]') + '\n\n'
+
+        text += 'MY ANALYTICAL LENS\n'
+        text += '-'.repeat(40) + '\n'
+        text += `Selected Role: ${roleName}\n\n`
+        text += 'What this lens means to me:\n'
+        text += (document.getElementById('role-definition').value || '[Not answered]') + '\n\n'
+        text += 'Key Historical Questions:\n'
+        text += (document.getElementById('key-questions').value || '[Not answered]') + '\n\n'
+        text += 'Valuable Source Types:\n'
+        text += (document.getElementById('source-types').value || '[Not answered]') + '\n\n'
+        text += 'Connections to Capitalism, Empire & Globalization:\n'
+        text += (document.getElementById('lens-connections').value || '[Not answered]') + '\n'
+
+        const blob = new Blob([text], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `HIST107_Role_Selection_${document.getElementById('student-name').value.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        showMessage('Text file exported successfully!', 'success')
+    }
+
+    function showMessage(message, type) {
+        const msgDiv = document.getElementById('status-message')
+        msgDiv.innerHTML = type === 'success'
+            ? `<div class="alert alert-success">${message}</div>`
+            : `<div class="alert alert-error">${message}</div>`
+    }
+
+    async function submitToSupabase() {
+        if (SUBMISSION_CUTOFF) {
+            const cutoffDate = new Date(SUBMISSION_CUTOFF)
+            const now = new Date()
+            if (now > cutoffDate) {
+                alert('The submission deadline has passed. Please contact your professor if you need an extension.')
+                return
+            }
+        }
+
+        const studentName = document.getElementById('student-name').value.trim()
+        const sectionNumber = document.getElementById('section-number').value.trim()
+        const selectedRole = document.getElementById('selected-role').value
+
+        if (!studentName) {
+            alert('Please enter your name before submitting.')
+            document.getElementById('student-name').focus()
+            return
+        }
+
+        if (!sectionNumber) {
+            alert('Please enter your section number before submitting.')
+            document.getElementById('section-number').focus()
+            return
+        }
+
+        if (!selectedRole) {
+            alert('Please select an analytical lens/role before submitting.')
+            return
+        }
+
+        const submitBtn = document.getElementById('submitBtn')
+        const messageDiv = document.getElementById('submitMessage')
+
+        submitBtn.disabled = true
+        submitBtn.textContent = '⏳ Submitting...'
+        messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>'
+
+        try {
+            const pdfBlob = await generatePDFBlob()
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+            const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
+            const commodityName = document.getElementById('commodity-name').value === 'Other'
+                ? document.getElementById('commodity-other').value
+                : document.getElementById('commodity-name').value
+            const sanitizedCommodity = commodityName.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
+            const fileName = `hist107-role-selection/${sectionNumber}/${sanitizedName}_${sanitizedCommodity}_${roleNames[selectedRole].replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.pdf`
+
+            const { data: uploadData, error: uploadError } = await supabaseClient
+                .storage
+                .from('student-submissions')
+                .upload(fileName, pdfBlob, {
+                    contentType: 'application/pdf',
+                    upsert: false
+                })
+
+            if (uploadError) {
+                throw new Error(`Upload failed: ${uploadError.message}`)
+            }
+
+            const { data: urlData } = supabaseClient
+                .storage
+                .from('student-submissions')
+                .getPublicUrl(fileName)
+
+            const formData = {
+                group_members: document.getElementById('group-members').value,
+                commodity_name: commodityName,
+                selected_role: selectedRole,
+                role_name: roleNames[selectedRole],
+                role_definition: document.getElementById('role-definition').value,
+                key_questions: document.getElementById('key-questions').value,
+                source_types: document.getElementById('source-types').value,
+                lens_connections: document.getElementById('lens-connections').value
+            }
+
+            const { error: dbError } = await supabaseClient
+                .from('worksheet_submissions')
+                .insert({
+                    student_name: studentName,
+                    section_number: sectionNumber,
+                    worksheet_type: 'hist107-role-selection',
+                    file_path: fileName,
+                    file_url: urlData.publicUrl,
+                    form_data: formData,
+                    submitted_at: new Date().toISOString()
+                })
+
+            if (dbError) {
+                console.warn('Metadata save warning:', dbError.message)
+            }
+
+            messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your role selection has been sent to Prof. Hauselmann.</div>'
+            submitBtn.textContent = '✓ Submitted'
+
+        } catch (error) {
+            console.error('Submission error:', error)
+            messageDiv.innerHTML = `<div class="alert alert-error">❌ Submission failed: ${error.message}. Please try again or export the PDF and email it to your professor.</div>`
+            submitBtn.disabled = false
+            submitBtn.textContent = '📤 Submit to Professor'
+        }
+    }
+
+    function generatePDFBlob() {
+        return new Promise((resolve) => {
+            const commodityName = document.getElementById('commodity-name').value === 'Other'
+                ? document.getElementById('commodity-other').value
+                : document.getElementById('commodity-name').value
+            const selectedRole = document.getElementById('selected-role').value
+            const roleName = roleNames[selectedRole] || '[Not selected]'
+
+            const { jsPDF } = window.jspdf
+            const doc = new jsPDF()
+
+            const lineHeight = 7
+            const pageWidth = 190
+            const pageHeight = 280
+            let y = 20
+
+            function checkPageOverflow(neededSpace) {
+                if (y + neededSpace > pageHeight) {
+                    doc.addPage()
+                    y = 20
+                }
+            }
+
+            function addWrappedText(text, x, maxWidth) {
+                const lines = doc.splitTextToSize(text, maxWidth)
+                lines.forEach((line) => {
+                    if (y + lineHeight > pageHeight) {
+                        doc.addPage()
+                        y = 20
+                    }
+                    doc.text(line, x, y)
+                    y += lineHeight
+                })
+            }
+
+            doc.setFontSize(16)
+            doc.setFont(undefined, 'bold')
+            doc.text('HIST 107 Commodity & Role Selection', 105, y, { align: 'center' })
+            y += 10
+
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'normal')
+            doc.text('Group Project: Shared Commodity, Divided Lenses', 105, y, { align: 'center' })
+            y += 15
+
+            doc.setFontSize(10)
+            const studentName = document.getElementById('student-name').value
+            const sectionNumber = document.getElementById('section-number').value
+            if (studentName) {
+                doc.text(`Student: ${studentName}`, 20, y)
+                y += 8
+            }
+            if (sectionNumber) {
+                doc.text(`Section: ${sectionNumber}`, 20, y)
+                y += 8
+            }
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
+            y += 12
+
+            checkPageOverflow(15)
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'bold')
+            doc.text('Group Information', 20, y)
+            y += 8
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+            doc.text(`Commodity: ${commodityName || '[Not selected]'}`, 20, y)
+            y += 8
+
+            doc.text('Group Members:', 20, y)
+            y += 7
+            addWrappedText(
+                document.getElementById('group-members').value || '[Not listed]',
+                25,
+                pageWidth - 25
+            )
+            y += 10
+
+            checkPageOverflow(20)
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'bold')
+            doc.text('My Analytical Lens', 20, y)
+            y += 8
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+            doc.text(`Selected Role: ${roleName}`, 20, y)
+            y += 10
+
+            checkPageOverflow(15)
+            doc.text('What this lens means to me:', 20, y)
+            y += 7
+            addWrappedText(
+                document.getElementById('role-definition').value || '[Not answered]',
+                25,
+                pageWidth - 25
+            )
+            y += 8
+
+            checkPageOverflow(15)
+            doc.text('Key Historical Questions:', 20, y)
+            y += 7
+            addWrappedText(
+                document.getElementById('key-questions').value || '[Not answered]',
+                25,
+                pageWidth - 25
+            )
+            y += 8
+
+            checkPageOverflow(15)
+            doc.text('Valuable Source Types:', 20, y)
+            y += 7
+            addWrappedText(
+                document.getElementById('source-types').value || '[Not answered]',
+                25,
+                pageWidth - 25
+            )
+            y += 8
+
+            checkPageOverflow(15)
+            doc.text('Connections to Capitalism, Empire & Globalization:', 20, y)
+            y += 7
+            addWrappedText(
+                document.getElementById('lens-connections').value || '[Not answered]',
+                25,
+                pageWidth - 25
+            )
+
+            resolve(doc.output('blob'))
+        })
+    }
+
+    checkAuth()
+</script>
+```
+
+</body>
+</html>
