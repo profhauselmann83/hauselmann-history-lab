@@ -428,8 +428,12 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
             </form>
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="#" onclick="showMagicLinkLogin()" style="color: #3498db; text-decoration: none;">Or login with magic link</a>
+            <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
+                <p style="color: #7f8c8d; margin-bottom: 10px; font-size: 0.9em;">Don't have a password?</p>
+                <button type="button" class="btn btn-success" onclick="showMagicLinkLogin()" style="width: auto; padding: 10px 20px;">
+                    Send Magic Link to Email
+                </button>
+                <p style="color: #95a5a6; margin-top: 10px; font-size: 0.85em;">We'll email you a secure login link</p>
             </div>
         </div>
     </div>
@@ -637,8 +641,15 @@
         }
 
         function showMagicLinkLogin() {
-            const email = prompt('Enter your email address for a magic link:')
-            if (!email) return
+            const email = document.getElementById('email').value
+
+            if (!email) {
+                showMessage('Please enter your email address above first, then click "Send Magic Link to Email".', 'info', 'login-message')
+                document.getElementById('email').focus()
+                return
+            }
+
+            showMessage('Sending magic link...', 'info', 'login-message')
 
             supabaseClient.auth.signInWithOtp({
                 email: email,
@@ -649,7 +660,7 @@
                 if (error) {
                     showMessage('Error: ' + error.message, 'error', 'login-message')
                 } else {
-                    showMessage('Magic link sent! Check your email.', 'success', 'login-message')
+                    showMessage('Magic link sent to ' + email + '! Check your email inbox (and spam folder) for a login link. Click the link to access the dashboard.', 'success', 'login-message')
                 }
             })
         }
