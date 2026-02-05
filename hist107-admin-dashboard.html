@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>HIST 107 Admin Dashboard | Prof. Hauselmann</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f5f5f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .login-container {
+            max-width: 450px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .login-container h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Open Sans', sans-serif;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #229954;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #27ae60;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .top-bar .user-info {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .top-bar .btn {
+            width: auto;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-card.success {
+            border-left-color: #27ae60;
+        }
+
+        .stat-card.warning {
+            border-left-color: #f39c12;
+        }
+
+        .stat-card.danger {
+            border-left-color: #e74c3c;
+        }
+
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #ecf0f1;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #7f8c8d;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #ecf0f1;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge.complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.incomplete {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge.not-started {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .source-card {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+            border-radius: 3px;
+        }
+
+        .source-card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .source-card p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+
+        .source-card .meta {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        .filters {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filters label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-right: 8px;
+        }
+
+        .filters select {
+            padding: 8px 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .download-btn {
+            background: #16a085;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        .download-btn:hover {
+            background: #138d75;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-container">
+            <h2>🔐 Admin Login</h2>
+            <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">HIST 107 Group Project Dashboard</p>
+            <div id="login-message"></div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" required placeholder="hauselmannh@yosemite.edu">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="#" onclick="showMagicLinkLogin()" style="color: #3498db; text-decoration: none;">Or login with magic link</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (hidden until login) -->
+    <div id="dashboard" style="display: none;">
+        <div class="container">
+            <header>
+                <h1>📊 HIST 107 Admin Dashboard</h1>
+                <p>Group Project: Shared Commodity, Divided Lenses</p>
+            </header>
+
+            <div class="top-bar">
+                <div class="user-info">
+                    👤 Logged in as: <span id="user-email"></span>
+                </div>
+                <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            </div>
+
+            <!-- Statistics Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Students</h3>
+                    <div class="number" id="stat-students">--</div>
+                </div>
+                <div class="stat-card success">
+                    <h3>Role Selections</h3>
+                    <div class="number" id="stat-roles">--</div>
+                </div>
+                <div class="stat-card warning">
+                    <h3>Mini-Archives</h3>
+                    <div class="number" id="stat-archives">--</div>
+                </div>
+                <div class="stat-card danger">
+                    <h3>Class Archive Sources</h3>
+                    <div class="number" id="stat-sources">--</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('overview')">📋 Overview</div>
+                <div class="tab" onclick="switchTab('roles')">🎯 Role Selections</div>
+                <div class="tab" onclick="switchTab('archives')">📚 Mini-Archives</div>
+                <div class="tab" onclick="switchTab('class-archive')">🌍 Class Archive</div>
+                <div class="tab" onclick="switchTab('submissions')">📤 All Submissions</div>
+            </div>
+
+            <!-- Tab Content: Overview -->
+            <div id="tab-overview" class="tab-content active">
+                <div class="card">
+                    <h2>Student Progress Overview</h2>
+                    <div class="filters">
+                        <label>Section:</label>
+                        <select id="filter-section-overview" onchange="loadOverview()">
+                            <option value="">All Sections</option>
+                        </select>
+                        <label>Commodity:</label>
+                        <select id="filter-commodity-overview" onchange="loadOverview()">
+                            <option value="">All Commodities</option>
+                        </select>
+                    </div>
+                    <div id="overview-content" class="loading">Loading student progress...</div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Role Selections -->
+            <div id="tab-roles" class="tab-content">
+                <div class="card">
+                    <h2>Role Selections by Student</h2>
+                    <div class="filters">
+                        <label>Section:</label>
+                        <select id="filter-section-roles" onchange="loadRoles()">
+                            <option value="">All Sections</option>
+                        </select>
+                    </div>
+                    <div id="roles-content" class="loading">Loading role selections...</div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Mini-Archives -->
+            <div id="tab-archives" class="tab-content">
+                <div class="card">
+                    <h2>Student Mini-Archives</h2>
+                    <div class="filters">
+                        <label>Section:</label>
+                        <select id="filter-section-archives" onchange="loadArchives()">
+                            <option value="">All Sections</option>
+                        </select>
+                        <label>Commodity:</label>
+                        <select id="filter-commodity-archives" onchange="loadArchives()">
+                            <option value="">All Commodities</option>
+                        </select>
+                    </div>
+                    <div id="archives-content" class="loading">Loading mini-archives...</div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Class Archive -->
+            <div id="tab-class-archive" class="tab-content">
+                <div class="card">
+                    <h2>Class-Wide Source Archive</h2>
+                    <div class="filters">
+                        <label>Commodity:</label>
+                        <select id="filter-commodity-class" onchange="loadClassArchive()">
+                            <option value="">All Commodities</option>
+                        </select>
+                        <label>Analytical Lens:</label>
+                        <select id="filter-lens-class" onchange="loadClassArchive()">
+                            <option value="">All Lenses</option>
+                            <option value="Production & Environment">Production & Environment</option>
+                            <option value="Labor & Coercion">Labor & Coercion</option>
+                            <option value="Empire, State & Corporations">Empire, State & Corporations</option>
+                            <option value="Circulation & Consumption">Circulation & Consumption</option>
+                        </select>
+                    </div>
+                    <div id="class-archive-content" class="loading">Loading class archive...</div>
+                </div>
+            </div>
+
+            <!-- Tab Content: All Submissions -->
+            <div id="tab-submissions" class="tab-content">
+                <div class="card">
+                    <h2>All Worksheet Submissions</h2>
+                    <div class="filters">
+                        <label>Type:</label>
+                        <select id="filter-type-submissions" onchange="loadSubmissions()">
+                            <option value="">All Types</option>
+                            <option value="hist107-role-selection">Role Selection</option>
+                            <option value="hist107-mini-archive">Mini-Archive</option>
+                        </select>
+                        <label>Section:</label>
+                        <select id="filter-section-submissions" onchange="loadSubmissions()">
+                            <option value="">All Sections</option>
+                        </select>
+                    </div>
+                    <div id="submissions-content" class="loading">Loading submissions...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        let currentUser = null
+
+        // Check authentication on page load
+        async function checkAuth() {
+            const { data: { user } } = await supabaseClient.auth.getUser()
+            
+            if (user) {
+                // Check if user is admin
+                const { data: adminData } = await supabaseClient
+                    .from('admin_users')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single()
+
+                if (adminData && adminData.is_active) {
+                    currentUser = user
+                    showDashboard()
+                    loadAllData()
+                } else {
+                    showMessage('Access denied. You are not authorized to view this dashboard.', 'error', 'login-message')
+                    await supabaseClient.auth.signOut()
+                }
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault()
+            
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            })
+
+            if (error) {
+                showMessage('Login failed: ' + error.message, 'error', 'login-message')
+                return
+            }
+
+            // Check if user is admin
+            const { data: adminData } = await supabaseClient
+                .from('admin_users')
+                .select('*')
+                .eq('user_id', data.user.id)
+                .single()
+
+            if (!adminData || !adminData.is_active) {
+                showMessage('Access denied. You are not authorized to view this dashboard.', 'error', 'login-message')
+                await supabaseClient.auth.signOut()
+                return
+            }
+
+            currentUser = data.user
+            showDashboard()
+            loadAllData()
+        }
+
+        function showMagicLinkLogin() {
+            const email = prompt('Enter your email address for a magic link:')
+            if (!email) return
+
+            supabaseClient.auth.signInWithOtp({
+                email: email,
+                options: {
+                    emailRedirectTo: window.location.href
+                }
+            }).then(({ error }) => {
+                if (error) {
+                    showMessage('Error: ' + error.message, 'error', 'login-message')
+                } else {
+                    showMessage('Magic link sent! Check your email.', 'success', 'login-message')
+                }
+            })
+        }
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut()
+            currentUser = null
+            document.getElementById('login-screen').style.display = 'block'
+            document.getElementById('dashboard').style.display = 'none'
+        }
+
+        function showDashboard() {
+            document.getElementById('login-screen').style.display = 'none'
+            document.getElementById('dashboard').style.display = 'block'
+            document.getElementById('user-email').textContent = currentUser.email
+        }
+
+        function showMessage(message, type, elementId) {
+            const div = document.getElementById(elementId)
+            div.innerHTML = `<div class="alert alert-${type}">${message}</div>`
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
+            event.target.classList.add('active')
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
+            document.getElementById('tab-' + tabName).classList.add('active')
+
+            // Load data for the tab if needed
+            switch(tabName) {
+                case 'overview':
+                    loadOverview()
+                    break
+                case 'roles':
+                    loadRoles()
+                    break
+                case 'archives':
+                    loadArchives()
+                    break
+                case 'class-archive':
+                    loadClassArchive()
+                    break
+                case 'submissions':
+                    loadSubmissions()
+                    break
+            }
+        }
+
+        async function loadAllData() {
+            await loadStats()
+            await populateFilters()
+            await loadOverview()
+        }
+
+        async function loadStats() {
+            try {
+                // Total unique students from role selections
+                const { data: roles } = await supabaseClient
+                    .from('hist107_role_selection')
+                    .select('student_name')
+
+                const uniqueStudents = new Set(roles?.map(r => r.student_name) || [])
+                document.getElementById('stat-students').textContent = uniqueStudents.size
+
+                // Role selections count
+                document.getElementById('stat-roles').textContent = roles?.length || 0
+
+                // Mini-archives count
+                const { data: archives } = await supabaseClient
+                    .from('hist107_mini_archive')
+                    .select('id')
+
+                document.getElementById('stat-archives').textContent = archives?.length || 0
+
+                // Class archive sources count
+                const { data: sources } = await supabaseClient
+                    .from('hist107_class_archive')
+                    .select('id')
+
+                document.getElementById('stat-sources').textContent = sources?.length || 0
+
+            } catch (error) {
+                console.error('Error loading stats:', error)
+            }
+        }
+
+        async function populateFilters() {
+            try {
+                // Get unique sections
+                const { data: roles } = await supabaseClient
+                    .from('hist107_role_selection')
+                    .select('section_number')
+
+                const sections = [...new Set(roles?.map(r => r.section_number).filter(Boolean))]
+                sections.sort()
+
+                const sectionSelects = [
+                    'filter-section-overview',
+                    'filter-section-roles',
+                    'filter-section-archives',
+                    'filter-section-submissions'
+                ]
+
+                sectionSelects.forEach(selectId => {
+                    const select = document.getElementById(selectId)
+                    sections.forEach(section => {
+                        const option = document.createElement('option')
+                        option.value = section
+                        option.textContent = section
+                        select.appendChild(option)
+                    })
+                })
+
+                // Get unique commodities
+                const commodities = [...new Set(roles?.map(r => r.commodity_name).filter(Boolean))]
+                commodities.sort()
+
+                const commoditySelects = [
+                    'filter-commodity-overview',
+                    'filter-commodity-archives',
+                    'filter-commodity-class'
+                ]
+
+                commoditySelects.forEach(selectId => {
+                    const select = document.getElementById(selectId)
+                    commodities.forEach(commodity => {
+                        const option = document.createElement('option')
+                        option.value = commodity
+                        option.textContent = commodity
+                        select.appendChild(option)
+                    })
+                })
+
+            } catch (error) {
+                console.error('Error populating filters:', error)
+            }
+        }
+
+        async function loadOverview() {
+            const content = document.getElementById('overview-content')
+            content.innerHTML = '<div class="loading">Loading...</div>'
+
+            try {
+                const section = document.getElementById('filter-section-overview').value
+                const commodity = document.getElementById('filter-commodity-overview').value
+
+                let query = supabaseClient
+                    .from('hist107_role_selection')
+                    .select('*')
+                    .order('student_name')
+
+                if (section) query = query.eq('section_number', section)
+                if (commodity) query = query.eq('commodity_name', commodity)
+
+                const { data: roles, error } = await query
+
+                if (error) throw error
+
+                if (!roles || roles.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><h3>No students found</h3><p>No role selections match your filters.</p></div>'
+                    return
+                }
+
+                // Get mini-archive data for these students
+                const { data: archives } = await supabaseClient
+                    .from('hist107_mini_archive')
+                    .select('student_name, sources')
+
+                const archiveMap = new Map()
+                archives?.forEach(a => {
+                    archiveMap.set(a.student_name, a.sources?.length || 0)
+                })
+
+                let html = '<table><thead><tr><th>Student Name</th><th>Section</th><th>Commodity</th><th>Lens</th><th>Sources Added</th><th>Status</th></tr></thead><tbody>'
+
+                roles.forEach(role => {
+                    const sourcesCount = archiveMap.get(role.student_name) || 0
+                    let status = 'not-started'
+                    let statusText = 'Not Started'
+
+                    if (sourcesCount >= 3) {
+                        status = 'complete'
+                        statusText = 'Complete'
+                    } else if (sourcesCount > 0) {
+                        status = 'incomplete'
+                        statusText = `${sourcesCount}/3 sources`
+                    }
+
+                    html += `
+                        <tr>
+                            <td>${role.student_name || 'N/A'}</td>
+                            <td>${role.section_number || 'N/A'}</td>
+                            <td>${role.commodity_name || 'N/A'}</td>
+                            <td>${role.role_name || 'N/A'}</td>
+                            <td>${sourcesCount}</td>
+                            <td><span class="badge ${status}">${statusText}</span></td>
+                        </tr>
+                    `
+                })
+
+                html += '</tbody></table>'
+                content.innerHTML = html
+
+            } catch (error) {
+                console.error('Error loading overview:', error)
+                content.innerHTML = '<div class="alert alert-error">Error loading data: ' + error.message + '</div>'
+            }
+        }
+
+        async function loadRoles() {
+            const content = document.getElementById('roles-content')
+            content.innerHTML = '<div class="loading">Loading...</div>'
+
+            try {
+                const section = document.getElementById('filter-section-roles').value
+
+                let query = supabaseClient
+                    .from('hist107_role_selection')
+                    .select('*')
+                    .order('section_number')
+                    .order('student_name')
+
+                if (section) query = query.eq('section_number', section)
+
+                const { data, error } = await query
+
+                if (error) throw error
+
+                if (!data || data.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><h3>No role selections found</h3></div>'
+                    return
+                }
+
+                let html = '<table><thead><tr><th>Student</th><th>Section</th><th>Commodity</th><th>Analytical Lens</th><th>Group Members</th><th>Date</th></tr></thead><tbody>'
+
+                data.forEach(role => {
+                    html += `
+                        <tr>
+                            <td><strong>${role.student_name}</strong></td>
+                            <td>${role.section_number}</td>
+                            <td>${role.commodity_name || 'N/A'}</td>
+                            <td>${role.role_name || 'N/A'}</td>
+                            <td>${role.group_members ? role.group_members.split('\n').join(', ') : 'N/A'}</td>
+                            <td>${new Date(role.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `
+                })
+
+                html += '</tbody></table>'
+                content.innerHTML = html
+
+            } catch (error) {
+                console.error('Error loading roles:', error)
+                content.innerHTML = '<div class="alert alert-error">Error loading data: ' + error.message + '</div>'
+            }
+        }
+
+        async function loadArchives() {
+            const content = document.getElementById('archives-content')
+            content.innerHTML = '<div class="loading">Loading...</div>'
+
+            try {
+                const section = document.getElementById('filter-section-archives').value
+                const commodity = document.getElementById('filter-commodity-archives').value
+
+                let query = supabaseClient
+                    .from('hist107_mini_archive')
+                    .select('*')
+                    .order('student_name')
+
+                if (section) query = query.eq('section_number', section)
+                if (commodity) query = query.eq('commodity_name', commodity)
+
+                const { data, error } = await query
+
+                if (error) throw error
+
+                if (!data || data.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><h3>No mini-archives found</h3></div>'
+                    return
+                }
+
+                let html = ''
+
+                data.forEach(archive => {
+                    const sources = archive.sources || []
+                    html += `
+                        <div class="card" style="background: #f8f9fa; margin-bottom: 20px;">
+                            <h3>${archive.student_name} - ${archive.commodity_name}</h3>
+                            <p><strong>Section:</strong> ${archive.section_number} | <strong>Lens:</strong> ${archive.analytical_lens}</p>
+                            <p><strong>Sources:</strong> ${sources.length}</p>
+                    `
+
+                    if (sources.length > 0) {
+                        sources.forEach((source, idx) => {
+                            html += `
+                                <div class="source-card">
+                                    <h4>Source ${idx + 1}</h4>
+                                    <p><strong>Citation:</strong> ${source.citation || 'N/A'}</p>
+                                    <p><strong>Type:</strong> ${source.source_type || 'N/A'}</p>
+                                    <p><strong>Historical Question:</strong> ${source.historical_question || 'N/A'}</p>
+                                    ${source.url ? `<p><strong>URL:</strong> <a href="${source.url}" target="_blank">${source.url}</a></p>` : ''}
+                                </div>
+                            `
+                        })
+                    } else {
+                        html += '<p style="color: #7f8c8d; font-style: italic;">No sources added yet.</p>'
+                    }
+
+                    html += '</div>'
+                })
+
+                content.innerHTML = html
+
+            } catch (error) {
+                console.error('Error loading archives:', error)
+                content.innerHTML = '<div class="alert alert-error">Error loading data: ' + error.message + '</div>'
+            }
+        }
+
+        async function loadClassArchive() {
+            const content = document.getElementById('class-archive-content')
+            content.innerHTML = '<div class="loading">Loading...</div>'
+
+            try {
+                const commodity = document.getElementById('filter-commodity-class').value
+                const lens = document.getElementById('filter-lens-class').value
+
+                let query = supabaseClient
+                    .from('hist107_class_archive')
+                    .select('*')
+                    .order('submitted_at', { ascending: false })
+
+                if (commodity) query = query.eq('commodity', commodity)
+                if (lens) query = query.eq('analytical_lens', lens)
+
+                const { data, error } = await query
+
+                if (error) throw error
+
+                if (!data || data.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><h3>No sources in class archive</h3></div>'
+                    return
+                }
+
+                // Group by commodity
+                const byCommo = {}
+                data.forEach(source => {
+                    const comm = source.commodity || 'Unspecified'
+                    if (!byCommo[comm]) byCommo[comm] = []
+                    byCommo[comm].push(source)
+                })
+
+                let html = `<div class="alert alert-info">Total sources in archive: ${data.length}</div>`
+
+                for (const [comm, sources] of Object.entries(byCommo)) {
+                    html += `<h3 style="margin-top: 30px; color: #2c3e50;">${comm} (${sources.length} sources)</h3>`
+
+                    sources.forEach((source, idx) => {
+                        html += `
+                            <div class="source-card">
+                                <h4>${source.analytical_lens} | Source ${idx + 1}</h4>
+                                <p><strong>Citation:</strong> ${source.citation}</p>
+                                <p><strong>Type:</strong> ${source.source_type || 'N/A'}</p>
+                                <p><strong>Producer:</strong> ${source.producer || 'N/A'}</p>
+                                <p><strong>What it reveals:</strong> ${source.historical_question || 'N/A'}</p>
+                                <p><strong>Limitations:</strong> ${source.limitations || 'N/A'}</p>
+                                <p><strong>Question raised:</strong> ${source.question_raised || 'N/A'}</p>
+                                ${source.url ? `<p><strong>URL:</strong> <a href="${source.url}" target="_blank">${source.url}</a></p>` : ''}
+                                <p class="meta">Submitted by ${source.student_name} (${source.section_number}) on ${new Date(source.submitted_at).toLocaleDateString()}</p>
+                            </div>
+                        `
+                    })
+                }
+
+                content.innerHTML = html
+
+            } catch (error) {
+                console.error('Error loading class archive:', error)
+                content.innerHTML = '<div class="alert alert-error">Error loading data: ' + error.message + '</div>'
+            }
+        }
+
+        async function loadSubmissions() {
+            const content = document.getElementById('submissions-content')
+            content.innerHTML = '<div class="loading">Loading...</div>'
+
+            try {
+                const type = document.getElementById('filter-type-submissions').value
+                const section = document.getElementById('filter-section-submissions').value
+
+                let query = supabaseClient
+                    .from('worksheet_submissions')
+                    .select('*')
+                    .order('submitted_at', { ascending: false })
+
+                if (type) query = query.eq('worksheet_type', type)
+                if (section) query = query.eq('section_number', section)
+
+                const { data, error } = await query
+
+                if (error) throw error
+
+                if (!data || data.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><h3>No submissions found</h3></div>'
+                    return
+                }
+
+                let html = '<table><thead><tr><th>Student</th><th>Section</th><th>Type</th><th>Submitted</th><th>Download</th></tr></thead><tbody>'
+
+                data.forEach(sub => {
+                    const typeName = sub.worksheet_type.replace('hist107-', '').replace(/-/g, ' ')
+                    html += `
+                        <tr>
+                            <td><strong>${sub.student_name}</strong></td>
+                            <td>${sub.section_number}</td>
+                            <td>${typeName}</td>
+                            <td>${new Date(sub.submitted_at).toLocaleString()}</td>
+                            <td><a href="${sub.file_url}" target="_blank" class="download-btn">📄 View PDF</a></td>
+                        </tr>
+                    `
+                })
+
+                html += '</tbody></table>'
+                content.innerHTML = html
+
+            } catch (error) {
+                console.error('Error loading submissions:', error)
+                content.innerHTML = '<div class="alert alert-error">Error loading data: ' + error.message + '</div>'
+            }
+        }
+
+        // Initialize on page load
+        checkAuth()
+    </script>
+</body>
+</html>
