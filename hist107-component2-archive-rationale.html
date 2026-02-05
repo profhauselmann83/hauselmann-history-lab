@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Component 2: Archive Rationale | HIST 107 Group Project</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: #34495e;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb {
+            background-color: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .progress-bar {
+            background-color: #ecf0f1;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background-color: #27ae60;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .section {
+            background-color: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .info-box strong {
+            color: #2c3e50;
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            padding: 20px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .success-box {
+            background-color: #d4edda;
+            padding: 20px;
+            border-left: 4px solid #27ae60;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .form-group select,
+        .form-group textarea,
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Open Sans', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group textarea:focus,
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .form-group textarea.long {
+            min-height: 300px;
+        }
+
+        .form-group textarea.short {
+            min-height: 120px;
+        }
+
+        .help-text {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .word-count {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .word-count.warning {
+            color: #f39c12;
+            font-weight: 600;
+        }
+
+        .word-count.good {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #229954;
+        }
+
+        .btn-secondary {
+            background-color: #34495e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2c3e50;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #27ae60;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #e74c3c;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📝 Component 2: Archive Rationale</h1>
+        <p>HIST 107 Group Project | Group Rationale + Individual Reflection</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="activities.html">Interactive Activities</a>
+        <a href="research.html">Research Tools</a>
+        <a href="archives.html">Student Archives</a>
+        <a href="blog.html">Blog</a>
+    </nav>
+
+    <div class="breadcrumb">
+        <a href="research-hist107.html">← Back to HIST 107 Research Guide</a>
+    </div>
+
+    <div class="section" style="background-color: #f0f9ff; border-left: 4px solid #3498db;">
+        <h2 style="border-bottom-color: #3498db;">Student Information</h2>
+        <div style="display: flex; gap: 20px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="student-name">Student Name:</label>
+                <input type="text" id="student-name" placeholder="First and last name">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="section-number">Section Number:</label>
+                <input type="text" id="section-number" placeholder="e.g., 107-01">
+            </div>
+        </div>
+        <div style="display: flex; gap: 20px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="commodity-name">Your Commodity:</label>
+                <input type="text" id="commodity-name" placeholder="e.g., Sugar, Coffee, Rubber">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="analytical-lens">Your Analytical Lens:</label>
+                <select id="analytical-lens">
+                    <option value="">-- Select your lens --</option>
+                    <option value="Production & Environment">Production & Environment</option>
+                    <option value="Labor & Coercion">Labor & Coercion</option>
+                    <option value="Empire, State & Corporations">Empire, State & Corporations</option>
+                    <option value="Circulation & Consumption">Circulation & Consumption</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="group-members">Group Members (list all names, including yourself):</label>
+            <textarea id="group-members" style="min-height: 80px;" placeholder="List all group members' names, one per line"></textarea>
+            <div class="help-text">Include all 3-4 members of your research group</div>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="section">
+        <h2>Instructions</h2>
+        <p>Component 2 has two parts: a <strong>shared group rationale</strong> and your <strong>individual reflection</strong>.</p>
+        
+        <div class="info-box">
+            <strong>What You'll Submit:</strong>
+            <ul style="margin: 10px 0;">
+                <li><strong>Group Archive Rationale (750-1000 words)</strong> - Written collaboratively with your group</li>
+                <li><strong>Individual Reflection (150-250 words)</strong> - Your personal perspective on your lens</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Collaboration Note:</strong> The group rationale should be written together. Use this worksheet to draft your portion, then combine with your group members' work. You can also use this to write the entire rationale together if one person is typing.
+        </div>
+    </div>
+
+    <div id="status-message"></div>
+
+    <!-- PART 1: GROUP ARCHIVE RATIONALE -->
+    <div class="section">
+        <h2>PART 1: Group Archive Rationale (750-1000 words)</h2>
+
+        <div class="info-box">
+            <strong>This section should explain:</strong>
+            <ul style="margin: 10px 0;">
+                <li>Why your group chose these specific sources</li>
+                <li>Major themes and patterns across the archive</li>
+                <li>Questions of power, perspective, and missing voices</li>
+                <li>Connections to capitalism, empire, and labor</li>
+                <li>How your commodity compares to cotton (using Beckert)</li>
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <label for="archive-overview">Why did your group choose these sources? What do they reveal about your commodity?</label>
+            <textarea id="archive-overview" class="long" placeholder="Explain the selection criteria and what these sources collectively reveal about the commodity's transformation into a global good..."></textarea>
+            <div class="word-count" id="overview-count">0 words</div>
+        </div>
+
+        <div class="form-group">
+            <label for="major-themes">What major themes and patterns emerge across your archive?</label>
+            <textarea id="major-themes" placeholder="Identify recurring patterns, connections between different lenses, and overarching themes..."></textarea>
+            <div class="word-count" id="themes-count">0 words</div>
+        </div>
+
+        <div class="form-group">
+            <label for="power-perspective">Whose perspectives are present in your sources? Whose voices are missing or marginalized?</label>
+            <textarea id="power-perspective" placeholder="Discuss issues of power, representation, and silences in the archive. Who gets to tell this story?"></textarea>
+            <div class="word-count" id="power-count">0 words</div>
+            <div class="help-text">Consider: colonizers vs. colonized, owners vs. workers, men vs. women, etc.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="capitalism-connections">How do your sources illuminate capitalism, empire, and globalization?</label>
+            <textarea id="capitalism-connections" placeholder="Connect your archive to the central themes of the course..."></textarea>
+            <div class="word-count" id="capitalism-count">0 words</div>
+        </div>
+
+        <div class="form-group">
+            <label for="cotton-comparison">How does your commodity compare to cotton in Beckert's <em>Empire of Cotton</em>?</label>
+            <textarea id="cotton-comparison" placeholder="Draw specific comparisons to Beckert's arguments about capitalism, coercion, and global trade..."></textarea>
+            <div class="word-count" id="cotton-count">0 words</div>
+            <div class="help-text">Reference specific concepts from Beckert: war capitalism, state power, labor systems, etc.</div>
+        </div>
+
+        <div class="success-box">
+            <strong>Total Group Rationale Word Count:</strong> <span id="total-group-words">0</span> words
+            <div id="group-word-status" style="margin-top: 5px; font-weight: 600;"></div>
+        </div>
+    </div>
+
+    <!-- PART 2: INDIVIDUAL REFLECTION -->
+    <div class="section">
+        <h2>PART 2: Individual Reflection Paragraph (150-250 words)</h2>
+
+        <div class="info-box">
+            <strong>Your individual reflection should address:</strong>
+            <ul style="margin: 10px 0;">
+                <li>How your specific lens shaped the archive</li>
+                <li>What your sources reveal that other lenses do not</li>
+                <li>What limits or silences remain from your perspective</li>
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <label for="lens-contribution">How did your analytical lens shape what you contributed to the archive?</label>
+            <textarea id="lens-contribution" class="short" placeholder="Reflect on how your specific focus (Production & Environment, Labor & Coercion, etc.) influenced your source selection..."></textarea>
+            <div class="word-count" id="lens-count">0 words</div>
+        </div>
+
+        <div class="form-group">
+            <label for="unique-insights">What do your sources reveal that the other lenses don't capture?</label>
+            <textarea id="unique-insights" class="short" placeholder="What unique insights does your lens provide? What would be missing without your sources?"></textarea>
+            <div class="word-count" id="insights-count">0 words</div>
+        </div>
+
+        <div class="form-group">
+            <label for="limits-silences">What limits or silences remain even within your lens?</label>
+            <textarea id="limits-silences" class="short" placeholder="What questions remain unanswered? What perspectives are still missing from your particular angle?"></textarea>
+            <div class="word-count" id="limits-count">0 words</div>
+        </div>
+
+        <div class="success-box">
+            <strong>Total Individual Reflection Word Count:</strong> <span id="total-individual-words">0</span> words
+            <div id="individual-word-status" style="margin-top: 5px; font-weight: 600;"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="button-group">
+            <button class="btn btn-success" onclick="saveWork()">💾 Save All Work</button>
+            <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
+            <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+            <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+        </div>
+        <div id="submitMessage"></div>
+    </div>
+
+    <footer>
+        <p>Prof. Hauselmann | profhauselmann.org</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        const SUBMISSION_CUTOFF = null
+
+        let currentUser = null
+
+        // Text areas for word counting
+        const groupFields = [
+            'archive-overview',
+            'major-themes',
+            'power-perspective',
+            'capitalism-connections',
+            'cotton-comparison'
+        ]
+
+        const individualFields = [
+            'lens-contribution',
+            'unique-insights',
+            'limits-silences'
+        ]
+
+        async function checkAuth() {
+            const userStr = localStorage.getItem('student_user')
+            if (userStr) {
+                currentUser = JSON.parse(userStr)
+            }
+
+            // Add word count listeners
+            groupFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId)
+                field.addEventListener('input', () => {
+                    updateWordCount(fieldId)
+                    updateProgress()
+                })
+            })
+
+            individualFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId)
+                field.addEventListener('input', () => {
+                    updateWordCount(fieldId)
+                    updateProgress()
+                })
+            })
+
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('input', updateProgress)
+                element.addEventListener('change', updateProgress)
+            })
+
+            await loadWork()
+            updateAllWordCounts()
+            updateProgress()
+        }
+
+        function countWords(text) {
+            return text.trim().split(/\s+/).filter(word => word.length > 0).length
+        }
+
+        function updateWordCount(fieldId) {
+            const field = document.getElementById(fieldId)
+            const text = field.value
+            const words = countWords(text)
+            const countElement = document.getElementById(fieldId.replace(/-/g, '-').replace(/[a-z]+$/, 'count'))
+            
+            if (countElement) {
+                countElement.textContent = words + ' words'
+            }
+
+            updateTotalCounts()
+        }
+
+        function updateAllWordCounts() {
+            groupFields.forEach(updateWordCount)
+            individualFields.forEach(updateWordCount)
+            updateTotalCounts()
+        }
+
+        function updateTotalCounts() {
+            // Group total
+            let groupTotal = 0
+            groupFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId)
+                groupTotal += countWords(field.value)
+            })
+
+            document.getElementById('total-group-words').textContent = groupTotal
+            
+            const groupStatus = document.getElementById('group-word-status')
+            if (groupTotal < 750) {
+                groupStatus.textContent = `Need ${750 - groupTotal} more words to reach minimum`
+                groupStatus.style.color = '#f39c12'
+            } else if (groupTotal > 1000) {
+                groupStatus.textContent = `Over limit by ${groupTotal - 1000} words`
+                groupStatus.style.color = '#e74c3c'
+            } else {
+                groupStatus.textContent = '✓ Within target range (750-1000 words)'
+                groupStatus.style.color = '#27ae60'
+            }
+
+            // Individual total
+            let individualTotal = 0
+            individualFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId)
+                individualTotal += countWords(field.value)
+            })
+
+            document.getElementById('total-individual-words').textContent = individualTotal
+            
+            const individualStatus = document.getElementById('individual-word-status')
+            if (individualTotal < 150) {
+                individualStatus.textContent = `Need ${150 - individualTotal} more words to reach minimum`
+                individualStatus.style.color = '#f39c12'
+            } else if (individualTotal > 250) {
+                individualStatus.textContent = `Over limit by ${individualTotal - 250} words`
+                individualStatus.style.color = '#e74c3c'
+            } else {
+                individualStatus.textContent = '✓ Within target range (150-250 words)'
+                individualStatus.style.color = '#27ae60'
+            }
+        }
+
+        function updateProgress() {
+            const total = 10
+            let completed = 0
+
+            if (document.getElementById('student-name').value.trim().length > 0) completed++
+            if (document.getElementById('section-number').value.trim().length > 0) completed++
+            if (document.getElementById('commodity-name').value.trim().length > 0) completed++
+            if (document.getElementById('analytical-lens').value.length > 0) completed++
+            if (document.getElementById('group-members').value.trim().length > 0) completed++
+
+            // Check if group rationale is in range
+            let groupTotal = 0
+            groupFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId)
+                groupTotal += countWords(field.value)
+            })
+            if (groupTotal >= 750 && groupTotal <= 1000) completed++
+
+            // Check if individual reflection is in range
+            let individualTotal = 0
+            individualFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId)
+                individualTotal += countWords(field.value)
+            })
+            if (individualTotal >= 150 && individualTotal <= 250) completed++
+
+            // Check if each section has some content
+            if (document.getElementById('archive-overview').value.length > 50) completed++
+            if (document.getElementById('lens-contribution').value.length > 50) completed++
+            if (document.getElementById('limits-silences').value.length > 50) completed++
+
+            const percentage = (completed / total) * 100
+            document.getElementById('progressFill').style.width = percentage + '%'
+        }
+
+        async function saveWork(silent = false) {
+            const data = {
+                student_name: document.getElementById('student-name').value,
+                section_number: document.getElementById('section-number').value,
+                commodity_name: document.getElementById('commodity-name').value,
+                analytical_lens: document.getElementById('analytical-lens').value,
+                group_members: document.getElementById('group-members').value,
+                
+                // Group rationale
+                group_rationale: document.getElementById('archive-overview').value,
+                major_themes: document.getElementById('major-themes').value,
+                power_perspective: document.getElementById('power-perspective').value,
+                cotton_comparison: document.getElementById('cotton-comparison').value,
+                
+                // Individual reflection
+                individual_reflection: document.getElementById('lens-contribution').value,
+                lens_contribution: document.getElementById('unique-insights').value,
+                limits_silences: document.getElementById('limits-silences').value
+            }
+
+            if (!currentUser) {
+                localStorage.setItem('hist107_archive_rationale', JSON.stringify(data))
+                if (!silent) {
+                    showMessage('✅ Progress saved locally in this browser.', 'success')
+                }
+                return
+            }
+
+            const { error } = await supabaseClient
+                .from('hist107_archive_rationale')
+                .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
+
+            if (!silent) {
+                if (error) {
+                    showMessage('Error saving: ' + error.message, 'error')
+                } else {
+                    showMessage('✅ Progress saved successfully!', 'success')
+                }
+            }
+        }
+
+        async function loadWork() {
+            if (!currentUser) {
+                const saved = localStorage.getItem('hist107_archive_rationale')
+                if (!saved) return
+                const data = JSON.parse(saved)
+
+                document.getElementById('student-name').value = data.student_name || ''
+                document.getElementById('section-number').value = data.section_number || ''
+                document.getElementById('commodity-name').value = data.commodity_name || ''
+                document.getElementById('analytical-lens').value = data.analytical_lens || ''
+                document.getElementById('group-members').value = data.group_members || ''
+                document.getElementById('archive-overview').value = data.group_rationale || ''
+                document.getElementById('major-themes').value = data.major_themes || ''
+                document.getElementById('power-perspective').value = data.power_perspective || ''
+                document.getElementById('capitalism-connections').value = data.capitalism_connections || ''
+                document.getElementById('cotton-comparison').value = data.cotton_comparison || ''
+                document.getElementById('lens-contribution').value = data.individual_reflection || ''
+                document.getElementById('unique-insights').value = data.lens_contribution || ''
+                document.getElementById('limits-silences').value = data.limits_silences || ''
+                return
+            }
+
+            const { data, error } = await supabaseClient
+                .from('hist107_archive_rationale')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .single()
+
+            if (error || !data) return
+
+            document.getElementById('student-name').value = data.student_name || ''
+            document.getElementById('section-number').value = data.section_number || ''
+            document.getElementById('commodity-name').value = data.commodity_name || ''
+            document.getElementById('analytical-lens').value = data.analytical_lens || ''
+            document.getElementById('group-members').value = data.group_members || ''
+            document.getElementById('archive-overview').value = data.group_rationale || ''
+            document.getElementById('major-themes').value = data.major_themes || ''
+            document.getElementById('power-perspective').value = data.power_perspective || ''
+            document.getElementById('capitalism-connections').value = data.capitalism_connections || ''
+            document.getElementById('cotton-comparison').value = data.cotton_comparison || ''
+            document.getElementById('lens-contribution').value = data.individual_reflection || ''
+            document.getElementById('unique-insights').value = data.lens_contribution || ''
+            document.getElementById('limits-silences').value = data.limits_silences || ''
+        }
+
+        function exportWork() {
+            const { jsPDF } = window.jspdf
+            const doc = new jsPDF()
+
+            const lineHeight = 7
+            const pageWidth = 190
+            const pageHeight = 280
+            let y = 20
+
+            function checkPageOverflow(neededSpace) {
+                if (y + neededSpace > pageHeight) {
+                    doc.addPage()
+                    y = 20
+                }
+            }
+
+            function addWrappedText(text, x, maxWidth) {
+                const lines = doc.splitTextToSize(text, maxWidth)
+                lines.forEach((line) => {
+                    if (y + lineHeight > pageHeight) {
+                        doc.addPage()
+                        y = 20
+                    }
+                    doc.text(line, x, y)
+                    y += lineHeight
+                })
+            }
+
+            doc.setFontSize(16)
+            doc.setFont(undefined, 'bold')
+            doc.text('HIST 107 Component 2: Archive Rationale', 105, y, { align: 'center' })
+            y += 10
+
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'normal')
+            doc.text('Group Rationale + Individual Reflection', 105, y, { align: 'center' })
+            y += 15
+
+            doc.setFontSize(10)
+            const studentName = document.getElementById('student-name').value
+            const sectionNumber = document.getElementById('section-number').value
+            const commodity = document.getElementById('commodity-name').value
+            const lens = document.getElementById('analytical-lens').value
+
+            if (studentName) {
+                doc.text(`Student: ${studentName}`, 20, y)
+                y += 8
+            }
+            if (sectionNumber) {
+                doc.text(`Section: ${sectionNumber}`, 20, y)
+                y += 8
+            }
+            if (commodity) {
+                doc.text(`Commodity: ${commodity}`, 20, y)
+                y += 8
+            }
+            if (lens) {
+                doc.text(`Analytical Lens: ${lens}`, 20, y)
+                y += 8
+            }
+
+            const groupMembers = document.getElementById('group-members').value
+            if (groupMembers) {
+                doc.text('Group Members:', 20, y)
+                y += 7
+                addWrappedText(groupMembers, 25, pageWidth - 25)
+                y += 5
+            }
+
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
+            y += 15
+
+            // GROUP RATIONALE
+            checkPageOverflow(20)
+            doc.setFontSize(14)
+            doc.setFont(undefined, 'bold')
+            doc.text('PART 1: Group Archive Rationale', 20, y)
+            y += 10
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+
+            const sections = [
+                { title: 'Why These Sources?', content: document.getElementById('archive-overview').value },
+                { title: 'Major Themes & Patterns', content: document.getElementById('major-themes').value },
+                { title: 'Power, Perspective & Missing Voices', content: document.getElementById('power-perspective').value },
+                { title: 'Capitalism, Empire & Globalization', content: document.getElementById('capitalism-connections').value },
+                { title: 'Comparison to Cotton (Beckert)', content: document.getElementById('cotton-comparison').value }
+            ]
+
+            sections.forEach(section => {
+                checkPageOverflow(15)
+                doc.setFont(undefined, 'bold')
+                doc.text(section.title + ':', 20, y)
+                y += 7
+                doc.setFont(undefined, 'normal')
+                addWrappedText(section.content || '[Not completed]', 25, pageWidth - 25)
+                y += 8
+            })
+
+            // INDIVIDUAL REFLECTION
+            checkPageOverflow(20)
+            doc.setFontSize(14)
+            doc.setFont(undefined, 'bold')
+            doc.text('PART 2: Individual Reflection', 20, y)
+            y += 10
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+
+            const reflectionSections = [
+                { title: 'How My Lens Shaped the Archive', content: document.getElementById('lens-contribution').value },
+                { title: 'Unique Insights from My Lens', content: document.getElementById('unique-insights').value },
+                { title: 'Limits & Silences', content: document.getElementById('limits-silences').value }
+            ]
+
+            reflectionSections.forEach(section => {
+                checkPageOverflow(15)
+                doc.setFont(undefined, 'bold')
+                doc.text(section.title + ':', 20, y)
+                y += 7
+                doc.setFont(undefined, 'normal')
+                addWrappedText(section.content || '[Not completed]', 25, pageWidth - 25)
+                y += 8
+            })
+
+            doc.save(`HIST107_Archive_Rationale_${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`)
+
+            showMessage('PDF exported successfully!', 'success')
+        }
+
+        function exportText() {
+            let text = 'HIST 107 Component 2: Archive Rationale\n'
+            text += 'Group Rationale + Individual Reflection\n'
+            text += '='.repeat(60) + '\n\n'
+            text += `Student Name: ${document.getElementById('student-name').value}\n`
+            text += `Section Number: ${document.getElementById('section-number').value}\n`
+            text += `Commodity: ${document.getElementById('commodity-name').value}\n`
+            text += `Analytical Lens: ${document.getElementById('analytical-lens').value}\n`
+            text += `Group Members:\n${document.getElementById('group-members').value}\n`
+            text += `Date: ${new Date().toLocaleDateString()}\n\n`
+
+            text += 'PART 1: GROUP ARCHIVE RATIONALE\n'
+            text += '='.repeat(60) + '\n\n'
+            text += 'Why These Sources?\n'
+            text += document.getElementById('archive-overview').value + '\n\n'
+            text += 'Major Themes & Patterns:\n'
+            text += document.getElementById('major-themes').value + '\n\n'
+            text += 'Power, Perspective & Missing Voices:\n'
+            text += document.getElementById('power-perspective').value + '\n\n'
+            text += 'Capitalism, Empire & Globalization:\n'
+            text += document.getElementById('capitalism-connections').value + '\n\n'
+            text += 'Comparison to Cotton (Beckert):\n'
+            text += document.getElementById('cotton-comparison').value + '\n\n'
+
+            text += 'PART 2: INDIVIDUAL REFLECTION\n'
+            text += '='.repeat(60) + '\n\n'
+            text += 'How My Lens Shaped the Archive:\n'
+            text += document.getElementById('lens-contribution').value + '\n\n'
+            text += 'Unique Insights from My Lens:\n'
+            text += document.getElementById('unique-insights').value + '\n\n'
+            text += 'Limits & Silences:\n'
+            text += document.getElementById('limits-silences').value + '\n'
+
+            const blob = new Blob([text], { type: 'text/plain' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `HIST107_Archive_Rationale_${document.getElementById('student-name').value.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+            showMessage('Text file exported successfully!', 'success')
+        }
+
+        function showMessage(message, type) {
+            const msgDiv = document.getElementById('status-message')
+            msgDiv.innerHTML = type === 'success'
+                ? `<div class="alert alert-success">${message}</div>`
+                : `<div class="alert alert-error">${message}</div>`
+        }
+
+        async function submitToSupabase() {
+            if (SUBMISSION_CUTOFF) {
+                const cutoffDate = new Date(SUBMISSION_CUTOFF)
+                const now = new Date()
+                if (now > cutoffDate) {
+                    alert('The submission deadline has passed. Please contact your professor if you need an extension.')
+                    return
+                }
+            }
+
+            const studentName = document.getElementById('student-name').value.trim()
+            const sectionNumber = document.getElementById('section-number').value.trim()
+
+            if (!studentName) {
+                alert('Please enter your name before submitting.')
+                document.getElementById('student-name').focus()
+                return
+            }
+
+            if (!sectionNumber) {
+                alert('Please enter your section number before submitting.')
+                document.getElementById('section-number').focus()
+                return
+            }
+
+            const submitBtn = document.getElementById('submitBtn')
+            const messageDiv = document.getElementById('submitMessage')
+
+            submitBtn.disabled = true
+            submitBtn.textContent = '⏳ Submitting...'
+            messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your work...</div>'
+
+            try {
+                const pdfBlob = await generatePDFBlob()
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
+                const commodity = document.getElementById('commodity-name').value.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
+                const fileName = `hist107-archive-rationale/${sectionNumber}/${sanitizedName}_${commodity}_${timestamp}.pdf`
+
+                const { data: uploadData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    })
+
+                if (uploadError) {
+                    throw new Error(`Upload failed: ${uploadError.message}`)
+                }
+
+                const { data: urlData } = supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .getPublicUrl(fileName)
+
+                const formData = {
+                    commodity_name: document.getElementById('commodity-name').value,
+                    analytical_lens: document.getElementById('analytical-lens').value,
+                    group_members: document.getElementById('group-members').value,
+                    group_rationale: document.getElementById('archive-overview').value,
+                    individual_reflection: document.getElementById('lens-contribution').value
+                }
+
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: 'hist107-archive-rationale',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    })
+
+                if (dbError) {
+                    console.warn('Metadata save warning:', dbError.message)
+                }
+
+                messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your archive rationale has been sent to Prof. Hauselmann.</div>'
+                submitBtn.textContent = '✓ Submitted'
+
+            } catch (error) {
+                console.error('Submission error:', error)
+                messageDiv.innerHTML = `<div class="alert alert-error">❌ Submission failed: ${error.message}. Please try again or export the PDF and email it to your professor.</div>`
+                submitBtn.disabled = false
+                submitBtn.textContent = '📤 Submit to Professor'
+            }
+        }
+
+        function generatePDFBlob() {
+            return new Promise((resolve) => {
+                const { jsPDF } = window.jspdf
+                const doc = new jsPDF()
+
+                const lineHeight = 7
+                const pageWidth = 190
+                const pageHeight = 280
+                let y = 20
+
+                function checkPageOverflow(neededSpace) {
+                    if (y + neededSpace > pageHeight) {
+                        doc.addPage()
+                        y = 20
+                    }
+                }
+
+                function addWrappedText(text, x, maxWidth) {
+                    const lines = doc.splitTextToSize(text, maxWidth)
+                    lines.forEach((line) => {
+                        if (y + lineHeight > pageHeight) {
+                            doc.addPage()
+                            y = 20
+                        }
+                        doc.text(line, x, y)
+                        y += lineHeight
+                    })
+                }
+
+                doc.setFontSize(16)
+                doc.setFont(undefined, 'bold')
+                doc.text('HIST 107 Component 2: Archive Rationale', 105, y, { align: 'center' })
+                y += 10
+
+                doc.setFontSize(12)
+                doc.setFont(undefined, 'normal')
+                doc.text('Group Rationale + Individual Reflection', 105, y, { align: 'center' })
+                y += 15
+
+                doc.setFontSize(10)
+                const studentName = document.getElementById('student-name').value
+                const sectionNumber = document.getElementById('section-number').value
+                const commodity = document.getElementById('commodity-name').value
+                const lens = document.getElementById('analytical-lens').value
+
+                if (studentName) {
+                    doc.text(`Student: ${studentName}`, 20, y)
+                    y += 8
+                }
+                if (sectionNumber) {
+                    doc.text(`Section: ${sectionNumber}`, 20, y)
+                    y += 8
+                }
+                if (commodity) {
+                    doc.text(`Commodity: ${commodity}`, 20, y)
+                    y += 8
+                }
+                if (lens) {
+                    doc.text(`Analytical Lens: ${lens}`, 20, y)
+                    y += 8
+                }
+
+                const groupMembers = document.getElementById('group-members').value
+                if (groupMembers) {
+                    doc.text('Group Members:', 20, y)
+                    y += 7
+                    addWrappedText(groupMembers, 25, pageWidth - 25)
+                    y += 5
+                }
+
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
+                y += 15
+
+                checkPageOverflow(20)
+                doc.setFontSize(14)
+                doc.setFont(undefined, 'bold')
+                doc.text('PART 1: Group Archive Rationale', 20, y)
+                y += 10
+
+                doc.setFontSize(10)
+                doc.setFont(undefined, 'normal')
+
+                const sections = [
+                    { title: 'Why These Sources?', content: document.getElementById('archive-overview').value },
+                    { title: 'Major Themes & Patterns', content: document.getElementById('major-themes').value },
+                    { title: 'Power, Perspective & Missing Voices', content: document.getElementById('power-perspective').value },
+                    { title: 'Capitalism, Empire & Globalization', content: document.getElementById('capitalism-connections').value },
+                    { title: 'Comparison to Cotton (Beckert)', content: document.getElementById('cotton-comparison').value }
+                ]
+
+                sections.forEach(section => {
+                    checkPageOverflow(15)
+                    doc.setFont(undefined, 'bold')
+                    doc.text(section.title + ':', 20, y)
+                    y += 7
+                    doc.setFont(undefined, 'normal')
+                    addWrappedText(section.content || '[Not completed]', 25, pageWidth - 25)
+                    y += 8
+                })
+
+                checkPageOverflow(20)
+                doc.setFontSize(14)
+                doc.setFont(undefined, 'bold')
+                doc.text('PART 2: Individual Reflection', 20, y)
+                y += 10
+
+                doc.setFontSize(10)
+                doc.setFont(undefined, 'normal')
+
+                const reflectionSections = [
+                    { title: 'How My Lens Shaped the Archive', content: document.getElementById('lens-contribution').value },
+                    { title: 'Unique Insights from My Lens', content: document.getElementById('unique-insights').value },
+                    { title: 'Limits & Silences', content: document.getElementById('limits-silences').value }
+                ]
+
+                reflectionSections.forEach(section => {
+                    checkPageOverflow(15)
+                    doc.setFont(undefined, 'bold')
+                    doc.text(section.title + ':', 20, y)
+                    y += 7
+                    doc.setFont(undefined, 'normal')
+                    addWrappedText(section.content || '[Not completed]', 25, pageWidth - 25)
+                    y += 8
+                })
+
+                resolve(doc.output('blob'))
+            })
+        }
+
+        checkAuth()
+    </script>
+</body>
+</html>
