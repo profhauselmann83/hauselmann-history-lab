@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Component 3: Concept Map | HIST 107 Group Project</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: #34495e;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb {
+            background-color: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .progress-bar {
+            background-color: #ecf0f1;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background-color: #27ae60;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .section {
+            background-color: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .info-box strong {
+            color: #2c3e50;
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            padding: 20px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .success-box {
+            background-color: #d4edda;
+            padding: 20px;
+            border-left: 4px solid #27ae60;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .example-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-left: 4px solid #6c757d;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .form-group select,
+        .form-group textarea,
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Open Sans', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group textarea:focus,
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-group textarea.short {
+            min-height: 100px;
+        }
+
+        .help-text {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .map-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .map-section h4 {
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .map-icon {
+            font-size: 1.5em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #229954;
+        }
+
+        .btn-secondary {
+            background-color: #34495e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2c3e50;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #27ae60;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #e74c3c;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🗺️ Component 3: Concept Map</h1>
+        <p>HIST 107 Group Project | Visual Flow Diagram Planning</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="activities.html">Interactive Activities</a>
+        <a href="research.html">Research Tools</a>
+        <a href="archives.html">Student Archives</a>
+        <a href="blog.html">Blog</a>
+    </nav>
+
+    <div class="breadcrumb">
+        <a href="research-hist107.html">← Back to HIST 107 Research Guide</a>
+    </div>
+
+    <div class="section" style="background-color: #f0f9ff; border-left: 4px solid #3498db;">
+        <h2 style="border-bottom-color: #3498db;">Student Information</h2>
+        <div style="display: flex; gap: 20px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="student-name">Student Name:</label>
+                <input type="text" id="student-name" placeholder="First and last name">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="section-number">Section Number:</label>
+                <input type="text" id="section-number" placeholder="e.g., 107-01">
+            </div>
+        </div>
+        <div style="display: flex; gap: 20px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="commodity-name">Your Commodity:</label>
+                <input type="text" id="commodity-name" placeholder="e.g., Sugar, Coffee, Rubber">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="analytical-lens">Your Analytical Lens:</label>
+                <select id="analytical-lens">
+                    <option value="">-- Select your lens --</option>
+                    <option value="Production & Environment">Production & Environment</option>
+                    <option value="Labor & Coercion">Labor & Coercion</option>
+                    <option value="Empire, State & Corporations">Empire, State & Corporations</option>
+                    <option value="Circulation & Consumption">Circulation & Consumption</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="group-members">Group Members (list all names, including yourself):</label>
+            <textarea id="group-members" style="min-height: 80px;" placeholder="List all group members' names, one per line"></textarea>
+            <div class="help-text">Include all 3-4 members of your research group</div>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="section">
+        <h2>Instructions</h2>
+        <p>For Component 3, your group will create <strong>one shared visual map or flow diagram</strong> that shows how your commodity moved through global systems of production, trade, and power.</p>
+        
+        <div class="info-box">
+            <strong>Your map must visually represent:</strong>
+            <ul style="margin: 10px 0;">
+                <li>Production regions (where the commodity was grown/extracted)</li>
+                <li>Labor systems (who did the work and under what conditions)</li>
+                <li>Trade routes (how it moved around the world)</li>
+                <li>Imperial or corporate power (who controlled the system)</li>
+                <li>Sites of coercion or extraction (where violence or exploitation occurred)</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ This is a Planning Worksheet:</strong> Use this page to gather your ideas and plan what will go on the map. Your actual visual map can be created using:
+            <ul style="margin: 10px 0;">
+                <li>Digital tools (Canva, Google Drawings, PowerPoint, etc.)</li>
+                <li>Hand-drawn poster (photographed for submission)</li>
+                <li>Any visual format that clearly shows the connections</li>
+            </ul>
+        </div>
+
+        <div class="example-box">
+            <strong>💡 Example Elements to Include:</strong>
+            <ul style="margin: 10px 0;">
+                <li>Arrows showing flow of goods and money</li>
+                <li>Color coding for different analytical lenses</li>
+                <li>Labels for key locations, dates, and actors</li>
+                <li>Icons or symbols representing different types of power</li>
+                <li>Timeline or chronological elements if relevant</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="status-message"></div>
+
+    <!-- MAP PLANNING SECTIONS -->
+    <div class="section">
+        <h2>Planning Your Visual Map</h2>
+
+        <div class="map-section">
+            <h4><span class="map-icon">🌍</span> Production Regions</h4>
+            <div class="form-group">
+                <label for="production-regions">Where was your commodity originally produced? How did production locations change over time?</label>
+                <textarea id="production-regions" placeholder="List specific regions, countries, or colonies. Note any shifts in production centers..."></textarea>
+                <div class="help-text">Example: Caribbean islands → Brazil → Southeast Asia; specific plantations, mines, or extraction sites</div>
+            </div>
+        </div>
+
+        <div class="map-section">
+            <h4><span class="map-icon">⚒️</span> Labor Systems</h4>
+            <div class="form-group">
+                <label for="labor-systems">What labor systems were used? Who did the work?</label>
+                <textarea id="labor-systems" placeholder="Describe enslaved labor, indentured servitude, wage labor, forced labor, etc. Be specific about who worked and under what conditions..."></textarea>
+                <div class="help-text">Example: Enslaved Africans in Caribbean; indentured Indians in Fiji; contract workers in Hawaii</div>
+            </div>
+        </div>
+
+        <div class="map-section">
+            <h4><span class="map-icon">🚢</span> Trade Routes</h4>
+            <div class="form-group">
+                <label for="trade-routes">How did your commodity move around the world? What were the major trade routes?</label>
+                <textarea id="trade-routes" placeholder="Describe shipping lanes, ports, railroad networks, etc. Show how raw materials and finished products moved..."></textarea>
+                <div class="help-text">Example: Caribbean → London → manufacturing centers → global markets; specific ports and shipping companies</div>
+            </div>
+        </div>
+
+        <div class="map-section">
+            <h4><span class="map-icon">🏛️</span> Imperial & Corporate Power</h4>
+            <div class="form-group">
+                <label for="imperial-power">Which empires, states, or corporations controlled the system? How did they exercise power?</label>
+                <textarea id="imperial-power" placeholder="Identify colonial powers, chartered companies, governments, multinational corporations..."></textarea>
+                <div class="help-text">Example: British East India Company; Dutch colonial administration; United Fruit Company; British Empire</div>
+            </div>
+        </div>
+
+        <div class="map-section">
+            <h4><span class="map-icon">⚡</span> Sites of Coercion & Extraction</h4>
+            <div class="form-group">
+                <label for="coercion-sites">Where did violence, exploitation, or coercion occur? What forms did it take?</label>
+                <textarea id="coercion-sites" placeholder="Identify plantations, mines, prisons, military interventions, land seizures, forced relocations..."></textarea>
+                <div class="help-text">Example: Slave plantations in Jamaica; Belgian Congo rubber extraction; banana massacres in Colombia</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Synthesis & Connections</h2>
+
+        <div class="form-group">
+            <label for="map-notes">Additional Visual Elements or Notes:</label>
+            <textarea id="map-notes" placeholder="What else should appear on the map? Icons? Color coding? Timeline? Key dates? Legend?"></textarea>
+            <div class="help-text">Think about how to make the map visually clear and historically accurate</div>
+        </div>
+
+        <div class="form-group">
+            <label for="connections-described">How do these elements connect to each other? What patterns emerge?</label>
+            <textarea id="connections-described" placeholder="Describe the relationships between production, labor, trade, and power. How did these systems reinforce each other?"></textarea>
+            <div class="help-text">This will help you decide what arrows, lines, or visual connections to draw on your map</div>
+        </div>
+
+        <div class="success-box">
+            <strong>💡 Remember:</strong> Your final visual map should integrate insights from ALL four analytical lenses. Work with your group to ensure everyone's research is represented!
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="button-group">
+            <button class="btn btn-success" onclick="saveWork()">💾 Save Planning Work</button>
+            <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
+            <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+            <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+        </div>
+        <div id="submitMessage"></div>
+    </div>
+
+    <footer>
+        <p>Prof. Hauselmann | profhauselmann.org</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        const SUBMISSION_CUTOFF = null
+
+        let currentUser = null
+
+        async function checkAuth() {
+            const userStr = localStorage.getItem('student_user')
+            if (userStr) {
+                currentUser = JSON.parse(userStr)
+            }
+
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('input', updateProgress)
+                element.addEventListener('change', updateProgress)
+            })
+
+            await loadWork()
+            updateProgress()
+        }
+
+        function updateProgress() {
+            const total = 10
+            let completed = 0
+
+            if (document.getElementById('student-name').value.trim().length > 0) completed++
+            if (document.getElementById('section-number').value.trim().length > 0) completed++
+            if (document.getElementById('commodity-name').value.trim().length > 0) completed++
+            if (document.getElementById('analytical-lens').value.length > 0) completed++
+            if (document.getElementById('group-members').value.trim().length > 0) completed++
+
+            if (document.getElementById('production-regions').value.length > 20) completed++
+            if (document.getElementById('labor-systems').value.length > 20) completed++
+            if (document.getElementById('trade-routes').value.length > 20) completed++
+            if (document.getElementById('imperial-power').value.length > 20) completed++
+            if (document.getElementById('coercion-sites').value.length > 20) completed++
+
+            const percentage = (completed / total) * 100
+            document.getElementById('progressFill').style.width = percentage + '%'
+        }
+
+        async function saveWork(silent = false) {
+            const data = {
+                student_name: document.getElementById('student-name').value,
+                section_number: document.getElementById('section-number').value,
+                commodity_name: document.getElementById('commodity-name').value,
+                analytical_lens: document.getElementById('analytical-lens').value,
+                group_members: document.getElementById('group-members').value,
+                production_regions: document.getElementById('production-regions').value,
+                labor_systems: document.getElementById('labor-systems').value,
+                trade_routes: document.getElementById('trade-routes').value,
+                imperial_power: document.getElementById('imperial-power').value,
+                coercion_sites: document.getElementById('coercion-sites').value,
+                map_notes: document.getElementById('map-notes').value,
+                connections_described: document.getElementById('connections-described').value
+            }
+
+            if (!currentUser) {
+                localStorage.setItem('hist107_concept_map', JSON.stringify(data))
+                if (!silent) {
+                    showMessage('✅ Progress saved locally in this browser.', 'success')
+                }
+                return
+            }
+
+            const { error } = await supabaseClient
+                .from('hist107_concept_map')
+                .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
+
+            if (!silent) {
+                if (error) {
+                    showMessage('Error saving: ' + error.message, 'error')
+                } else {
+                    showMessage('✅ Progress saved successfully!', 'success')
+                }
+            }
+        }
+
+        async function loadWork() {
+            if (!currentUser) {
+                const saved = localStorage.getItem('hist107_concept_map')
+                if (!saved) return
+                const data = JSON.parse(saved)
+
+                document.getElementById('student-name').value = data.student_name || ''
+                document.getElementById('section-number').value = data.section_number || ''
+                document.getElementById('commodity-name').value = data.commodity_name || ''
+                document.getElementById('analytical-lens').value = data.analytical_lens || ''
+                document.getElementById('group-members').value = data.group_members || ''
+                document.getElementById('production-regions').value = data.production_regions || ''
+                document.getElementById('labor-systems').value = data.labor_systems || ''
+                document.getElementById('trade-routes').value = data.trade_routes || ''
+                document.getElementById('imperial-power').value = data.imperial_power || ''
+                document.getElementById('coercion-sites').value = data.coercion_sites || ''
+                document.getElementById('map-notes').value = data.map_notes || ''
+                document.getElementById('connections-described').value = data.connections_described || ''
+                return
+            }
+
+            const { data, error } = await supabaseClient
+                .from('hist107_concept_map')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .single()
+
+            if (error || !data) return
+
+            document.getElementById('student-name').value = data.student_name || ''
+            document.getElementById('section-number').value = data.section_number || ''
+            document.getElementById('commodity-name').value = data.commodity_name || ''
+            document.getElementById('analytical-lens').value = data.analytical_lens || ''
+            document.getElementById('group-members').value = data.group_members || ''
+            document.getElementById('production-regions').value = data.production_regions || ''
+            document.getElementById('labor-systems').value = data.labor_systems || ''
+            document.getElementById('trade-routes').value = data.trade_routes || ''
+            document.getElementById('imperial-power').value = data.imperial_power || ''
+            document.getElementById('coercion-sites').value = data.coercion_sites || ''
+            document.getElementById('map-notes').value = data.map_notes || ''
+            document.getElementById('connections-described').value = data.connections_described || ''
+        }
+
+        function exportWork() {
+            const { jsPDF } = window.jspdf
+            const doc = new jsPDF()
+
+            const lineHeight = 7
+            const pageWidth = 190
+            const pageHeight = 280
+            let y = 20
+
+            function checkPageOverflow(neededSpace) {
+                if (y + neededSpace > pageHeight) {
+                    doc.addPage()
+                    y = 20
+                }
+            }
+
+            function addWrappedText(text, x, maxWidth) {
+                const lines = doc.splitTextToSize(text, maxWidth)
+                lines.forEach((line) => {
+                    if (y + lineHeight > pageHeight) {
+                        doc.addPage()
+                        y = 20
+                    }
+                    doc.text(line, x, y)
+                    y += lineHeight
+                })
+            }
+
+            doc.setFontSize(16)
+            doc.setFont(undefined, 'bold')
+            doc.text('HIST 107 Component 3: Concept Map Planning', 105, y, { align: 'center' })
+            y += 10
+
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'normal')
+            doc.text('Visual Flow Diagram Worksheet', 105, y, { align: 'center' })
+            y += 15
+
+            doc.setFontSize(10)
+            const studentName = document.getElementById('student-name').value
+            const sectionNumber = document.getElementById('section-number').value
+            const commodity = document.getElementById('commodity-name').value
+            const lens = document.getElementById('analytical-lens').value
+
+            if (studentName) {
+                doc.text(`Student: ${studentName}`, 20, y)
+                y += 8
+            }
+            if (sectionNumber) {
+                doc.text(`Section: ${sectionNumber}`, 20, y)
+                y += 8
+            }
+            if (commodity) {
+                doc.text(`Commodity: ${commodity}`, 20, y)
+                y += 8
+            }
+            if (lens) {
+                doc.text(`Analytical Lens: ${lens}`, 20, y)
+                y += 8
+            }
+
+            const groupMembers = document.getElementById('group-members').value
+            if (groupMembers) {
+                doc.text('Group Members:', 20, y)
+                y += 7
+                addWrappedText(groupMembers, 25, pageWidth - 25)
+                y += 5
+            }
+
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
+            y += 15
+
+            const sections = [
+                { icon: '🌍', title: 'Production Regions', field: 'production-regions' },
+                { icon: '⚒️', title: 'Labor Systems', field: 'labor-systems' },
+                { icon: '🚢', title: 'Trade Routes', field: 'trade-routes' },
+                { icon: '🏛️', title: 'Imperial & Corporate Power', field: 'imperial-power' },
+                { icon: '⚡', title: 'Sites of Coercion & Extraction', field: 'coercion-sites' }
+            ]
+
+            sections.forEach(section => {
+                checkPageOverflow(15)
+                doc.setFontSize(12)
+                doc.setFont(undefined, 'bold')
+                doc.text(`${section.icon} ${section.title}`, 20, y)
+                y += 10
+
+                doc.setFontSize(10)
+                doc.setFont(undefined, 'normal')
+                const content = document.getElementById(section.field).value
+                addWrappedText(content || '[Not completed]', 25, pageWidth - 25)
+                y += 10
+            })
+
+            checkPageOverflow(15)
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'bold')
+            doc.text('Additional Visual Elements', 20, y)
+            y += 10
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+            addWrappedText(document.getElementById('map-notes').value || '[Not completed]', 25, pageWidth - 25)
+            y += 10
+
+            checkPageOverflow(15)
+            doc.setFontSize(12)
+            doc.setFont(undefined, 'bold')
+            doc.text('Connections & Patterns', 20, y)
+            y += 10
+
+            doc.setFontSize(10)
+            doc.setFont(undefined, 'normal')
+            addWrappedText(document.getElementById('connections-described').value || '[Not completed]', 25, pageWidth - 25)
+
+            doc.save(`HIST107_Concept_Map_Planning_${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`)
+
+            showMessage('PDF exported successfully!', 'success')
+        }
+
+        function exportText() {
+            let text = 'HIST 107 Component 3: Concept Map Planning\n'
+            text += 'Visual Flow Diagram Worksheet\n'
+            text += '='.repeat(60) + '\n\n'
+            text += `Student Name: ${document.getElementById('student-name').value}\n`
+            text += `Section Number: ${document.getElementById('section-number').value}\n`
+            text += `Commodity: ${document.getElementById('commodity-name').value}\n`
+            text += `Analytical Lens: ${document.getElementById('analytical-lens').value}\n`
+            text += `Group Members:\n${document.getElementById('group-members').value}\n`
+            text += `Date: ${new Date().toLocaleDateString()}\n\n`
+
+            text += 'MAP ELEMENTS\n'
+            text += '='.repeat(60) + '\n\n'
+            
+            text += '🌍 PRODUCTION REGIONS\n'
+            text += document.getElementById('production-regions').value + '\n\n'
+            
+            text += '⚒️ LABOR SYSTEMS\n'
+            text += document.getElementById('labor-systems').value + '\n\n'
+            
+            text += '🚢 TRADE ROUTES\n'
+            text += document.getElementById('trade-routes').value + '\n\n'
+            
+            text += '🏛️ IMPERIAL & CORPORATE POWER\n'
+            text += document.getElementById('imperial-power').value + '\n\n'
+            
+            text += '⚡ SITES OF COERCION & EXTRACTION\n'
+            text += document.getElementById('coercion-sites').value + '\n\n'
+            
+            text += 'ADDITIONAL VISUAL ELEMENTS\n'
+            text += document.getElementById('map-notes').value + '\n\n'
+            
+            text += 'CONNECTIONS & PATTERNS\n'
+            text += document.getElementById('connections-described').value + '\n'
+
+            const blob = new Blob([text], { type: 'text/plain' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `HIST107_Concept_Map_Planning_${document.getElementById('student-name').value.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+            showMessage('Text file exported successfully!', 'success')
+        }
+
+        function showMessage(message, type) {
+            const msgDiv = document.getElementById('status-message')
+            msgDiv.innerHTML = type === 'success'
+                ? `<div class="alert alert-success">${message}</div>`
+                : `<div class="alert alert-error">${message}</div>`
+        }
+
+        async function submitToSupabase() {
+            if (SUBMISSION_CUTOFF) {
+                const cutoffDate = new Date(SUBMISSION_CUTOFF)
+                const now = new Date()
+                if (now > cutoffDate) {
+                    alert('The submission deadline has passed. Please contact your professor if you need an extension.')
+                    return
+                }
+            }
+
+            const studentName = document.getElementById('student-name').value.trim()
+            const sectionNumber = document.getElementById('section-number').value.trim()
+
+            if (!studentName) {
+                alert('Please enter your name before submitting.')
+                document.getElementById('student-name').focus()
+                return
+            }
+
+            if (!sectionNumber) {
+                alert('Please enter your section number before submitting.')
+                document.getElementById('section-number').focus()
+                return
+            }
+
+            const submitBtn = document.getElementById('submitBtn')
+            const messageDiv = document.getElementById('submitMessage')
+
+            submitBtn.disabled = true
+            submitBtn.textContent = '⏳ Submitting...'
+            messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your work...</div>'
+
+            try {
+                const pdfBlob = await generatePDFBlob()
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
+                const commodity = document.getElementById('commodity-name').value.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
+                const fileName = `hist107-concept-map/${sectionNumber}/${sanitizedName}_${commodity}_${timestamp}.pdf`
+
+                const { data: uploadData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    })
+
+                if (uploadError) {
+                    throw new Error(`Upload failed: ${uploadError.message}`)
+                }
+
+                const { data: urlData } = supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .getPublicUrl(fileName)
+
+                const formData = {
+                    commodity_name: document.getElementById('commodity-name').value,
+                    analytical_lens: document.getElementById('analytical-lens').value,
+                    group_members: document.getElementById('group-members').value,
+                    production_regions: document.getElementById('production-regions').value,
+                    labor_systems: document.getElementById('labor-systems').value,
+                    trade_routes: document.getElementById('trade-routes').value,
+                    imperial_power: document.getElementById('imperial-power').value,
+                    coercion_sites: document.getElementById('coercion-sites').value
+                }
+
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: 'hist107-concept-map',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    })
+
+                if (dbError) {
+                    console.warn('Metadata save warning:', dbError.message)
+                }
+
+                messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your concept map planning has been sent to Prof. Hauselmann.</div>'
+                submitBtn.textContent = '✓ Submitted'
+
+            } catch (error) {
+                console.error('Submission error:', error)
+                messageDiv.innerHTML = `<div class="alert alert-error">❌ Submission failed: ${error.message}. Please try again or export the PDF and email it to your professor.</div>`
+                submitBtn.disabled = false
+                submitBtn.textContent = '📤 Submit to Professor'
+            }
+        }
+
+        function generatePDFBlob() {
+            return new Promise((resolve) => {
+                const { jsPDF } = window.jspdf
+                const doc = new jsPDF()
+
+                const lineHeight = 7
+                const pageWidth = 190
+                const pageHeight = 280
+                let y = 20
+
+                function checkPageOverflow(neededSpace) {
+                    if (y + neededSpace > pageHeight) {
+                        doc.addPage()
+                        y = 20
+                    }
+                }
+
+                function addWrappedText(text, x, maxWidth) {
+                    const lines = doc.splitTextToSize(text, maxWidth)
+                    lines.forEach((line) => {
+                        if (y + lineHeight > pageHeight) {
+                            doc.addPage()
+                            y = 20
+                        }
+                        doc.text(line, x, y)
+                        y += lineHeight
+                    })
+                }
+
+                doc.setFontSize(16)
+                doc.setFont(undefined, 'bold')
+                doc.text('HIST 107 Component 3: Concept Map Planning', 105, y, { align: 'center' })
+                y += 10
+
+                doc.setFontSize(12)
+                doc.setFont(undefined, 'normal')
+                doc.text('Visual Flow Diagram Worksheet', 105, y, { align: 'center' })
+                y += 15
+
+                doc.setFontSize(10)
+                const studentName = document.getElementById('student-name').value
+                const sectionNumber = document.getElementById('section-number').value
+                const commodity = document.getElementById('commodity-name').value
+                const lens = document.getElementById('analytical-lens').value
+
+                if (studentName) {
+                    doc.text(`Student: ${studentName}`, 20, y)
+                    y += 8
+                }
+                if (sectionNumber) {
+                    doc.text(`Section: ${sectionNumber}`, 20, y)
+                    y += 8
+                }
+                if (commodity) {
+                    doc.text(`Commodity: ${commodity}`, 20, y)
+                    y += 8
+                }
+                if (lens) {
+                    doc.text(`Analytical Lens: ${lens}`, 20, y)
+                    y += 8
+                }
+
+                const groupMembers = document.getElementById('group-members').value
+                if (groupMembers) {
+                    doc.text('Group Members:', 20, y)
+                    y += 7
+                    addWrappedText(groupMembers, 25, pageWidth - 25)
+                    y += 5
+                }
+
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
+                y += 15
+
+                const sections = [
+                    { icon: '🌍', title: 'Production Regions', field: 'production-regions' },
+                    { icon: '⚒️', title: 'Labor Systems', field: 'labor-systems' },
+                    { icon: '🚢', title: 'Trade Routes', field: 'trade-routes' },
+                    { icon: '🏛️', title: 'Imperial & Corporate Power', field: 'imperial-power' },
+                    { icon: '⚡', title: 'Sites of Coercion & Extraction', field: 'coercion-sites' }
+                ]
+
+                sections.forEach(section => {
+                    checkPageOverflow(15)
+                    doc.setFontSize(12)
+                    doc.setFont(undefined, 'bold')
+                    doc.text(`${section.icon} ${section.title}`, 20, y)
+                    y += 10
+
+                    doc.setFontSize(10)
+                    doc.setFont(undefined, 'normal')
+                    const content = document.getElementById(section.field).value
+                    addWrappedText(content || '[Not completed]', 25, pageWidth - 25)
+                    y += 10
+                })
+
+                checkPageOverflow(15)
+                doc.setFontSize(12)
+                doc.setFont(undefined, 'bold')
+                doc.text('Additional Visual Elements', 20, y)
+                y += 10
+
+                doc.setFontSize(10)
+                doc.setFont(undefined, 'normal')
+                addWrappedText(document.getElementById('map-notes').value || '[Not completed]', 25, pageWidth - 25)
+                y += 10
+
+                checkPageOverflow(15)
+                doc.setFontSize(12)
+                doc.setFont(undefined, 'bold')
+                doc.text('Connections & Patterns', 20, y)
+                y += 10
+
+                doc.setFontSize(10)
+                doc.setFont(undefined, 'normal')
+                addWrappedText(document.getElementById('connections-described').value || '[Not completed]', 25, pageWidth - 25)
+
+                resolve(doc.output('blob'))
+            })
+        }
+
+        checkAuth()
+    </script>
+</body>
+</html>
