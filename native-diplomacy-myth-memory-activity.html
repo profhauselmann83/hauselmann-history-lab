@@ -601,6 +601,7 @@
           <button class="btn btn-primary" onclick="submitToProfessor()" id="submitBtn">📤 Submit to Professor</button>
         </div>
 
+        <div id="submitMessage"></div>
         <div class="submission-box" id="submissionBox"></div>
       </div>
     </div>
@@ -608,9 +609,15 @@
 
   <div class="save-indicator" id="saveIndicator">✓ Work saved automatically</div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
+    // ===== SUPABASE CONFIGURATION =====
+    const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // ===== ANSWER KEYS =====
     const KEY_Q1 = "C";
     const KEY_Q2 = new Set(["1", "3"]);
@@ -838,26 +845,132 @@ Quick Check Score: ${score} / 2
       box.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    async function submitToProfessor() {
-      generateSubmission();
-      try {
-        await copySubmission();
-      } catch (error) {
-        console.warn("Submit copy warning:", error);
-      }
+    function collectFormData() {
+      const q2Labels = {
+        "1": "Native diplomacy shaped colonial survival and governance",
+        "2": "Colonial success depended entirely on European institutions",
+        "3": "Origin stories legitimize possession of land and political authority",
+        "4": "Indigenous societies lacked political organization"
+      };
+      const q2Checked = Array.from(document.querySelectorAll('input[name="q2"]:checked')).map(x => x.value);
+
+      return {
+        q1: document.querySelector('input[name="q1"]:checked')?.value || null,
+        q2: q2Checked.map(v => q2Labels[v]),
+        sr1Choice: document.getElementById("sr1Choice").value,
+        sr1: document.getElementById("sr1").value.trim(),
+        sr2: document.getElementById("sr2").value.trim()
+      };
     }
 
-    async function copySubmission() {
-      const box = document.getElementById("submissionBox");
-      if (!box.textContent.trim()) {
-        alert("Generate the submission first.");
+    function generatePDFBlob() {
+      return new Promise((resolve) => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 18;
+        const maxWidth = pageWidth - (margin * 2);
+        let y = 20;
+
+        function addLine(text, size = 11, bold = false, extraSpace = 0) {
+          doc.setFontSize(size);
+          doc.setFont(undefined, bold ? 'bold' : 'normal');
+          const lines = doc.splitTextToSize(text, maxWidth);
+          for (const line of lines) {
+            if (y > 275) { doc.addPage(); y = 20; }
+            doc.text(line, margin, y);
+            y += 6;
+          }
+          y += extraSpace;
+        }
+
+        addLine("HIST 101 — Myth, Memory, and Power", 16, true, 2);
+        addLine("Native diplomacy, origin stories, and legitimacy", 11, false, 6);
+
+        const submission = generateSubmissionText();
+        addLine(submission, 10, false, 0);
+
+        resolve(doc.output('blob'));
+      });
+    }
+
+    async function submitToProfessor() {
+      const studentName = document.getElementById("student-name").value.trim();
+      const sectionNumber = document.getElementById("student-section").value.trim();
+
+      if (!studentName) {
+        alert("Please enter your name before submitting.");
+        document.getElementById("student-name").focus();
         return;
       }
+
+      if (!sectionNumber) {
+        alert("Please enter your section number before submitting.");
+        document.getElementById("student-section").focus();
+        return;
+      }
+
+      const submitBtn = document.getElementById("submitBtn");
+      const messageDiv = document.getElementById("submitMessage");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "⏳ Submitting...";
+      messageDiv.innerHTML = '<div style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107; padding: 12px; border-radius: 8px; margin-top: 12px;">Generating and uploading your PDF...</div>';
+
       try {
-        await navigator.clipboard.writeText(box.textContent);
-        showSaveIndicator("Copied to clipboard");
-      } catch (e) {
-        alert("Copy failed. Please highlight the text and copy manually.");
+        const pdfBlob = await generatePDFBlob();
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `hist101-myth-memory/${sectionNumber}/${sanitizedName}_${timestamp}.pdf`;
+
+        const { data: uploadData, error: uploadError } = await supabaseClient
+          .storage
+          .from('student-submissions')
+          .upload(fileName, pdfBlob, {
+            contentType: 'application/pdf',
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw new Error('Upload failed: ' + uploadError.message);
+        }
+
+        const { data: urlData } = supabaseClient
+          .storage
+          .from('student-submissions')
+          .getPublicUrl(fileName);
+
+        const formData = collectFormData();
+        const { error: dbError } = await supabaseClient
+          .from('worksheet_submissions')
+          .insert({
+            student_name: studentName,
+            section_number: sectionNumber,
+            worksheet_type: 'hist101-myth-memory',
+            file_path: fileName,
+            file_url: urlData.publicUrl,
+            form_data: formData,
+            submitted_at: new Date().toISOString()
+          });
+
+        if (dbError) {
+          console.warn('Metadata save warning:', dbError.message);
+        }
+
+        // Also show the text submission and copy to clipboard
+        generateSubmission();
+        try { await navigator.clipboard.writeText(document.getElementById("submissionBox").textContent); } catch (e) { /* clipboard optional */ }
+
+        messageDiv.innerHTML = '<div style="background-color: #d4edda; color: #155724; border-left: 4px solid #28a745; padding: 12px; border-radius: 8px; margin-top: 12px;">✅ Successfully submitted! Your worksheet has been sent to Prof. Hauselmann.</div>';
+        submitBtn.textContent = "✓ Submitted";
+
+      } catch (error) {
+        console.error("Submission error:", error);
+        messageDiv.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; padding: 12px; border-radius: 8px; margin-top: 12px;">❌ Submission failed: ' + error.message + '. Please try again or export the PDF and email it to your professor.</div>';
+        submitBtn.disabled = false;
+        submitBtn.textContent = "📤 Submit to Professor";
       }
     }
 
