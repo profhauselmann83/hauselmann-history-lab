@@ -986,6 +986,7 @@
                 q2_2: formData.get('q2_2'),
                 q2_3: formData.get('q2_3'),
                 // Content Balance
+                q3_1: checkboxSelections.length > 0 ? formatPostgresTextArray(checkboxSelections) : null,
                 q3_1: checkboxSelections.length > 0 ? checkboxSelections : null,
                 q3_2: formData.get('q3_2') || null,
                 // Logic Model
@@ -1239,7 +1240,7 @@
             ];
             
             const counts = allOptions.map(opt => {
-                return responses.filter(r => r[question] && r[question].includes(opt)).length;
+                return responses.filter(r => normalizeCheckboxSelections(r[question]).includes(opt)).length;
             });
             
             charts[canvasId] = new Chart(ctx, {
@@ -1293,6 +1294,45 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        function formatPostgresTextArray(values) {
+            return `{${values.map(value => `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(',')}}`;
+        }
+
+        function normalizeCheckboxSelections(value) {
+            if (!value) return [];
+            if (Array.isArray(value)) return value;
+            if (typeof value !== 'string') return [];
+
+            const trimmed = value.trim();
+            if (trimmed.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (error) {
+                    console.warn('Unable to parse checkbox JSON:', error);
+                    return [];
+                }
+            }
+
+            if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+                const inner = trimmed.slice(1, -1).trim();
+                if (!inner) return [];
+                const matches = inner.match(/("(?:[^"\\]|\\.)*"|[^,]+)/g) || [];
+                return matches
+                    .map(item => item.trim())
+                    .filter(Boolean)
+                    .map(item => {
+                        if (item.startsWith('"') && item.endsWith('"')) {
+                            const unescaped = item.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                            return unescaped;
+                        }
+                        return item;
+                    });
+            }
+
+            return [];
+        }
         
         // ===== CSV EXPORT FUNCTION =====
         async function exportResultsCSV() {
@@ -1340,7 +1380,7 @@
                         escapeCSV(r.q2_1),
                         escapeCSV(r.q2_2),
                         escapeCSV(r.q2_3),
-                        escapeCSV(Array.isArray(r.q3_1) ? r.q3_1.join('; ') : (typeof r.q3_1 === 'string' ? JSON.parse(r.q3_1).join('; ') : '')),
+                        escapeCSV(normalizeCheckboxSelections(r.q3_1).join('; ')),
                         escapeCSV(r.q3_2),
                         escapeCSV(r.q4_1),
                         escapeCSV(r.q4_2),
