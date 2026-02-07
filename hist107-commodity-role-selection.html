@@ -967,6 +967,34 @@
                 console.warn('Metadata save warning:', dbError.message)
             }
 
+            // Also save to hist107_role_selection so data appears on student and admin dashboards
+            const roleData = {
+                student_name: studentName,
+                section_number: sectionNumber,
+                group_members: document.getElementById('group-members').value,
+                commodity_name: commodityName,
+                commodity_name_selection: document.getElementById('commodity-name').value,
+                commodity_other: document.getElementById('commodity-other').value,
+                selected_role: selectedRole,
+                role_name: roleNames[selectedRole],
+                role_definition: document.getElementById('role-definition').value,
+                key_questions: document.getElementById('key-questions').value,
+                source_types: document.getElementById('source-types').value,
+                lens_connections: document.getElementById('lens-connections').value
+            }
+
+            if (currentUser) {
+                roleData.user_id = currentUser.id
+            }
+
+            const { error: roleError } = await supabaseClient
+                .from('hist107_role_selection')
+                .insert(roleData)
+
+            if (roleError) {
+                console.warn('Role selection save warning:', roleError.message)
+            }
+
             messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your role selection has been sent to Prof. Hauselmann.</div>'
             submitBtn.textContent = '✓ Submitted'
 
