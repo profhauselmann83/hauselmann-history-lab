@@ -910,7 +910,17 @@
         const RESULTS_PASSWORD = 'bss2026';
         
         // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabaseClient;
+        try {
+            if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialized successfully');
+            } else {
+                console.error('Supabase library not loaded from CDN');
+            }
+        } catch (err) {
+            console.error('Error initializing Supabase:', err);
+        }
         
         // ===== MODE TOGGLE =====
         const surveyModeBtn = document.getElementById('surveyModeBtn');
@@ -953,12 +963,18 @@
         
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
+            if (!supabaseClient) {
+                alert('Database connection not available. Please refresh the page and try again.');
+                return;
+            }
+
             // Disable submit button
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
-            
+
             const formData = new FormData(form);
+            const checkboxSelections = formData.getAll('q3_1');
             const response = {
                 timestamp: new Date().toISOString(),
                 // Overall Experience
@@ -970,7 +986,7 @@
                 q2_2: formData.get('q2_2'),
                 q2_3: formData.get('q2_3'),
                 // Content Balance
-                q3_1: formData.getAll('q3_1'),  // Array for checkboxes
+                q3_1: checkboxSelections.length > 0 ? JSON.stringify(checkboxSelections) : null,
                 q3_2: formData.get('q3_2') || null,
                 // Logic Model
                 q4_1: formData.get('q4_1'),
@@ -984,19 +1000,24 @@
                 // Final Check
                 q7_1: formData.get('q7_1') || null
             };
-            
+
             try {
+                console.log('Submitting survey response:', response);
+
                 // Insert into Supabase
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('survey_responses')
-                    .insert([response]);
-                
+                    .insert([response])
+                    .select();
+
                 if (error) throw error;
-                
+
+                console.log('Survey submitted successfully:', data);
+
                 // Show thank you message
                 form.classList.add('hidden');
                 thankYou.classList.remove('hidden');
-                
+
                 // Reset form after delay
                 setTimeout(() => {
                     form.reset();
@@ -1005,10 +1026,10 @@
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Submit Survey';
                 }, 3000);
-                
+
             } catch (error) {
                 console.error('Error submitting survey:', error);
-                alert('Error submitting survey. Please try again or contact Prof. Hauselmann if the issue persists.');
+                alert('Error submitting survey: ' + (error.message || 'Unknown error') + '. Please try again or contact Prof. Hauselmann if the issue persists.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit Survey';
             }
@@ -1027,7 +1048,7 @@
         async function loadResults() {
             try {
                 // Fetch all responses from Supabase
-                const { data: responses, error } = await supabase
+                const { data: responses, error } = await supabaseClient
                     .from('survey_responses')
                     .select('*')
                     .order('timestamp', { ascending: false});
@@ -1277,7 +1298,7 @@
         async function exportResultsCSV() {
             try {
                 // Fetch all responses
-                const { data: responses, error } = await supabase
+                const { data: responses, error } = await supabaseClient
                     .from('survey_responses')
                     .select('*')
                     .order('timestamp', { ascending: true });
@@ -1319,7 +1340,7 @@
                         escapeCSV(r.q2_1),
                         escapeCSV(r.q2_2),
                         escapeCSV(r.q2_3),
-                        escapeCSV(Array.isArray(r.q3_1) ? r.q3_1.join('; ') : ''),
+                        escapeCSV(Array.isArray(r.q3_1) ? r.q3_1.join('; ') : (typeof r.q3_1 === 'string' ? JSON.parse(r.q3_1).join('; ') : '')),
                         escapeCSV(r.q3_2),
                         escapeCSV(r.q4_1),
                         escapeCSV(r.q4_2),
