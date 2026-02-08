@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -475,11 +475,12 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <div class="tab active" onclick="switchTab('overview')">📋 Overview</div>
-                <div class="tab" onclick="switchTab('roles')">🎯 Role Selections</div>
-                <div class="tab" onclick="switchTab('archives')">📚 Mini-Archives</div>
-                <div class="tab" onclick="switchTab('class-archive')">🌍 Class Archive</div>
-                <div class="tab" onclick="switchTab('submissions')">📤 All Submissions</div>
+                <div class="tab active" onclick="switchTab(event, 'overview')">📋 Overview</div>
+                <div class="tab" onclick="switchTab(event, 'roles')">🎯 Role Selections</div>
+                <div class="tab" onclick="switchTab(event, 'archives')">📚 Mini-Archives</div>
+                <div class="tab" onclick="switchTab(event, 'class-archive')">🌍 Class Archive</div>
+                <div class="tab" onclick="switchTab(event, 'submissions')">📤 All Submissions</div>
+
             </div>
 
             <!-- Tab Content: Overview -->
@@ -564,6 +565,9 @@
                             <option value="">All Types</option>
                             <option value="hist107-role-selection">Role Selection</option>
                             <option value="hist107-mini-archive">Mini-Archive</option>
+                            <option value="hist107-concept-map">Concept Map</option>
+                            <option value="hist107-research-poster">Research Poster</option>
+
                         </select>
                         <label>Section:</label>
                         <select id="filter-section-submissions" onchange="loadSubmissions()">
@@ -582,15 +586,12 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
         // ============================================================
-        // ADMIN PASSWORD - Change this to your desired password
-        // Note: This is visible in page source, suitable for low-security use
+        
         // ============================================================
-        const ADMIN_PASSWORD = 'hist107admin'
-        const ADMIN_EMAIL = 'hauselmannh@yosemite.edu'
+        
         // ============================================================
 
         let currentUser = null
-        let isLocalAuth = false  // Track if using local password auth
 
         // Check authentication on page load
         async function checkAuth() {
@@ -616,51 +617,45 @@
         }
 
         async function handleLogin(event) {
-            event.preventDefault()
+  event.preventDefault()
 
-            const email = document.getElementById('email').value
-            const password = document.getElementById('password').value
+  const email = document.getElementById('email').value.trim()
+  const password = document.getElementById('password').value
 
-            // First, check for local admin password
-            if (password === ADMIN_PASSWORD) {
-                currentUser = { email: email || ADMIN_EMAIL }
-                isLocalAuth = true
-                showDashboard()
-                loadAllData()
-                return
-            }
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  })
 
-            // If local password didn't match, try Supabase authentication
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            })
+  if (error || !data?.user) {
+    showMessage('Login failed: ' + (error?.message || 'Unknown error'), 'error', 'login-message')
+    return
+  }
 
-            if (error) {
-                showMessage('Login failed: Incorrect password', 'error', 'login-message')
-                return
-            }
+  // Confirm this authenticated user is an active admin
+const { data: adminData, error: adminErr } = await supabaseClient
+  .from('admin_users')
+  .select('user_id,is_active')
+  .eq('user_id', data.user.id)
+  .maybeSingle()
 
-            // Check if user is admin
-            const { data: adminData } = await supabaseClient
-                .from('admin_users')
-                .select('*')
-                .eq('user_id', data.user.id)
-                .single()
+if (adminErr || !adminData?.is_active) {
+  showMessage('Access denied. You are not authorized to view this dashboard.', 'error', 'login-message')
+  await supabaseClient.auth.signOut()
+  return
+}
 
-            if (!adminData || !adminData.is_active) {
-                showMessage('Access denied. You are not authorized to view this dashboard.', 'error', 'login-message')
-                await supabaseClient.auth.signOut()
-                return
-            }
+currentUser = data.user
+showDashboard()
+loadAllData()
 
-            currentUser = data.user
-            showDashboard()
-            loadAllData()
-        }
+
+}
+
+
 
         function showMagicLinkLogin() {
-            const email = document.getElementById('email').value
+            const email = document.getElementById('email').value.trim()
 
             if (!email) {
                 showMessage('Please enter your email address above first, then click "Send Magic Link to Email".', 'info', 'login-message')
@@ -673,7 +668,7 @@
             supabaseClient.auth.signInWithOtp({
                 email: email,
                 options: {
-                    emailRedirectTo: window.location.href
+                    emailRedirectTo: window.location.origin + window.location.pathname
                 }
             }).then(({ error }) => {
                 if (error) {
@@ -685,14 +680,12 @@
         }
 
         async function handleLogout() {
-            if (!isLocalAuth) {
-                await supabaseClient.auth.signOut()
-            }
-            currentUser = null
-            isLocalAuth = false
-            document.getElementById('login-screen').style.display = 'block'
-            document.getElementById('dashboard').style.display = 'none'
-        }
+  await supabaseClient.auth.signOut()
+  currentUser = null
+  document.getElementById('login-screen').style.display = 'block'
+  document.getElementById('dashboard').style.display = 'none'
+}
+
 
         function showDashboard() {
             document.getElementById('login-screen').style.display = 'none'
@@ -705,34 +698,19 @@
             div.innerHTML = `<div class="alert alert-${type}">${message}</div>`
         }
 
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
-            event.target.classList.add('active')
+        function switchTab(e, tabName) {
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
+  e.currentTarget.classList.add('active')
 
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
-            document.getElementById('tab-' + tabName).classList.add('active')
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
+  document.getElementById('tab-' + tabName).classList.add('active')
 
-            // Load data for the tab if needed
-            switch(tabName) {
-                case 'overview':
-                    loadOverview()
-                    break
-                case 'roles':
-                    loadRoles()
-                    break
-                case 'archives':
-                    loadArchives()
-                    break
-                case 'class-archive':
-                    loadClassArchive()
-                    break
-                case 'submissions':
-                    loadSubmissions()
-                    break
-            }
-        }
+  if (tabName === 'overview') loadOverview()
+  if (tabName === 'roles') loadRoles()
+  if (tabName === 'archives') loadArchives()
+  if (tabName === 'class-archive') loadClassArchive()
+  if (tabName === 'submissions') loadSubmissions()
+}
 
         async function loadAllData() {
             await loadStats()
@@ -744,8 +722,8 @@
             try {
                 // Total unique students from role selections
                 const { data: roles } = await supabaseClient
-                    .from('hist107_role_selection')
-                    .select('student_name')
+                      .from('hist107_role_selection')
+                      .select('student_name')
 
                 const uniqueStudents = new Set(roles?.map(r => r.student_name) || [])
                 document.getElementById('stat-students').textContent = uniqueStudents.size
@@ -777,7 +755,7 @@
                 // Get unique sections
                 const { data: roles } = await supabaseClient
                     .from('hist107_role_selection')
-                    .select('section_number')
+                    .select('section_number, commodity_name')
 
                 const sections = [...new Set(roles?.map(r => r.section_number).filter(Boolean))]
                 sections.sort()
