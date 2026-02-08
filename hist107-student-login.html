@@ -405,13 +405,17 @@
             signupBtn.textContent = 'Creating account...'
 
             try {
+                const returnTo = new URLSearchParams(window.location.search).get('return') || 'research-hist107.html'
+                const redirectUrl = window.location.origin + '/hist107-student-login.html?return=' + encodeURIComponent(returnTo)
+
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
                         data: {
                             full_name: name
-                        }
+                        },
+                        emailRedirectTo: redirectUrl
                     }
                 })
 
@@ -449,10 +453,13 @@
             if (!email) return
 
             try {
+                const returnTo = new URLSearchParams(window.location.search).get('return') || 'research-hist107.html'
+                const redirectUrl = window.location.origin + '/hist107-student-login.html?return=' + encodeURIComponent(returnTo)
+
                 const { error } = await supabaseClient.auth.signInWithOtp({
                     email: email,
                     options: {
-                        emailRedirectTo: window.location.origin + '/research-hist107.html'
+                        emailRedirectTo: redirectUrl
                     }
                 })
 
