@@ -519,11 +519,20 @@ function getLocalKey(base) {
   return `${base}:${section}:${commodity}`
 }
 
+function getLoginUrl() {
+  const returnTo = window.location.pathname.split('/').pop() || 'research-hist107.html'
+  return `hist107-student-login.html?return=${encodeURIComponent(returnTo)}`
+}
+
 
        async function checkAuth() {
-  const userStr = localStorage.getItem('student_user')
-  if (userStr) {
-    currentUser = JSON.parse(userStr)
+  const { data: { user } } = await supabaseClient.auth.getUser()
+  if (user) {
+    currentUser = { id: user.id, email: user.email }
+    localStorage.setItem('student_user', JSON.stringify(currentUser))
+  } else {
+    localStorage.removeItem('student_user')
+    currentUser = null
   }
 
   document.querySelectorAll('input, select, textarea').forEach(element => {
@@ -844,6 +853,11 @@ const { data, error } = await supabaseClient
 
             const submitBtn = document.getElementById('submitBtn')
             const messageDiv = document.getElementById('submitMessage')
+
+            if (!currentUser) {
+                messageDiv.innerHTML = `<div class="alert alert-error">❌ Please log in before submitting. <a href="${getLoginUrl()}">Log in here</a> and return to submit.</div>`
+                return
+            }
 
             submitBtn.disabled = true
             submitBtn.textContent = '⏳ Submitting...'
