@@ -495,11 +495,12 @@
 </div>
 
 <div class="section">
-    <div class="button-group">
-        <button class="btn btn-success" onclick="saveWork()">💾 Save Final Work</button>
-        <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
-        <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
-        <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+    <div class="button-group" id="action-buttons">
+        <button class="btn btn-success" type="button" onclick="saveWork()">💾 Save Final Work</button>
+        <button class="btn btn-secondary" type="button" onclick="exportWork()">📄 Export as PDF</button>
+        <button class="btn btn-secondary" type="button" onclick="exportText()">📄 Export as Text File</button>
+        <button class="btn btn-secondary" type="button" onclick="clearWork()">🧹 Clear Form</button>
+        <button class="btn btn-primary" type="button" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
     </div>
     <div id="submitMessage"></div>
 </div>
@@ -526,9 +527,13 @@
     }
 
     async function checkAuth() {
-        const userStr = localStorage.getItem('student_user')
-        if (userStr) {
-            currentUser = JSON.parse(userStr)
+        const { data: { user } } = await supabaseClient.auth.getUser()
+        if (user) {
+            currentUser = { id: user.id, email: user.email }
+            localStorage.setItem('student_user', JSON.stringify(currentUser))
+        } else {
+            localStorage.removeItem('student_user')
+            currentUser = null
         }
 
         document.getElementById('commodity-name').addEventListener('change', function() {
@@ -548,6 +553,17 @@
 
         await loadWork()
         updateProgress()
+    }
+
+    function dedupeActionButtons() {
+        document.querySelectorAll('#action-buttons').forEach((group, index) => {
+            if (index > 0) group.remove()
+        })
+    }
+
+    function getLoginUrl() {
+        const returnTo = window.location.pathname.split('/').pop() || 'research-hist107.html'
+        return `hist107-student-login.html?return=${encodeURIComponent(returnTo)}`
     }
 
     function selectRole(roleId) {
@@ -893,6 +909,28 @@
             : `<div class="alert alert-error">${message}</div>`
     }
 
+    function clearWork() {
+        if (!confirm('Clear all fields? This cannot be undone.')) return
+
+        document.getElementById('student-name').value = ''
+        document.getElementById('section-number').value = ''
+        document.getElementById('group-members').value = ''
+        document.getElementById('commodity-name').value = ''
+        document.getElementById('commodity-other').value = ''
+        document.getElementById('selected-role').value = ''
+        document.getElementById('role-definition').value = ''
+        document.getElementById('key-questions').value = ''
+        document.getElementById('source-types').value = ''
+        document.getElementById('lens-connections').value = ''
+
+        document.querySelectorAll('.role-card').forEach(card => card.classList.remove('selected'))
+        document.getElementById('other-commodity-group').style.display = 'none'
+
+        localStorage.removeItem('hist107_role_selection')
+        updateProgress()
+        showMessage('🧹 Form cleared.', 'success')
+    }
+
     async function submitToSupabase() {
         if (SUBMISSION_CUTOFF) {
             const cutoffDate = new Date(SUBMISSION_CUTOFF)
@@ -1015,22 +1053,27 @@
             }
 
             if (currentUser) {
-                roleData.user_id = currentUser.id
-            }
+                const { error: roleError } = await supabaseClient
+                    .from('hist107_role_selection')
+                    .upsert({ ...roleData, user_id: currentUser.id }, { onConflict: 'user_id' })
 
-            // Remove any previous entry for this student to prevent duplicates
-            await supabaseClient
-                .from('hist107_role_selection')
-                .delete()
-                .eq('student_name', studentName)
-                .eq('section_number', sectionNumber)
+                if (roleError) {
+                    throw roleError
+                }
+            } else {
+                await supabaseClient
+                    .from('hist107_role_selection')
+                    .delete()
+                    .eq('student_name', studentName)
+                    .eq('section_number', sectionNumber)
 
-            const { error: roleError } = await supabaseClient
-                .from('hist107_role_selection')
-                .insert(roleData)
+                const { error: roleError } = await supabaseClient
+                    .from('hist107_role_selection')
+                    .insert(roleData)
 
-            if (roleError) {
-                throw roleError
+                if (roleError) {
+                    throw roleError
+                }
             }
 
             messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your role selection has been sent to Prof. Hauselmann and is now visible on the class dashboard.</div>'
@@ -1177,6 +1220,7 @@
         })
     }
 
+    dedupeActionButtons()
     checkAuth()
 </script>
 
