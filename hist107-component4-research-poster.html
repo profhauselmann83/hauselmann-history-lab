@@ -511,25 +511,37 @@
 
         const SUBMISSION_CUTOFF = null
 
-        let currentUser = null
+let currentUser = null
 
-        async function checkAuth() {
-            const userStr = localStorage.getItem('student_user')
-            if (userStr) {
-                currentUser = JSON.parse(userStr)
-            }
+function getLocalKey(base) {
+  const section = (document.getElementById('section-number')?.value || 'unknown').trim()
+  const commodity = (document.getElementById('commodity-name')?.value || 'unknown').trim()
+  return `${base}:${section}:${commodity}`
+}
 
-            document.querySelectorAll('input, select, textarea').forEach(element => {
-                element.addEventListener('input', updateProgress)
-                element.addEventListener('change', updateProgress)
-            })
 
-            await loadWork()
-            updateProgress()
-        }
+       async function checkAuth() {
+  const userStr = localStorage.getItem('student_user')
+  if (userStr) {
+    currentUser = JSON.parse(userStr)
+  }
+
+  document.querySelectorAll('input, select, textarea').forEach(element => {
+    element.addEventListener('input', updateProgress)
+    element.addEventListener('change', updateProgress)
+  })
+
+  // ✅ Add these here (only once)
+  document.getElementById('section-number').addEventListener('input', loadWork)
+  document.getElementById('commodity-name').addEventListener('input', loadWork)
+
+  await loadWork()
+  updateProgress()
+}
+
 
         function updateProgress() {
-            const total = 12
+            const total = 13
             let completed = 0
 
             if (document.getElementById('student-name').value.trim().length > 0) completed++
@@ -545,6 +557,7 @@
             if (document.getElementById('consequences-today').value.length > 20) completed++
             if (document.getElementById('central-claim').value.length > 20) completed++
             if (document.getElementById('selected-sources').value.length > 20) completed++
+            if (document.getElementById('visual-notes').value.length > 20) completed++
 
             const percentage = (completed / total) * 100
             document.getElementById('progressFill').style.width = percentage + '%'
@@ -553,8 +566,8 @@
         async function saveWork(silent = false) {
             const data = {
                 student_name: document.getElementById('student-name').value,
-                section_number: document.getElementById('section-number').value,
-                commodity_name: document.getElementById('commodity-name').value,
+                section_number: document.getElementById('section-number').value.trim(),
+commodity_name: document.getElementById('commodity-name').value.trim(),
                 group_members: document.getElementById('group-members').value,
                 commodity_overview: document.getElementById('commodity-overview').value,
                 pre_imperial_context: document.getElementById('pre-imperial-context').value,
@@ -567,17 +580,22 @@
                 visual_notes: document.getElementById('visual-notes').value
             }
 
-            if (!currentUser) {
-                localStorage.setItem('hist107_research_poster', JSON.stringify(data))
-                if (!silent) {
-                    showMessage('✅ Progress saved locally in this browser.', 'success')
-                }
-                return
-            }
+           if (!currentUser) {
+    localStorage.setItem(getLocalKey('hist107_research_poster'), JSON.stringify(data))
+    if (!silent) {
+        showMessage('✅ Progress saved locally in this browser.', 'success')
+    }
+    return
+}
+
 
             const { error } = await supabaseClient
-                .from('hist107_research_poster')
-                .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
+    .from('hist107_research_poster')
+    .upsert(
+        { ...data, user_id: currentUser.id },
+        { onConflict: 'user_id,section_number,commodity_name' }
+    )
+
 
             if (!silent) {
                 if (error) {
@@ -590,7 +608,7 @@
 
         async function loadWork() {
             if (!currentUser) {
-                const saved = localStorage.getItem('hist107_research_poster')
+                const saved = localStorage.getItem(getLocalKey('hist107_research_poster'))
                 if (!saved) return
                 const data = JSON.parse(saved)
 
@@ -610,11 +628,19 @@
                 return
             }
 
-            const { data, error } = await supabaseClient
-                .from('hist107_research_poster')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .single()
+            const section = document.getElementById('section-number').value.trim()
+const commodity = document.getElementById('commodity-name').value.trim()
+
+// Don't query until both are filled in
+if (!section || !commodity) return
+
+const { data, error } = await supabaseClient
+  .from('hist107_research_poster')
+  .select('*')
+  .eq('user_id', currentUser.id)
+  .eq('section_number', section)
+  .eq('commodity_name', commodity)
+  .maybeSingle()
 
             if (error || !data) return
 
@@ -849,11 +875,19 @@
                     .getPublicUrl(fileName)
 
                 const formData = {
-                    commodity_name: document.getElementById('commodity-name').value,
-                    group_members: document.getElementById('group-members').value,
-                    central_claim: document.getElementById('central-claim').value,
-                    commodity_overview: document.getElementById('commodity-overview').value
-                }
+    commodity_name: document.getElementById('commodity-name').value,
+    group_members: document.getElementById('group-members').value,
+    commodity_overview: document.getElementById('commodity-overview').value,
+    pre_imperial_context: document.getElementById('pre-imperial-context').value,
+    empire_coercion: document.getElementById('empire-coercion').value,
+    global_capitalism: document.getElementById('global-capitalism').value,
+    cotton_comparison: document.getElementById('cotton-comparison').value,
+    consequences_today: document.getElementById('consequences-today').value,
+    central_claim: document.getElementById('central-claim').value,
+    selected_sources: document.getElementById('selected-sources').value,
+    visual_notes: document.getElementById('visual-notes').value
+}
+
 
                 const { error: dbError } = await supabaseClient
                     .from('worksheet_submissions')
