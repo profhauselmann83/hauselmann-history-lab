@@ -983,56 +983,66 @@
         messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your work...</div>'
 
         try {
-            const pdfBlob = await generatePDFBlob()
+            // Try PDF upload (non-blocking — form data is saved regardless)
+            let fileUrl = null
+            let fileName = null
+            try {
+                const pdfBlob = await generatePDFBlob()
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
+                const commodity = document.getElementById('commodity-name').value.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
+                fileName = `hist107-mini-archive/${sectionNumber}/${sanitizedName}_${commodity}_${timestamp}.pdf`
 
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-            const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
-            const commodity = document.getElementById('commodity-name').value.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
-            const fileName = `hist107-mini-archive/${sectionNumber}/${sanitizedName}_${commodity}_${timestamp}.pdf`
+                const { error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    })
 
-            const { data: uploadData, error: uploadError } = await supabaseClient
-                .storage
-                .from('student-submissions')
-                .upload(fileName, pdfBlob, {
-                    contentType: 'application/pdf',
-                    upsert: false
-                })
-
-            if (uploadError) {
-                throw new Error(`Upload failed: ${uploadError.message}`)
+                if (uploadError) {
+                    console.warn('PDF upload skipped:', uploadError.message)
+                    fileName = null
+                } else {
+                    const { data: urlData } = supabaseClient
+                        .storage
+                        .from('student-submissions')
+                        .getPublicUrl(fileName)
+                    fileUrl = urlData.publicUrl
+                }
+            } catch (pdfErr) {
+                console.warn('PDF generation/upload skipped:', pdfErr.message)
             }
 
-            const { data: urlData } = supabaseClient
-                .storage
-                .from('student-submissions')
-                .getPublicUrl(fileName)
+            // Save worksheet metadata (if PDF uploaded)
+            if (fileName) {
+                const formData = {
+                    commodity_name: document.getElementById('commodity-name').value,
+                    analytical_lens: document.getElementById('analytical-lens').value,
+                    sources: sources
+                }
 
-            const formData = {
-                commodity_name: document.getElementById('commodity-name').value,
-                analytical_lens: document.getElementById('analytical-lens').value,
-                sources: sources
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: 'hist107-mini-archive',
+                        file_path: fileName,
+                        file_url: fileUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    })
+
+                if (dbError) {
+                    console.warn('Metadata save warning:', dbError.message)
+                }
             }
 
-            // Submit to worksheet_submissions table
-            const { error: dbError } = await supabaseClient
-                .from('worksheet_submissions')
-                .insert({
-                    student_name: studentName,
-                    section_number: sectionNumber,
-                    worksheet_type: 'hist107-mini-archive',
-                    file_path: fileName,
-                    file_url: urlData.publicUrl,
-                    form_data: formData,
-                    submitted_at: new Date().toISOString()
-                })
-
-            if (dbError) {
-                console.warn('Metadata save warning:', dbError.message)
-            }
-
-            // Also save to the class archive table for viewing
+            // Save to the class archive table for viewing
             for (const source of sources) {
-                await supabaseClient
+                const { error: archiveError } = await supabaseClient
                     .from('hist107_class_archive')
                     .insert({
                         student_name: studentName,
@@ -1048,6 +1058,10 @@
                         url: source.url,
                         submitted_at: new Date().toISOString()
                     })
+
+                if (archiveError) {
+                    throw archiveError
+                }
             }
 
             messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your mini-archive has been sent to Prof. Hauselmann and added to the class archive.</div>'

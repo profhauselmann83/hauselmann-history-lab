@@ -850,44 +850,51 @@ const { data, error } = await supabaseClient
             messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your work...</div>'
 
             try {
-                const pdfBlob = await generatePDFBlob()
+                // Try PDF upload (non-blocking — form data is saved regardless)
+                let fileUrl = null
+                let fileName = null
+                try {
+                    const pdfBlob = await generatePDFBlob()
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+                    const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
+                    const commodity = document.getElementById('commodity-name').value.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
+                    fileName = `hist107-research-poster/${sectionNumber}/${sanitizedName}_${commodity}_${timestamp}.pdf`
 
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
-                const commodity = document.getElementById('commodity-name').value.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
-                const fileName = `hist107-research-poster/${sectionNumber}/${sanitizedName}_${commodity}_${timestamp}.pdf`
+                    const { error: uploadError } = await supabaseClient
+                        .storage
+                        .from('student-submissions')
+                        .upload(fileName, pdfBlob, {
+                            contentType: 'application/pdf',
+                            upsert: false
+                        })
 
-                const { data: uploadData, error: uploadError } = await supabaseClient
-                    .storage
-                    .from('student-submissions')
-                    .upload(fileName, pdfBlob, {
-                        contentType: 'application/pdf',
-                        upsert: false
-                    })
-
-                if (uploadError) {
-                    throw new Error(`Upload failed: ${uploadError.message}`)
+                    if (uploadError) {
+                        console.warn('PDF upload skipped:', uploadError.message)
+                        fileName = null
+                    } else {
+                        const { data: urlData } = supabaseClient
+                            .storage
+                            .from('student-submissions')
+                            .getPublicUrl(fileName)
+                        fileUrl = urlData.publicUrl
+                    }
+                } catch (pdfErr) {
+                    console.warn('PDF generation/upload skipped:', pdfErr.message)
                 }
 
-                const { data: urlData } = supabaseClient
-                    .storage
-                    .from('student-submissions')
-                    .getPublicUrl(fileName)
-
                 const formData = {
-    commodity_name: document.getElementById('commodity-name').value,
-    group_members: document.getElementById('group-members').value,
-    commodity_overview: document.getElementById('commodity-overview').value,
-    pre_imperial_context: document.getElementById('pre-imperial-context').value,
-    empire_coercion: document.getElementById('empire-coercion').value,
-    global_capitalism: document.getElementById('global-capitalism').value,
-    cotton_comparison: document.getElementById('cotton-comparison').value,
-    consequences_today: document.getElementById('consequences-today').value,
-    central_claim: document.getElementById('central-claim').value,
-    selected_sources: document.getElementById('selected-sources').value,
-    visual_notes: document.getElementById('visual-notes').value
-}
-
+                    commodity_name: document.getElementById('commodity-name').value,
+                    group_members: document.getElementById('group-members').value,
+                    commodity_overview: document.getElementById('commodity-overview').value,
+                    pre_imperial_context: document.getElementById('pre-imperial-context').value,
+                    empire_coercion: document.getElementById('empire-coercion').value,
+                    global_capitalism: document.getElementById('global-capitalism').value,
+                    cotton_comparison: document.getElementById('cotton-comparison').value,
+                    consequences_today: document.getElementById('consequences-today').value,
+                    central_claim: document.getElementById('central-claim').value,
+                    selected_sources: document.getElementById('selected-sources').value,
+                    visual_notes: document.getElementById('visual-notes').value
+                }
 
                 const { error: dbError } = await supabaseClient
                     .from('worksheet_submissions')
@@ -896,7 +903,7 @@ const { data, error } = await supabaseClient
                         section_number: sectionNumber,
                         worksheet_type: 'hist107-research-poster',
                         file_path: fileName,
-                        file_url: urlData.publicUrl,
+                        file_url: fileUrl,
                         form_data: formData,
                         submitted_at: new Date().toISOString()
                     })
