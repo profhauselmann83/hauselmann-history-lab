@@ -932,61 +932,73 @@
         messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>'
 
         try {
-            const pdfBlob = await generatePDFBlob()
-
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-            const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
             const commodityName = document.getElementById('commodity-name').value === 'Other'
                 ? document.getElementById('commodity-other').value
                 : document.getElementById('commodity-name').value
-            const sanitizedCommodity = commodityName.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
-            const fileName = `hist107-role-selection/${sectionNumber}/${sanitizedName}_${sanitizedCommodity}_${roleNames[selectedRole].replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.pdf`
 
-            const { data: uploadData, error: uploadError } = await supabaseClient
-                .storage
-                .from('student-submissions')
-                .upload(fileName, pdfBlob, {
-                    contentType: 'application/pdf',
-                    upsert: false
-                })
+            // Try PDF upload (non-blocking — form data is saved regardless)
+            let fileUrl = null
+            let fileName = null
+            try {
+                const pdfBlob = await generatePDFBlob()
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
+                const sanitizedCommodity = commodityName.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
+                fileName = `hist107-role-selection/${sectionNumber}/${sanitizedName}_${sanitizedCommodity}_${roleNames[selectedRole].replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.pdf`
 
-            if (uploadError) {
-                throw new Error(`Upload failed: ${uploadError.message}`)
+                const { error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    })
+
+                if (uploadError) {
+                    console.warn('PDF upload skipped:', uploadError.message)
+                    fileName = null
+                } else {
+                    const { data: urlData } = supabaseClient
+                        .storage
+                        .from('student-submissions')
+                        .getPublicUrl(fileName)
+                    fileUrl = urlData.publicUrl
+                }
+            } catch (pdfErr) {
+                console.warn('PDF generation/upload skipped:', pdfErr.message)
             }
 
-            const { data: urlData } = supabaseClient
-                .storage
-                .from('student-submissions')
-                .getPublicUrl(fileName)
+            // Save worksheet metadata (if PDF uploaded)
+            if (fileName) {
+                const formData = {
+                    group_members: document.getElementById('group-members').value,
+                    commodity_name: commodityName,
+                    selected_role: selectedRole,
+                    role_name: roleNames[selectedRole],
+                    role_definition: document.getElementById('role-definition').value,
+                    key_questions: document.getElementById('key-questions').value,
+                    source_types: document.getElementById('source-types').value,
+                    lens_connections: document.getElementById('lens-connections').value
+                }
 
-            const formData = {
-                group_members: document.getElementById('group-members').value,
-                commodity_name: commodityName,
-                selected_role: selectedRole,
-                role_name: roleNames[selectedRole],
-                role_definition: document.getElementById('role-definition').value,
-                key_questions: document.getElementById('key-questions').value,
-                source_types: document.getElementById('source-types').value,
-                lens_connections: document.getElementById('lens-connections').value
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: 'hist107-role-selection',
+                        file_path: fileName,
+                        file_url: fileUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    })
+
+                if (dbError) {
+                    console.warn('Metadata save warning:', dbError.message)
+                }
             }
 
-            const { error: dbError } = await supabaseClient
-                .from('worksheet_submissions')
-                .insert({
-                    student_name: studentName,
-                    section_number: sectionNumber,
-                    worksheet_type: 'hist107-role-selection',
-                    file_path: fileName,
-                    file_url: urlData.publicUrl,
-                    form_data: formData,
-                    submitted_at: new Date().toISOString()
-                })
-
-            if (dbError) {
-                console.warn('Metadata save warning:', dbError.message)
-            }
-
-            // Also save to hist107_role_selection so data appears on student and admin dashboards
+            // Save to hist107_role_selection so data appears on student and admin dashboards
             const roleData = {
                 student_name: studentName,
                 section_number: sectionNumber,
@@ -1018,11 +1030,10 @@
                 .insert(roleData)
 
             if (roleError) {
-                console.error('Role selection save error:', roleError)
-                messageDiv.innerHTML = '<div class="alert alert-success">✅ PDF submitted successfully! However, your role selection could not be saved to the class dashboard (' + roleError.message + '). Please contact Prof. Hauselmann if your selection does not appear on the dashboard.</div>'
-            } else {
-                messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your role selection has been sent to Prof. Hauselmann and is now visible on the class dashboard.</div>'
+                throw roleError
             }
+
+            messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your role selection has been sent to Prof. Hauselmann and is now visible on the class dashboard.</div>'
             submitBtn.textContent = '✓ Submitted'
 
         } catch (error) {
