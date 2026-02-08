@@ -496,11 +496,17 @@
 
 <div class="section">
     <div class="button-group" id="action-buttons">
+    <div class="button-group">
         <button class="btn btn-success" type="button" onclick="saveWork()">💾 Save Final Work</button>
         <button class="btn btn-secondary" type="button" onclick="exportWork()">📄 Export as PDF</button>
         <button class="btn btn-secondary" type="button" onclick="exportText()">📄 Export as Text File</button>
         <button class="btn btn-secondary" type="button" onclick="clearWork()">🧹 Clear Form</button>
         <button class="btn btn-primary" type="button" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+        <button class="btn btn-success" onclick="saveWork()">💾 Save Final Work</button>
+        <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
+        <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+        <button class="btn btn-secondary" onclick="clearWork()">🧹 Clear Form</button>
+        <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
     </div>
     <div id="submitMessage"></div>
 </div>
@@ -965,6 +971,11 @@
         const submitBtn = document.getElementById('submitBtn')
         const messageDiv = document.getElementById('submitMessage')
 
+        if (!currentUser) {
+            messageDiv.innerHTML = `<div class="alert alert-error">❌ Please log in before submitting. <a href="${getLoginUrl()}">Log in here</a> and return to submit.</div>`
+            return
+        }
+
         submitBtn.disabled = true
         submitBtn.textContent = '⏳ Submitting...'
         messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>'
@@ -1070,6 +1081,9 @@
                 const { error: roleError } = await supabaseClient
                     .from('hist107_role_selection')
                     .insert(roleData)
+            const { error: roleError } = await supabaseClient
+                .from('hist107_role_selection')
+                .upsert({ ...roleData, user_id: currentUser.id }, { onConflict: 'user_id' })
 
                 if (roleError) {
                     throw roleError
