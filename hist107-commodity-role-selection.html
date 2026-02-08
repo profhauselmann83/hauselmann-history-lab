@@ -526,9 +526,13 @@
     }
 
     async function checkAuth() {
-        const userStr = localStorage.getItem('student_user')
-        if (userStr) {
-            currentUser = JSON.parse(userStr)
+        const { data: { user } } = await supabaseClient.auth.getUser()
+        if (user) {
+            currentUser = { id: user.id, email: user.email }
+            localStorage.setItem('student_user', JSON.stringify(currentUser))
+        } else {
+            localStorage.removeItem('student_user')
+            currentUser = null
         }
 
         document.getElementById('commodity-name').addEventListener('change', function() {
@@ -548,6 +552,11 @@
 
         await loadWork()
         updateProgress()
+    }
+
+    function getLoginUrl() {
+        const returnTo = window.location.pathname.split('/').pop() || 'research-hist107.html'
+        return `hist107-student-login.html?return=${encodeURIComponent(returnTo)}`
     }
 
     function selectRole(roleId) {
@@ -927,6 +936,11 @@
         const submitBtn = document.getElementById('submitBtn')
         const messageDiv = document.getElementById('submitMessage')
 
+        if (!currentUser) {
+            messageDiv.innerHTML = `<div class="alert alert-error">❌ Please log in before submitting. <a href="${getLoginUrl()}">Log in here</a> and return to submit.</div>`
+            return
+        }
+
         submitBtn.disabled = true
         submitBtn.textContent = '⏳ Submitting...'
         messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>'
@@ -1014,20 +1028,9 @@
                 lens_connections: document.getElementById('lens-connections').value
             }
 
-            if (currentUser) {
-                roleData.user_id = currentUser.id
-            }
-
-            // Remove any previous entry for this student to prevent duplicates
-            await supabaseClient
-                .from('hist107_role_selection')
-                .delete()
-                .eq('student_name', studentName)
-                .eq('section_number', sectionNumber)
-
             const { error: roleError } = await supabaseClient
                 .from('hist107_role_selection')
-                .insert(roleData)
+                .upsert({ ...roleData, user_id: currentUser.id }, { onConflict: 'user_id' })
 
             if (roleError) {
                 throw roleError
