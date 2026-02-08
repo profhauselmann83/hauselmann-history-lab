@@ -346,9 +346,10 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('roles')">🎯 Role Selections</div>
-            <div class="tab" onclick="switchTab('archive')">📚 Class Archive</div>
-            <div class="tab" onclick="switchTab('progress')">📊 Class Progress</div>
+            <div class="tab active" onclick="switchTab(event, 'roles')">🎯 Role Selections</div>
+            <div class="tab" onclick="switchTab(event, 'archive')">📚 Class Archive</div>
+            <div class="tab" onclick="switchTab(event, 'progress')">📊 Class Progress</div>
+
         </div>
 
         <!-- Tab Content: Role Selections -->
@@ -434,28 +435,21 @@
             await loadRoles()
         }
 
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
-            event.target.classList.add('active')
+function switchTab(e, tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
+  e.currentTarget.classList.add('active')
 
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
-            document.getElementById('tab-' + tabName).classList.add('active')
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
+  document.getElementById('tab-' + tabName).classList.add('active')
 
-            // Load data for the tab
-            switch(tabName) {
-                case 'roles':
-                    loadRoles()
-                    break
-                case 'archive':
-                    loadArchive()
-                    break
-                case 'progress':
-                    loadProgress()
-                    break
-            }
-        }
+  // Load data for the tab
+  if (tabName === 'roles') loadRoles()
+  if (tabName === 'archive') loadArchive()
+  if (tabName === 'progress') loadProgress()
+}
+
 
         async function loadStats() {
             try {
