@@ -262,6 +262,28 @@
                 <button type="submit" class="btn btn-primary" id="login-btn">Login</button>
             </form>
 
+            <!-- FORGOT PASSWORD SECTION -->
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="#" id="forgotPasswordLink" style="color: #3498db; text-decoration: none; font-size: 0.95em;">
+                    Forgot your password?
+                </a>
+            </div>
+
+            <div id="resetPasswordSection" style="display: none; margin-top: 20px; padding: 15px; background: #f0f4f8; border-radius: 5px; border-left: 4px solid #3498db;">
+                <p style="margin-top: 0; margin-bottom: 10px; font-weight: 600; color: #2c3e50;">Reset Your Password</p>
+                <p style="margin-bottom: 15px; font-size: 0.9em; color: #7f8c8d;">Enter your email to receive a password reset link:</p>
+                <input type="email" id="resetEmail" placeholder="yourname@my.yosemite.edu" 
+                       style="width: 100%; padding: 10px; margin-bottom: 10px; border: 2px solid #bdc3c7; border-radius: 5px; font-family: 'Open Sans', sans-serif;">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="sendPasswordReset()" class="btn btn-primary" style="flex: 1; margin-top: 0;">
+                        Send Reset Link
+                    </button>
+                    <button onclick="cancelReset()" style="flex: 1; background-color: #95a5a6; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-family: 'Open Sans', sans-serif; font-weight: 600;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
             <div class="divider"><span>OR</span></div>
 
             <button class="btn magic-link-btn" onclick="showMagicLink()">📧 Send Magic Link</button>
@@ -463,6 +485,42 @@
             } catch (error) {
                 console.error('Magic link error:', error)
                 showMessage('❌ Failed to send magic link: ' + error.message, 'error')
+            }
+        }
+
+        // Show/hide password reset section
+        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('resetPasswordSection').style.display = 'block';
+            document.getElementById('forgotPasswordLink').style.display = 'none';
+        });
+
+        function cancelReset() {
+            document.getElementById('resetPasswordSection').style.display = 'none';
+            document.getElementById('forgotPasswordLink').style.display = 'inline';
+            document.getElementById('resetEmail').value = '';
+        }
+
+        async function sendPasswordReset() {
+            const email = document.getElementById('resetEmail').value;
+            
+            if (!email) {
+                showMessage('❌ Please enter your email address', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: 'https://profhauselmann.org/update-password.html',
+                });
+                
+                if (error) throw error;
+                
+                showMessage('✅ Password reset email sent! Check your inbox (and spam folder).', 'success');
+                cancelReset();
+            } catch (error) {
+                console.error('Password reset error:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
             }
         }
 
