@@ -479,6 +479,7 @@
             <button class="btn btn-success" onclick="saveWork()">💾 Save Planning Work</button>
             <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
             <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+            <button class="btn btn-secondary" onclick="clearWork()">🧹 Clear Form</button>
             <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
         </div>
         <div id="submitMessage"></div>
@@ -795,6 +796,27 @@ let currentUser = null
             msgDiv.innerHTML = type === 'success'
                 ? `<div class="alert alert-success">${message}</div>`
                 : `<div class="alert alert-error">${message}</div>`
+        }
+
+        function clearWork() {
+            if (!confirm('Clear all fields? This cannot be undone.')) return
+
+            document.getElementById('student-name').value = ''
+            document.getElementById('section-number').value = ''
+            document.getElementById('commodity-name').value = ''
+            document.getElementById('analytical-lens').value = ''
+            document.getElementById('group-members').value = ''
+            document.getElementById('production-regions').value = ''
+            document.getElementById('labor-systems').value = ''
+            document.getElementById('trade-routes').value = ''
+            document.getElementById('imperial-power').value = ''
+            document.getElementById('coercion-sites').value = ''
+            document.getElementById('map-notes').value = ''
+            document.getElementById('connections-described').value = ''
+
+            localStorage.removeItem('hist107_concept_map')
+            updateProgress()
+            showMessage('🧹 Form cleared.', 'success')
         }
 
         async function submitToSupabase() {

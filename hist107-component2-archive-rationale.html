@@ -474,6 +474,7 @@
             <button class="btn btn-success" onclick="saveWork()">💾 Save All Work</button>
             <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
             <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+            <button class="btn btn-secondary" onclick="clearWork()">🧹 Clear Form</button>
             <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
         </div>
         <div id="submitMessage"></div>
@@ -932,6 +933,28 @@
             msgDiv.innerHTML = type === 'success'
                 ? `<div class="alert alert-success">${message}</div>`
                 : `<div class="alert alert-error">${message}</div>`
+        }
+
+        function clearWork() {
+            if (!confirm('Clear all fields? This cannot be undone.')) return
+
+            document.getElementById('student-name').value = ''
+            document.getElementById('section-number').value = ''
+            document.getElementById('commodity-name').value = ''
+            document.getElementById('analytical-lens').value = ''
+            document.getElementById('group-members').value = ''
+
+            groupFields.forEach(fieldId => {
+                document.getElementById(fieldId).value = ''
+            })
+            individualFields.forEach(fieldId => {
+                document.getElementById(fieldId).value = ''
+            })
+
+            localStorage.removeItem('hist107_archive_rationale')
+            updateAllWordCounts()
+            updateProgress()
+            showMessage('🧹 Form cleared.', 'success')
         }
 
         async function submitToSupabase() {

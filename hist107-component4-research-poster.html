@@ -494,6 +494,7 @@
             <button class="btn btn-success" onclick="saveWork()">💾 Save Planning Work</button>
             <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
             <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
+            <button class="btn btn-secondary" onclick="clearWork()">🧹 Clear Form</button>
             <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
         </div>
         <div id="submitMessage"></div>
@@ -824,6 +825,28 @@ const { data, error } = await supabaseClient
             msgDiv.innerHTML = type === 'success'
                 ? `<div class="alert alert-success">${message}</div>`
                 : `<div class="alert alert-error">${message}</div>`
+        }
+
+        function clearWork() {
+            if (!confirm('Clear all fields? This cannot be undone.')) return
+
+            document.getElementById('student-name').value = ''
+            document.getElementById('section-number').value = ''
+            document.getElementById('commodity-name').value = ''
+            document.getElementById('group-members').value = ''
+            document.getElementById('commodity-overview').value = ''
+            document.getElementById('pre-imperial-context').value = ''
+            document.getElementById('empire-coercion').value = ''
+            document.getElementById('global-capitalism').value = ''
+            document.getElementById('cotton-comparison').value = ''
+            document.getElementById('consequences-today').value = ''
+            document.getElementById('central-claim').value = ''
+            document.getElementById('selected-sources').value = ''
+            document.getElementById('visual-notes').value = ''
+
+            localStorage.removeItem(getLocalKey('hist107_research_poster'))
+            updateProgress()
+            showMessage('🧹 Form cleared.', 'success')
         }
 
         async function submitToSupabase() {
