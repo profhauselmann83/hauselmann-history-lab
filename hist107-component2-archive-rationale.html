@@ -471,10 +471,11 @@
 
     <div class="section">
         <div class="button-group">
-            <button class="btn btn-success" onclick="saveWork()">💾 Save All Work</button>
-            <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
-            <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
-            <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+            <button class="btn btn-success" type="button" onclick="saveWork()">💾 Save All Work</button>
+            <button class="btn btn-secondary" type="button" onclick="exportWork()">📄 Export as PDF</button>
+            <button class="btn btn-secondary" type="button" onclick="exportText()">📄 Export as Text File</button>
+            <button class="btn btn-secondary" type="button" onclick="clearWork()">🧹 Clear Form</button>
+            <button class="btn btn-primary" type="button" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
         </div>
         <div id="submitMessage"></div>
     </div>
@@ -509,9 +510,13 @@
         ]
 
         async function checkAuth() {
-            const userStr = localStorage.getItem('student_user')
-            if (userStr) {
-                currentUser = JSON.parse(userStr)
+            const { data: { user } } = await supabaseClient.auth.getUser()
+            if (user) {
+                currentUser = { id: user.id, email: user.email }
+                localStorage.setItem('student_user', JSON.stringify(currentUser))
+            } else {
+                localStorage.removeItem('student_user')
+                currentUser = null
             }
 
             // Add word count listeners
@@ -539,6 +544,11 @@
             await loadWork()
             updateAllWordCounts()
             updateProgress()
+        }
+
+        function getLoginUrl() {
+            const returnTo = window.location.pathname.split('/').pop() || 'research-hist107.html'
+            return `hist107-student-login.html?return=${encodeURIComponent(returnTo)}`
         }
 
         function countWords(text) {
@@ -923,6 +933,28 @@
             msgDiv.innerHTML = type === 'success'
                 ? `<div class="alert alert-success">${message}</div>`
                 : `<div class="alert alert-error">${message}</div>`
+        }
+
+        function clearWork() {
+            if (!confirm('Clear all fields? This cannot be undone.')) return
+
+            document.getElementById('student-name').value = ''
+            document.getElementById('section-number').value = ''
+            document.getElementById('commodity-name').value = ''
+            document.getElementById('analytical-lens').value = ''
+            document.getElementById('group-members').value = ''
+
+            groupFields.forEach(fieldId => {
+                document.getElementById(fieldId).value = ''
+            })
+            individualFields.forEach(fieldId => {
+                document.getElementById(fieldId).value = ''
+            })
+
+            localStorage.removeItem('hist107_archive_rationale')
+            updateAllWordCounts()
+            updateProgress()
+            showMessage('🧹 Form cleared.', 'success')
         }
 
         async function submitToSupabase() {
