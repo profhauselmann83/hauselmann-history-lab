@@ -959,6 +959,11 @@
         const submitBtn = document.getElementById('submitBtn')
         const messageDiv = document.getElementById('submitMessage')
 
+        if (!currentUser) {
+            messageDiv.innerHTML = `<div class="alert alert-error">❌ Please log in before submitting. <a href="${getLoginUrl()}">Log in here</a> and return to submit.</div>`
+            return
+        }
+
         submitBtn.disabled = true
         submitBtn.textContent = '⏳ Submitting...'
         messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your PDF...</div>'
@@ -1064,6 +1069,9 @@
                 const { error: roleError } = await supabaseClient
                     .from('hist107_role_selection')
                     .insert(roleData)
+            const { error: roleError } = await supabaseClient
+                .from('hist107_role_selection')
+                .upsert({ ...roleData, user_id: currentUser.id }, { onConflict: 'user_id' })
 
                 if (roleError) {
                     throw roleError
