@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enslavement in the Cape Colony Investigation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #0f2b46 0%, #1a4d7a 100%);
+            color: #2c1810;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0a1929 0%, #1a3a52 100%);
+            color: #f4e4c1;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border: 3px solid #d4af37;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            color: #f4e4c1;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            font-style: italic;
+            color: #d4af37;
+        }
+
+        .central-question {
+            background: #f5f0e6;
+            border-left: 5px solid #1a4d7a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 1.3em;
+            text-align: center;
+            font-weight: bold;
+            color: #2c1810;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f5f0e6;
+            border-radius: 8px;
+            border: 3px solid #1a4d7a;
+        }
+
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            opacity: 0.5;
+            transition: all 0.3s;
+            color: #2c1810;
+        }
+
+        .progress-step.completed {
+            opacity: 1;
+            color: #0f5c2e;
+            font-weight: bold;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+            color: #1a4d7a;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .phase-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .phase-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .timeline {
+            background: #f5f0e6;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff;
+            border-left: 4px solid #d4af37;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .timeline-item.highlight {
+            border-left-color: #1a4d7a;
+            border-left-width: 5px;
+            background: rgba(26, 77, 122, 0.1);
+        }
+
+        .timeline-year {
+            color: #1a4d7a;
+            font-weight: bold;
+            min-width: 100px;
+            font-size: 1.1em;
+        }
+
+        .timeline-event {
+            flex: 1;
+        }
+
+        .info-box {
+            background: #f5f0e6;
+            padding: 25px;
+            border-left: 5px solid #1a4d7a;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .info-box h4 {
+            color: #1a4d7a;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .document-section {
+            background: #f5f0e6;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .document-header {
+            background: linear-gradient(135deg, #1a4d7a 0%, #0a1929 100%);
+            color: #f4e4c1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 2px solid #d4af37;
+        }
+
+        .document-header h3 {
+            color: #d4af37;
+            font-size: 1.6em;
+            margin-bottom: 10px;
+        }
+
+        .document-header p {
+            color: #f4e4c1;
+            font-style: italic;
+        }
+
+        .document-text {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px solid #1a4d7a;
+            margin: 20px 0;
+            font-size: 1.05em;
+            line-height: 1.8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .document-text p {
+            margin-bottom: 20px;
+        }
+
+        .document-source {
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+        }
+
+        .question-section {
+            background: #fff;
+            border: 2px solid #1a4d7a;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .question-section h4 {
+            color: #1a4d7a;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .question {
+            margin: 25px 0;
+        }
+
+        .question label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #2c1810;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #fff;
+            border: 2px solid #1a4d7a;
+            border-radius: 5px;
+            color: #2c1810;
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: #fffef8;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+            font-family: 'Georgia', serif;
+        }
+
+        .btn-primary {
+            background: #1a4d7a;
+            color: #f4e4c1;
+            border: 2px solid #d4af37;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0f3a5c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+
+        .btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .discussion-section {
+            background: #f5f0e6;
+            border: 3px solid #1a4d7a;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .discussion-section h2 {
+            color: #1a4d7a;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .reveal-section {
+            background: #f5f0e6;
+            border: 3px solid #1a4d7a;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .reveal-section h2 {
+            color: #1a4d7a;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .conclusion-box {
+            background: rgba(26, 77, 122, 0.15);
+            border: 2px solid #1a4d7a;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .conclusion-box h3 {
+            color: #1a4d7a;
+            margin-bottom: 15px;
+        }
+
+        .navigation-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .navigation-buttons .btn {
+            margin: 0 10px;
+        }
+
+        .warning-box {
+            background: rgba(26, 77, 122, 0.15);
+            border-left: 4px solid #1a4d7a;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .warning-box strong {
+            color: #1a4d7a;
+        }
+
+        .success-banner {
+            background: #0f5c2e;
+            color: #f4e4c1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #d4af37;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: #1a4d7a;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #d4af37;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #1a4d7a;
+            font-size: 1.5em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            margin-left: 30px;
+            margin-top: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .progress-indicator {
+                flex-wrap: wrap;
+            }
+
+            .progress-step {
+                font-size: 0.9em;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚓ Enslavement in the Cape Colony ⚓</h1>
+            <p class="subtitle">South Africa, 1730s</p>
+        </header>
+
+        <div class="central-question">
+            Central Historical Question: What can court cases tell us about enslavement in the Cape Colony, South Africa?
+        </div>
+
+        <div class="progress-indicator" id="progressBar">
+            <div class="progress-step active" data-phase="0">
+                <div>📚</div>
+                <div>Background</div>
+            </div>
+            <div class="progress-step" data-phase="1">
+                <div>📜</div>
+                <div>Document A</div>
+            </div>
+            <div class="progress-step" data-phase="2">
+                <div>📜</div>
+                <div>Document B</div>
+            </div>
+            <div class="progress-step" data-phase="3">
+                <div>⚖️</div>
+                <div>Your Verdict</div>
+            </div>
+            <div class="progress-step" data-phase="4">
+                <div>💬</div>
+                <div>Discussion</div>
+            </div>
+            <div class="progress-step" data-phase="5">
+                <div>🔍</div>
+                <div>Conclusions</div>
+            </div>
+        </div>
+
+        <!-- Phase 0: Background & Timeline -->
+        <div class="phase-content active" id="phase0">
+            <div class="info-box">
+                <h2 style="color: #1a4d7a; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #d4af37; padding-bottom: 10px;">Background Information</h2>
+            </div>
+
+            <div class="info-box">
+                <h4>Student Information</h4>
+                <label for="student-name" style="display: block; margin-top: 10px;"><strong>Your Name:</strong></label>
+                <input type="text" id="student-name" placeholder="Enter your full name">
+                
+                <label for="section-number" style="display: block; margin-top: 10px;"><strong>Section Number:</strong></label>
+                <input type="text" id="section-number" placeholder="Enter your section number (e.g., 101, 102)">
+            </div>
+
+            <div class="info-box">
+                <h4>Thinking About Historical Evidence</h4>
+                <p><strong>Warm-up Exercise:</strong> Imagine that historians in the distant future are trying to learn about your school's history, but they only have access to the school's athletic records.</p>
+                
+                <div class="question">
+                    <label>What might these historians accurately conclude about your school based on these records alone? What might they get wrong or miss entirely?</label>
+                    <textarea id="warmup-q1" placeholder="Consider: What could they learn? What would they miss? How might their conclusions be incomplete or inaccurate?" rows="5"></textarea>
+                </div>
+
+                <p style="margin-top: 20px;"><strong>Remember:</strong> Historians use historical documents to figure out what happened in the past. But historical documents and archives have limitations. They may present evidence that is inaccurate or incomplete.</p>
+            </div>
+
+            <div class="info-box" style="background: #f5f0e6; border-left: 5px solid #d4af37;">
+                <h4 style="color: #1a4d7a;">Your Role in This Investigation</h4>
+                <p><strong>Today, you will step into the role of a judge or juror.</strong> You will examine two court cases from the Cape Colony's Council of Justice in the 1730s. These cases involve enslaved people and free Africans and Asians accused of crimes.</p>
+                <p style="margin-top: 10px;">After analyzing the evidence presented in each case, you will be asked to:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Determine whether the defendants received fair trials</li>
+                    <li>Render your own verdict based on the evidence</li>
+                    <li>Consider what these court records can—and cannot—tell us about enslavement in the Cape Colony</li>
+                </ul>
+                <p style="margin-top: 10px;"><em>As you read, think critically about the evidence, the sources, and the limitations of what court records can reveal about the experiences of enslaved people.</em></p>
+            </div>
+
+            <div class="info-box">
+                <h4>The Cape Colony</h4>
+                <p>The <strong>Dutch East India Company</strong> (VOC, from its Dutch initials) was a trading company chartered by the Netherlands. The VOC first arrived in the southern part of present-day South Africa in 1652 and established a supply station for ships traveling between Europe and Asia.</p>
+                <p style="margin-top: 10px;">The VOC needed farmers to sustain their outpost, so they began bringing Dutch settlers, primarily men, to the Cape Colony in 1657. The descendants of the Dutch settlers were called <strong>burghers</strong>. At this time, the Dutch had colonies across the world, and enslavement was a common source of labor on Dutch settler farms.</p>
+            </div>
+
+            <div class="info-box">
+                <h4>Displacement of the Khoi and San</h4>
+                <p>The <strong>Khoi and San peoples</strong>, who have lived in the region for thousands of years, are hunter-gatherers and pastoralists. The early Dutch settlers relied on the indigenous population for cattle, so the VOC prohibited their enslavement.</p>
+                <p style="margin-top: 10px;">As the Cape Colony grew, rising tensions led to two wars between 1659 and 1677, in which Dutch settlers defeated the Khoi and San, and the VOC seized their grazing lands. Forced from their land, many had no choice but to become indentured servants on Dutch farms alongside the enslaved population. Over time, diseases brought by Europeans devastated their population.</p>
+            </div>
+
+            <div class="info-box">
+                <h4>Enslavement in the Cape Colony</h4>
+                <p>The VOC began transporting enslaved people to the Cape in 1658 from Indonesia, Sri Lanka, Madagascar, and parts of East Africa. The VOC sold most of these people to Dutch settlers, who forced them to do farm work. The majority were men, but enslaved women and children were also forced to farm.</p>
+                <p style="margin-top: 10px;"><strong>By 1711, the enslaved population of the Cape Colony outnumbered the free population.</strong> Some enslaved people were emancipated upon their enslaver's death. Many more escaped to freedom, though most remained in bondage their entire lives.</p>
+                <p style="margin-top: 10px;">By 1700, it is estimated that a third of the enslaved population lived in Cape Town, the urban center of the colony. As a result, there was close contact between enslavers, indigenous people, enslaved people, and those who had been freed from or escaped enslavement. Throughout the colony's history, most enslaved people were born outside of the settlement, so many languages were spoken among the enslaved population.</p>
+            </div>
+
+            <div class="info-box">
+                <h4>Council of Justice</h4>
+                <p>The highest court of law in the Cape Colony was the <strong>Council of Justice</strong>, established by the VOC. It functioned as both a civil and criminal court, handling cases involving settlers, enslaved people, and freed people.</p>
+                <p style="margin-top: 10px;">In the 1770s, the Council was composed of the deputy governor and three burgher councilors. A high-ranking VOC official called the "independent fiscal" served as the prosecutor. The Court's rulings were often aligned with the interests of the company and settlers.</p>
+            </div>
+
+            <div class="timeline">
+                <h3 style="color: #1a4d7a; text-align: center; margin-bottom: 30px;">Cape Colony Timeline</h3>
+                
+                <div class="timeline-item">
+                    <div class="timeline-year">1652</div>
+                    <div class="timeline-event">The Dutch East India Company (VOC) established the Cape Colony in the southern part of present-day South Africa as a supply station for ships traveling between Europe and Asia.</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1658</div>
+                    <div class="timeline-event">The VOC brought the first enslaved people to the colony, with initial groups coming from Dahomey (in present-day Benin) and Angola.</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1659-1677</div>
+                    <div class="timeline-event">Land disputes between the indigenous peoples and the settlers led to two armed conflicts that are known as the Khoikhoi-Dutch Wars.</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1600s-1700s</div>
+                    <div class="timeline-event">The Council of Justice was established as the highest court of the colony under Dutch rule.</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1700s</div>
+                    <div class="timeline-event">Table Mountain, located in Cape Town, became a refuge for runaway slaves.</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1711</div>
+                    <div class="timeline-event">For the first time, the enslaved population of the colony surpassed the free population. The majority came from South and Southeast Asia.</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1717</div>
+                    <div class="timeline-event">The Dutch East India Company made a policy to restrict the freeing of enslaved people in its colonies, including the Cape Colony.</div>
+                </div>
+
+                <div class="timeline-item highlight">
+                    <div class="timeline-year">1735-1736</div>
+                    <div class="timeline-event">Suspected arson fires broke out in Cape Town, alarming authorities. As a result, the VOC passed laws aimed at controlling the enslaved population living in urban areas.</div>
+                </div>
+
+                <div class="timeline-item highlight">
+                    <div class="timeline-year">1737</div>
+                    <div class="timeline-event">Authorities attempted to restrict the number of people who had escaped enslavement in the area.</div>
+                </div>
+
+                <div class="timeline-item highlight">
+                    <div class="timeline-year">1738</div>
+                    <div class="timeline-event">Authorities made more efforts to control enslaved people and those who had escaped enslavement.</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1806</div>
+                    <div class="timeline-event">The British took over the Cape Colony and abolished the slave trade the following year (1807).</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">1834-1838</div>
+                    <div class="timeline-event">Slavery officially ended in the British colonies, but enslaved people were required to continue working without pay for four more years. Upon gaining freedom in 1838, most enslaved people left their former enslavers but stayed in the Cape Colony.</div>
+                </div>
+            </div>
+
+            <div style="background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #1a4d7a;">
+                <h4 style="color: #1a4d7a; margin-bottom: 15px;">📷 Historical Image</h4>
+                <div style="background: #f5f0e6; padding: 20px; text-align: center; border: 2px dashed #1a4d7a; border-radius: 8px; min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                    <p style="color: #666; font-style: italic;">[Image placeholder: Map of Cape Colony or Table Mountain, Cape Town]</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Criminal Court Records</h4>
+                <p>According to scholars Gerald Groenewald and Nigel Worden, experts on the history of enslavement in the Cape Colony:</p>
+                <p style="margin-top: 10px; font-style: italic;">"While there is general agreement on the significance of slavery to the VOC Cape, the social and cultural world created by slaves is still little understood. Key questions which historians of Cape slavery have debated over the past few decades relate to these topics. In particular, they focus on how slaves were treated by their owners, how they reacted to their situation and what forms of resistance they displayed."</p>
+                <p style="margin-top: 10px;">Historians rely on historical documents to answer questions about the past. However, enslaved people in the Cape Colony wrote very few documents. European visitors wrote about the colony and commented on slavery but did not focus on the experiences of enslaved people.</p>
+                <p style="margin-top: 10px;">So, according to Groenewald and Worden, <em>"The richest sources for tapping the experiences of slaves in the Cape are rather the extensively preserved records of the Council of Justice."</em> However, these Council of Justice historical documents are not without limitations and pose challenges to historians.</p>
+            </div>
+
+            <div class="info-box">
+                <div style="background: rgba(26, 77, 122, 0.15); border-left: 4px solid #1a4d7a; padding: 15px; border-radius: 5px;">
+                    <strong style="color: #1a4d7a;">Reminder:</strong> Please complete the warm-up question before continuing to Document A.
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn btn-primary" onclick="startInvestigation()">Continue to Document A →</button>
+            </div>
+        </div>
+
+        <!-- Phase 1: Document A -->
+        <div class="phase-content" id="phase1">
+            <div class="document-section">
+                <div class="document-header">
+                    <h3>Document A: 1736 Court Case</h3>
+                    <p><p style="margin-top: 10px;">On March 12, 1736, a fire broke out in Cape Town and quickly spread to five nearby houses. This incident alarmed the colonial authorities, especially as it followed two other cases involving fires.</p>
+                </div>
+
+                <div class="document-text">
+                    <p>The following is a portion of the case against the men in the Council of Justice.</p>
+                    
+                    <p>As the unruliness, escape, and plotting of slaves are growing daily, the prosecutor considered it necessary to bring this case to the Council of Justice … to stop an insidious evil. …</p>
+                    
+                    <p>These rogues gather in the gardens of Table Valley, just above the houses of Cape Town. … Since they were there at night, gambling and drinking, they could easily have gotten drunk and fallen asleep. Thus, the fire could have been caused by them, since masters are not to be found at night in most gardens. …</p>
+                    
+                    <p>They were arrested after midnight, in the garden of the burgher Jan Uijltjes van Laer, by the town militia. … They were gambling and eating at their masters' expense. …</p>
+                    
+                    <p>These rogues now also make all the gardens unsafe, stealing at every opportunity all the fruit and vegetables they can, without their owners ever knowing. …</p>
+                    
+                    <p>Nothing good can come from such plotting at night. … The owners of these slaves should look after them and their gardens more carefully, either by placing a European there or by preventing them from walking around freely at night. …</p>
+                    
+                    <p>The prosecutor demands that all six defendants be severely whipped, put into chains, and sentenced to work for the VOC without wages for three years.</p>
+
+                    <p class="document-source">Source: D. van den Hengel, Council of Justice prosecutor, March 22, 1736.</p>
+                </div>
+
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #1a4d7a;">
+                    <h4 style="color: #1a4d7a; margin-bottom: 15px;">📷 Historical Image</h4>
+                    <div style="background: #f5f0e6; padding: 20px; text-align: center; border: 2px dashed #1a4d7a; border-radius: 8px; min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                        <p style="color: #666; font-style: italic;">[Image placeholder: Cape Town in 1730s or VOC colonial scene]</p>
+                    </div>
+                </div>
+
+                <div class="question-section">
+                    <h4>Document A Analysis Questions</h4>
+                    
+                    <div class="question">
+                        <label>1. When did this court case take place?</label>
+                        <input type="text" id="docA-q1" placeholder="Your answer...">
+                    </div>
+
+                    <div class="question">
+                        <label>2. D. van den Hengel wrote and delivered this statement. Who was van den Hengel? What is one reason you might not trust van den Hengel's statement about what the six defendants did the night of the fire?</label>
+                        <textarea id="docA-q2" placeholder="Your answer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>3. Who were the defendants and what were they accused of? What evidence was presented against them?</label>
+                        <textarea id="docA-q3" placeholder="Your answer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>4. What punishment did the prosecutor recommend to the Council of Justice?</label>
+                        <textarea id="docA-q4" placeholder="Your answer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>5. According to the timeline, why were VOC officials concerned with controlling the movement of enslaved people in the late 1730s? What might this context suggest about how people in the Cape Colony resisted their enslavement?</label>
+                        <textarea id="docA-q5" placeholder="Your answer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>6. The prosecutor stated that enslaved people were disobeying enslavers' orders, escaping, plotting, and stealing. What might this suggest about enslaved people's experiences in the Cape Colony?</label>
+                        <textarea id="docA-q6" placeholder="Your answer..."></textarea>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div style="background: rgba(26, 77, 122, 0.15); border-left: 4px solid #1a4d7a; padding: 15px; border-radius: 5px;">
+                        <strong style="color: #1a4d7a;">Reminder:</strong> Please complete all Document A questions before continuing to Document B.
+                    </div>
+                </div>
+
+                <div class="navigation-buttons">
+                    <button class="btn" onclick="previousPhase()">← Back to Background</button>
+                    <button class="btn btn-primary" onclick="nextPhase()">Continue to Document B →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 2: Document B -->
+        <div class="phase-content" id="phase2">
+            <div class="document-section">
+                <div class="document-header">
+                    <h3>Document B: 1738 Court Case</h3>
+                    <p><p style="margin-top: 10px;">In the late 1730s, the VOC made it illegal for enslaved people to gather or be outside of their enslavers' property at night. The following document describes a case involving two free African or Asian men and three enslaved men who were found on the streets after 10 p.m.</p>
+                </div>
+
+                <div class="document-text">
+                    <p>The defendants are all currently prisoners of the Court and accused of plotting at night. …</p>
+                    
+                    <p>They say that after going fishing, they went at six o'clock that evening to a tavern to drink for a while since they were wet and that when they were leaving, they were taken prisoner. …</p>
+                    
+                    <p>They were arrested at eleven o'clock during the night of the 20th and 21st of the past month December … and taken to prison, except for Pieter Coridon, who had escaped from the hands of the town militia before the door of the prison. On the following day, Coridon was once again brought to prison.</p>
+                    
+                    <p>Plotting together during the night leads to the most evil consequences because one cannot expect from that sort of people anything but villainy. This is also expressly forbidden by law. …</p>
+                    
+                    <p>The prosecutor recommends that all five prisoners and defendants, … may be sentenced to be whipped ... and to be put in chains for … one year, and to be sent to their homes.</p>
+
+                    <p class="document-source">Source: J. de Grandpreez, Council of Justice secretary, January 2, 1738.</p>
+                </div>
+
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #1a4d7a;">
+                    <h4 style="color: #1a4d7a; margin-bottom: 15px;">📷 Historical Image</h4>
+                    <div style="background: #f5f0e6; padding: 20px; text-align: center; border: 2px dashed #1a4d7a; border-radius: 8px; min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                        <p style="color: #666; font-style: italic;">[Image placeholder: Council of Justice court scene or VOC officials]</p>
+                    </div>
+                </div>
+
+                <div class="question-section">
+                    <h4>Document B Analysis Questions</h4>
+                    
+                    <div class="question">
+                        <label>1. When did this court case take place?</label>
+                        <input type="text" id="docB-q1" placeholder="Your answer...">
+                    </div>
+
+                    <div class="question">
+                        <label>2. Who recorded this statement by the prosecutor? What is one reason you might not trust this statement as a source about what the five defendants did?</label>
+                        <textarea id="docB-q2" placeholder="Your answer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>3. Who were the defendants and what were they accused of doing? What evidence was presented against them?</label>
+                        <textarea id="docB-q3" placeholder="Your answer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>4. What did the defendants say they were doing the evening they allegedly broke the law?</label>
+                        <textarea id="docB-q4" placeholder="Your answer..."></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>5. Defendants rarely testified directly before the Council of Justice. Their statements were typically recorded by VOC officials. They were then translated into Dutch if needed and summarized by the prosecutor before being presented in court. Why might this cause you to doubt the reliability of this document as evidence of what the accused did on the night in question?</label>
+                        <textarea id="docB-q5" placeholder="Your answer..." rows="4"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>6. The prosecutor recommended that the defendants be whipped and chained for one year. Following a sentencing by the Council of Justice, punishments were carried out publicly. What effect might that have had on other enslaved and free Africans and Asians in the Cape Colony?</label>
+                        <textarea id="docB-q6" placeholder="Your answer..."></textarea>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div style="background: rgba(26, 77, 122, 0.15); border-left: 4px solid #1a4d7a; padding: 15px; border-radius: 5px;">
+                        <strong style="color: #1a4d7a;">Reminder:</strong> Please complete all Document B questions before continuing to render your verdict.
+                    </div>
+                </div>
+
+                <div class="navigation-buttons">
+                    <button class="btn" onclick="previousPhase()">← Back to Document A</button>
+                    <button class="btn btn-primary" onclick="nextPhase()">Continue to Your Verdict →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 3: Your Verdict -->
+        <div class="phase-content" id="phase3">
+            <div class="discussion-section">
+                <h2>⚖️ Your Verdict ⚖️</h2>
+                
+                <div class="info-box">
+                    <p>You have now examined two court cases from the Cape Colony's Council of Justice:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Document A (1736):</strong> Six enslaved men charged with "banding together and committing disorder"</li>
+                        <li><strong>Document B (1738):</strong> Five men (two free, three enslaved) charged with "plotting at night"</li>
+                    </ul>
+                    <p style="margin-top: 15px;">Now it's time to step into the role of judge or juror and render your verdict.</p>
+                </div>
+
+                <div class="question-section">
+                    <h4 style="text-align: center; font-size: 1.3em; margin-bottom: 25px;">Fairness of the Trials</h4>
+                    
+                    <div class="question">
+                        <label><strong>Based on what you know about the Council of Justice and these two documents, do you think the defendants in these cases received fair trials? Why or why not?</strong></label>
+                        <p style="font-size: 0.95em; color: #666; margin: 10px 0;">Consider: Who presented evidence? What evidence was presented? Who had power in the courtroom? Whose voices were heard and whose were absent?</p>
+                        <textarea id="verdict-fairness" placeholder="Explain your reasoning..." rows="6"></textarea>
+                    </div>
+                </div>
+
+                <div class="question-section">
+                    <h4 style="text-align: center; font-size: 1.3em; margin-bottom: 25px;">Your Verdict for the 1736 Case (Document A)</h4>
+                    
+                    <div class="question">
+                        <label><strong>If YOU were the judge in the 1736 case, what would your verdict be for the six enslaved men?</strong></label>
+                        <p style="font-size: 0.95em; color: #666; margin: 10px 0;">Select your verdict:</p>
+                        <div style="margin: 15px 0;">
+                            <label style="display: block; margin: 10px 0; cursor: pointer;">
+                                <input type="radio" name="verdict-1736" value="guilty" id="verdict-1736-guilty" style="width: auto; margin-right: 10px;">
+                                <strong>GUILTY</strong> of "banding together and committing disorder"
+                            </label>
+                            <label style="display: block; margin: 10px 0; cursor: pointer;">
+                                <input type="radio" name="verdict-1736" value="not-guilty" id="verdict-1736-not-guilty" style="width: auto; margin-right: 10px;">
+                                <strong>NOT GUILTY</strong> of "banding together and committing disorder"
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <label><strong>Explain your verdict. What evidence from Document A supports your decision?</strong></label>
+                        <textarea id="verdict-1736-reasoning" placeholder="Support your verdict with specific evidence from Document A..." rows="5"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label><strong>If you found them guilty, what punishment (if any) would you impose? If not guilty, explain why.</strong></label>
+                        <textarea id="verdict-1736-sentence" placeholder="Your sentencing decision and reasoning..." rows="4"></textarea>
+                    </div>
+                </div>
+
+                <div class="question-section">
+                    <h4 style="text-align: center; font-size: 1.3em; margin-bottom: 25px;">Your Verdict for the 1738 Case (Document B)</h4>
+                    
+                    <div class="question">
+                        <label><strong>If YOU were the judge in the 1738 case, what would your verdict be for the five men?</strong></label>
+                        <p style="font-size: 0.95em; color: #666; margin: 10px 0;">Select your verdict:</p>
+                        <div style="margin: 15px 0;">
+                            <label style="display: block; margin: 10px 0; cursor: pointer;">
+                                <input type="radio" name="verdict-1738" value="guilty" id="verdict-1738-guilty" style="width: auto; margin-right: 10px;">
+                                <strong>GUILTY</strong> of "plotting at night"
+                            </label>
+                            <label style="display: block; margin: 10px 0; cursor: pointer;">
+                                <input type="radio" name="verdict-1738" value="not-guilty" id="verdict-1738-not-guilty" style="width: auto; margin-right: 10px;">
+                                <strong>NOT GUILTY</strong> of "plotting at night"
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <label><strong>Explain your verdict. What evidence from Document B supports your decision?</strong></label>
+                        <textarea id="verdict-1738-reasoning" placeholder="Support your verdict with specific evidence from Document B..." rows="5"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label><strong>If you found them guilty, what punishment (if any) would you impose? If not guilty, explain why.</strong></label>
+                        <textarea id="verdict-1738-sentence" placeholder="Your sentencing decision and reasoning..." rows="4"></textarea>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div style="background: rgba(26, 77, 122, 0.15); border-left: 4px solid #1a4d7a; padding: 15px; border-radius: 5px;">
+                        <strong style="color: #1a4d7a;">Reminder:</strong> Please complete all verdict questions and select your verdicts for both cases before continuing.
+                    </div>
+                </div>
+
+                <div class="navigation-buttons">
+                    <button class="btn" onclick="previousPhase()">← Back to Document B</button>
+                    <button class="btn btn-primary" onclick="submitVerdict()" id="submit-verdict">Submit Verdict</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 4: Discussion Questions -->
+        <div class="phase-content" id="phase4">
+            <div class="discussion-section">
+                <h2>Discussion Questions</h2>
+                
+                <div class="info-box">
+                    <p><strong>Instructions:</strong> Answer the following questions based on your analysis of Documents A and B. Your responses will form the basis for our class discussion.</p>
+                </div>
+
+                <div class="question-section">
+                    <div class="question">
+                        <label>1. What are two things that the charges of Document A and Document B have in common?</label>
+                        <textarea id="discuss-q1" placeholder="Your answer..." rows="3"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>2. The court cases of both Documents A and B took place near Cape Town in the late 1730s. However, slavery lasted in the Cape Colony for nearly 200 years (circa 1650s to 1830s), and during this time most enslaved people lived in rural areas. How might this affect the conclusions we can draw from Documents A and B about the experiences of enslaved people in the Cape Colony?</label>
+                        <textarea id="discuss-q2" placeholder="Your answer..." rows="4"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>3. Most enslaved people in the Cape Colony were never brought before the Council of Justice. How might this affect the conclusions we can draw from Documents A and B about the experiences of enslaved people in the Cape Colony?</label>
+                        <textarea id="discuss-q3" placeholder="Your answer..." rows="4"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>4. Neither Document A nor B includes statements by the defendants. How does this limit the usefulness of these documents as historical evidence of the experiences of enslaved people in the Cape Colony? What might the absence of enslaved people's testimonies tell us about their experience in the colonial court system?</label>
+                        <textarea id="discuss-q4" placeholder="Your answer..." rows="4"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>5. What do Documents A and B suggest about how people attempted to resist their enslavement in the Cape Colony?</label>
+                        <textarea id="discuss-q5" placeholder="Your answer..." rows="4"></textarea>
+                    </div>
+
+                    <div class="question">
+                        <label>6. Even if you believe the court records are not fully trustworthy, how might they still be useful for learning about enslavement in the Cape Colony? Why? Based on these documents, what are two things about enslavement in the Cape Colony that you can confidently conclude? Support your argument with evidence from each document.</label>
+                        <textarea id="discuss-q6" placeholder="Your answer..." rows="5"></textarea>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div style="background: rgba(26, 77, 122, 0.15); border-left: 4px solid #1a4d7a; padding: 15px; border-radius: 5px;">
+                        <strong style="color: #1a4d7a;">Reminder:</strong> Please complete all discussion questions before continuing to see what we can conclude.
+                    </div>
+                </div>
+
+                <div class="navigation-buttons">
+                    <button class="btn" onclick="previousPhase()">← Back to Your Verdict</button>
+                    <button class="btn btn-primary" onclick="submitDiscussion()" id="submit-discussion">Submit Responses</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 5: Conclusions -->
+        <div class="phase-content" id="phase5">
+            <div class="reveal-section">
+                <h2>What Can We Conclude?</h2>
+                
+                <div class="conclusion-box">
+                    <h3>The Strengths and Limitations of Court Records</h3>
+                    <p style="margin-top: 15px;">Court records from the Council of Justice are among the richest sources we have for understanding the experiences of enslaved people in the Cape Colony. However, like the athletic records in our warm-up exercise, they have important limitations.</p>
+                </div>
+
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #1a4d7a;">
+                    <h4 style="color: #1a4d7a; margin-bottom: 15px;">📷 Historical Image</h4>
+                    <div style="background: #f5f0e6; padding: 20px; text-align: center; border: 2px dashed #1a4d7a; border-radius: 8px; min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                        <p style="color: #666; font-style: italic;">[Image placeholder: Table Mountain refuge or historical Cape Colony scene]</p>
+                    </div>
+                </div>
+
+                <div class="document-section">
+                    <h3 style="color: #1a4d7a; margin-bottom: 20px;">What These Documents CAN Tell Us</h3>
+                    
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(15, 92, 46, 0.1); border-left: 4px solid #0f5c2e; border-radius: 8px;">
+                        <h4 style="color: #0f5c2e; margin-bottom: 10px;">Evidence of Resistance</h4>
+                        <p><strong>Document A</strong> provides evidence that some enslaved people in the Cape Colony defied their enslavers as well as the law by traveling unsupervised and socializing at night. This suggests forms of everyday resistance to the constraints of enslavement.</p>
+                        <p style="margin-top: 10px;"><strong>Document B</strong> suggests that free and enslaved peoples in Cape Town socialized together, despite laws prohibiting this. This reveals networks of community that crossed legal boundaries.</p>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(15, 92, 46, 0.1); border-left: 4px solid #0f5c2e; border-radius: 8px;">
+                        <h4 style="color: #0f5c2e; margin-bottom: 10px;">Evidence of Control and Punishment</h4>
+                        <p><strong>Document A</strong> shows that the six defendants were severely punished for small acts of rebellion (gathering at night, gambling, eating from gardens), reflecting the growing concern authorities had about the activities of unsupervised enslaved people during the late 1730s.</p>
+                        <p style="margin-top: 10px;"><strong>Document B</strong> demonstrates that gathering at night proved dangerous for both free and enslaved peoples, as all five defendants received the same harsh punishment regardless of their legal status.</p>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(15, 92, 46, 0.1); border-left: 4px solid #0f5c2e; border-radius: 8px;">
+                        <h4 style="color: #0f5c2e; margin-bottom: 10px;">Common Patterns</h4>
+                        <p>Both documents show defendants charged with "plotting at night." This may suggest:</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>A true trend of resistance among enslaved and free people of color in the colony</li>
+                            <li>Colonial officials' fears and suspicions about nighttime gatherings</li>
+                            <li>The methods authorities used to control the enslaved population</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><em>We would need more evidence to draw definitive conclusions about which interpretation is most accurate.</em></p>
+                    </div>
+                </div>
+
+                <div class="document-section">
+                    <h3 style="color: #1a4d7a; margin-bottom: 20px;">What These Documents CANNOT Tell Us</h3>
+                    
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(26, 77, 122, 0.1); border-left: 4px solid #1a4d7a; border-radius: 8px;">
+                        <h4 style="color: #1a4d7a; margin-bottom: 10px;">Limited Time and Place</h4>
+                        <p>Both cases occurred in Cape Town in the late 1730s, but slavery lasted nearly 200 years in the colony, and most enslaved people lived in rural areas. These documents are <strong>not representative</strong> of typical experiences across time and space.</p>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(26, 77, 122, 0.1); border-left: 4px solid #1a4d7a; border-radius: 8px;">
+                        <h4 style="color: #1a4d7a; margin-bottom: 10px;">Atypical Events</h4>
+                        <p>Court records describe alleged <strong>crimes</strong>, which are by definition atypical of daily life. Most enslaved people never appeared before the Council of Justice, so these records cannot tell us about ordinary, everyday experiences of enslavement.</p>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(26, 77, 122, 0.1); border-left: 4px solid #1a4d7a; border-radius: 8px;">
+                        <h4 style="color: #1a4d7a; margin-bottom: 10px;">Missing Voices</h4>
+                        <p>The voices of enslaved people on trial are <strong>absent</strong> from the official records, which primarily include the prosecutors' version of events and their recommended punishments. We hear about enslaved people, but rarely from them.</p>
+                        <p style="margin-top: 10px;">When defendants' statements do appear, they were:</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Recorded by VOC officials (not the defendants themselves)</li>
+                            <li>Translated into Dutch (potentially introducing inaccuracies)</li>
+                            <li>Summarized by prosecutors (rather than presented verbatim)</li>
+                        </ul>
+                        <p style="margin-top: 10px;">This filtering process raises questions about the reliability and completeness of what was recorded.</p>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(26, 77, 122, 0.1); border-left: 4px solid #1a4d7a; border-radius: 8px;">
+                        <h4 style="color: #1a4d7a; margin-bottom: 10px;">Biased Sources</h4>
+                        <p>VOC prosecutors and officials had vested interests in maintaining slavery and the colonial racial order. Their accounts may be:</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Motivated to charge non-European people with crimes regardless of actual guilt</li>
+                            <li>Reflective of their fears and assumptions rather than facts</li>
+                            <li>Designed to justify harsh punishments and control measures</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="conclusion-box">
+                    <h3>The Challenge of Historical Evidence</h3>
+                    <p style="margin-top: 15px;">Just as historians learning about your school only from athletic records would have an incomplete and potentially misleading picture, historians studying enslavement in the Cape Colony face similar challenges when relying primarily on court records.</p>
+                    <p style="margin-top: 10px;">These documents are valuable—they provide evidence of resistance, control, community, and punishment. But they are also limited—they represent atypical events, filtered through the perspectives of those in power, from a specific time and place.</p>
+                    <p style="margin-top: 10px;"><strong>Good historians must always ask:</strong> What can this source tell me? What can't it tell me? Whose voices are included? Whose voices are missing? What other sources would I need to get a fuller picture?</p>
+                </div>
+
+                <div class="navigation-buttons">
+                    <button class="btn btn-primary" onclick="downloadWorksheet()">📄 Download as PDF</button>
+                    <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn" style="background: #0f5c2e;">📤 Submit to Professor</button>
+                    <button class="btn" onclick="previousPhase()">← Back to Review</button>
+                </div>
+
+                <div id="submitMessage" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const SUBMISSION_CUTOFF = null;
+
+        let currentPhase = 0;
+        let verdictSubmitted = false;
+        let discussionSubmitted = false;
+
+        function validatePhase(phase) {
+            let requiredFields = [];
+            let phaseName = '';
+
+            switch(phase) {
+                case 0: // Background - warmup question
+                    requiredFields = ['warmup-q1'];
+                    phaseName = 'Warm-up Question';
+                    break;
+                case 1: // Document A
+                    requiredFields = ['docA-q1', 'docA-q2', 'docA-q3', 'docA-q4', 'docA-q5', 'docA-q6'];
+                    phaseName = 'Document A';
+                    break;
+                case 2: // Document B
+                    requiredFields = ['docB-q1', 'docB-q2', 'docB-q3', 'docB-q4', 'docB-q5', 'docB-q6'];
+                    phaseName = 'Document B';
+                    break;
+                case 3: // Verdict - handled separately
+                    return true;
+                case 4: // Discussion Questions
+                    requiredFields = ['discuss-q1', 'discuss-q2', 'discuss-q3', 'discuss-q4', 'discuss-q5', 'discuss-q6'];
+                    phaseName = 'Discussion Questions';
+                    break;
+            }
+
+            for (let fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    alert(`Please complete all questions in ${phaseName} before continuing.`);
+                    field.focus();
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function startInvestigation() {
+            const studentName = document.getElementById('student-name').value.trim();
+            
+            if (!studentName) {
+                alert('Please enter your name before continuing.');
+                document.getElementById('student-name').focus();
+                return;
+            }
+            
+            // Validate warmup question
+            const warmupQ1 = document.getElementById('warmup-q1').value.trim();
+            
+            if (!warmupQ1) {
+                alert('Please complete the warm-up question before continuing to Document A.');
+                document.getElementById('warmup-q1').focus();
+                return;
+            }
+            
+            showPhase(1);
+        }
+
+        function updateProgress(phase) {
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index < phase) {
+                    step.classList.add('completed');
+                } else if (index === phase) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        function showPhase(phase) {
+            document.querySelectorAll('.phase-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.getElementById(`phase${phase}`).classList.add('active');
+            
+            updateProgress(phase);
+            currentPhase = phase;
+            window.scrollTo(0, 0);
+        }
+
+        function nextPhase() {
+            if (currentPhase < 5) {
+                // Validate current phase before advancing
+                if (currentPhase >= 0 && currentPhase <= 2) {
+                    if (!validatePhase(currentPhase)) {
+                        return;
+                    }
+                }
+                
+                if (currentPhase === 3 && !verdictSubmitted) {
+                    alert('Please submit your verdict before continuing.');
+                    return;
+                }
+
+                if (currentPhase === 4 && !discussionSubmitted) {
+                    alert('Please submit your discussion responses before continuing.');
+                    return;
+                }
+                showPhase(currentPhase + 1);
+            }
+        }
+
+        function previousPhase() {
+            if (currentPhase > 0) {
+                showPhase(currentPhase - 1);
+            }
+        }
+
+        function submitVerdict() {
+            // Validate fairness question
+            const fairness = document.getElementById('verdict-fairness').value.trim();
+            if (!fairness) {
+                alert('Please answer the question about whether the defendants received fair trials.');
+                document.getElementById('verdict-fairness').focus();
+                return;
+            }
+
+            // Validate 1736 verdict
+            const verdict1736 = document.querySelector('input[name="verdict-1736"]:checked');
+            const reasoning1736 = document.getElementById('verdict-1736-reasoning').value.trim();
+            const sentence1736 = document.getElementById('verdict-1736-sentence').value.trim();
+
+            if (!verdict1736) {
+                alert('Please select a verdict (Guilty or Not Guilty) for the 1736 case.');
+                return;
+            }
+            if (!reasoning1736) {
+                alert('Please explain your reasoning for the 1736 verdict.');
+                document.getElementById('verdict-1736-reasoning').focus();
+                return;
+            }
+            if (!sentence1736) {
+                alert('Please explain your sentencing decision for the 1736 case.');
+                document.getElementById('verdict-1736-sentence').focus();
+                return;
+            }
+
+            // Validate 1738 verdict
+            const verdict1738 = document.querySelector('input[name="verdict-1738"]:checked');
+            const reasoning1738 = document.getElementById('verdict-1738-reasoning').value.trim();
+            const sentence1738 = document.getElementById('verdict-1738-sentence').value.trim();
+
+            if (!verdict1738) {
+                alert('Please select a verdict (Guilty or Not Guilty) for the 1738 case.');
+                return;
+            }
+            if (!reasoning1738) {
+                alert('Please explain your reasoning for the 1738 verdict.');
+                document.getElementById('verdict-1738-reasoning').focus();
+                return;
+            }
+            if (!sentence1738) {
+                alert('Please explain your sentencing decision for the 1738 case.');
+                document.getElementById('verdict-1738-sentence').focus();
+                return;
+            }
+
+            verdictSubmitted = true;
+            updateProgress(4);
+            alert('Verdict submitted! You can now continue to the discussion questions.');
+            nextPhase();
+        }
+
+        function submitDiscussion() {
+            if (!validatePhase(4)) {
+                return;
+            }
+
+            discussionSubmitted = true;
+            updateProgress(5);
+            alert('Discussion responses submitted! You can now see what we can conclude from these documents.');
+            nextPhase();
+        }
+
+        function downloadWorksheet() {
+            const studentName = document.getElementById('student-name').value.trim();
+            
+            if (!studentName) {
+                alert('Please enter your name in the Background section.');
+                showPhase(0);
+                return;
+            }
+
+            if (!verdictSubmitted) {
+                alert('Please complete your verdict before downloading.');
+                return;
+            }
+
+            if (!discussionSubmitted) {
+                alert('Please complete your discussion responses before downloading.');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                function addText(text, size = 12, isBold = false) {
+                    doc.setFontSize(size);
+                    if (isBold) {
+                        doc.setFont(undefined, 'bold');
+                    } else {
+                        doc.setFont(undefined, 'normal');
+                    }
+
+                    const lines = doc.splitTextToSize(text, 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3;
+                }
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Cape Colony Enslavement Investigation', 20, y);
+                y += 10;
+                
+                doc.setFontSize(12);
+                doc.text('What can court cases tell us about enslavement?', 20, y);
+                y += 15;
+
+                addText(`Student: ${studentName}`, 12, true);
+                const sectionNumber = document.getElementById('section-number').value.trim();
+                if (sectionNumber) {
+                    addText(`Section: ${sectionNumber}`, 12, true);
+                }
+                addText(`Completed: ${new Date().toLocaleString()}`, 10);
+                y += 5;
+
+                addText('WARM-UP QUESTION', 14, true);
+                y += 2;
+                addText('What might historians conclude about your school based only on athletic records?', 11, true);
+                addText(document.getElementById('warmup-q1').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('DOCUMENT A ANALYSIS', 14, true);
+                y += 2;
+                addText('1. When did this court case take place?', 11, true);
+                addText(document.getElementById('docA-q1').value || '[Not answered]', 10);
+                y += 3;
+                addText('2. Who was van den Hengel and why might we not trust his statement?', 11, true);
+                addText(document.getElementById('docA-q2').value || '[Not answered]', 10);
+                y += 3;
+                addText('3. Who were the defendants and what evidence was presented?', 11, true);
+                addText(document.getElementById('docA-q3').value || '[Not answered]', 10);
+                y += 3;
+                addText('4. What punishment did the prosecutor recommend?', 11, true);
+                addText(document.getElementById('docA-q4').value || '[Not answered]', 10);
+                y += 3;
+                addText('5. Why were VOC officials concerned? What does this suggest about resistance?', 11, true);
+                addText(document.getElementById('docA-q5').value || '[Not answered]', 10);
+                y += 3;
+                addText('6. What might the prosecutor\'s statement suggest about enslaved people\'s experiences?', 11, true);
+                addText(document.getElementById('docA-q6').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('DOCUMENT B ANALYSIS', 14, true);
+                y += 2;
+                addText('1. When did this court case take place?', 11, true);
+                addText(document.getElementById('docB-q1').value || '[Not answered]', 10);
+                y += 3;
+                addText('2. Who recorded this statement and why might we not trust it?', 11, true);
+                addText(document.getElementById('docB-q2').value || '[Not answered]', 10);
+                y += 3;
+                addText('3. Who were the defendants and what evidence was presented?', 11, true);
+                addText(document.getElementById('docB-q3').value || '[Not answered]', 10);
+                y += 3;
+                addText('4. What did the defendants say they were doing?', 11, true);
+                addText(document.getElementById('docB-q4').value || '[Not answered]', 10);
+                y += 3;
+                addText('5. Why might the recording process cause us to doubt reliability?', 11, true);
+                addText(document.getElementById('docB-q5').value || '[Not answered]', 10);
+                y += 3;
+                addText('6. What effect might public punishments have had?', 11, true);
+                addText(document.getElementById('docB-q6').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('YOUR VERDICT', 14, true);
+                y += 2;
+                addText('Did the defendants receive fair trials?', 11, true);
+                addText(document.getElementById('verdict-fairness').value || '[Not answered]', 10);
+                y += 3;
+                const verdict1736 = document.querySelector('input[name="verdict-1736"]:checked');
+                addText('1736 Case Verdict: ' + (verdict1736 ? verdict1736.value.toUpperCase() : 'NOT SELECTED'), 11, true);
+                addText('Reasoning:', 11, true);
+                addText(document.getElementById('verdict-1736-reasoning').value || '[Not answered]', 10);
+                y += 3;
+                addText('Sentencing:', 11, true);
+                addText(document.getElementById('verdict-1736-sentence').value || '[Not answered]', 10);
+                y += 3;
+                const verdict1738 = document.querySelector('input[name="verdict-1738"]:checked');
+                addText('1738 Case Verdict: ' + (verdict1738 ? verdict1738.value.toUpperCase() : 'NOT SELECTED'), 11, true);
+                addText('Reasoning:', 11, true);
+                addText(document.getElementById('verdict-1738-reasoning').value || '[Not answered]', 10);
+                y += 3;
+                addText('Sentencing:', 11, true);
+                addText(document.getElementById('verdict-1738-sentence').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('DISCUSSION QUESTIONS', 14, true);
+                y += 2;
+                addText('1. What do Documents A and B have in common?', 11, true);
+                addText(document.getElementById('discuss-q1').value || '[Not answered]', 10);
+                y += 3;
+                addText('2. How does time and place limit our conclusions?', 11, true);
+                addText(document.getElementById('discuss-q2').value || '[Not answered]', 10);
+                y += 3;
+                addText('3. How does the fact that most enslaved people never appeared in court limit our conclusions?', 11, true);
+                addText(document.getElementById('discuss-q3').value || '[Not answered]', 10);
+                y += 3;
+                addText('4. How does the absence of defendants\' statements limit these documents?', 11, true);
+                addText(document.getElementById('discuss-q4').value || '[Not answered]', 10);
+                y += 3;
+                addText('5. What do these documents suggest about resistance to enslavement?', 11, true);
+                addText(document.getElementById('discuss-q5').value || '[Not answered]', 10);
+                y += 3;
+                addText('6. How might these documents still be useful despite their limitations?', 11, true);
+                addText(document.getElementById('discuss-q6').value || '[Not answered]', 10);
+
+                const fileName = `Cape_Colony_${studentName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+
+                alert('PDF downloaded successfully!');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('There was an error generating the PDF. Please make sure all fields are completed.');
+            }
+        }
+
+        async function submitToSupabase() {
+            if (SUBMISSION_CUTOFF) {
+                const cutoffDate = new Date(SUBMISSION_CUTOFF);
+                const now = new Date();
+                if (now > cutoffDate) {
+                    alert('The submission deadline has passed. Please contact your professor if you need an extension.');
+                    return;
+                }
+            }
+
+            const studentName = document.getElementById('student-name').value.trim();
+            const sectionNumber = document.getElementById('section-number').value.trim();
+
+            if (!studentName) {
+                alert('Please enter your name in the Background section.');
+                showPhase(0);
+                return;
+            }
+
+            if (!sectionNumber) {
+                alert('Please enter your section number in the Background section.');
+                showPhase(0);
+                document.getElementById('section-number').focus();
+                return;
+            }
+
+            if (!verdictSubmitted) {
+                alert('Please complete your verdict before submitting.');
+                return;
+            }
+
+            if (!discussionSubmitted) {
+                alert('Please complete your discussion responses before submitting.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('submitMessage');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Submitting...';
+            messageDiv.innerHTML = '<div style="background: #f5f0e6; border: 2px solid #1a4d7a; padding: 20px; border-radius: 8px;">Generating and uploading your PDF...</div>';
+
+            try {
+                await ensureSupabaseSession();
+                const pdfBlob = await generatePDFBlob();
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+                const fileName = `cape-colony-enslavement/${sectionNumber}/${sanitizedName}_${timestamp}.pdf`;
+
+                const { error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    throw new Error(`Upload failed: ${uploadError.message}`);
+                }
+
+                const { data: urlData } = supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .getPublicUrl(fileName);
+
+                const formData = {
+                    studentName: studentName,
+                    sectionNumber: sectionNumber,
+                    warmup: {
+                        q1: document.getElementById('warmup-q1').value
+                    },
+                    documentA: {
+                        q1: document.getElementById('docA-q1').value,
+                        q2: document.getElementById('docA-q2').value,
+                        q3: document.getElementById('docA-q3').value,
+                        q4: document.getElementById('docA-q4').value,
+                        q5: document.getElementById('docA-q5').value,
+                        q6: document.getElementById('docA-q6').value
+                    },
+                    documentB: {
+                        q1: document.getElementById('docB-q1').value,
+                        q2: document.getElementById('docB-q2').value,
+                        q3: document.getElementById('docB-q3').value,
+                        q4: document.getElementById('docB-q4').value,
+                        q5: document.getElementById('docB-q5').value,
+                        q6: document.getElementById('docB-q6').value
+                    },
+                    verdict: {
+                        fairness: document.getElementById('verdict-fairness').value,
+                        verdict1736: document.querySelector('input[name="verdict-1736"]:checked')?.value,
+                        reasoning1736: document.getElementById('verdict-1736-reasoning').value,
+                        sentence1736: document.getElementById('verdict-1736-sentence').value,
+                        verdict1738: document.querySelector('input[name="verdict-1738"]:checked')?.value,
+                        reasoning1738: document.getElementById('verdict-1738-reasoning').value,
+                        sentence1738: document.getElementById('verdict-1738-sentence').value
+                    },
+                    discussion: {
+                        q1: document.getElementById('discuss-q1').value,
+                        q2: document.getElementById('discuss-q2').value,
+                        q3: document.getElementById('discuss-q3').value,
+                        q4: document.getElementById('discuss-q4').value,
+                        q5: document.getElementById('discuss-q5').value,
+                        q6: document.getElementById('discuss-q6').value
+                    }
+                };
+
+                await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: 'cape-colony-enslavement',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    });
+
+                messageDiv.innerHTML = '<div style="background: #0f5c2e; color: #f4e4c1; padding: 20px; border-radius: 8px; border-left: 5px solid #d4af37;">✅ Successfully submitted! Your work has been sent to Prof. Hauselmann.</div>';
+                submitBtn.textContent = '✓ Submitted';
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                messageDiv.innerHTML = `<div style="background: rgba(139, 26, 26, 0.2); color: #2c1810; padding: 20px; border-radius: 8px; border-left: 5px solid #8b1a1a;">❌ Submission failed: ${error.message}. Please try again or download the PDF and email it to your professor.</div>`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Submit to Professor';
+            }
+        }
+
+        async function ensureSupabaseSession() {
+            const { data } = await supabaseClient.auth.getSession();
+            if (data?.session) {
+                return;
+            }
+
+            const { error } = await supabaseClient.auth.signInAnonymously();
+            if (error) {
+                throw new Error(`Authentication failed: ${error.message}`);
+            }
+        }
+
+        function generatePDFBlob() {
+            return new Promise((resolve) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                function addText(text, size = 12, isBold = false) {
+                    doc.setFontSize(size);
+                    if (isBold) {
+                        doc.setFont(undefined, 'bold');
+                    } else {
+                        doc.setFont(undefined, 'normal');
+                    }
+
+                    const lines = doc.splitTextToSize(text, 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3;
+                }
+
+                const studentName = document.getElementById('student-name').value.trim();
+                const sectionNumber = document.getElementById('section-number').value.trim();
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Cape Colony Investigation', 20, y);
+                y += 10;
+                
+                doc.setFontSize(12);
+                doc.text('Enslavement in the Cape Colony, South Africa', 20, y);
+                y += 15;
+
+                addText(`Student: ${studentName}`, 12, true);
+                if (sectionNumber) {
+                    addText(`Section: ${sectionNumber}`, 12, true);
+                }
+                addText(`Completed: ${new Date().toLocaleString()}`, 10);
+                y += 5;
+
+                addText('WARM-UP', 14, true);
+                y += 2;
+                addText('What might historians conclude based only on athletic records?', 11, true);
+                addText(document.getElementById('warmup-q1').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('DOCUMENT A', 14, true);
+                y += 2;
+                for (let i = 1; i <= 6; i++) {
+                    addText(`${i}.`, 11, true);
+                    addText(document.getElementById(`docA-q${i}`).value || '[Not answered]', 10);
+                    y += 3;
+                }
+                y += 5;
+
+                addText('DOCUMENT B', 14, true);
+                y += 2;
+                for (let i = 1; i <= 6; i++) {
+                    addText(`${i}.`, 11, true);
+                    addText(document.getElementById(`docB-q${i}`).value || '[Not answered]', 10);
+                    y += 3;
+                }
+                y += 5;
+
+                addText('YOUR VERDICT', 14, true);
+                y += 2;
+                addText('Fair trials?', 11, true);
+                addText(document.getElementById('verdict-fairness').value || '[Not answered]', 10);
+                y += 3;
+                const v1736 = document.querySelector('input[name="verdict-1736"]:checked');
+                addText('1736: ' + (v1736 ? v1736.value.toUpperCase() : 'NOT SELECTED'), 11, true);
+                addText(document.getElementById('verdict-1736-reasoning').value || '[Not answered]', 10);
+                addText(document.getElementById('verdict-1736-sentence').value || '[Not answered]', 10);
+                y += 3;
+                const v1738 = document.querySelector('input[name="verdict-1738"]:checked');
+                addText('1738: ' + (v1738 ? v1738.value.toUpperCase() : 'NOT SELECTED'), 11, true);
+                addText(document.getElementById('verdict-1738-reasoning').value || '[Not answered]', 10);
+                addText(document.getElementById('verdict-1738-sentence').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('DISCUSSION', 14, true);
+                y += 2;
+                for (let i = 1; i <= 6; i++) {
+                    addText(`${i}.`, 11, true);
+                    addText(document.getElementById(`discuss-q${i}`).value || '[Not answered]', 10);
+                    y += 3;
+                }
+
+                resolve(doc.output('blob'));
+            });
+        }
+
+        // Auto-save to localStorage
+        setInterval(() => {
+            const state = {
+                studentName: document.getElementById('student-name').value,
+                sectionNumber: document.getElementById('section-number').value,
+                warmup: {
+                    q1: document.getElementById('warmup-q1').value
+                },
+                docA: {
+                    q1: document.getElementById('docA-q1').value,
+                    q2: document.getElementById('docA-q2').value,
+                    q3: document.getElementById('docA-q3').value,
+                    q4: document.getElementById('docA-q4').value,
+                    q5: document.getElementById('docA-q5').value,
+                    q6: document.getElementById('docA-q6').value
+                },
+                docB: {
+                    q1: document.getElementById('docB-q1').value,
+                    q2: document.getElementById('docB-q2').value,
+                    q3: document.getElementById('docB-q3').value,
+                    q4: document.getElementById('docB-q4').value,
+                    q5: document.getElementById('docB-q5').value,
+                    q6: document.getElementById('docB-q6').value
+                },
+                verdict: {
+                    fairness: document.getElementById('verdict-fairness').value,
+                    verdict1736: document.querySelector('input[name="verdict-1736"]:checked')?.value,
+                    reasoning1736: document.getElementById('verdict-1736-reasoning').value,
+                    sentence1736: document.getElementById('verdict-1736-sentence').value,
+                    verdict1738: document.querySelector('input[name="verdict-1738"]:checked')?.value,
+                    reasoning1738: document.getElementById('verdict-1738-reasoning').value,
+                    sentence1738: document.getElementById('verdict-1738-sentence').value
+                },
+                discussion: {
+                    q1: document.getElementById('discuss-q1').value,
+                    q2: document.getElementById('discuss-q2').value,
+                    q3: document.getElementById('discuss-q3').value,
+                    q4: document.getElementById('discuss-q4').value,
+                    q5: document.getElementById('discuss-q5').value,
+                    q6: document.getElementById('discuss-q6').value
+                }
+            };
+            localStorage.setItem('capeColonyEnslavement', JSON.stringify(state));
+        }, 30000);
+
+        // Load saved state on page load
+        window.onload = function() {
+            const saved = localStorage.getItem('capeColonyEnslavement');
+            if (saved) {
+                const shouldRestore = confirm('Would you like to restore your previous session?');
+                if (shouldRestore) {
+                    const state = JSON.parse(saved);
+                    document.getElementById('student-name').value = state.studentName || '';
+                    document.getElementById('section-number').value = state.sectionNumber || '';
+                    document.getElementById('warmup-q1').value = state.warmup.q1 || '';
+                    document.getElementById('docA-q1').value = state.docA.q1 || '';
+                    document.getElementById('docA-q2').value = state.docA.q2 || '';
+                    document.getElementById('docA-q3').value = state.docA.q3 || '';
+                    document.getElementById('docA-q4').value = state.docA.q4 || '';
+                    document.getElementById('docA-q5').value = state.docA.q5 || '';
+                    document.getElementById('docA-q6').value = state.docA.q6 || '';
+                    document.getElementById('docB-q1').value = state.docB.q1 || '';
+                    document.getElementById('docB-q2').value = state.docB.q2 || '';
+                    document.getElementById('docB-q3').value = state.docB.q3 || '';
+                    document.getElementById('docB-q4').value = state.docB.q4 || '';
+                    document.getElementById('docB-q5').value = state.docB.q5 || '';
+                    document.getElementById('docB-q6').value = state.docB.q6 || '';
+                    document.getElementById('verdict-fairness').value = state.verdict?.fairness || '';
+                    if (state.verdict?.verdict1736) {
+                        const radio1736 = document.getElementById(`verdict-1736-${state.verdict.verdict1736}`);
+                        if (radio1736) radio1736.checked = true;
+                    }
+                    document.getElementById('verdict-1736-reasoning').value = state.verdict?.reasoning1736 || '';
+                    document.getElementById('verdict-1736-sentence').value = state.verdict?.sentence1736 || '';
+                    if (state.verdict?.verdict1738) {
+                        const radio1738 = document.getElementById(`verdict-1738-${state.verdict.verdict1738}`);
+                        if (radio1738) radio1738.checked = true;
+                    }
+                    document.getElementById('verdict-1738-reasoning').value = state.verdict?.reasoning1738 || '';
+                    document.getElementById('verdict-1738-sentence').value = state.verdict?.sentence1738 || '';
+                    document.getElementById('discuss-q1').value = state.discussion.q1 || '';
+                    document.getElementById('discuss-q2').value = state.discussion.q2 || '';
+                    document.getElementById('discuss-q3').value = state.discussion.q3 || '';
+                    document.getElementById('discuss-q4').value = state.discussion.q4 || '';
+                    document.getElementById('discuss-q5').value = state.discussion.q5 || '';
+                    document.getElementById('discuss-q6').value = state.discussion.q6 || '';
+                }
+            }
+        };
+
+        // Initialize
+        updateProgress(0);
+    </script>
+</body>
+</html>
