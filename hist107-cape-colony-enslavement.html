@@ -1439,7 +1439,6 @@
             messageDiv.innerHTML = '<div style="background: #f5f0e6; border: 2px solid #1a4d7a; padding: 20px; border-radius: 8px;">Generating and uploading your PDF...</div>';
 
             try {
-                await ensureSupabaseSession();
                 const pdfBlob = await generatePDFBlob();
 
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -1524,18 +1523,6 @@
                 messageDiv.innerHTML = `<div style="background: rgba(139, 26, 26, 0.2); color: #2c1810; padding: 20px; border-radius: 8px; border-left: 5px solid #8b1a1a;">❌ Submission failed: ${error.message}. Please try again or download the PDF and email it to your professor.</div>`;
                 submitBtn.disabled = false;
                 submitBtn.textContent = '📤 Submit to Professor';
-            }
-        }
-
-        async function ensureSupabaseSession() {
-            const { data } = await supabaseClient.auth.getSession();
-            if (data?.session) {
-                return;
-            }
-
-            const { error } = await supabaseClient.auth.signInAnonymously();
-            if (error) {
-                throw new Error(`Authentication failed: ${error.message}`);
             }
         }
 
