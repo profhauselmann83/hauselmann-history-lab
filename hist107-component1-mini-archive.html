@@ -213,6 +213,16 @@
         font-weight: bold;
     }
 
+    .source-submitted {
+        background-color: #27ae60;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
     .delete-source {
         background-color: #e74c3c;
         color: white;
@@ -226,6 +236,36 @@
 
     .delete-source:hover {
         background-color: #c0392b;
+    }
+
+    .source-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .btn-submit-source {
+        background-color: #3498db;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.95em;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-submit-source:hover {
+        background-color: #2980b9;
+    }
+
+    .btn-submit-source:disabled {
+        background-color: #95a5a6;
+        cursor: not-allowed;
+        opacity: 0.6;
     }
 
     .button-group {
@@ -474,7 +514,7 @@
             <li>Provide full annotations for each source</li>
             <li>Include proper Turabian-style citations</li>
             <li>Explain what each source reveals and what it cannot tell us</li>
-            <li><strong>You can submit sources one at a time as you complete them</strong></li>
+            <li><strong>Submit sources individually as you complete them using the "Submit This Source" button on each source card</strong></li>
         </ul>
     </div>
 
@@ -510,7 +550,6 @@
         <button class="btn btn-secondary" type="button" onclick="exportWork()">📄 Export as PDF</button>
         <button class="btn btn-secondary" type="button" onclick="exportText()">📄 Export as Text File</button>
         <button class="btn btn-secondary" type="button" onclick="clearWork()">🧹 Clear Form</button>
-        <button class="btn btn-primary" type="button" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
     </div>
     <div id="submitMessage"></div>
 </div>
@@ -577,7 +616,8 @@
             historical_question: '',
             limitations: '',
             question_raised: '',
-            url: ''
+            url: '',
+            submitted: false
         }
         sources.push(source)
         renderSources()
@@ -621,7 +661,10 @@
         container.innerHTML = sources.map((source, index) => `
             <div class="source-card">
                 <h4>
-                    <span><span class="source-number">Source ${index + 1}</span></span>
+                    <span>
+                        <span class="source-number">Source ${index + 1}</span>
+                        ${source.submitted ? '<span class="source-submitted">✓ Submitted</span>' : ''}
+                    </span>
                     <button class="delete-source" onclick="deleteSource(${source.id})">🗑️ Delete</button>
                 </h4>
 
@@ -676,6 +719,13 @@
                     <input type="url" data-source-id="${source.id}" data-field="url" placeholder="https://" value="${source.url}">
                     <div class="help-text">Include a link if this source is available online</div>
                 </div>
+
+                <div class="source-actions">
+                    <button class="btn-submit-source" id="submit-source-${source.id}" onclick="submitSingleSource(${source.id})">
+                        ${source.submitted ? '✓ Update This Source' : '📤 Submit This Source'}
+                    </button>
+                    <div id="source-status-${source.id}" style="flex: 1; padding: 10px; font-size: 0.9em;"></div>
+                </div>
             </div>
         `).join('')
 
@@ -727,6 +777,103 @@
 
         const percentage = Math.min((totalCompleted / totalRequired) * 100, 100)
         document.getElementById('progressFill').style.width = percentage + '%'
+    }
+
+    async function submitSingleSource(sourceId) {
+        const source = sources.find(s => s.id === sourceId)
+        if (!source) return
+
+        const studentName = document.getElementById('student-name').value.trim()
+        const sectionNumber = document.getElementById('section-number').value.trim()
+        const commodity = document.getElementById('commodity-name').value.trim()
+        const lens = document.getElementById('analytical-lens').value
+
+        if (!studentName) {
+            alert('Please enter your name before submitting.')
+            document.getElementById('student-name').focus()
+            return
+        }
+
+        if (!sectionNumber) {
+            alert('Please enter your section number before submitting.')
+            document.getElementById('section-number').focus()
+            return
+        }
+
+        if (!commodity) {
+            alert('Please enter your commodity before submitting.')
+            document.getElementById('commodity-name').focus()
+            return
+        }
+
+        if (!lens) {
+            alert('Please select your analytical lens before submitting.')
+            document.getElementById('analytical-lens').focus()
+            return
+        }
+
+        // Basic validation - just need citation and type
+        if (!source.citation || source.citation.length < 5) {
+            alert('Please provide a citation for this source.')
+            return
+        }
+
+        if (!source.source_type) {
+            alert('Please select a source type.')
+            return
+        }
+
+        const submitBtn = document.getElementById(`submit-source-${sourceId}`)
+        const statusDiv = document.getElementById(`source-status-${sourceId}`)
+
+        submitBtn.disabled = true
+        submitBtn.textContent = '⏳ Submitting...'
+        statusDiv.innerHTML = '<span style="color: #f39c12;">Uploading...</span>'
+
+        try {
+            // Create a unique ID for this source based on student + commodity + citation
+            const sourceUniqueId = `${studentName.toLowerCase().replace(/\s/g, '_')}_${commodity.toLowerCase().replace(/\s/g, '_')}_${source.citation.substring(0, 50).toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+
+            // Upsert to class archive - will update if exists, insert if new
+            const { error: archiveError } = await supabaseClient
+                .from('hist107_class_archive')
+                .upsert({
+                    source_id: sourceUniqueId,
+                    student_name: studentName,
+                    section_number: sectionNumber,
+                    commodity: commodity,
+                    analytical_lens: lens,
+                    citation: source.citation,
+                    source_type: source.source_type,
+                    producer: source.producer,
+                    historical_question: source.historical_question,
+                    limitations: source.limitations,
+                    question_raised: source.question_raised,
+                    url: source.url,
+                    submitted_at: new Date().toISOString()
+                }, { onConflict: 'source_id' })
+
+            if (archiveError) {
+                throw archiveError
+            }
+
+            // Mark as submitted
+            source.submitted = true
+            await saveWork(true)
+
+            statusDiv.innerHTML = '<span style="color: #27ae60;">✓ Successfully submitted!</span>'
+            submitBtn.textContent = '✓ Update This Source'
+            submitBtn.disabled = false
+
+            // Re-render to show submitted badge
+            renderSources()
+
+        } catch (error) {
+            console.error('Submission error:', error)
+            statusDiv.innerHTML = `<span style="color: #e74c3c;">❌ Failed: ${error.message}</span>`
+            submitBtn.disabled = false
+            submitBtn.textContent = source.submitted ? '✓ Update This Source' : '📤 Submit This Source'
+        }
     }
 
     async function saveWork(silent = false) {
@@ -945,274 +1092,6 @@
 
         updateProgress()
         showMessage('🧹 Form cleared.', 'success')
-    }
-
-    async function submitToSupabase() {
-        if (SUBMISSION_CUTOFF) {
-            const cutoffDate = new Date(SUBMISSION_CUTOFF)
-            const now = new Date()
-            if (now > cutoffDate) {
-                alert('The submission deadline has passed. Please contact your professor if you need an extension.')
-                return
-            }
-        }
-
-        const studentName = document.getElementById('student-name').value.trim()
-        const sectionNumber = document.getElementById('section-number').value.trim()
-
-        if (!studentName) {
-            alert('Please enter your name before submitting.')
-            document.getElementById('student-name').focus()
-            return
-        }
-
-        if (!sectionNumber) {
-            alert('Please enter your section number before submitting.')
-            document.getElementById('section-number').focus()
-            return
-        }
-
-        // CHANGED: Allow submission with at least 1 complete source instead of 3
-        if (sources.length === 0) {
-            alert('You must add at least 1 source before submitting.')
-            return
-        }
-
-        // Check if at least one source is complete
-        const completeSource = sources.find(s => {
-            return s.citation.length > 10 &&
-                   s.source_type.length > 0 &&
-                   s.producer.length > 10 &&
-                   s.historical_question.length > 20 &&
-                   s.limitations.length > 20 &&
-                   s.question_raised.length > 10
-        })
-
-        if (!completeSource) {
-            alert('Please complete at least one source with all required fields before submitting.')
-            return
-        }
-
-        const submitBtn = document.getElementById('submitBtn')
-        const messageDiv = document.getElementById('submitMessage')
-
-        submitBtn.disabled = true
-        submitBtn.textContent = '⏳ Submitting...'
-        messageDiv.innerHTML = '<div class="alert" style="background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;">Generating and uploading your work...</div>'
-
-        try {
-            // Try PDF upload (non-blocking — form data is saved regardless)
-            let fileUrl = null
-            let fileName = null
-            try {
-                const pdfBlob = await generatePDFBlob()
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_')
-                const commodity = document.getElementById('commodity-name').value.replace(/[^a-zA-Z0-9]/g, '_') || 'commodity'
-                fileName = `hist107-mini-archive/${sectionNumber}/${sanitizedName}_${commodity}_${timestamp}.pdf`
-
-                const { error: uploadError } = await supabaseClient
-                    .storage
-                    .from('student-submissions')
-                    .upload(fileName, pdfBlob, {
-                        contentType: 'application/pdf',
-                        upsert: false
-                    })
-
-                if (uploadError) {
-                    console.warn('PDF upload skipped:', uploadError.message)
-                    fileName = null
-                } else {
-                    const { data: urlData } = supabaseClient
-                        .storage
-                        .from('student-submissions')
-                        .getPublicUrl(fileName)
-                    fileUrl = urlData.publicUrl
-                }
-            } catch (pdfErr) {
-                console.warn('PDF generation/upload skipped:', pdfErr.message)
-            }
-
-            // Save worksheet metadata (if PDF uploaded)
-            if (fileName) {
-                const formData = {
-                    commodity_name: document.getElementById('commodity-name').value,
-                    analytical_lens: document.getElementById('analytical-lens').value,
-                    sources: sources
-                }
-
-                const { error: dbError } = await supabaseClient
-                    .from('worksheet_submissions')
-                    .insert({
-                        student_name: studentName,
-                        section_number: sectionNumber,
-                        worksheet_type: 'hist107-mini-archive',
-                        file_path: fileName,
-                        file_url: fileUrl,
-                        form_data: formData,
-                        submitted_at: new Date().toISOString()
-                    })
-
-                if (dbError) {
-                    console.warn('Metadata save warning:', dbError.message)
-                }
-            }
-
-            // Save to the class archive table for viewing
-            for (const source of sources) {
-                const { error: archiveError } = await supabaseClient
-                    .from('hist107_class_archive')
-                    .insert({
-                        student_name: studentName,
-                        section_number: sectionNumber,
-                        commodity: document.getElementById('commodity-name').value,
-                        analytical_lens: document.getElementById('analytical-lens').value,
-                        citation: source.citation,
-                        source_type: source.source_type,
-                        producer: source.producer,
-                        historical_question: source.historical_question,
-                        limitations: source.limitations,
-                        question_raised: source.question_raised,
-                        url: source.url,
-                        submitted_at: new Date().toISOString()
-                    })
-
-                if (archiveError) {
-                    throw archiveError
-                }
-            }
-
-            const sourceCount = sources.length
-            messageDiv.innerHTML = `<div class="alert alert-success">✅ Successfully submitted ${sourceCount} source${sourceCount > 1 ? 's' : ''}! Your work has been sent to Prof. Hauselmann and added to the class archive. You can continue to add more sources if needed.</div>`
-            submitBtn.textContent = '✓ Submitted'
-            
-            // Re-enable submit button after 3 seconds to allow additional submissions
-            setTimeout(() => {
-                submitBtn.disabled = false
-                submitBtn.textContent = '📤 Submit to Professor'
-            }, 3000)
-
-        } catch (error) {
-            console.error('Submission error:', error)
-            messageDiv.innerHTML = `<div class="alert alert-error">❌ Submission failed: ${error.message}. Please try again or export the PDF and email it to your professor.</div>`
-            submitBtn.disabled = false
-            submitBtn.textContent = '📤 Submit to Professor'
-        }
-    }
-
-    function generatePDFBlob() {
-        return new Promise((resolve) => {
-            const { jsPDF } = window.jspdf
-            const doc = new jsPDF()
-
-            const lineHeight = 7
-            const pageWidth = 190
-            const pageHeight = 280
-            let y = 20
-
-            function checkPageOverflow(neededSpace) {
-                if (y + neededSpace > pageHeight) {
-                    doc.addPage()
-                    y = 20
-                }
-            }
-
-            function addWrappedText(text, x, maxWidth) {
-                const lines = doc.splitTextToSize(text, maxWidth)
-                lines.forEach((line) => {
-                    if (y + lineHeight > pageHeight) {
-                        doc.addPage()
-                        y = 20
-                    }
-                    doc.text(line, x, y)
-                    y += lineHeight
-                })
-            }
-
-            doc.setFontSize(16)
-            doc.setFont(undefined, 'bold')
-            doc.text('HIST 107 Component 1: Curated Mini-Archive', 105, y, { align: 'center' })
-            y += 10
-
-            doc.setFontSize(12)
-            doc.setFont(undefined, 'normal')
-            doc.text('Individual Source Contributions', 105, y, { align: 'center' })
-            y += 15
-
-            doc.setFontSize(10)
-            const studentName = document.getElementById('student-name').value
-            const sectionNumber = document.getElementById('section-number').value
-            const commodity = document.getElementById('commodity-name').value
-            const lens = document.getElementById('analytical-lens').value
-
-            if (studentName) {
-                doc.text(`Student: ${studentName}`, 20, y)
-                y += 8
-            }
-            if (sectionNumber) {
-                doc.text(`Section: ${sectionNumber}`, 20, y)
-                y += 8
-            }
-            if (commodity) {
-                doc.text(`Commodity: ${commodity}`, 20, y)
-                y += 8
-            }
-            if (lens) {
-                doc.text(`Analytical Lens: ${lens}`, 20, y)
-                y += 8
-            }
-            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y)
-            y += 15
-
-            sources.forEach((source, index) => {
-                checkPageOverflow(30)
-                doc.setFontSize(12)
-                doc.setFont(undefined, 'bold')
-                doc.text(`Source ${index + 1}`, 20, y)
-                y += 10
-
-                doc.setFontSize(10)
-                doc.setFont(undefined, 'normal')
-
-                doc.text('Citation:', 20, y)
-                y += 7
-                addWrappedText(source.citation || '[Not provided]', 25, pageWidth - 25)
-                y += 5
-
-                doc.text(`Type: ${source.source_type || '[Not specified]'}`, 20, y)
-                y += 10
-
-                doc.text('Producer & Date:', 20, y)
-                y += 7
-                addWrappedText(source.producer || '[Not provided]', 25, pageWidth - 25)
-                y += 5
-
-                doc.text('Historical Question Addressed:', 20, y)
-                y += 7
-                addWrappedText(source.historical_question || '[Not provided]', 25, pageWidth - 25)
-                y += 5
-
-                doc.text('Limitations:', 20, y)
-                y += 7
-                addWrappedText(source.limitations || '[Not provided]', 25, pageWidth - 25)
-                y += 5
-
-                doc.text('Question Raised:', 20, y)
-                y += 7
-                addWrappedText(source.question_raised || '[Not provided]', 25, pageWidth - 25)
-                y += 5
-
-                if (source.url) {
-                    doc.text('URL:', 20, y)
-                    y += 7
-                    addWrappedText(source.url, 25, pageWidth - 25)
-                }
-
-                y += 10
-            })
-
-            resolve(doc.output('blob'))
-        })
     }
 
     async function viewClassArchive() {
