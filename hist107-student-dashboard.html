@@ -430,6 +430,12 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
         async function init() {
+            const { data: { user } } = await supabaseClient.auth.getUser()
+            if (!user) {
+                window.location.href = 'hist107-student-login.html?return=hist107-student-dashboard.html'
+                return
+            }
+
             await loadStats()
             await populateFilters()
             await loadRoles()
