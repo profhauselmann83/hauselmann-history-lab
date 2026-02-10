@@ -474,6 +474,7 @@
             <li>Provide full annotations for each source</li>
             <li>Include proper Turabian-style citations</li>
             <li>Explain what each source reveals and what it cannot tell us</li>
+            <li><strong>You can submit sources one at a time as you complete them</strong></li>
         </ul>
     </div>
 
@@ -504,18 +505,12 @@
 </div>
 
 <div class="section">
-    <div class="button-group" id="action-buttons">
     <div class="button-group">
         <button class="btn btn-success" type="button" onclick="saveWork()">💾 Save All Work</button>
         <button class="btn btn-secondary" type="button" onclick="exportWork()">📄 Export as PDF</button>
         <button class="btn btn-secondary" type="button" onclick="exportText()">📄 Export as Text File</button>
         <button class="btn btn-secondary" type="button" onclick="clearWork()">🧹 Clear Form</button>
         <button class="btn btn-primary" type="button" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
-        <button class="btn btn-success" onclick="saveWork()">💾 Save All Work</button>
-        <button class="btn btn-secondary" onclick="exportWork()">📄 Export as PDF</button>
-        <button class="btn btn-secondary" onclick="exportText()">📄 Export as Text File</button>
-        <button class="btn btn-secondary" onclick="clearWork()">🧹 Clear Form</button>
-        <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
     </div>
     <div id="submitMessage"></div>
 </div>
@@ -565,12 +560,6 @@
         await loadWork()
         updateProgress()
         renderSources()
-    }
-
-    function dedupeActionButtons() {
-        document.querySelectorAll('#action-buttons').forEach((group, index) => {
-            if (index > 0) group.remove()
-        })
     }
 
     function getLoginUrl() {
@@ -749,14 +738,6 @@
             sources: sources
         }
 
-        if (!currentUser) {
-            localStorage.setItem('hist107_mini_archive', JSON.stringify(data))
-            if (!silent) {
-                showMessage('✅ Progress saved locally in this browser.', 'success')
-            }
-            return
-        }
-
         const { error } = await supabaseClient
             .from('hist107_mini_archive')
             .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
@@ -771,23 +752,6 @@
     }
 
     async function loadWork() {
-        if (!currentUser) {
-            const saved = localStorage.getItem('hist107_mini_archive')
-            if (!saved) return
-            const data = JSON.parse(saved)
-
-            document.getElementById('student-name').value = data.student_name || ''
-            document.getElementById('section-number').value = data.section_number || ''
-            document.getElementById('commodity-name').value = data.commodity_name || ''
-            document.getElementById('analytical-lens').value = data.analytical_lens || ''
-            
-            if (data.sources && data.sources.length > 0) {
-                sources = data.sources
-                sourceIdCounter = Math.max(...sources.map(s => s.id)) + 1
-            }
-            return
-        }
-
         const { data, error } = await supabaseClient
             .from('hist107_mini_archive')
             .select('*')
@@ -979,7 +943,6 @@
         sourceIdCounter = 1
         renderSources()
 
-        localStorage.removeItem('hist107_mini_archive')
         updateProgress()
         showMessage('🧹 Form cleared.', 'success')
     }
@@ -1009,18 +972,29 @@
             return
         }
 
-        if (sources.length < 3) {
-            alert('You must add at least 3 sources before submitting.')
+        // CHANGED: Allow submission with at least 1 complete source instead of 3
+        if (sources.length === 0) {
+            alert('You must add at least 1 source before submitting.')
+            return
+        }
+
+        // Check if at least one source is complete
+        const completeSource = sources.find(s => {
+            return s.citation.length > 10 &&
+                   s.source_type.length > 0 &&
+                   s.producer.length > 10 &&
+                   s.historical_question.length > 20 &&
+                   s.limitations.length > 20 &&
+                   s.question_raised.length > 10
+        })
+
+        if (!completeSource) {
+            alert('Please complete at least one source with all required fields before submitting.')
             return
         }
 
         const submitBtn = document.getElementById('submitBtn')
         const messageDiv = document.getElementById('submitMessage')
-
-        if (!currentUser) {
-            messageDiv.innerHTML = `<div class="alert alert-error">❌ Please log in before submitting. <a href="${getLoginUrl()}">Log in here</a> and return to submit.</div>`
-            return
-        }
 
         submitBtn.disabled = true
         submitBtn.textContent = '⏳ Submitting...'
@@ -1108,8 +1082,15 @@
                 }
             }
 
-            messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your mini-archive has been sent to Prof. Hauselmann and added to the class archive.</div>'
+            const sourceCount = sources.length
+            messageDiv.innerHTML = `<div class="alert alert-success">✅ Successfully submitted ${sourceCount} source${sourceCount > 1 ? 's' : ''}! Your work has been sent to Prof. Hauselmann and added to the class archive. You can continue to add more sources if needed.</div>`
             submitBtn.textContent = '✓ Submitted'
+            
+            // Re-enable submit button after 3 seconds to allow additional submissions
+            setTimeout(() => {
+                submitBtn.disabled = false
+                submitBtn.textContent = '📤 Submit to Professor'
+            }, 3000)
 
         } catch (error) {
             console.error('Submission error:', error)
@@ -1304,7 +1285,6 @@
         }
     }
 
-    dedupeActionButtons()
     checkAuth()
 </script>
 
