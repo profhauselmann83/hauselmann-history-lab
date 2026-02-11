@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whose Revolution? - French Revolution Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', 'Georgia', serif;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23002654" width="100" height="100"/><path fill="%23CE1126" opacity="0.1" d="M0 0 L100 0 L100 100 Z"/></svg>');
+            background-size: cover;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="none" stroke="%23d4af37" stroke-width="0.5" opacity="0.1" width="100" height="100"/></svg>');
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f5f1e8;
+            border: 3px solid #8b7355;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 0 30px rgba(212,175,55,0.1);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid #d4af37;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #002654 0%, #CE1126 50%, #FFFFFF 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            border-bottom: 5px solid #d4af37;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .header::before {
+            content: '⚜';
+            position: absolute;
+            top: 10px;
+            left: 30px;
+            font-size: 3em;
+            opacity: 0.3;
+        }
+
+        .header::after {
+            content: '⚜';
+            position: absolute;
+            top: 10px;
+            right: 30px;
+            font-size: 3em;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+            font-weight: 700;
+        }
+
+        .header .motto {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4em;
+            font-style: italic;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            letter-spacing: 4px;
+            font-weight: 600;
+        }
+
+        .year-banner {
+            background: #8b7355;
+            color: #f5f1e8;
+            text-align: center;
+            padding: 10px;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .content {
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .phase-indicator {
+            background: linear-gradient(to bottom, #ffffff 0%, #f5f1e8 100%);
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 3px solid #8b7355;
+            border-left: 8px solid #d4af37;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 0 20px rgba(212,175,55,0.05);
+            position: relative;
+        }
+
+        .phase-indicator::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid #d4af37;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .phase-indicator h2 {
+            font-family: 'Cinzel', serif;
+            color: #002654;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(212,175,55,0.3);
+        }
+
+        .instructor-script {
+            background: linear-gradient(135deg, #1a1a2e 0%, #002654 100%);
+            color: #f5f1e8;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            font-style: italic;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .instructor-script::before {
+            content: '🎭 INSTRUCTOR SCRIPT';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #1a1a2e;
+            padding: 0 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #d4af37;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        .instructor-script p {
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .instructor-script strong {
+            color: #d4af37;
+        }
+
+        .historical-context {
+            background: #8b7355;
+            color: #f5f1e8;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .historical-context::before {
+            content: '📜 HISTORICAL CONTEXT';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #8b7355;
+            padding: 0 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #f5f1e8;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        .urgency-banner {
+            background: #CE1126;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2em;
+            letter-spacing: 2px;
+            animation: urgencyPulse 2s infinite;
+            border: 2px solid #d4af37;
+            margin: 20px 0;
+            box-shadow: 0 3px 15px rgba(206,17,38,0.5);
+        }
+
+        @keyframes urgencyPulse {
+            0%, 100% { box-shadow: 0 3px 15px rgba(206,17,38,0.5); }
+            50% { box-shadow: 0 3px 25px rgba(206,17,38,0.9); }
+        }
+
+        .timer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #002654 100%);
+            border: 3px solid #d4af37;
+            border-radius: 0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .timer-container > div:first-child {
+            color: #f5f1e8;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        .timer {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #d4af37;
+            font-family: 'Cinzel', serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 3px;
+        }
+
+        .timer.warning {
+            color: #CE1126;
+            animation: timerPulse 1s infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        .timer-controls button {
+            padding: 12px 25px;
+            margin-left: 10px;
+            border: 2px solid #d4af37;
+            border-radius: 0;
+            font-size: 1em;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+
+        .timer-controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .start-btn {
+            background: linear-gradient(to bottom, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .pause-btn {
+            background: linear-gradient(to bottom, #ffc107, #d39e00);
+            color: #1a1a2e;
+        }
+
+        .reset-btn {
+            background: linear-gradient(to bottom, #dc3545, #bd2130);
+            color: white;
+        }
+
+        .next-btn {
+            background: linear-gradient(to bottom, #002654, #001a3d);
+            color: #f5f1e8;
+            padding: 18px 35px;
+            font-size: 1.2em;
+            font-family: 'Cinzel', serif;
+            border: 2px solid #d4af37;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .next-btn:hover {
+            background: linear-gradient(to bottom, #003d7a, #002654);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+        }
+
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .group-card {
+            background: linear-gradient(to bottom, #ffffff 0%, #f5f1e8 100%);
+            padding: 25px;
+            border: 3px solid #8b7355;
+            transition: all 0.4s;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .group-card::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid #d4af37;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .group-card::after {
+            content: '⚜';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2em;
+            color: #d4af37;
+            opacity: 0.2;
+        }
+
+        .group-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border-color: #d4af37;
+        }
+
+        .group-card.completed {
+            background: linear-gradient(to bottom, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+        }
+
+        .group-card.presenting {
+            background: linear-gradient(to bottom, #fff3cd 0%, #ffeaa7 100%);
+            border-color: #ffc107;
+            animation: cardHighlight 2s infinite;
+        }
+
+        @keyframes cardHighlight {
+            0%, 100% { box-shadow: 0 3px 10px rgba(255, 193, 7, 0.3); }
+            50% { box-shadow: 0 5px 30px rgba(255, 193, 7, 0.8); }
+        }
+
+        .group-card h3 {
+            color: #002654;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        .group-card p {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .group-card .status {
+            display: inline-block;
+            padding: 8px 15px;
+            border: 2px solid;
+            font-size: 0.9em;
+            margin-top: 15px;
+            font-family: 'Cinzel', serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status.pending {
+            background: #e9ecef;
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .status.presenting {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+        }
+
+        .status.completed {
+            background: #d4edda;
+            color: #155724;
+            border-color: #28a745;
+        }
+
+        .assembly-section {
+            background: linear-gradient(to bottom, #ffffff 0%, #f5f1e8 100%);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 4px double #8b7355;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+        }
+
+        .assembly-section::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid #d4af37;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .assembly-section h3 {
+            color: #002654;
+            margin-bottom: 20px;
+            font-size: 1.7em;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(212,175,55,0.3);
+        }
+
+        .decision-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .decision-buttons button {
+            flex: 1;
+            padding: 20px;
+            font-size: 1.2em;
+            font-family: 'Cinzel', serif;
+            border: 3px solid;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .decision-buttons button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .grant-btn {
+            background: linear-gradient(to bottom, #28a745, #1e7e34);
+            color: white;
+            border-color: #d4af37;
+        }
+
+        .deny-btn {
+            background: linear-gradient(to bottom, #dc3545, #bd2130);
+            color: white;
+            border-color: #8b7355;
+        }
+
+        .instruction-box {
+            background: linear-gradient(135deg, #e7f3ff 0%, #d0e8f7 100%);
+            border: 3px solid #004085;
+            border-left: 8px solid #004085;
+            padding: 25px;
+            margin-bottom: 25px;
+            position: relative;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+        }
+
+        .instruction-box::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid #004085;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .instruction-box strong {
+            color: #004085;
+            display: block;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        .instruction-box ol, .instruction-box p {
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 35px;
+            background: #8b7355;
+            border: 3px solid #d4af37;
+            overflow: hidden;
+            margin: 25px 0;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #002654 0%, #CE1126 50%, #d4af37 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+
+        .notes-area {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 3px solid #8b7355;
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1em;
+            resize: vertical;
+            background: #fffef9;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .notes-area:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .alert {
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 3px solid;
+            position: relative;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid;
+            border-color: inherit;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .alert-info {
+            background: linear-gradient(to bottom, #d1ecf1 0%, #bee5eb 100%);
+            color: #0c5460;
+            border-color: #0c5460;
+        }
+
+        .alert-success {
+            background: linear-gradient(to bottom, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-color: #155724;
+        }
+
+        .alert strong {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+            font-size: 1.1em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(to bottom, #f5f1e8 0%, #ffffff 100%);
+            padding: 40px;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.7);
+            border: 5px double #8b7355;
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid #d4af37;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .modal-content h3 {
+            color: #002654;
+            margin-bottom: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.8em;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .modal-content p, .modal-content ol {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .modal-content button {
+            margin-top: 25px;
+            padding: 15px 30px;
+            background: linear-gradient(to bottom, #002654, #001a3d);
+            color: #f5f1e8;
+            border: 2px solid #d4af37;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+        }
+
+        .modal-content button:hover {
+            background: linear-gradient(to bottom, #003d7a, #002654);
+            transform: translateY(-2px);
+        }
+
+        .phase-navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .phase-navigation button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #6c757d;
+            color: white;
+        }
+
+        .phase-navigation button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .seal-decoration {
+            text-align: center;
+            font-size: 4em;
+            color: #d4af37;
+            opacity: 0.15;
+            margin: 20px 0;
+            user-select: none;
+        }
+
+        .ornamental-divider {
+            text-align: center;
+            color: #8b7355;
+            margin: 30px 0;
+            font-size: 1.5em;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .header .motto {
+                font-size: 1.1em;
+            }
+            
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .decision-buttons {
+                flex-direction: column;
+            }
+
+            .timer {
+                font-size: 1.8em;
+            }
+
+            .timer-controls button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚜️ WHOSE REVOLUTION? ⚜️</h1>
+            <div class="motto">Liberté • Égalité • Fraternité</div>
+        </div>
+
+        <div class="year-banner">
+            PARIS, FRANCE • 1789-1791 • L'ASSEMBLÉE NATIONALE
+        </div>
+
+        <div class="content">
+            <!-- Phase 1: Introduction & Setup -->
+            <div id="phase1" class="phase">
+                <div class="phase-indicator">
+                    <h2>📋 PHASE 1: Introduction & Role Assignment</h2>
+                    <p style="text-align: center; font-style: italic; margin-top: 10px;">The fate of France hangs in the balance. Who deserves the rights of citizenship?</p>
+                    <div class="timer-container">
+                        <div>
+                            <span>TIME REMAINING: </span>
+                            <span class="timer" id="timer1">5:00</span>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="start-btn" onclick="startTimer(1, 300)">Commencer</button>
+                            <button class="pause-btn" onclick="pauseTimer()">Pause</button>
+                            <button class="reset-btn" onclick="resetTimer(1, 300)">Réinitialiser</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="historical-context">
+                    <p><strong>Paris, Summer 1789:</strong> The old order has collapsed. King Louis XVI called the Estates-General to address France's bankruptcy, but the Third Estate—representing 98% of the population—walked out and declared themselves the National Assembly.</p>
+                    <p style="margin-top: 10px;"><strong>The Tennis Court Oath:</strong> These deputies swore not to disband until France had a new constitution. They have written the Declaration of the Rights of Man and Citizen, proclaiming that "men are born and remain free and equal in rights."</p>
+                    <p style="margin-top: 10px;"><strong>But who counts as a "citizen"?</strong> This question will tear the Revolution apart. Today, your students will grapple with the same contradictions that the revolutionaries faced.</p>
+                </div>
+
+                <div class="instructor-script">
+                    <p><strong>READ ALOUD:</strong></p>
+                    <p>"Citizens! Welcome to the National Assembly. The year is 1789. The Bastille has fallen. The old regime is dead. We have declared that all men have natural rights—life, liberty, property, and the pursuit of happiness."</p>
+                    <p style="margin-top: 15px;">"But now comes the hard question: <em>Who deserves these rights?</em> Women? The poor? People of different religions? People of different races? Those who are enslaved?"</p>
+                    <p style="margin-top: 15px;">"Today, YOU are the National Assembly. YOU will hear petitions from groups seeking equal rights and citizenship. YOU will decide the fate of the French Revolution. Will you extend liberty to all? Or will you draw lines and create hierarchies?"</p>
+                    <p style="margin-top: 15px;"><strong>"The clock is ticking. France is watching. Let the Revolution begin!"</strong></p>
+                </div>
+
+                <div class="urgency-banner">
+                    ⚠️ TIME IS SHORT! THE ASSEMBLY MUST DECIDE QUICKLY! ⚠️
+                </div>
+
+                <div class="instruction-box">
+                    <strong>Teacher Instructions (5 minutes total):</strong>
+                    <p><strong>Minutes 0-2:</strong> Read the script above dramatically. Set the tone—this is urgent, this matters!</p>
+                    <p><strong>Minutes 2-4:</strong> Assign students to groups by clicking the cards below (they turn green)</p>
+                    <p><strong>Minutes 4-5:</strong> Have students move to their designated meeting areas</p>
+                    <p><strong>TIP:</strong> Play the Marseillaise in the background as students move to their groups!</p>
+                </div>
+
+                <div class="seal-decoration">⚜️⚜️⚜️</div>
+
+                <div class="groups-grid">
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>🏛️ National Assembly Deputies</h3>
+                        <p>White, male, Catholic property owners who will decide the fate of each petition</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>✝️ Huguenots</h3>
+                        <p>French Calvinists seeking religious freedom and equal rights</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>✡️ Jews</h3>
+                        <p>Religious minority seeking citizenship despite separate traditions</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>👩 Le Cercle Social</h3>
+                        <p>Moderate women seeking property rights and divorce</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>⚫ Freed Blacks & Mulattoes</h3>
+                        <p>Free people of color seeking equal citizenship</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>🤝 Society of Friends of Blacks</h3>
+                        <p>White abolitionists advocating for Black equality</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>⚒️ Les Sans-Culottes</h3>
+                        <p>Working class and poor seeking voting rights</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>🗡️ Revolutionary Republican Women</h3>
+                        <p>Radical women who fought in the Revolution</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>📜 White Enslavers</h3>
+                        <p>Plantation owners opposing abolition</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                    <div class="group-card" onclick="toggleGroup(this)">
+                        <h3>⛓️ Enslaved Black People</h3>
+                        <p><strong>SPECIAL:</strong> Not allowed to petition - will respond to exclusion</p>
+                        <div class="status pending">Ready to assign</div>
+                    </div>
+                </div>
+
+                <button class="next-btn" onclick="goToPhase(2)">Continue to Preparation Phase →</button>
+            </div>
+
+            <!-- Phase 2: Petition Preparation -->
+            <div id="phase2" class="phase hidden">
+                <div class="phase-indicator">
+                    <h2>✍️ PHASE 2: Petition Preparation</h2>
+                    <p style="text-align: center; font-style: italic; margin-top: 10px;">Each group must craft their appeal using the language of Enlightenment and Revolution</p>
+                    <div class="timer-container">
+                        <div>
+                            <span>TIME REMAINING: </span>
+                            <span class="timer" id="timer2">10:00</span>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="start-btn" onclick="startTimer(2, 600)">Commencer</button>
+                            <button class="pause-btn" onclick="pauseTimer()">Pause</button>
+                            <button class="reset-btn" onclick="resetTimer(2, 600)">Réinitialiser</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="historical-context">
+                    <p><strong>The Declaration of the Rights of Man and Citizen</strong> is the foundation of the new France. It proclaims:</p>
+                    <ul style="margin: 15px 0 15px 25px; line-height: 1.8;">
+                        <li>"Men are born and remain free and equal in rights"</li>
+                        <li>"These rights are liberty, property, security, and resistance to oppression"</li>
+                        <li>"All citizens have the right to take part in the formation of law"</li>
+                        <li>"All citizens are equally eligible to all public dignities, places, and employments"</li>
+                    </ul>
+                    <p><strong>But what counts as a "man"? Who counts as a "citizen"?</strong> The Declaration is silent on these questions. That's what you're here to decide.</p>
+                </div>
+
+                <div class="instructor-script">
+                    <p><strong>READ ALOUD:</strong></p>
+                    <p>"Deputies of the National Assembly! Your task is clear. Each petitioning group will come before you to make their case for citizenship and equal rights."</p>
+                    <p style="margin-top: 15px;">"But first—they must prepare! Each group has <strong>10 minutes</strong> to craft their petition. They must answer three questions:"</p>
+                    <ol style="margin: 15px 0 15px 25px; line-height: 1.8;">
+                        <li><strong>WHY do they want citizenship?</strong></li>
+                        <li><strong>WHAT objections will the Assembly raise?</strong></li>
+                        <li><strong>HOW will they respond to those objections?</strong></li>
+                    </ol>
+                    <p style="margin-top: 15px;"><strong>"Use the language of the Declaration! Use the ideals of Liberty, Equality, and Fraternity! Be persuasive!"</strong></p>
+                    <p style="margin-top: 15px;"><em>(To Assembly Deputies):</em> "While the groups prepare, you must review your concerns. You are wealthy property owners. You believe in Enlightenment ideals... but you also worry about stability, about economics, about the social order. Prepare your questions!"</p>
+                </div>
+
+                <div class="urgency-banner">
+                    ⏰ THE CLOCK IS TICKING! FRANCE CANNOT WAIT! ⏰
+                </div>
+
+                <div class="instruction-box">
+                    <strong>Teacher Instructions (10 minutes total):</strong>
+                    <p><strong>✓</strong> Start the timer immediately after reading the script</p>
+                    <p><strong>✓</strong> Circulate among groups - redirect any modern arguments back to 18th-century language</p>
+                    <p><strong>✓</strong> Encourage groups to use phrases from the Declaration</p>
+                    <p><strong>✓</strong> Remind Assembly deputies: You're skeptical! You have concerns about each group!</p>
+                    <p><strong>✓</strong> When 2 minutes remain, announce: "2 MINUTES! The Assembly is convening soon!"</p>
+                    <p><strong>✓</strong> At 30 seconds: "The Assembly will tolerate no delays! Finish your petitions!"</p>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Special Note for Assembly Deputies:</strong> You are balancing two competing goals: (1) Creating a more rational, equal society based on Enlightenment ideals, and (2) Maintaining French national unity, social stability, and economic prosperity. Some groups may threaten one or both of these goals. Think carefully!
+                </div>
+
+                <div class="ornamental-divider">⚜ • ⚜ • ⚜</div>
+
+                <button class="next-btn" onclick="goToPhase(3)">The Assembly Convenes! Advance to Presentations →</button>
+            </div>
+
+            <!-- Phase 3: Presentations -->
+            <div id="phase3" class="phase hidden">
+                <div class="phase-indicator">
+                    <h2>🎤 PHASE 3: Petitions to the Assembly</h2>
+                    <p style="text-align: center; font-style: italic; margin-top: 10px;">The moment of truth has arrived. Will the Assembly grant citizenship to all who seek it?</p>
+                    <div class="timer-container">
+                        <div>
+                            <span>CURRENT GROUP TIME: </span>
+                            <span class="timer" id="timer3">3:00</span>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="start-btn" onclick="startPresentationTimer()">Commencer</button>
+                            <button class="pause-btn" onclick="pauseTimer()">Pause</button>
+                            <button class="reset-btn" onclick="resetTimer(3, 180)">Réinitialiser</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="urgency-banner">
+                    ⚡ EACH GROUP HAS ONLY 3 MINUTES! THE ASSEMBLY WILL NOT WAIT! ⚡
+                </div>
+
+                <div class="instructor-script">
+                    <p><strong>BEFORE EACH GROUP PRESENTS, SAY:</strong></p>
+                    <p>"Citizens of the Assembly! We now call forward [GROUP NAME]. You have THREE MINUTES to state your case. The Assembly will then question you. Speak clearly! Speak persuasively! The future of France depends on it!"</p>
+                    <p style="margin-top: 15px;"><strong>AFTER EACH PRESENTATION:</strong></p>
+                    <p>"Assembly deputies—what questions do you have for these petitioners? Challenge them! Test their commitment to France! Question their ability to handle the responsibilities of citizenship!"</p>
+                    <p style="margin-top: 15px;"><strong>AFTER CROSS-EXAMINATION:</strong></p>
+                    <p>"The Assembly will now deliberate in private. Deputies—will you grant citizenship to this group? Or will you deny them? Consider carefully—the wrong decision could tear France apart!"</p>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress" style="width: 0%">
+                        <span id="progress-text">0 of 9 groups heard</span>
+                    </div>
+                </div>
+
+                <div class="instruction-box">
+                    <strong>Presentation Order (Strategic!):</strong>
+                    <ol style="margin-left: 25px; margin-top: 10px; line-height: 1.8;">
+                        <li><strong>Huguenots</strong> — Easier case to start (religious minority, but Christian)</li>
+                        <li><strong>Jews</strong> — Similar but with complications (separate laws/customs)</li>
+                        <li><strong>Le Cercle Social</strong> — Moderate women seeking limited rights</li>
+                        <li><strong>Freed Blacks & Mulattoes</strong> — Introduces racial dimension</li>
+                        <li><strong>Society of Friends of Blacks</strong> — White allies advocating for others</li>
+                        <li><strong>Les Sans-Culottes</strong> — Class warfare! The poor demand rights</li>
+                        <li><strong>Revolutionary Republican Women</strong> — Radical women who fought in battle</li>
+                        <li><strong>White Enslavers</strong> — Opposition voice! They want to PREVENT rights</li>
+                        <li><strong>Enslaved Black People</strong> — ⚠️ SPECIAL! See notes below</li>
+                    </ol>
+                </div>
+
+                <div class="historical-context">
+                    <p><strong>What the Assembly Should Consider:</strong></p>
+                    <p><strong>For Huguenots/Jews:</strong> Can France unite if citizens follow different religions? Will they serve in the military? Will they send their children to French schools?</p>
+                    <p><strong>For Women:</strong> Does nature intend women for domestic life? Will giving them rights destroy the family? Do they have the mental capacity for politics?</p>
+                    <p><strong>For Freed Blacks:</strong> Will this encourage slave rebellions? Are they truly "equal" to whites? Can they be trusted?</p>
+                    <p><strong>For The Poor:</strong> Without property, do they have a stake in France's future? Will they just vote to redistribute wealth?</p>
+                </div>
+
+                <div class="seal-decoration">⚜️</div>
+
+                <div class="assembly-section">
+                    <h3>⚖️ The National Assembly Decides</h3>
+                    <p style="text-align: center; font-size: 1.2em; margin: 20px 0;"><strong>Current Group Presenting:</strong> <span id="current-group" style="color: #CE1126;">Click button below to begin</span></p>
+                    
+                    <div style="margin: 25px 0; padding: 20px; background: #f5f1e8; border: 2px solid #8b7355;">
+                        <strong style="font-family: 'Cinzel', serif; color: #002654;">Process for Each Group:</strong>
+                        <ol style="margin-left: 25px; margin-top: 15px; line-height: 1.8;">
+                            <li>Group presents petition (2-3 minutes) — start timer!</li>
+                            <li>Assembly cross-examines the group (challenge them!)</li>
+                            <li>Assembly deliberates and votes</li>
+                            <li>Click GRANT or DENY below, then record reasoning</li>
+                            <li>Announce decision dramatically to the class!</li>
+                        </ol>
+                    </div>
+
+                    <div class="decision-buttons">
+                        <button class="grant-btn" onclick="makeDecision('granted')">✓ GRANT CITIZENSHIP</button>
+                        <button class="deny-btn" onclick="makeDecision('denied')">✗ DENY CITIZENSHIP</button>
+                    </div>
+
+                    <div style="margin-top: 25px;">
+                        <label style="font-family: 'Cinzel', serif; font-size: 1.2em; color: #002654;"><strong>Assembly's Reasoning:</strong></label>
+                        <textarea class="notes-area" id="decision-notes" placeholder="Record the Assembly's explanation for their decision... Why did they grant or deny? What were their concerns? What arguments persuaded them?"></textarea>
+                    </div>
+
+                    <button class="next-btn" onclick="nextGroup()" style="margin-top: 25px; width: 100%;">Next Group Approaches the Assembly →</button>
+                </div>
+
+                <div id="results-summary" style="margin-top: 30px; background: linear-gradient(to bottom, #ffffff, #f5f1e8); padding: 25px; border: 3px solid #8b7355;">
+                    <h3 style="color: #002654; margin-bottom: 20px; font-family: 'Cinzel', serif; text-align: center; font-size: 1.6em;">📊 Decisions Summary</h3>
+                    <div id="decisions-list"></div>
+                </div>
+
+                <div class="ornamental-divider">⚜ • ⚜ • ⚜</div>
+
+                <button class="next-btn" onclick="goToPhase(4)" style="margin-top: 25px;">Proceed to Historical Reveal →</button>
+            </div>
+
+            <!-- Phase 4: Historical Reveal & Discussion -->
+            <div id="phase4" class="phase hidden">
+                <div class="phase-indicator">
+                    <h2>📚 PHASE 4: What Actually Happened</h2>
+                    <p style="text-align: center; font-style: italic; margin-top: 10px;">How do your decisions compare to historical reality?</p>
+                    <div class="timer-container">
+                        <div>
+                            <span>TIME REMAINING: </span>
+                            <span class="timer" id="timer4">10:00</span>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="start-btn" onclick="startTimer(4, 600)">Commencer</button>
+                            <button class="pause-btn" onclick="pauseTimer()">Pause</button>
+                            <button class="reset-btn" onclick="resetTimer(4, 600)">Réinitialiser</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instructor-script">
+                    <p><strong>READ ALOUD:</strong></p>
+                    <p>"Citizens! The Assembly has spoken. But how do your decisions compare to what ACTUALLY happened in 1791?"</p>
+                    <p style="margin-top: 15px;">"The real National Assembly created something called 'Active' versus 'Passive' citizenship. Let me tell you what they decided..."</p>
+                    <p style="margin-top: 15px;"><em>(Read the historical outcomes below, then facilitate discussion using the questions provided)</em></p>
+                </div>
+
+                <div class="alert alert-success">
+                    <strong>Historical Outcome — The Constitution of 1791:</strong>
+                    <ul style="margin-left: 25px; margin-top: 15px; line-height: 2;">
+                        <li><strong>"Active" vs "Passive" Citizens:</strong> Only men age 25+ who paid taxes equal to 3 days' labor could vote. Everyone else was a "passive" citizen with rights but no political power.</li>
+                        <li><strong>Religion & Race:</strong> The Constitution made NO MENTION of religion or race. This meant Jewish, Huguenot, and freed Black MEN (who met the tax requirement) were de facto citizens. In 1791, the Assembly explicitly confirmed that freed Black men were citizens.</li>
+                        <li><strong>Women:</strong> COMPLETELY EXCLUDED regardless of wealth or property. The Assembly laughed at women's petitions.</li>
+                        <li><strong>Enslaved People:</strong> Remained enslaved. The Assembly feared economic collapse and slave rebellions.</li>
+                        <li><strong>Servants:</strong> Denied citizenship entirely, even if they paid taxes.</li>
+                        <li><strong>The Poor (Sans-Culottes):</strong> Became "passive" citizens—they had legal rights but couldn't vote or hold office.</li>
+                    </ul>
+                </div>
+
+                <div class="historical-context">
+                    <p><strong>Why Did They Draw the Line at Gender and Class?</strong></p>
+                    <p style="margin-top: 10px;">The Assembly deputies were comfortable extending citizenship across religious and racial lines because they believed Enlightenment education could "civilize" anyone—Jews could become French, freed Blacks could adopt French culture.</p>
+                    <p style="margin-top: 10px;">But they drew the line at gender and class because they believed these were NATURAL categories that couldn't be changed. Women were "naturally" domestic and emotional. The poor were "naturally" irresponsible and dependent.</p>
+                    <p style="margin-top: 10px;">This reveals the fundamental contradiction: The Revolution proclaimed universal rights... but immediately limited them based on assumptions about "nature."</p>
+                </div>
+
+                <div class="urgency-banner">
+                    🤔 CRITICAL THINKING TIME 🤔
+                </div>
+
+                <div class="assembly-section">
+                    <h3>💭 Discussion Questions</h3>
+                    <p style="text-align: center; font-style: italic; margin-bottom: 20px;">Record student responses to deepen their understanding</p>
+                    <div style="margin-top: 20px;">
+                        <div style="background: #e7f3ff; padding: 15px; margin-bottom: 20px; border-left: 5px solid #004085;">
+                            <p style="margin-bottom: 10px;"><strong>1. What was difficult about crafting your case for citizenship?</strong></p>
+                            <p style="font-size: 0.9em; font-style: italic;">(For petitioning groups: What arguments were hard to make? What did the Assembly challenge?)</p>
+                        </div>
+                        <textarea class="notes-area" placeholder="Record student responses..."></textarea>
+
+                        <div style="background: #e7f3ff; padding: 15px; margin: 20px 0; border-left: 5px solid #004085;">
+                            <p style="margin-bottom: 10px;"><strong>2. What were the hardest questions the Assembly asked?</strong></p>
+                            <p style="font-size: 0.9em; font-style: italic;">(Which objections were most difficult to counter? Why?)</p>
+                        </div>
+                        <textarea class="notes-area" placeholder="Record student responses..."></textarea>
+
+                        <div style="background: #e7f3ff; padding: 15px; margin: 20px 0; border-left: 5px solid #004085;">
+                            <p style="margin-bottom: 10px;"><strong>3. Were some petitions more persuasive than others? Why?</strong></p>
+                            <p style="font-size: 0.9em; font-style: italic;">(What made certain arguments stronger? Did any groups succeed where others failed?)</p>
+                        </div>
+                        <textarea class="notes-area" placeholder="Record student responses..."></textarea>
+
+                        <div style="background: #e7f3ff; padding: 15px; margin: 20px 0; border-left: 5px solid #004085;">
+                            <p style="margin-bottom: 10px;"><strong>4. Why did the real Assembly draw the line at gender/class rather than religion/race?</strong></p>
+                            <p style="font-size: 0.9em; font-style: italic;">(What does this reveal about Enlightenment thinking? About the Revolution's contradictions?)</p>
+                        </div>
+                        <textarea class="notes-area" placeholder="Record student responses..."></textarea>
+
+                        <div style="background: #e7f3ff; padding: 15px; margin: 20px 0; border-left: 5px solid #004085;">
+                            <p style="margin-bottom: 10px;"><strong>5. How does this activity show citizenship as a "constructed" concept?</strong></p>
+                            <p style="font-size: 0.9em; font-style: italic;">(Who gets to decide who's a citizen? How has this changed over time?)</p>
+                        </div>
+                        <textarea class="notes-area" placeholder="Record student responses..."></textarea>
+
+                        <div style="background: #e7f3ff; padding: 15px; margin: 20px 0; border-left: 5px solid #004085;">
+                            <p style="margin-bottom: 10px;"><strong>6. Who lacks citizenship today? How do modern arguments compare?</strong></p>
+                            <p style="font-size: 0.9em; font-style: italic;">(Undocumented immigrants? Formerly incarcerated people? Minors? How do they argue for rights?)</p>
+                        </div>
+                        <textarea class="notes-area" placeholder="Record student responses..."></textarea>
+                    </div>
+                </div>
+
+                <div class="seal-decoration">⚜️⚜️⚜️</div>
+
+                <div class="instructor-script">
+                    <p><strong>CLOSING REMARKS:</strong></p>
+                    <p>"Citizens, you have experienced firsthand the contradictions of the French Revolution. You have seen how those who proclaimed 'all men are created equal' immediately began drawing lines and creating hierarchies."</p>
+                    <p style="margin-top: 15px;">"The question of 'whose revolution?' haunted France for decades. Some groups—like women and the poor—would wait over a century for full citizenship. Others, like the enslaved people of Haiti, took matters into their own hands and launched their own revolution in 1791."</p>
+                    <p style="margin-top: 15px;">"Remember: every society must answer the question 'who belongs?' The answer is never simple, never permanent, and never without consequences."</p>
+                    <p style="margin-top: 15px;"><strong>"Liberté, Égalité, Fraternité—but for whom?"</strong></p>
+                </div>
+
+                <button class="next-btn" onclick="completedActivity()" style="margin-top: 30px;">🎉 Activity Complete! 🎉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Special Alert Modal for Enslaved People -->
+    <div id="enslaved-modal" class="modal">
+        <div class="modal-content">
+            <h3>⛓️ Special Teaching Moment</h3>
+            <div class="seal-decoration" style="font-size: 3em; margin: 15px 0;">⚠️</div>
+            <p style="margin: 15px 0;"><strong>The Enslaved Black People group is next.</strong></p>
+            <p style="margin-bottom: 15px; font-size: 1.1em;">Historically, enslaved people were <strong>NOT allowed to petition the Assembly</strong>. They had no legal standing, no freedom to travel to Paris, no education to address the Assembly, and no voice in the political process.</p>
+            
+            <div style="background: #f5f1e8; padding: 20px; margin: 20px 0; border: 2px solid #8b7355;">
+                <p style="margin-bottom: 15px; font-family: 'Cinzel', serif; color: #002654;"><strong>Three Options for Handling This Group:</strong></p>
+                <ol style="margin-left: 20px; line-height: 1.8;">
+                    <li style="margin-bottom: 15px;"><strong>Dramatic Intervention (Recommended):</strong> Let the group begin to approach the Assembly. Then <em>interrupt them dramatically</em>: "STOP! Enslaved people have no legal standing in this Assembly. You are the property of your masters. You have no right to petition us. Return to your quarters!" Then ask them: "What will you do now? How will you respond to this exclusion?"</li>
+                    <li style="margin-bottom: 15px;"><strong>Letter of Protest:</strong> Have the group write a letter demanding to be heard. You (or a student volunteer) can read it aloud to the Assembly, who must then decide whether to even acknowledge it.</li>
+                    <li style="margin-bottom: 15px;"><strong>Declaration of Revolt:</strong> Allow them to declare their response to being excluded. Historically, this exclusion helped spark the Haitian Revolution (1791-1804), the first successful slave rebellion in the Western Hemisphere.</li>
+                </ol>
+            </div>
+
+            <p style="margin: 20px 0; font-size: 1.1em; font-style: italic; color: #CE1126;"><strong>This illustrates a critical point:</strong> When procedural rules exclude entire groups from the political process, those groups have no "legal" path to freedom. This is itself a profound form of oppression.</p>
+            <button onclick="closeModal()">Continue with This Group</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPhase = 1;
+        let currentGroupIndex = 0;
+        let timerInterval = null;
+        let currentSeconds = 0;
+        let isPaused = false;
+
+        const groups = [
+            "Huguenots",
+            "Jews", 
+            "Le Cercle Social",
+            "Freed Blacks & Mulattoes",
+            "Society of Friends of Blacks",
+            "Les Sans-Culottes",
+            "Revolutionary Republican Women",
+            "White Enslavers",
+            "Enslaved Black People"
+        ];
+
+        const decisions = [];
+
+        function toggleGroup(card) {
+            card.classList.toggle('completed');
+            const status = card.querySelector('.status');
+            if (card.classList.contains('completed')) {
+                status.textContent = 'Assigned';
+                status.className = 'status completed';
+            } else {
+                status.textContent = 'Ready to assign';
+                status.className = 'status pending';
+            }
+        }
+
+        function goToPhase(phase) {
+            document.getElementById(`phase${currentPhase}`).classList.add('hidden');
+            currentPhase = phase;
+            document.getElementById(`phase${phase}`).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function startTimer(phase, seconds) {
+            clearInterval(timerInterval);
+            currentSeconds = seconds;
+            isPaused = false;
+            updateTimerDisplay(phase);
+            
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    currentSeconds--;
+                    updateTimerDisplay(phase);
+                    
+                    if (currentSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        playSound();
+                    }
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isPaused = !isPaused;
+        }
+
+        function resetTimer(phase, seconds) {
+            clearInterval(timerInterval);
+            currentSeconds = seconds;
+            isPaused = false;
+            updateTimerDisplay(phase);
+        }
+
+        function updateTimerDisplay(phase) {
+            const minutes = Math.floor(currentSeconds / 60);
+            const seconds = currentSeconds % 60;
+            const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const timerElement = document.getElementById(`timer${phase}`);
+            timerElement.textContent = display;
+            
+            if (currentSeconds <= 30 && currentSeconds > 0) {
+                timerElement.classList.add('warning');
+            } else {
+                timerElement.classList.remove('warning');
+            }
+        }
+
+        function startPresentationTimer() {
+            startTimer(3, 180); // 3 minutes per group
+        }
+
+        function nextGroup() {
+            const notes = document.getElementById('decision-notes').value;
+            if (!notes.trim() && decisions.length < groups.length) {
+                alert('Please record the Assembly\'s reasoning before moving to the next group.');
+                return;
+            }
+
+            currentGroupIndex++;
+            
+            if (currentGroupIndex < groups.length) {
+                // Check if this is the Enslaved Black People group
+                if (groups[currentGroupIndex] === "Enslaved Black People") {
+                    document.getElementById('enslaved-modal').classList.add('active');
+                }
+                
+                document.getElementById('current-group').textContent = groups[currentGroupIndex];
+                document.getElementById('decision-notes').value = '';
+                resetTimer(3, 180);
+                updateProgress();
+            }
+        }
+
+        function makeDecision(decision) {
+            const currentGroup = groups[currentGroupIndex];
+            const notes = document.getElementById('decision-notes').value;
+            
+            if (!notes.trim()) {
+                alert('Please provide reasoning for this decision.');
+                return;
+            }
+
+            decisions.push({
+                group: currentGroup,
+                decision: decision,
+                notes: notes
+            });
+
+            updateDecisionsSummary();
+        }
+
+        function updateDecisionsSummary() {
+            const summaryDiv = document.getElementById('decisions-list');
+            summaryDiv.innerHTML = decisions.map((d, i) => `
+                <div style="padding: 15px; margin-bottom: 10px; background: ${d.decision === 'granted' ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                    <strong>${i + 1}. ${d.group}:</strong> 
+                    <span style="font-weight: bold; color: ${d.decision === 'granted' ? '#155724' : '#721c24'};">
+                        ${d.decision === 'granted' ? '✓ GRANTED' : '✗ DENIED'}
+                    </span>
+                    <p style="margin-top: 5px; font-style: italic;">${d.notes}</p>
+                </div>
+            `).join('');
+        }
+
+        function updateProgress() {
+            const percent = (currentGroupIndex / groups.length) * 100;
+            document.getElementById('progress').style.width = percent + '%';
+            document.getElementById('progress-text').textContent = `${currentGroupIndex} of ${groups.length} groups heard`;
+        }
+
+        function closeModal() {
+            document.getElementById('enslaved-modal').classList.remove('active');
+        }
+
+        function playSound() {
+            // Create a simple beep using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function completedActivity() {
+            const message = `
+╔═══════════════════════════════════════╗
+║   🎉 L'ASSEMBLÉE EST AJOURNÉE! 🎉    ║
+╚═══════════════════════════════════════╝
+
+The National Assembly has completed its work!
+
+You have grappled with the same contradictions that tore the French Revolution apart. You've seen how those who proclaimed universal rights immediately began limiting them.
+
+The questions you wrestled with today continued to haunt France—and the world—for centuries:
+• Women didn't get the vote in France until 1944
+• France didn't abolish slavery until 1848 (and even then, only after slaves in the colonies revolted)
+• The "sans-culottes" helped radicalize the Revolution, leading to the Reign of Terror
+
+Your decisions matter. The way we define citizenship shapes who has power, who has protection, and who is left out.
+
+Liberté, Égalité, Fraternité... mais pour qui?
+            `.trim();
+            
+            alert(message);
+        }
+
+        // Initialize first presentation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('current-group').textContent = groups[0];
+        });
+    </script>
+</body>
+</html>
