@@ -895,8 +895,12 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Submission cutoff date - set to null for no deadline
-        const SUBMISSION_CUTOFF = null;
+        // **ASSIGNMENT CONTROL** - Set to false to close submissions
+        const ASSIGNMENT_OPEN = true;  // Change to false when you want to close the assignment
+
+        // Submission cutoff date - set to null for no deadline, or use format: 'YYYY-MM-DDTHH:MM:SS'
+        // Example: '2026-03-15T23:59:59' for March 15, 2026 at 11:59 PM
+        const SUBMISSION_CUTOFF = '2026-02-11T11:00:59';
 
         let currentPhase = 0;
         let selectedVerdict = null;
@@ -1140,13 +1144,20 @@
             }
         }
 
-        async function submitToSupabase() {
-            // Check deadline
+       async function submitToSupabase() {
+            // Check if assignment is open
+            if (!ASSIGNMENT_OPEN) {
+                const messageDiv = document.getElementById('submitMessage');
+                messageDiv.innerHTML = '<div style="background: rgba(139, 26, 26, 0.2); color: #2c1810; padding: 20px; border-radius: 8px; border-left: 5px solid #8b1a1a;">❌ This assignment is now closed. Submissions are no longer being accepted for full credit. You may still submit a printed assignment late within one week with <strong>five tickets</strong>. 🎟️ Please contact your professor if you have questions.</div>';
+                return;
+            }
+
+            // Check if submission deadline has passed
             if (SUBMISSION_CUTOFF) {
                 const cutoffDate = new Date(SUBMISSION_CUTOFF);
                 const now = new Date();
                 if (now > cutoffDate) {
-                    alert('The submission deadline has passed. Please contact your professor if you need an extension.');
+                    alert('❌ This assignment is now closed. Submissions are no longer being accepted for full credit. You may still submit a printed assignment late within one week with <strong>five tickets</strong>. 🎟️ Please contact your professor if you have questions.');
                     return;
                 }
             }
