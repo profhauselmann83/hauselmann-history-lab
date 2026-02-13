@@ -92,6 +92,13 @@ body {
     font-weight: bold;
 }
 
+.success {
+    color: green;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: bold;
+}
+
 /* Dashboard */
 .dashboard {
     display: none;
@@ -312,10 +319,14 @@ td {
     <div id="loginScreen" class="login-container">
         <h1>Admin Login</h1>
         <form id="loginForm" class="login-form">
-            <input type="password" id="passwordInput" placeholder="Enter admin password" required>
+            <input type="password" id="passwordInput" placeholder="Enter admin password" required autocomplete="off">
             <div id="loginError" class="error"></div>
+            <div id="loginSuccess" class="success"></div>
             <button type="submit">Login</button>
         </form>
+        <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: #666;">
+            Password: BjOrKi2026!!
+        </p>
     </div>
 
     <!-- Dashboard -->
@@ -398,13 +409,23 @@ td {
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
+        console.log('Dashboard script loaded');
+        
         // Configuration
-        const ADMIN_PASSWORD = 'BjOrKi2026!!'; // ⚠️ CHANGE THIS PASSWORD!
+        const ADMIN_PASSWORD = 'BjOrKi2026!!';
         const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
         
+        console.log('Password is:', ADMIN_PASSWORD);
+        
         // Initialize Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase:', error);
+        }
         
         let allRsvps = [];
         let filteredRsvps = [];
@@ -412,25 +433,44 @@ td {
         // Login
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Login form submitted');
+            
             const password = document.getElementById('passwordInput').value;
+            console.log('Entered password:', password);
+            console.log('Expected password:', ADMIN_PASSWORD);
+            console.log('Passwords match:', password === ADMIN_PASSWORD);
+            
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('loginSuccess').textContent = '';
             
             if (password === ADMIN_PASSWORD) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboard').classList.add('active');
-                loadRsvps();
+                console.log('Password correct! Showing dashboard...');
+                document.getElementById('loginSuccess').textContent = 'Login successful!';
+                
+                setTimeout(() => {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('dashboard').classList.add('active');
+                    console.log('Dashboard should now be visible');
+                    loadRsvps();
+                }, 500);
             } else {
-                document.getElementById('loginError').textContent = 'Invalid password';
+                console.log('Password incorrect');
+                document.getElementById('loginError').textContent = 'Invalid password. Try: BjOrKi2026!!';
             }
         });
         
         function logout() {
+            console.log('Logging out');
             document.getElementById('loginScreen').style.display = 'block';
             document.getElementById('dashboard').classList.remove('active');
             document.getElementById('passwordInput').value = '';
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('loginSuccess').textContent = '';
         }
         
         // Load RSVPs from Supabase
         async function loadRsvps() {
+            console.log('Loading RSVPs...');
             try {
                 document.getElementById('loadingIndicator').style.display = 'block';
                 document.getElementById('rsvpTable').style.display = 'none';
@@ -440,8 +480,12 @@ td {
                     .select('*')
                     .order('created_at', { ascending: false });
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase error:', error);
+                    throw error;
+                }
                 
+                console.log('Loaded', data?.length || 0, 'RSVPs');
                 allRsvps = data || [];
                 filteredRsvps = [...allRsvps];
                 
@@ -453,7 +497,9 @@ td {
                 
             } catch (error) {
                 console.error('Error loading RSVPs:', error);
-                alert('Error loading data. Check console for details.');
+                document.getElementById('loadingIndicator').innerHTML = 
+                    '<p style="color: red;">Error loading data: ' + error.message + '</p>' +
+                    '<p>Check browser console (F12) for details.</p>';
             }
         }
         
@@ -474,6 +520,11 @@ td {
         function renderTable() {
             const tbody = document.getElementById('rsvpTableBody');
             tbody.innerHTML = '';
+            
+            if (filteredRsvps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 2rem;">No RSVPs found</td></tr>';
+                return;
+            }
             
             filteredRsvps.forEach(rsvp => {
                 const row = document.createElement('tr');
@@ -516,7 +567,6 @@ td {
                 
                 if (error) throw error;
                 
-                // Update local data
                 const rsvp = allRsvps.find(r => r.id === id);
                 if (rsvp) {
                     rsvp.email_sent = checked;
@@ -553,7 +603,6 @@ td {
             const emailStatusFilter = document.getElementById('emailStatusFilter').value;
             
             filteredRsvps = allRsvps.filter(rsvp => {
-                // Search filter
                 const matchesSearch = 
                     rsvp.first_name.toLowerCase().includes(searchTerm) ||
                     rsvp.last_name.toLowerCase().includes(searchTerm) ||
@@ -561,13 +610,11 @@ td {
                 
                 if (!matchesSearch) return false;
                 
-                // Event filter
                 if (eventFilter) {
                     const matchesEvent = (rsvp.events || []).some(e => e.includes(eventFilter));
                     if (!matchesEvent) return false;
                 }
                 
-                // Email status filter
                 if (emailStatusFilter === 'sent' && !rsvp.email_sent) return false;
                 if (emailStatusFilter === 'pending' && rsvp.email_sent) return false;
                 
@@ -643,6 +690,8 @@ td {
         function refreshData() {
             loadRsvps();
         }
+        
+        console.log('All functions defined');
     </script>
 </body>
 </html>
