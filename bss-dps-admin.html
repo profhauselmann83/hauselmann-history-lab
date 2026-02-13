@@ -408,290 +408,290 @@ td {
     <!-- Supabase JavaScript Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script>
-        console.log('Dashboard script loaded');
+<script>
+    console.log('Dashboard script loaded');
+    
+    // Configuration
+    const ADMIN_PASSWORD = 'BjOrKi2026!!';
+    const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    
+    console.log('Password is:', ADMIN_PASSWORD);
+    
+    // Initialize Supabase (ONLY ONCE!)
+    let supabase;
+    try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase initialized successfully');
+    } catch (error) {
+        console.error('Error initializing Supabase:', error);
+    }
+    
+    let allRsvps = [];
+    let filteredRsvps = [];
+    
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('Login form submitted');
         
-        // Configuration
-        const ADMIN_PASSWORD = 'BjOrKi2026!!';
-        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        const password = document.getElementById('passwordInput').value;
+        console.log('Entered password:', password);
+        console.log('Expected password:', ADMIN_PASSWORD);
+        console.log('Passwords match:', password === ADMIN_PASSWORD);
         
-        console.log('Password is:', ADMIN_PASSWORD);
+        document.getElementById('loginError').textContent = '';
+        document.getElementById('loginSuccess').textContent = '';
         
-        // Initialize Supabase
-        let supabase;
+        if (password === ADMIN_PASSWORD) {
+            console.log('Password correct! Showing dashboard...');
+            document.getElementById('loginSuccess').textContent = 'Login successful!';
+            
+            setTimeout(() => {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+                console.log('Dashboard should now be visible');
+                loadRsvps();
+            }, 500);
+        } else {
+            console.log('Password incorrect');
+            document.getElementById('loginError').textContent = 'Invalid password. Try: BjOrKi2026!!';
+        }
+    });
+    
+    function logout() {
+        console.log('Logging out');
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('dashboard').classList.remove('active');
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('loginError').textContent = '';
+        document.getElementById('loginSuccess').textContent = '';
+    }
+    
+    // Load RSVPs from Supabase
+    async function loadRsvps() {
+        console.log('Loading RSVPs...');
         try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('Supabase initialized successfully');
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('rsvpTable').style.display = 'none';
+            
+            const { data, error } = await supabase
+                .from('rsvps')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
+            }
+            
+            console.log('Loaded', data?.length || 0, 'RSVPs');
+            allRsvps = data || [];
+            filteredRsvps = [...allRsvps];
+            
+            updateStats();
+            renderTable();
+            
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('rsvpTable').style.display = 'table';
+            
         } catch (error) {
-            console.error('Error initializing Supabase:', error);
+            console.error('Error loading RSVPs:', error);
+            document.getElementById('loadingIndicator').innerHTML = 
+                '<p style="color: red;">Error loading data: ' + error.message + '</p>' +
+                '<p>Check browser console (F12) for details.</p>';
+        }
+    }
+    
+    // Update statistics
+    function updateStats() {
+        const total = allRsvps.length;
+        const sent = allRsvps.filter(r => r.email_sent).length;
+        const pending = total - sent;
+        const wantsReminders = allRsvps.filter(r => r.email_reminders).length;
+        
+        document.getElementById('totalRsvps').textContent = total;
+        document.getElementById('emailsSent').textContent = sent;
+        document.getElementById('pendingEmails').textContent = pending;
+        document.getElementById('wantsReminders').textContent = wantsReminders;
+    }
+    
+    // Render table
+    function renderTable() {
+        const tbody = document.getElementById('rsvpTableBody');
+        tbody.innerHTML = '';
+        
+        if (filteredRsvps.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 2rem;">No RSVPs found</td></tr>';
+            return;
         }
         
-        let allRsvps = [];
-        let filteredRsvps = [];
-        
-        // Login
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Login form submitted');
+        filteredRsvps.forEach(rsvp => {
+            const row = document.createElement('tr');
             
-            const password = document.getElementById('passwordInput').value;
-            console.log('Entered password:', password);
-            console.log('Expected password:', ADMIN_PASSWORD);
-            console.log('Passwords match:', password === ADMIN_PASSWORD);
+            const date = new Date(rsvp.created_at).toLocaleDateString();
+            const name = `${rsvp.first_name} ${rsvp.last_name}`;
+            const events = (rsvp.events || []).map(e => 
+                `<span class="event-badge">${e.split(' - ')[0]}</span>`
+            ).join(' ');
             
-            document.getElementById('loginError').textContent = '';
-            document.getElementById('loginSuccess').textContent = '';
+            row.innerHTML = `
+                <td>${date}</td>
+                <td><strong>${name}</strong></td>
+                <td>${rsvp.email}</td>
+                <td>${rsvp.phone || '—'}</td>
+                <td>${formatAffiliation(rsvp.affiliation)}</td>
+                <td class="events-list">${events}</td>
+                <td><span class="${rsvp.email_reminders ? 'yes-badge' : 'no-badge'}">${rsvp.email_reminders ? 'Yes' : 'No'}</span></td>
+                <td><span class="${rsvp.newsletter ? 'yes-badge' : 'no-badge'}">${rsvp.newsletter ? 'Yes' : 'No'}</span></td>
+                <td>${rsvp.accessibility_needs || '—'}</td>
+                <td>
+                    <input type="checkbox" 
+                           class="email-sent-checkbox" 
+                           ${rsvp.email_sent ? 'checked' : ''} 
+                           onchange="toggleEmailSent(${rsvp.id}, this.checked)">
+                </td>
+            `;
             
-            if (password === ADMIN_PASSWORD) {
-                console.log('Password correct! Showing dashboard...');
-                document.getElementById('loginSuccess').textContent = 'Login successful!';
-                
-                setTimeout(() => {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('dashboard').classList.add('active');
-                    console.log('Dashboard should now be visible');
-                    loadRsvps();
-                }, 500);
-            } else {
-                console.log('Password incorrect');
-                document.getElementById('loginError').textContent = 'Invalid password. Try: BjOrKi2026!!';
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Toggle email sent status
+    async function toggleEmailSent(id, checked) {
+        try {
+            const { error } = await supabase
+                .from('rsvps')
+                .update({ email_sent: checked })
+                .eq('id', id);
+            
+            if (error) throw error;
+            
+            const rsvp = allRsvps.find(r => r.id === id);
+            if (rsvp) {
+                rsvp.email_sent = checked;
             }
+            
+            updateStats();
+            
+        } catch (error) {
+            console.error('Error updating email status:', error);
+            alert('Error updating status. Please try again.');
+        }
+    }
+    
+    // Format affiliation
+    function formatAffiliation(aff) {
+        const map = {
+            'mjc-student': 'MJC Student',
+            'mjc-faculty': 'MJC Faculty/Staff',
+            'community': 'Community',
+            'other-institution': 'Other Institution',
+            'other': 'Other'
+        };
+        return map[aff] || '—';
+    }
+    
+    // Search and filter
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('eventFilter').addEventListener('change', applyFilters);
+    document.getElementById('emailStatusFilter').addEventListener('change', applyFilters);
+    
+    function applyFilters() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const eventFilter = document.getElementById('eventFilter').value;
+        const emailStatusFilter = document.getElementById('emailStatusFilter').value;
+        
+        filteredRsvps = allRsvps.filter(rsvp => {
+            const matchesSearch = 
+                rsvp.first_name.toLowerCase().includes(searchTerm) ||
+                rsvp.last_name.toLowerCase().includes(searchTerm) ||
+                rsvp.email.toLowerCase().includes(searchTerm);
+            
+            if (!matchesSearch) return false;
+            
+            if (eventFilter) {
+                const matchesEvent = (rsvp.events || []).some(e => e.includes(eventFilter));
+                if (!matchesEvent) return false;
+            }
+            
+            if (emailStatusFilter === 'sent' && !rsvp.email_sent) return false;
+            if (emailStatusFilter === 'pending' && rsvp.email_sent) return false;
+            
+            return true;
         });
         
-        function logout() {
-            console.log('Logging out');
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('dashboard').classList.remove('active');
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('loginError').textContent = '';
-            document.getElementById('loginSuccess').textContent = '';
+        renderTable();
+    }
+    
+    // Sort table
+    let sortColumn = 'created_at';
+    let sortAscending = false;
+    
+    function sortTable(column) {
+        if (sortColumn === column) {
+            sortAscending = !sortAscending;
+        } else {
+            sortColumn = column;
+            sortAscending = true;
         }
         
-        // Load RSVPs from Supabase
-        async function loadRsvps() {
-            console.log('Loading RSVPs...');
-            try {
-                document.getElementById('loadingIndicator').style.display = 'block';
-                document.getElementById('rsvpTable').style.display = 'none';
-                
-                const { data, error } = await supabase
-                    .from('rsvps')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (error) {
-                    console.error('Supabase error:', error);
-                    throw error;
-                }
-                
-                console.log('Loaded', data?.length || 0, 'RSVPs');
-                allRsvps = data || [];
-                filteredRsvps = [...allRsvps];
-                
-                updateStats();
-                renderTable();
-                
-                document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('rsvpTable').style.display = 'table';
-                
-            } catch (error) {
-                console.error('Error loading RSVPs:', error);
-                document.getElementById('loadingIndicator').innerHTML = 
-                    '<p style="color: red;">Error loading data: ' + error.message + '</p>' +
-                    '<p>Check browser console (F12) for details.</p>';
-            }
-        }
-        
-        // Update statistics
-        function updateStats() {
-            const total = allRsvps.length;
-            const sent = allRsvps.filter(r => r.email_sent).length;
-            const pending = total - sent;
-            const wantsReminders = allRsvps.filter(r => r.email_reminders).length;
+        filteredRsvps.sort((a, b) => {
+            let aVal = a[column];
+            let bVal = b[column];
             
-            document.getElementById('totalRsvps').textContent = total;
-            document.getElementById('emailsSent').textContent = sent;
-            document.getElementById('pendingEmails').textContent = pending;
-            document.getElementById('wantsReminders').textContent = wantsReminders;
-        }
-        
-        // Render table
-        function renderTable() {
-            const tbody = document.getElementById('rsvpTableBody');
-            tbody.innerHTML = '';
-            
-            if (filteredRsvps.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 2rem;">No RSVPs found</td></tr>';
-                return;
+            if (column === 'first_name') {
+                aVal = `${a.first_name} ${a.last_name}`;
+                bVal = `${b.first_name} ${b.last_name}`;
             }
             
-            filteredRsvps.forEach(rsvp => {
-                const row = document.createElement('tr');
-                
-                const date = new Date(rsvp.created_at).toLocaleDateString();
-                const name = `${rsvp.first_name} ${rsvp.last_name}`;
-                const events = (rsvp.events || []).map(e => 
-                    `<span class="event-badge">${e.split(' - ')[0]}</span>`
-                ).join(' ');
-                
-                row.innerHTML = `
-                    <td>${date}</td>
-                    <td><strong>${name}</strong></td>
-                    <td>${rsvp.email}</td>
-                    <td>${rsvp.phone || '—'}</td>
-                    <td>${formatAffiliation(rsvp.affiliation)}</td>
-                    <td class="events-list">${events}</td>
-                    <td><span class="${rsvp.email_reminders ? 'yes-badge' : 'no-badge'}">${rsvp.email_reminders ? 'Yes' : 'No'}</span></td>
-                    <td><span class="${rsvp.newsletter ? 'yes-badge' : 'no-badge'}">${rsvp.newsletter ? 'Yes' : 'No'}</span></td>
-                    <td>${rsvp.accessibility_needs || '—'}</td>
-                    <td>
-                        <input type="checkbox" 
-                               class="email-sent-checkbox" 
-                               ${rsvp.email_sent ? 'checked' : ''} 
-                               onchange="toggleEmailSent(${rsvp.id}, this.checked)">
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-        }
+            if (aVal < bVal) return sortAscending ? -1 : 1;
+            if (aVal > bVal) return sortAscending ? 1 : -1;
+            return 0;
+        });
         
-        // Toggle email sent status
-        async function toggleEmailSent(id, checked) {
-            try {
-                const { error } = await supabase
-                    .from('rsvps')
-                    .update({ email_sent: checked })
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                const rsvp = allRsvps.find(r => r.id === id);
-                if (rsvp) {
-                    rsvp.email_sent = checked;
-                }
-                
-                updateStats();
-                
-            } catch (error) {
-                console.error('Error updating email status:', error);
-                alert('Error updating status. Please try again.');
-            }
-        }
+        renderTable();
+    }
+    
+    // Export to CSV
+    function exportToCSV() {
+        const headers = ['Date', 'First Name', 'Last Name', 'Email', 'Phone', 'Affiliation', 
+                       'Events', 'Email Reminders', 'Newsletter', 'Accessibility Needs', 
+                       'Comments', 'Email Sent'];
         
-        // Format affiliation
-        function formatAffiliation(aff) {
-            const map = {
-                'mjc-student': 'MJC Student',
-                'mjc-faculty': 'MJC Faculty/Staff',
-                'community': 'Community',
-                'other-institution': 'Other Institution',
-                'other': 'Other'
-            };
-            return map[aff] || '—';
-        }
+        const rows = filteredRsvps.map(rsvp => [
+            new Date(rsvp.created_at).toLocaleString(),
+            rsvp.first_name,
+            rsvp.last_name,
+            rsvp.email,
+            rsvp.phone || '',
+            formatAffiliation(rsvp.affiliation),
+            (rsvp.events || []).join('; '),
+            rsvp.email_reminders ? 'Yes' : 'No',
+            rsvp.newsletter ? 'Yes' : 'No',
+            rsvp.accessibility_needs || '',
+            rsvp.comments || '',
+            rsvp.email_sent ? 'Yes' : 'No'
+        ]);
         
-        // Search and filter
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.getElementById('eventFilter').addEventListener('change', applyFilters);
-        document.getElementById('emailStatusFilter').addEventListener('change', applyFilters);
+        let csv = headers.join(',') + '\n';
+        rows.forEach(row => {
+            csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+        });
         
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const eventFilter = document.getElementById('eventFilter').value;
-            const emailStatusFilter = document.getElementById('emailStatusFilter').value;
-            
-            filteredRsvps = allRsvps.filter(rsvp => {
-                const matchesSearch = 
-                    rsvp.first_name.toLowerCase().includes(searchTerm) ||
-                    rsvp.last_name.toLowerCase().includes(searchTerm) ||
-                    rsvp.email.toLowerCase().includes(searchTerm);
-                
-                if (!matchesSearch) return false;
-                
-                if (eventFilter) {
-                    const matchesEvent = (rsvp.events || []).some(e => e.includes(eventFilter));
-                    if (!matchesEvent) return false;
-                }
-                
-                if (emailStatusFilter === 'sent' && !rsvp.email_sent) return false;
-                if (emailStatusFilter === 'pending' && rsvp.email_sent) return false;
-                
-                return true;
-            });
-            
-            renderTable();
-        }
-        
-        // Sort table
-        let sortColumn = 'created_at';
-        let sortAscending = false;
-        
-        function sortTable(column) {
-            if (sortColumn === column) {
-                sortAscending = !sortAscending;
-            } else {
-                sortColumn = column;
-                sortAscending = true;
-            }
-            
-            filteredRsvps.sort((a, b) => {
-                let aVal = a[column];
-                let bVal = b[column];
-                
-                if (column === 'first_name') {
-                    aVal = `${a.first_name} ${a.last_name}`;
-                    bVal = `${b.first_name} ${b.last_name}`;
-                }
-                
-                if (aVal < bVal) return sortAscending ? -1 : 1;
-                if (aVal > bVal) return sortAscending ? 1 : -1;
-                return 0;
-            });
-            
-            renderTable();
-        }
-        
-        // Export to CSV
-        function exportToCSV() {
-            const headers = ['Date', 'First Name', 'Last Name', 'Email', 'Phone', 'Affiliation', 
-                           'Events', 'Email Reminders', 'Newsletter', 'Accessibility Needs', 
-                           'Comments', 'Email Sent'];
-            
-            const rows = filteredRsvps.map(rsvp => [
-                new Date(rsvp.created_at).toLocaleString(),
-                rsvp.first_name,
-                rsvp.last_name,
-                rsvp.email,
-                rsvp.phone || '',
-                formatAffiliation(rsvp.affiliation),
-                (rsvp.events || []).join('; '),
-                rsvp.email_reminders ? 'Yes' : 'No',
-                rsvp.newsletter ? 'Yes' : 'No',
-                rsvp.accessibility_needs || '',
-                rsvp.comments || '',
-                rsvp.email_sent ? 'Yes' : 'No'
-            ]);
-            
-            let csv = headers.join(',') + '\n';
-            rows.forEach(row => {
-                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
-        
-        function refreshData() {
-            loadRsvps();
-        }
-        
-        console.log('All functions defined');
-    </script>
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+    }
+    
+    function refreshData() {
+        loadRsvps();
+    }
+    
+    console.log('All functions defined');
+</script>
 </body>
 </html>
