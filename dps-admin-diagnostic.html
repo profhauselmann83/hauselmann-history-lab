@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #001f60;
+            border-bottom: 3px solid #a71930;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #001f60;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #001f60;
+        }
+        button {
+            background: #001f60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #a71930;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Supabase Connection Diagnostic Tool</h1>
+        <p>This tool will help you identify why your RSVP form isn't saving data to Supabase.</p>
+
+        <!-- Test 1: Connection -->
+        <div class="test-section">
+            <h3>Test 1: Connection to Supabase</h3>
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connectionResult"></div>
+        </div>
+
+        <!-- Test 2: Table Exists -->
+        <div class="test-section">
+            <h3>Test 2: Check if Table Exists</h3>
+            <p>We'll try both 'rsvp' and 'rsvps' (singular vs plural)</p>
+            <button onclick="testTable()">Check Table</button>
+            <div id="tableResult"></div>
+        </div>
+
+        <!-- Test 3: RLS Policies -->
+        <div class="test-section">
+            <h3>Test 3: Test Anonymous Insert (RLS Check)</h3>
+            <p>This will try to insert a test record as an anonymous user.</p>
+            <button onclick="testInsert()">Test Insert</button>
+            <div id="insertResult"></div>
+        </div>
+
+        <!-- Test 4: Full Form Data -->
+        <div class="test-section">
+            <h3>Test 4: Insert Full Form Data</h3>
+            <p>This simulates exactly what your form does.</p>
+            <button onclick="testFullInsert()">Test Full Insert</button>
+            <div id="fullInsertResult"></div>
+        </div>
+
+        <!-- Test 5: Read Data -->
+        <div class="test-section">
+            <h3>Test 5: Read Existing Data</h3>
+            <button onclick="testRead()">Read Data</button>
+            <div id="readResult"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="test-section" style="border-left-color: #a71930;">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Run tests 1-4 in order</li>
+                <li>If any test fails, note the error message</li>
+                <li>Follow the recommendations below</li>
+                <li>After fixing issues, run tests again</li>
+            </ol>
+        </div>
+
+        <!-- Recommendations -->
+        <div id="recommendations" class="test-section" style="display: none; border-left-color: #28a745;">
+            <h3>✅ Recommendations</h3>
+            <div id="recommendationContent"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let recommendations = [];
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<div class="loading">Testing connection...</div>';
+            
+            try {
+                const { data, error } = await supabase.from('_test_').select('*').limit(1);
+                
+                // We expect an error about table not existing, which means connection works
+                if (error && error.message.includes('relation')) {
+                    showResult('connectionResult', '✅ Connection successful!', 'success');
+                } else if (!error) {
+                    showResult('connectionResult', '✅ Connection successful!', 'success');
+                } else {
+                    throw error;
+                }
+            } catch (error) {
+                showResult('connectionResult', '❌ Connection failed: ' + error.message, 'error');
+                recommendations.push('Check your Supabase URL and anon key are correct');
+                updateRecommendations();
+            }
+        }
+
+        async function testTable() {
+            const resultDiv = document.getElementById('tableResult');
+            resultDiv.innerHTML = '<div class="loading">Checking tables...</div>';
+            
+            let results = [];
+            
+            // Try 'rsvps' (plural)
+            try {
+                const { data, error } = await supabase.from('rsvps').select('*').limit(1);
+                if (!error || (error && !error.message.includes('does not exist'))) {
+                    results.push('✅ Table "rsvps" (plural) exists');
+                } else {
+                    results.push('❌ Table "rsvps" (plural) does not exist');
+                }
+            } catch (error) {
+                results.push('❌ Error checking "rsvps": ' + error.message);
+            }
+            
+            // Try 'rsvp' (singular)
+            try {
+                const { data, error } = await supabase.from('rsvp').select('*').limit(1);
+                if (!error || (error && !error.message.includes('does not exist'))) {
+                    results.push('✅ Table "rsvp" (singular) exists');
+                } else {
+                    results.push('❌ Table "rsvp" (singular) does not exist');
+                }
+            } catch (error) {
+                results.push('❌ Error checking "rsvp": ' + error.message);
+            }
+            
+            const hasTable = results.some(r => r.includes('✅'));
+            
+            if (!hasTable) {
+                recommendations.push('You need to create the table. Run the SQL script in supabase-setup.sql');
+                updateRecommendations();
+            }
+            
+            showResult('tableResult', results.join('\n'), hasTable ? 'success' : 'error');
+        }
+
+        async function testInsert() {
+            const resultDiv = document.getElementById('insertResult');
+            resultDiv.innerHTML = '<div class="loading">Testing insert...</div>';
+            
+            const testData = {
+                first_name: 'Test',
+                last_name: 'User',
+                email: 'test@example.com',
+                events: ['Test Event'],
+                email_reminders: true,
+                newsletter: false
+            };
+            
+            // Try plural first
+            try {
+                const { data, error } = await supabase
+                    .from('rsvps')
+                    .insert([testData])
+                    .select();
+                
+                if (error) throw error;
+                
+                showResult('insertResult', '✅ Insert successful to "rsvps" table!\n\nInserted data:\n' + JSON.stringify(data, null, 2), 'success');
+                
+                // Clean up test data
+                if (data && data[0]) {
+                    await supabase.from('rsvps').delete().eq('id', data[0].id);
+                }
+                return;
+            } catch (error) {
+                if (error.message.includes('does not exist')) {
+                    // Try singular
+                    try {
+                        const { data, error } = await supabase
+                            .from('rsvp')
+                            .insert([testData])
+                            .select();
+                        
+                        if (error) throw error;
+                        
+                        showResult('insertResult', '✅ Insert successful to "rsvp" table!\n\nNote: Your table is named "rsvp" (singular), update your form code!\n\nInserted data:\n' + JSON.stringify(data, null, 2), 'success');
+                        recommendations.push('Change .from("rsvps") to .from("rsvp") in your form code');
+                        updateRecommendations();
+                        
+                        // Clean up test data
+                        if (data && data[0]) {
+                            await supabase.from('rsvp').delete().eq('id', data[0].id);
+                        }
+                        return;
+                    } catch (innerError) {
+                        handleInsertError(innerError);
+                    }
+                } else {
+                    handleInsertError(error);
+                }
+            }
+        }
+
+        function handleInsertError(error) {
+            let message = '❌ Insert failed: ' + error.message + '\n\n';
+            
+            if (error.message.includes('permission denied') || error.message.includes('policy')) {
+                message += 'Issue: Row Level Security (RLS) is blocking inserts\n';
+                message += 'Solution: You need to add a policy to allow anonymous inserts';
+                recommendations.push('Run the SQL script in supabase-setup.sql to fix RLS policies');
+            } else if (error.message.includes('violates not-null')) {
+                message += 'Issue: Missing required field\n';
+                message += 'Solution: Check your table schema matches the expected columns';
+                recommendations.push('Verify your table has all required columns (run SQL setup script)');
+            } else if (error.message.includes('does not exist')) {
+                message += 'Issue: Table does not exist\n';
+                message += 'Solution: Create the table using the SQL setup script';
+                recommendations.push('Run the SQL script in supabase-setup.sql to create the table');
+            } else if (error.message.includes('invalid input syntax')) {
+                message += 'Issue: Data type mismatch (probably the events array)\n';
+                message += 'Solution: Make sure events column is type text[]';
+                recommendations.push('Change events column type to text[] in Supabase table editor');
+            }
+            
+            showResult('insertResult', message, 'error');
+            updateRecommendations();
+        }
+
+        async function testFullInsert() {
+            const resultDiv = document.getElementById('fullInsertResult');
+            resultDiv.innerHTML = '<div class="loading">Testing full form insert...</div>';
+            
+            const fullTestData = {
+                first_name: 'John',
+                last_name: 'Doe',
+                email: 'john.doe@example.com',
+                phone: '555-1234',
+                affiliation: 'mjc-student',
+                events: [
+                    'Speaking Against Silence - Emily P. Lawsin',
+                    'Free Speech & Power'
+                ],
+                email_reminders: true,
+                newsletter: true,
+                accessibility_needs: 'Wheelchair access needed',
+                comments: 'Looking forward to the events!'
+            };
+            
+            // Try both table names
+            for (const tableName of ['rsvps', 'rsvp']) {
+                try {
+                    const { data, error } = await supabase
+                        .from(tableName)
+                        .insert([fullTestData])
+                        .select();
+                    
+                    if (error) {
+                        if (error.message.includes('does not exist')) {
+                            continue; // Try next table name
+                        }
+                        throw error;
+                    }
+                    
+                    showResult('fullInsertResult', `✅ Full insert successful to "${tableName}" table!\n\nThis means your form should work!\n\nInserted data:\n` + JSON.stringify(data, null, 2), 'success');
+                    
+                    // Clean up test data
+                    if (data && data[0]) {
+                        await supabase.from(tableName).delete().eq('id', data[0].id);
+                    }
+                    return;
+                } catch (error) {
+                    handleInsertError(error);
+                    return;
+                }
+            }
+            
+            showResult('fullInsertResult', '❌ Neither "rsvp" nor "rsvps" table exists', 'error');
+        }
+
+        async function testRead() {
+            const resultDiv = document.getElementById('readResult');
+            resultDiv.innerHTML = '<div class="loading">Reading data...</div>';
+            
+            // Try both table names
+            for (const tableName of ['rsvps', 'rsvp']) {
+                try {
+                    const { data, error, count } = await supabase
+                        .from(tableName)
+                        .select('*', { count: 'exact' })
+                        .limit(5);
+                    
+                    if (error) {
+                        if (error.message.includes('does not exist')) {
+                            continue;
+                        }
+                        throw error;
+                    }
+                    
+                    let message = `✅ Successfully read from "${tableName}" table\n\n`;
+                    message += `Total records: ${count || 0}\n\n`;
+                    
+                    if (data && data.length > 0) {
+                        message += 'Latest 5 records:\n' + JSON.stringify(data, null, 2);
+                    } else {
+                        message += 'No records found yet (table is empty)';
+                    }
+                    
+                    showResult('readResult', message, 'success');
+                    return;
+                } catch (error) {
+                    if (!error.message.includes('does not exist')) {
+                        showResult('readResult', '❌ Read failed: ' + error.message, 'error');
+                        return;
+                    }
+                }
+            }
+            
+            showResult('readResult', '❌ Could not find table', 'error');
+        }
+
+        function showResult(elementId, message, type) {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        function updateRecommendations() {
+            if (recommendations.length === 0) return;
+            
+            const recDiv = document.getElementById('recommendations');
+            const contentDiv = document.getElementById('recommendationContent');
+            
+            const uniqueRecs = [...new Set(recommendations)];
+            contentDiv.innerHTML = '<ol>' + uniqueRecs.map(r => `<li>${r}</li>`).join('') + '</ol>';
+            recDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
