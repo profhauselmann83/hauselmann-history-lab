@@ -661,166 +661,173 @@ textarea {
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // Supabase Configuration
-        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-        
-        // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Form validation and submission
-        document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // Initialize Supabase only once using an IIFE to avoid global scope pollution
+        (function() {
+            // Supabase Configuration
+            const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
             
-            // Clear previous errors
-            clearErrors();
-            
-            // Validate form
-            if (!validateForm()) {
-                return;
+            // Initialize Supabase client only if not already initialized
+            if (!window.supabaseClient) {
+                window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
             
-            // Get form data
-            const formData = getFormData();
-            
-            // Show loading state
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('loadingSpinner').style.display = 'block';
-            
-            try {
-                // Insert into Supabase
-                const { data, error } = await supabase
-                    .from('rsvps')
-                    .insert([formData])
-                    .select();
+            const supabase = window.supabaseClient;
+
+            // Form validation and submission
+            document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                if (error) {
-                    throw error;
+                // Clear previous errors
+                clearErrors();
+                
+                // Validate form
+                if (!validateForm()) {
+                    return;
                 }
                 
-                // Success! Show confirmation
-                showConfirmation(formData.email, formData.events);
+                // Get form data
+                const formData = getFormData();
                 
-            } catch (error) {
-                console.error('Error submitting RSVP:', error);
-                alert('There was an error submitting your RSVP. Please try again or contact us at mjcbss@mjc.edu');
-                document.getElementById('submitBtn').disabled = false;
+                // Show loading state
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('loadingSpinner').style.display = 'block';
+                
+                try {
+                    // Insert into Supabase
+                    const { data, error } = await supabase
+                        .from('rsvps')
+                        .insert([formData])
+                        .select();
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    // Success! Show confirmation
+                    showConfirmation(formData.email, formData.events);
+                    
+                } catch (error) {
+                    console.error('Error submitting RSVP:', error);
+                    alert('There was an error submitting your RSVP. Please try again or contact us at mjcbss@mjc.edu');
+                    document.getElementById('submitBtn').disabled = false;
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                }
+            });
+
+            function validateForm() {
+                let isValid = true;
+                
+                // First name
+                const firstName = document.getElementById('firstName');
+                if (!firstName.value.trim()) {
+                    showError('firstName', 'Please enter your first name');
+                    isValid = false;
+                }
+                
+                // Last name
+                const lastName = document.getElementById('lastName');
+                if (!lastName.value.trim()) {
+                    showError('lastName', 'Please enter your last name');
+                    isValid = false;
+                }
+                
+                // Email
+                const email = document.getElementById('email');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email.value.trim()) {
+                    showError('email', 'Please enter your email');
+                    isValid = false;
+                } else if (!emailRegex.test(email.value)) {
+                    showError('email', 'Please enter a valid email');
+                    isValid = false;
+                }
+                
+                // Events
+                const eventCheckboxes = document.querySelectorAll('input[name="events"]:checked');
+                if (eventCheckboxes.length === 0) {
+                    showError('events', 'Please select at least one event');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+
+            function getFormData() {
+                // Get selected events
+                const selectedEvents = [];
+                document.querySelectorAll('input[name="events"]:checked').forEach(checkbox => {
+                    selectedEvents.push(checkbox.value);
+                });
+                
+                return {
+                    first_name: document.getElementById('firstName').value.trim(),
+                    last_name: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim() || null,
+                    affiliation: document.getElementById('affiliation').value || null,
+                    events: selectedEvents,
+                    email_reminders: document.getElementById('emailReminders').checked,
+                    newsletter: document.getElementById('newsletter').checked,
+                    accessibility_needs: document.getElementById('accessibility').value.trim() || null,
+                    comments: document.getElementById('comments').value.trim() || null
+                };
+            }
+
+            function showError(fieldId, message) {
+                const field = document.getElementById(fieldId);
+                const errorElement = document.getElementById(fieldId + 'Error');
+                
+                if (field) {
+                    const formGroup = field.closest('.form-group') || field.closest('fieldset');
+                    if (formGroup) {
+                        formGroup.classList.add('has-error');
+                    }
+                }
+                
+                if (errorElement) {
+                    errorElement.textContent = message;
+                }
+            }
+
+            function clearErrors() {
+                document.querySelectorAll('.error-message').forEach(error => {
+                    error.textContent = '';
+                });
+                document.querySelectorAll('.has-error').forEach(group => {
+                    group.classList.remove('has-error');
+                });
+            }
+
+            function showConfirmation(email, events) {
+                // Hide form
+                document.getElementById('rsvpForm').style.display = 'none';
                 document.getElementById('loadingSpinner').style.display = 'none';
+                
+                // Show confirmation
+                const confirmation = document.getElementById('confirmationMessage');
+                confirmation.style.display = 'block';
+                
+                // Populate details
+                document.getElementById('confirmedEmail').textContent = email;
+                
+                const eventsList = document.getElementById('confirmedEvents');
+                eventsList.innerHTML = '';
+                events.forEach(event => {
+                    const li = document.createElement('li');
+                    li.textContent = event;
+                    eventsList.appendChild(li);
+                });
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Redirect to home page after 5 seconds
+                setTimeout(function() {
+                    window.location.href = 'index.html';
+                }, 5000);
             }
-        });
-
-        function validateForm() {
-            let isValid = true;
-            
-            // First name
-            const firstName = document.getElementById('firstName');
-            if (!firstName.value.trim()) {
-                showError('firstName', 'Please enter your first name');
-                isValid = false;
-            }
-            
-            // Last name
-            const lastName = document.getElementById('lastName');
-            if (!lastName.value.trim()) {
-                showError('lastName', 'Please enter your last name');
-                isValid = false;
-            }
-            
-            // Email
-            const email = document.getElementById('email');
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email.value.trim()) {
-                showError('email', 'Please enter your email');
-                isValid = false;
-            } else if (!emailRegex.test(email.value)) {
-                showError('email', 'Please enter a valid email');
-                isValid = false;
-            }
-            
-            // Events
-            const eventCheckboxes = document.querySelectorAll('input[name="events"]:checked');
-            if (eventCheckboxes.length === 0) {
-                showError('events', 'Please select at least one event');
-                isValid = false;
-            }
-            
-            return isValid;
-        }
-
-        function getFormData() {
-            // Get selected events
-            const selectedEvents = [];
-            document.querySelectorAll('input[name="events"]:checked').forEach(checkbox => {
-                selectedEvents.push(checkbox.value);
-            });
-            
-            return {
-                first_name: document.getElementById('firstName').value.trim(),
-                last_name: document.getElementById('lastName').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                phone: document.getElementById('phone').value.trim() || null,
-                affiliation: document.getElementById('affiliation').value || null,
-                events: selectedEvents,
-                email_reminders: document.getElementById('emailReminders').checked,
-                newsletter: document.getElementById('newsletter').checked,
-                accessibility_needs: document.getElementById('accessibility').value.trim() || null,
-                comments: document.getElementById('comments').value.trim() || null
-            };
-        }
-
-        function showError(fieldId, message) {
-            const field = document.getElementById(fieldId);
-            const errorElement = document.getElementById(fieldId + 'Error');
-            
-            if (field) {
-                const formGroup = field.closest('.form-group') || field.closest('fieldset');
-                if (formGroup) {
-                    formGroup.classList.add('has-error');
-                }
-            }
-            
-            if (errorElement) {
-                errorElement.textContent = message;
-            }
-        }
-
-        function clearErrors() {
-            document.querySelectorAll('.error-message').forEach(error => {
-                error.textContent = '';
-            });
-            document.querySelectorAll('.has-error').forEach(group => {
-                group.classList.remove('has-error');
-            });
-        }
-
-        function showConfirmation(email, events) {
-            // Hide form
-            document.getElementById('rsvpForm').style.display = 'none';
-            document.getElementById('loadingSpinner').style.display = 'none';
-            
-            // Show confirmation
-            const confirmation = document.getElementById('confirmationMessage');
-            confirmation.style.display = 'block';
-            
-            // Populate details
-            document.getElementById('confirmedEmail').textContent = email;
-            
-            const eventsList = document.getElementById('confirmedEvents');
-            eventsList.innerHTML = '';
-            events.forEach(event => {
-                const li = document.createElement('li');
-                li.textContent = event;
-                eventsList.appendChild(li);
-            });
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Redirect to home page after 5 seconds
-            setTimeout(function() {
-                window.location.href = 'index.html';
-            }, 5000);
-        }
+        })();
     </script>
 </body>
 </html>
