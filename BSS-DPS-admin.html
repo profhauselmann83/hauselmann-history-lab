@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPS RSVP Admin Dashboard | Democracy in the Public Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=League+Gothic&family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+:root {
+    --navy: #001f60;
+    --red: #a71930;
+    --black: #000000;
+    --white: #ffffff;
+    --gray-light: #f5f5f5;
+    --gray-medium: #666666;
+    --gray-dark: #333333;
+    --font-display: 'Bebas Neue', 'Arial Black', impact, sans-serif;
+    --font-title: 'League Gothic', 'Anton', 'Impact', sans-serif;
+    --font-body: 'Arial', 'Helvetica', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    line-height: 1.6;
+    color: var(--gray-dark);
+    background-color: var(--gray-light);
+    padding: 2rem;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Login Screen */
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    background: white;
+    padding: 2rem;
+    border: 3px solid var(--navy);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h1 {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    color: var(--navy);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 2px solid var(--gray-medium);
+    font-size: 1rem;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--navy);
+    color: white;
+    border: none;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-form button:hover {
+    background-color: var(--red);
+}
+
+.error {
+    color: var(--red);
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Dashboard */
+.dashboard {
+    display: none;
+}
+
+.dashboard.active {
+    display: block;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #003380 100%);
+    color: white;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+}
+
+.dashboard-header h1 {
+    font-family: var(--font-title);
+    font-size: 3rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-left: 5px solid var(--red);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    color: var(--gray-medium);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .number {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    color: var(--navy);
+}
+
+/* Controls */
+.controls {
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.controls input,
+.controls select {
+    padding: 0.8rem;
+    border: 2px solid var(--gray-medium);
+    font-size: 1rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.controls button {
+    padding: 0.8rem 1.5rem;
+    background-color: var(--navy);
+    color: white;
+    border: none;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.controls button:hover {
+    background-color: var(--red);
+}
+
+.controls button.export {
+    background-color: var(--red);
+}
+
+.controls button.export:hover {
+    background-color: var(--navy);
+}
+
+/* Table */
+.table-container {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: var(--navy);
+    color: white;
+}
+
+th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+th.sortable:hover {
+    background-color: var(--red);
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--gray-light);
+    transition: background-color 0.2s;
+}
+
+tbody tr:hover {
+    background-color: var(--gray-light);
+}
+
+td {
+    padding: 1rem;
+}
+
+.email-sent-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.events-list {
+    max-width: 300px;
+}
+
+.event-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--navy);
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    margin: 0.25rem 0.25rem 0.25rem 0;
+}
+
+.yes-badge {
+    color: green;
+    font-weight: bold;
+}
+
+.no-badge {
+    color: var(--gray-medium);
+}
+
+.loading {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+    color: var(--gray-medium);
+}
+
+.logout-btn {
+    background-color: var(--red);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    float: right;
+}
+
+.logout-btn:hover {
+    background-color: var(--black);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
+    
+    table {
+        font-size: 0.85rem;
+    }
+    
+    th, td {
+        padding: 0.5rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <h1>Admin Login</h1>
+        <form id="loginForm" class="login-form">
+            <input type="password" id="passwordInput" placeholder="Enter admin password" required>
+            <div id="loginError" class="error"></div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <button class="logout-btn" onclick="logout()">Logout</button>
+                <h1>RSVP Dashboard</h1>
+                <p>Democracy in the Public Space - Spring 2026</p>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total RSVPs</h3>
+                    <div class="number" id="totalRsvps">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Emails Sent</h3>
+                    <div class="number" id="emailsSent">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Emails</h3>
+                    <div class="number" id="pendingEmails">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Wants Reminders</h3>
+                    <div class="number" id="wantsReminders">0</div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <input type="text" id="searchInput" placeholder="Search by name or email...">
+                <select id="eventFilter">
+                    <option value="">All Events</option>
+                    <option value="Speaking Against Silence">Speaking Against Silence</option>
+                    <option value="Free Speech & Power">Free Speech & Power</option>
+                    <option value="Capitalism or Freedom?">Capitalism or Freedom?</option>
+                    <option value="Due Process & Equality">Due Process & Equality</option>
+                    <option value="Academic Freedom">Academic Freedom</option>
+                    <option value="Exclusion & Belonging">Exclusion & Belonging</option>
+                </select>
+                <select id="emailStatusFilter">
+                    <option value="">All Status</option>
+                    <option value="sent">Email Sent</option>
+                    <option value="pending">Pending</option>
+                </select>
+                <button onclick="refreshData()">Refresh</button>
+                <button class="export" onclick="exportToCSV()">Export CSV</button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <div id="loadingIndicator" class="loading">Loading RSVPs...</div>
+                <table id="rsvpTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('created_at')">Date</th>
+                            <th class="sortable" onclick="sortTable('first_name')">Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Affiliation</th>
+                            <th>Events</th>
+                            <th>Email Reminders</th>
+                            <th>Newsletter</th>
+                            <th>Accessibility</th>
+                            <th>Email Sent?</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rsvpTableBody">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JavaScript Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Configuration
+        const ADMIN_PASSWORD = 'mjc2026admin'; // ⚠️ CHANGE THIS PASSWORD!
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let allRsvps = [];
+        let filteredRsvps = [];
+        
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+                loadRsvps();
+            } else {
+                document.getElementById('loginError').textContent = 'Invalid password';
+            }
+        });
+        
+        function logout() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('passwordInput').value = '';
+        }
+        
+        // Load RSVPs from Supabase
+        async function loadRsvps() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('rsvpTable').style.display = 'none';
+                
+                const { data, error } = await supabase
+                    .from('rsvps')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allRsvps = data || [];
+                filteredRsvps = [...allRsvps];
+                
+                updateStats();
+                renderTable();
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('rsvpTable').style.display = 'table';
+                
+            } catch (error) {
+                console.error('Error loading RSVPs:', error);
+                alert('Error loading data. Check console for details.');
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const total = allRsvps.length;
+            const sent = allRsvps.filter(r => r.email_sent).length;
+            const pending = total - sent;
+            const wantsReminders = allRsvps.filter(r => r.email_reminders).length;
+            
+            document.getElementById('totalRsvps').textContent = total;
+            document.getElementById('emailsSent').textContent = sent;
+            document.getElementById('pendingEmails').textContent = pending;
+            document.getElementById('wantsReminders').textContent = wantsReminders;
+        }
+        
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('rsvpTableBody');
+            tbody.innerHTML = '';
+            
+            filteredRsvps.forEach(rsvp => {
+                const row = document.createElement('tr');
+                
+                const date = new Date(rsvp.created_at).toLocaleDateString();
+                const name = `${rsvp.first_name} ${rsvp.last_name}`;
+                const events = (rsvp.events || []).map(e => 
+                    `<span class="event-badge">${e.split(' - ')[0]}</span>`
+                ).join(' ');
+                
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td><strong>${name}</strong></td>
+                    <td>${rsvp.email}</td>
+                    <td>${rsvp.phone || '—'}</td>
+                    <td>${formatAffiliation(rsvp.affiliation)}</td>
+                    <td class="events-list">${events}</td>
+                    <td><span class="${rsvp.email_reminders ? 'yes-badge' : 'no-badge'}">${rsvp.email_reminders ? 'Yes' : 'No'}</span></td>
+                    <td><span class="${rsvp.newsletter ? 'yes-badge' : 'no-badge'}">${rsvp.newsletter ? 'Yes' : 'No'}</span></td>
+                    <td>${rsvp.accessibility_needs || '—'}</td>
+                    <td>
+                        <input type="checkbox" 
+                               class="email-sent-checkbox" 
+                               ${rsvp.email_sent ? 'checked' : ''} 
+                               onchange="toggleEmailSent(${rsvp.id}, this.checked)">
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Toggle email sent status
+        async function toggleEmailSent(id, checked) {
+            try {
+                const { error } = await supabase
+                    .from('rsvps')
+                    .update({ email_sent: checked })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                // Update local data
+                const rsvp = allRsvps.find(r => r.id === id);
+                if (rsvp) {
+                    rsvp.email_sent = checked;
+                }
+                
+                updateStats();
+                
+            } catch (error) {
+                console.error('Error updating email status:', error);
+                alert('Error updating status. Please try again.');
+            }
+        }
+        
+        // Format affiliation
+        function formatAffiliation(aff) {
+            const map = {
+                'mjc-student': 'MJC Student',
+                'mjc-faculty': 'MJC Faculty/Staff',
+                'community': 'Community',
+                'other-institution': 'Other Institution',
+                'other': 'Other'
+            };
+            return map[aff] || '—';
+        }
+        
+        // Search and filter
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('eventFilter').addEventListener('change', applyFilters);
+        document.getElementById('emailStatusFilter').addEventListener('change', applyFilters);
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const eventFilter = document.getElementById('eventFilter').value;
+            const emailStatusFilter = document.getElementById('emailStatusFilter').value;
+            
+            filteredRsvps = allRsvps.filter(rsvp => {
+                // Search filter
+                const matchesSearch = 
+                    rsvp.first_name.toLowerCase().includes(searchTerm) ||
+                    rsvp.last_name.toLowerCase().includes(searchTerm) ||
+                    rsvp.email.toLowerCase().includes(searchTerm);
+                
+                if (!matchesSearch) return false;
+                
+                // Event filter
+                if (eventFilter) {
+                    const matchesEvent = (rsvp.events || []).some(e => e.includes(eventFilter));
+                    if (!matchesEvent) return false;
+                }
+                
+                // Email status filter
+                if (emailStatusFilter === 'sent' && !rsvp.email_sent) return false;
+                if (emailStatusFilter === 'pending' && rsvp.email_sent) return false;
+                
+                return true;
+            });
+            
+            renderTable();
+        }
+        
+        // Sort table
+        let sortColumn = 'created_at';
+        let sortAscending = false;
+        
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortAscending = !sortAscending;
+            } else {
+                sortColumn = column;
+                sortAscending = true;
+            }
+            
+            filteredRsvps.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+                
+                if (column === 'first_name') {
+                    aVal = `${a.first_name} ${a.last_name}`;
+                    bVal = `${b.first_name} ${b.last_name}`;
+                }
+                
+                if (aVal < bVal) return sortAscending ? -1 : 1;
+                if (aVal > bVal) return sortAscending ? 1 : -1;
+                return 0;
+            });
+            
+            renderTable();
+        }
+        
+        // Export to CSV
+        function exportToCSV() {
+            const headers = ['Date', 'First Name', 'Last Name', 'Email', 'Phone', 'Affiliation', 
+                           'Events', 'Email Reminders', 'Newsletter', 'Accessibility Needs', 
+                           'Comments', 'Email Sent'];
+            
+            const rows = filteredRsvps.map(rsvp => [
+                new Date(rsvp.created_at).toLocaleString(),
+                rsvp.first_name,
+                rsvp.last_name,
+                rsvp.email,
+                rsvp.phone || '',
+                formatAffiliation(rsvp.affiliation),
+                (rsvp.events || []).join('; '),
+                rsvp.email_reminders ? 'Yes' : 'No',
+                rsvp.newsletter ? 'Yes' : 'No',
+                rsvp.accessibility_needs || '',
+                rsvp.comments || '',
+                rsvp.email_sent ? 'Yes' : 'No'
+            ]);
+            
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+        
+        function refreshData() {
+            loadRsvps();
+        }
+    </script>
+</body>
+</html>
