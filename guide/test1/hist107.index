@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIST 107 - Break the Code Puzzle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .mission {
+            background: #fff8dc;
+            border-left: 5px solid #8B4513;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+
+        .mission h2 {
+            color: #8B4513;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        .riddles-section {
+            margin-bottom: 40px;
+        }
+
+        .riddle {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .riddle:hover {
+            border-color: #8B4513;
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.1);
+        }
+
+        .riddle-number {
+            background: #8B4513;
+            color: white;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .riddle-text {
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+
+        .riddle-input {
+            margin-top: 15px;
+        }
+
+        .riddle-input input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 1em;
+            text-transform: uppercase;
+            transition: border-color 0.3s;
+        }
+
+        .riddle-input input:focus {
+            outline: none;
+            border-color: #8B4513;
+        }
+
+        .riddle-input.correct input {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .riddle-input.incorrect input {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        .cipher-key {
+            background: #2c3e50;
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .cipher-key h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            color: #f1c40f;
+        }
+
+        .cipher-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .cipher-item {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cipher-answer {
+            font-weight: bold;
+        }
+
+        .cipher-number {
+            background: #f1c40f;
+            color: #2c3e50;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .password-section {
+            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .password-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .password-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .password-digit {
+            width: 50px;
+            height: 60px;
+            background: white;
+            border: 3px solid #2c3e50;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .check-button {
+            background: #8B4513;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .check-button:hover {
+            background: #6d3510;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);
+        }
+
+        .check-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .unlock-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: none;
+            margin-top: 15px;
+        }
+
+        .unlock-button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .bonus-section {
+            background: #e8f4f8;
+            border: 2px dashed #3498db;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .bonus-section h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .progress-indicator {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #8B4513 0%, #A0522D 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .password-digit {
+                width: 40px;
+                height: 50px;
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 HIST 107: BREAK THE CODE</h1>
+            <p>Unlock the Study Guide Answer Key</p>
+        </div>
+
+        <div class="content">
+            <div class="mission">
+                <h2>🎯 Your Mission</h2>
+                <p>Solve the riddles below to decode the PASSWORD. Each answer corresponds to a number based on the cipher key. Once you've solved all riddles, the 8-digit password will be revealed. Use it to unlock the answer key!</p>
+            </div>
+
+            <div class="progress-indicator">
+                <strong>Progress: <span id="progress-text">0/8</span> Riddles Solved</strong>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="riddles-section">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">📜 The Riddles</h2>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 1</div>
+                    <div class="riddle-text">What term describes multiple centers of power existing at the same time? (Before 1500, the world had many of these centers, not just one dominant power)</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer1" placeholder="Enter your answer..." data-correct="MULTIPOLAR" data-position="0">
+                    </div>
+                </div>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 2</div>
+                    <div class="riddle-text">Beckert's term for the fusion of merchant capital, state violence, and overseas empire. (Two words - use the FIRST word only)</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer2" placeholder="Enter your answer..." data-correct="WAR" data-position="1">
+                    </div>
+                </div>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 3</div>
+                    <div class="riddle-text">The Chinese admiral whose voyages showed that capacity doesn't equal control. (Use his LAST name)</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer3" placeholder="Enter your answer..." data-correct="HE" data-position="2">
+                    </div>
+                </div>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 4</div>
+                    <div class="riddle-text">These Indian merchants and financiers organized cotton production and provided credit to European traders in the 1600s-1700s.</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer4" placeholder="Enter your answer..." data-correct="BANIAS" data-position="3">
+                    </div>
+                </div>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 5</div>
+                    <div class="riddle-text">The empire that controlled Anatolia, the Balkans, and much of the Middle East - one of the three great gunpowder empires.</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer5" placeholder="Enter your answer..." data-correct="OTTOMAN" data-position="4">
+                    </div>
+                </div>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 6</div>
+                    <div class="riddle-text">After 1750, global inequality became ________ (not temporary).</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer6" placeholder="Enter your answer..." data-correct="DURABLE" data-position="5">
+                    </div>
+                </div>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 7</div>
+                    <div class="riddle-text">The idea that historical outcomes were not inevitable - things could have turned out differently.</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer7" placeholder="Enter your answer..." data-correct="CONTINGENCY" data-position="6">
+                    </div>
+                </div>
+
+                <div class="riddle">
+                    <div class="riddle-number">RIDDLE 8</div>
+                    <div class="riddle-text">Pomeranz argues Europe and what other region were economically comparable until around 1700? (Use the general term, not a specific country)</div>
+                    <div class="riddle-input">
+                        <input type="text" id="answer8" placeholder="Enter your answer..." data-correct="ASIA" data-position="7">
+                    </div>
+                </div>
+            </div>
+
+            <div class="cipher-key">
+                <h3>🔑 CIPHER KEY</h3>
+                <div class="cipher-table">
+                    <div class="cipher-item">
+                        <span class="cipher-answer">MULTIPOLAR</span>
+                        <span class="cipher-number">7</span>
+                    </div>
+                    <div class="cipher-item">
+                        <span class="cipher-answer">WAR</span>
+                        <span class="cipher-number">3</span>
+                    </div>
+                    <div class="cipher-item">
+                        <span class="cipher-answer">HE</span>
+                        <span class="cipher-number">9</span>
+                    </div>
+                    <div class="cipher-item">
+                        <span class="cipher-answer">BANIAS</span>
+                        <span class="cipher-number">1</span>
+                    </div>
+                    <div class="cipher-item">
+                        <span class="cipher-answer">OTTOMAN</span>
+                        <span class="cipher-number">5</span>
+                    </div>
+                    <div class="cipher-item">
+                        <span class="cipher-answer">DURABLE</span>
+                        <span class="cipher-number">4</span>
+                    </div>
+                    <div class="cipher-item">
+                        <span class="cipher-answer">CONTINGENCY</span>
+                        <span class="cipher-number">2</span>
+                    </div>
+                    <div class="cipher-item">
+                        <span class="cipher-answer">ASIA</span>
+                        <span class="cipher-number">8</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="password-section">
+                <h3>🔓 YOUR PASSWORD</h3>
+                <p style="margin-bottom: 15px; color: #2c3e50;">Solve all riddles to reveal the password!</p>
+                <div class="password-display">
+                    <div class="password-digit" id="digit0">?</div>
+                    <div class="password-digit" id="digit1">?</div>
+                    <div class="password-digit" id="digit2">?</div>
+                    <div class="password-digit" id="digit3">?</div>
+                    <div class="password-digit" id="digit4">?</div>
+                    <div class="password-digit" id="digit5">?</div>
+                    <div class="password-digit" id="digit6">?</div>
+                    <div class="password-digit" id="digit7">?</div>
+                </div>
+                <button class="check-button" id="checkButton">Check My Answers</button>
+                <button class="unlock-button" id="unlockButton">🎉 Access Answer Key</button>
+                <div class="feedback" id="feedback"></div>
+            </div>
+
+            <div class="bonus-section">
+                <h3>⭐ BONUS CHALLENGE (Optional)</h3>
+                <p style="margin-bottom: 15px;">If you finish early, explain in 2-3 sentences why ONE of these terms matters for understanding early modern global history. Be specific!</p>
+                <textarea id="bonusAnswer" style="width: 100%; padding: 12px; border: 2px solid #3498db; border-radius: 5px; font-family: Georgia, serif; font-size: 1em; min-height: 100px;" placeholder="Your reflection here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cipherMap = {
+            'MULTIPOLAR': '7',
+            'WAR': '3',
+            'HE': '9',
+            'BANIAS': '1',
+            'OTTOMAN': '5',
+            'DURABLE': '4',
+            'CONTINGENCY': '2',
+            'ASIA': '8'
+        };
+
+        const correctPassword = '73915428';
+        let solvedCount = 0;
+        const password = new Array(8).fill('?');
+
+        // Add event listeners to all inputs
+        document.querySelectorAll('.riddle-input input').forEach(input => {
+            input.addEventListener('input', function() {
+                checkAnswer(this);
+            });
+        });
+
+        function checkAnswer(input) {
+            const userAnswer = input.value.trim().toUpperCase();
+            const correctAnswer = input.dataset.correct;
+            const position = parseInt(input.dataset.position);
+            const parentDiv = input.parentElement;
+
+            if (userAnswer === correctAnswer) {
+                parentDiv.classList.remove('incorrect');
+                parentDiv.classList.add('correct');
+                
+                // Update password display
+                const digit = cipherMap[correctAnswer];
+                password[position] = digit;
+                document.getElementById(`digit${position}`).textContent = digit;
+                
+                updateProgress();
+            } else if (userAnswer.length > 0) {
+                parentDiv.classList.remove('correct');
+                parentDiv.classList.add('incorrect');
+                password[position] = '?';
+                document.getElementById(`digit${position}`).textContent = '?';
+                updateProgress();
+            } else {
+                parentDiv.classList.remove('correct', 'incorrect');
+                password[position] = '?';
+                document.getElementById(`digit${position}`).textContent = '?';
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            solvedCount = password.filter(d => d !== '?').length;
+            document.getElementById('progress-text').textContent = `${solvedCount}/8`;
+            document.getElementById('progress-fill').style.width = `${(solvedCount / 8) * 100}%`;
+
+            if (solvedCount === 8) {
+                document.getElementById('checkButton').disabled = false;
+            } else {
+                document.getElementById('checkButton').disabled = true;
+            }
+        }
+
+        document.getElementById('checkButton').addEventListener('click', function() {
+            const userPassword = password.join('');
+            const feedback = document.getElementById('feedback');
+            
+            if (userPassword === correctPassword) {
+                feedback.className = 'feedback success';
+                feedback.style.display = 'block';
+                feedback.innerHTML = '🎉 <strong>CORRECT!</strong> Your password is: <strong>' + correctPassword + '</strong><br>Click below to access the answer key!';
+                document.getElementById('unlockButton').style.display = 'inline-block';
+                this.style.display = 'none';
+            } else {
+                feedback.className = 'feedback error';
+                feedback.style.display = 'block';
+                feedback.innerHTML = '❌ Not quite right. Double-check your answers and try again!';
+            }
+        });
+
+        document.getElementById('unlockButton').addEventListener('click', function() {
+            // You can customize this to link to your actual answer key
+            // For now, it will download the answer key or redirect to it
+            const password = correctPassword;
+            alert('Password: ' + password + '\n\nUse this password to access the answer key document!');
+            // Or redirect to the answer key page:
+            // window.location.href = 'answer_key.html?password=' + password;
+        });
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>
