@@ -67,18 +67,16 @@
             margin-bottom: 10px;
         }
 
+        .instructions p {
+            margin: 5px 0;
+        }
+
         .puzzle {
             background: #fff;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             padding: 25px;
             margin-bottom: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .puzzle:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
         .puzzle-header {
@@ -110,31 +108,19 @@
             font-weight: bold;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .question {
             margin: 15px 0;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: bold;
-            color: #1e3c72;
+            line-height: 1.8;
         }
 
         input[type="text"] {
-            width: 100%;
             padding: 10px;
             border: 2px solid #e0e0e0;
             border-radius: 5px;
             font-size: 1em;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: bold;
         }
 
         input[type="text"]:focus {
@@ -142,17 +128,18 @@
             border-color: #667eea;
         }
 
-        .code-box {
-            background: #2d3748;
-            color: #68d391;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            margin: 15px 0;
-            line-height: 1.8;
+        input[type="text"].correct {
+            border-color: #48bb78;
+            background-color: #f0fff4;
+            color: #22543d;
         }
 
-        .answer-box {
+        .word-input {
+            width: 150px;
+            font-size: 1.2em;
+        }
+
+        .answer-section {
             background: #fff5e1;
             border: 2px dashed #ffa500;
             padding: 20px;
@@ -161,19 +148,12 @@
             text-align: center;
         }
 
-        .answer-box label {
+        .answer-section label {
             font-weight: bold;
             color: #1e3c72;
             display: block;
             margin-bottom: 10px;
             font-size: 1.1em;
-        }
-
-        .answer-box input {
-            max-width: 200px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.2em;
         }
 
         .hint-button {
@@ -219,22 +199,6 @@
             margin-bottom: 20px;
         }
 
-        .password-display {
-            background: white;
-            color: #1e3c72;
-            padding: 20px;
-            border-radius: 8px;
-            font-size: 2em;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         .check-button {
             background: #68d391;
             color: #1e3c72;
@@ -262,7 +226,6 @@
             border-radius: 8px;
             margin-top: 20px;
             font-size: 1.2em;
-            text-align: center;
         }
 
         .error-message {
@@ -273,7 +236,17 @@
             border-radius: 8px;
             margin-top: 20px;
             font-size: 1.1em;
-            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            margin: 15px 0;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 10px;
+            vertical-align: middle;
         }
 
         @media (max-width: 768px) {
@@ -283,10 +256,6 @@
             
             .content {
                 padding: 20px 15px;
-            }
-            
-            table {
-                font-size: 0.9em;
             }
         }
     </style>
@@ -301,9 +270,11 @@
 
         <div class="content">
             <div class="instructions">
-                <h3>📋 Instructions</h3>
-                <p>Complete all four puzzles below. Each puzzle will give you ONE WORD. Put the four words together to create the password that unlocks the answer key PDF.</p>
-                <p style="margin-top: 10px;"><strong>Password Format:</strong> Word1Word2Word3Word4 (capitalize first letter of each word, no spaces)</p>
+                <h3>📋 How This Works</h3>
+                <p><strong>Step 1:</strong> Fill in the blanks for each puzzle. Answers turn <span style="color: #48bb78; font-weight: bold;">GREEN</span> when correct!</p>
+                <p><strong>Step 2:</strong> Once all blanks are green, figure out the CODE WORD for each puzzle.</p>
+                <p><strong>Step 3:</strong> Enter each code word. They also turn <span style="color: #48bb78; font-weight: bold;">GREEN</span> when correct!</p>
+                <p><strong>Step 4:</strong> Combine all four green code words to unlock the final password.</p>
             </div>
 
             <!-- Puzzle 1 -->
@@ -313,35 +284,35 @@
                     <div class="puzzle-title">Chain Breakers Code</div>
                 </div>
                 
-                <p>The Great Chain of Being was broken by FOUR major forces. Fill in the missing word for each force, then take the <strong>FIRST LETTER</strong> of each answer.</p>
+                <p><strong>Fill in the missing words:</strong></p>
                 
                 <table>
                     <tr>
-                        <td><strong>1.</strong> BLACK <input type="text" id="p1-1" placeholder="________"></td>
-                        <td style="font-size: 0.9em; color: #666;">(killed 2/3 of Europe, created labor scarcity)</td>
+                        <td>1. BLACK <input type="text" id="p1-1" class="word-input" oninput="checkAnswer(this, 'DEATH')" placeholder="______"></td>
+                        <td style="color: #666; font-size: 0.9em;">(killed 2/3 of Europe)</td>
                     </tr>
                     <tr>
-                        <td><strong>2.</strong> <input type="text" id="p1-2" placeholder="________"> & gunpowder</td>
-                        <td style="font-size: 0.9em; color: #666;">(let peasants kill knights)</td>
+                        <td>2. <input type="text" id="p1-2" class="word-input" oninput="checkAnswer(this, 'LONGBOWS')" placeholder="______"> & gunpowder</td>
+                        <td style="color: #666; font-size: 0.9em;">(let peasants kill knights)</td>
                     </tr>
                     <tr>
-                        <td><strong>3.</strong> SOLA <input type="text" id="p1-3" placeholder="________"></td>
-                        <td style="font-size: 0.9em; color: #666;">(Luther's "scripture alone")</td>
+                        <td>3. SOLA <input type="text" id="p1-3" class="word-input" oninput="checkAnswer(this, 'SCRIPTURA')" placeholder="______"></td>
+                        <td style="color: #666; font-size: 0.9em;">(Luther's principle)</td>
                     </tr>
                     <tr>
-                        <td><strong>4.</strong> STATE <input type="text" id="p1-4" placeholder="________"></td>
-                        <td style="font-size: 0.9em; color: #666;">(replaced personal feudal ties)</td>
+                        <td>4. STATE <input type="text" id="p1-4" class="word-input" oninput="checkAnswer(this, 'CENTRALIZATION')" placeholder="______"></td>
+                        <td style="color: #666; font-size: 0.9em;">(replaced feudal ties)</td>
                     </tr>
                 </table>
 
-                <div class="answer-box">
-                    <label>Take the FIRST LETTER of each blank (1→2→3→4):</label>
-                    <input type="text" id="word1" placeholder="Word 1" maxlength="4">
+                <div class="answer-section">
+                    <label>📝 CODE WORD 1: Take the FIRST LETTER of each answer (1→2→3→4)</label>
+                    <input type="text" id="word1" class="word-input" oninput="checkCodeWord(this, 'DLSC')" placeholder="____" maxlength="4">
                 </div>
 
                 <button class="hint-button" onclick="toggleHint('hint1')">💡 Need a Hint?</button>
                 <div class="hint-content" id="hint1">
-                    <strong>Hint:</strong> The four forces are: Black <strong>DEATH</strong>, <strong>LONGBOWS</strong> & gunpowder, Sola <strong>SCRIPTURA</strong>, State <strong>CENTRALIZATION</strong>. Take first letters of the words in CAPS: D-L-S-C
+                    <strong>Hint:</strong> The four forces are Death, Longbows, Scriptura, Centralization. First letters: D-L-S-C
                 </div>
             </div>
 
@@ -352,47 +323,37 @@
                     <div class="puzzle-title">The People's Historian</div>
                 </div>
                 
-                <p>Use the number code to spell our textbook author's last name:</p>
+                <p><strong>Find these numbers in your study guide, then decode using the table below:</strong></p>
                 
-                <table style="max-width: 300px; margin: 20px auto;">
-                    <tr>
-                        <th>Number</th>
-                        <th>Letter</th>
-                    </tr>
-                    <tr>
-                        <td>74</td>
-                        <td>P</td>
-                    </tr>
-                    <tr>
-                        <td>649</td>
-                        <td>E</td>
-                    </tr>
-                    <tr>
-                        <td>88</td>
-                        <td>L</td>
-                    </tr>
-                    <tr>
-                        <td>90</td>
-                        <td>Z</td>
-                    </tr>
-                </table>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                    <strong>Number Decoder:</strong> 74=P | 649=E | 88=L | 90=Z
+                </div>
 
-                <p><strong>Find these numbers in your study guide:</strong></p>
-                <ul style="margin-left: 30px; line-height: 2;">
-                    <li>Welfare index for Paris: 0.<input type="text" id="p2-1" placeholder="___" style="width: 60px;"></li>
-                    <li>Year Charles I executed minus 1000: <input type="text" id="p2-2" placeholder="___" style="width: 60px;"></li>
-                    <li>% of income consumed by bread: <input type="text" id="p2-3" placeholder="___" style="width: 60px;">%</li>
-                    <li>% of population in Third Estate: <input type="text" id="p2-4" placeholder="___" style="width: 60px;">%</li>
-                </ul>
+                <div class="question">
+                    <strong>1.</strong> Welfare index for Paris: 0.<input type="text" id="p2-1" style="width: 80px;" oninput="checkAnswer(this, '74')" placeholder="__">
+                </div>
 
-                <div class="answer-box">
-                    <label>Decode the numbers to spell:</label>
-                    <input type="text" id="word2" placeholder="Word 2" maxlength="4">
+                <div class="question">
+                    <strong>2.</strong> Year Charles I executed minus 1000: <input type="text" id="p2-2" style="width: 80px;" oninput="checkAnswer(this, '649')" placeholder="___">
+                </div>
+
+                <div class="question">
+                    <strong>3.</strong> % of income consumed by bread: <input type="text" id="p2-3" style="width: 80px;" oninput="checkAnswer(this, '88')" placeholder="__">%
+                </div>
+
+                <div class="question">
+                    <strong>4.</strong> % of population in Third Estate: <input type="text" id="p2-4" style="width: 80px;" oninput="checkAnswer(this, '90')" placeholder="__">%
+                </div>
+
+                <div class="answer-section">
+                    <label>📝 CODE WORD 2: Decode your numbers using the table above</label>
+                    <input type="text" id="word2" class="word-input" oninput="checkCodeWord(this, 'PELZ')" placeholder="____" maxlength="4">
+                    <p style="font-size: 0.9em; margin-top: 10px; color: #666;">(Example: 74, 649, 88, 90 → P, E, L, Z)</p>
                 </div>
 
                 <button class="hint-button" onclick="toggleHint('hint2')">💡 Need a Hint?</button>
                 <div class="hint-content" id="hint2">
-                    <strong>Hint:</strong> Look in Part 4 of your study guide. The numbers are: 74, 649, 88, 90. Decode: 74→P, 649→E, 88→L, 90→Z
+                    <strong>Hint:</strong> Check Part 4 of your study guide. The decoded word is our author's last name!
                 </div>
             </div>
 
@@ -400,29 +361,39 @@
             <div class="puzzle">
                 <div class="puzzle-header">
                     <div class="puzzle-number">3</div>
-                    <div class="puzzle-title">Crossword Secret Message</div>
+                    <div class="puzzle-title">Hidden Letter Code</div>
                 </div>
                 
-                <p>Fill in the historical terms. Then read DOWN the <strong>[bracketed]</strong> letters to reveal Word 3:</p>
+                <p><strong>Fill in the missing letters, then find the SECOND LETTER of each complete word:</strong></p>
                 
-                <div class="code-box">
-1. Parliament controlled T<strong style="color: #ffa500;">[A]</strong>XES in England<br>
-<br>
-2. Voting by E<strong style="color: #ffa500;">[S]</strong>TATE in Estates-General<br>
-<br>
-3. Charles I's L<strong style="color: #ffa500;">[E]</strong>GAL execution was revolutionary<br>
-<br>
-4. This leader's fLight attempt: L<strong style="color: #ffa500;">[O]</strong>UIS XVI
-                </div>
+                <table>
+                    <tr>
+                        <td>1. T<input type="text" id="p3-1" style="width: 100px;" oninput="checkAnswer(this, 'AXES')" placeholder="____">S</td>
+                        <td style="color: #666; font-size: 0.9em;">→ Parliament controlled these</td>
+                    </tr>
+                    <tr>
+                        <td>2. E<input type="text" id="p3-2" style="width: 120px;" oninput="checkAnswer(this, 'STAT')" placeholder="_____">E</td>
+                        <td style="color: #666; font-size: 0.9em;">→ Voting by this in Estates-General</td>
+                    </tr>
+                    <tr>
+                        <td>3. L<input type="text" id="p3-3" style="width: 90px;" oninput="checkAnswer(this, 'EGA')" placeholder="___">L</td>
+                        <td style="color: #666; font-size: 0.9em;">→ Type of execution (revolutionary)</td>
+                    </tr>
+                    <tr>
+                        <td>4. L<input type="text" id="p3-4" style="width: 90px;" oninput="checkAnswer(this, 'OUI')" placeholder="___">S XVI</td>
+                        <td style="color: #666; font-size: 0.9em;">→ King whose flight = treason</td>
+                    </tr>
+                </table>
 
-                <div class="answer-box">
-                    <label>Read down [A][S][E][O]:</label>
-                    <input type="text" id="word3" placeholder="Word 3" maxlength="4">
+                <div class="answer-section">
+                    <label>📝 CODE WORD 3: Take the 2nd letter of each complete word</label>
+                    <input type="text" id="word3" class="word-input" oninput="checkCodeWord(this, 'ASEO')" placeholder="____" maxlength="4">
+                    <p style="font-size: 0.9em; margin-top: 10px; color: #666;">(Example: T-A-X-E-S → 2nd letter is "A")</p>
                 </div>
 
                 <button class="hint-button" onclick="toggleHint('hint3')">💡 Need a Hint?</button>
                 <div class="hint-content" id="hint3">
-                    <strong>Hint:</strong> The bracketed letters spell A-S-E-O when read from top to bottom.
+                    <strong>Hint:</strong> Complete words are TAXES, ESTATE, LEGAL, LOUIS. Second letters: A, S, E, O
                 </div>
             </div>
 
@@ -435,73 +406,74 @@
                 
                 <p><strong>Question:</strong> How many kings were legally EXECUTED in the revolutions we studied?</p>
                 
-                <p style="margin-top: 15px;">Think about:</p>
+                <p style="margin: 15px 0;">Think about:</p>
                 <ul style="margin-left: 30px; line-height: 1.8;">
                     <li>English Revolution (1640s)</li>
                     <li>French Revolution (1789-1799)</li>
                 </ul>
 
-                <div class="answer-box">
-                    <label>Write the number as a word:</label>
-                    <input type="text" id="word4" placeholder="Word 4" maxlength="5">
+                <div class="answer-section">
+                    <label>📝 CODE WORD 4: Write the number as a word</label>
+                    <input type="text" id="word4" class="word-input" oninput="checkCodeWord(this, 'TWO')" placeholder="___" maxlength="5">
                 </div>
 
                 <button class="hint-button" onclick="toggleHint('hint4')">💡 Need a Hint?</button>
                 <div class="hint-content" id="hint4">
-                    <strong>Hint:</strong> Two kings were executed: Charles I (England, 1649) and Louis XVI (France, 1793). Write "Two" as a word.
+                    <strong>Hint:</strong> Charles I (England, 1649) and Louis XVI (France, 1793). Total = 2. Write as "Two"
                 </div>
             </div>
 
             <!-- Final Password Section -->
             <div class="final-password">
-                <h2>🎯 Create Your Password!</h2>
-                <p>Put all four words together (capitalize first letter of each word, no spaces):</p>
-                <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.9;">Example: If your words were "Blue", "Pelz", "Safe", "Two" → Password: <strong>BluePelzSafeTwo</strong></p>
+                <h2>🎯 Final Password</h2>
+                <p>Once all four CODE WORDS are green, combine them here:</p>
+                <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.9;"><strong>Format:</strong> Word1Word2Word3Word4 (capitalize first letter of each, no spaces)</p>
+                <p style="margin-top: 5px; font-size: 0.9em; opacity: 0.9;">Example: Dlsc + Pelz + Aseo + Two = <strong>DlscPelzAseoTwo</strong></p>
                 
-                <div class="password-display" id="passwordDisplay">
-                    Enter your words above...
+                <div style="margin: 30px 0;">
+                    <input type="text" id="finalPassword" style="width: 300px; font-size: 1.5em; padding: 15px;" placeholder="Enter password" maxlength="20">
                 </div>
 
-                <button class="check-button" onclick="checkPassword()">✅ Check Password</button>
+                <button class="check-button" onclick="checkFinalPassword()">🔓 Unlock Answer Key</button>
 
                 <div class="success-message" id="successMessage">
                     <strong>🎉 SUCCESS!</strong><br>
-                    You've unlocked the answer key! Use this password to open the PDF on Canvas.
+                    Your password is: <strong id="displayPassword"></strong><br>
+                    Use this password to open the answer key PDF on Canvas!
                 </div>
 
                 <div class="error-message" id="errorMessage">
                     <strong>❌ Not quite right...</strong><br>
-                    Check your puzzle answers carefully and try again!
+                    Make sure all four code words are green, then combine them correctly!
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Auto-update password display
-        function updatePassword() {
-            const word1 = document.getElementById('word1').value.trim();
-            const word2 = document.getElementById('word2').value.trim();
-            const word3 = document.getElementById('word3').value.trim();
-            const word4 = document.getElementById('word4').value.trim();
-
-            // Capitalize first letter of each word
-            const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-
-            const password = capitalize(word1) + capitalize(word2) + capitalize(word3) + capitalize(word4);
+        // Check if individual answers are correct (turn green)
+        function checkAnswer(input, correctAnswer) {
+            const userAnswer = input.value.trim().toUpperCase();
+            const correct = correctAnswer.toUpperCase();
             
-            const display = document.getElementById('passwordDisplay');
-            if (password.length > 0 && password !== 'Undefinedundefinedundefinedundefined') {
-                display.textContent = password;
+            if (userAnswer === correct) {
+                input.classList.add('correct');
             } else {
-                display.textContent = 'Enter your words above...';
+                input.classList.remove('correct');
             }
         }
 
-        // Add event listeners to all word inputs
-        ['word1', 'word2', 'word3', 'word4'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updatePassword);
-        });
+        // Check if code words are correct (turn green)
+        function checkCodeWord(input, correctWord) {
+            const userWord = input.value.trim().toUpperCase();
+            const correct = correctWord.toUpperCase();
+            
+            if (userWord === correct) {
+                input.classList.add('correct');
+            } else {
+                input.classList.remove('correct');
+            }
+        }
 
         // Toggle hint visibility
         function toggleHint(hintId) {
@@ -509,48 +481,26 @@
             hint.classList.toggle('show');
         }
 
-        // Check if password is correct
-        function checkPassword() {
-            const word1 = document.getElementById('word1').value.trim();
-            const word2 = document.getElementById('word2').value.trim();
-            const word3 = document.getElementById('word3').value.trim();
-            const word4 = document.getElementById('word4').value.trim();
-
-            const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-            const password = capitalize(word1) + capitalize(word2) + capitalize(word3) + capitalize(word4);
-
+        // Check final password
+        function checkFinalPassword() {
+            const input = document.getElementById('finalPassword');
+            const password = input.value.trim();
             const correctPassword = 'DlscPelzAseoTwo';
 
             const successMsg = document.getElementById('successMessage');
             const errorMsg = document.getElementById('errorMessage');
+            const displayPassword = document.getElementById('displayPassword');
 
             if (password === correctPassword) {
                 successMsg.style.display = 'block';
                 errorMsg.style.display = 'none';
-                
-                // Add celebration effect
-                confetti();
+                displayPassword.textContent = correctPassword;
+                input.classList.add('correct');
             } else {
                 errorMsg.style.display = 'block';
                 successMsg.style.display = 'none';
+                input.classList.remove('correct');
             }
-        }
-
-        // Simple confetti effect
-        function confetti() {
-            const duration = 3 * 1000;
-            const end = Date.now() + duration;
-
-            (function frame() {
-                // Launch a few confetti from the left edge
-                const timeLeft = end - Date.now();
-
-                if (timeLeft <= 0) {
-                    return;
-                }
-
-                setTimeout(frame, 50);
-            }());
         }
     </script>
 </body>
