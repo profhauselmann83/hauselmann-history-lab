@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New York Ratification Convention — Simulation Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --sepia: #6b4c2a;
+    --parchment: #f5ead6;
+    --parchment-dark: #e8d5b0;
+    --parchment-mid: #ede0c4;
+    --gold: #b8882a;
+    --gold-light: #d4a843;
+    --red: #8b1a1a;
+    --blue-dark: #1a3050;
+    --green-dark: #1a3a22;
+    --cream: #faf4e8;
+    --shadow: rgba(26,18,8,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2a1f12;
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, rgba(80,50,20,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(60,40,15,0.3) 0%, transparent 50%);
+    font-family: 'Crimson Pro', Georgia, serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 30px 20px 60px;
+  }
+
+  /* Outer frame */
+  .outer-frame {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: var(--parchment);
+    background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+      linear-gradient(180deg, #f7ecda 0%, #f0e2c5 40%, #f5e8d0 100%);
+    border: 3px solid var(--gold);
+    box-shadow: 
+      0 0 0 8px #2a1f12,
+      0 0 0 11px var(--gold),
+      0 20px 60px rgba(0,0,0,0.6),
+      inset 0 0 80px rgba(180,140,60,0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Corner ornaments */
+  .corner {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--gold);
+    opacity: 0.6;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .corner.tl { top: 6px; left: 6px; }
+  .corner.tr { top: 6px; right: 6px; transform: scaleX(-1); }
+  .corner.bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
+  .corner.br { bottom: 6px; right: 6px; transform: scale(-1); }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 60px 60px 40px;
+    border-bottom: 2px solid var(--gold);
+    position: relative;
+    background: linear-gradient(180deg, rgba(180,140,60,0.07) 0%, transparent 100%);
+  }
+
+  .header-year {
+    font-family: 'IM Fell English', serif;
+    font-size: 14px;
+    letter-spacing: 6px;
+    color: var(--sepia);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .header h1 {
+    font-family: 'IM Fell English', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    color: var(--ink);
+    line-height: 1.15;
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+
+  .header h1 em {
+    color: var(--sepia);
+    display: block;
+    font-size: 0.55em;
+    letter-spacing: 2px;
+  }
+
+  .header-divider {
+    margin: 18px auto 14px;
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .header-sub {
+    font-family: 'Crimson Pro', serif;
+    font-size: 17px;
+    color: var(--sepia);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  /* Nav tabs */
+  .nav-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--gold);
+    background: rgba(180,140,60,0.06);
+    padding: 0 30px;
+    gap: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+  }
+
+  .nav-tab {
+    padding: 12px 18px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 13px;
+    color: var(--sepia);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    position: relative;
+    top: 2px;
+    white-space: nowrap;
+  }
+
+  .nav-tab:hover {
+    color: var(--ink);
+    border-bottom-color: var(--gold-light);
+  }
+
+  .nav-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--gold);
+    font-weight: 700;
+    background: rgba(180,140,60,0.08);
+  }
+
+  /* Main content */
+  .main-content {
+    padding: 50px 60px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Section headers */
+  .section-title {
+    font-family: 'IM Fell English', serif;
+    font-size: 32px;
+    color: var(--ink);
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+
+  .section-intro {
+    font-size: 18px;
+    color: var(--sepia);
+    font-style: italic;
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+
+  /* Rule */
+  .rule {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), var(--gold), transparent);
+    margin: 30px 0;
+    opacity: 0.5;
+  }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.35);
+    border: 1px solid rgba(180,140,60,0.3);
+    border-radius: 4px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--gold);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .card.red::before { background: var(--red); }
+  .card.blue::before { background: var(--blue-dark); }
+  .card.green::before { background: var(--green-dark); }
+
+  .card-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+
+  .card p, .card li {
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  .card ul, .card ol {
+    padding-left: 22px;
+    margin-top: 8px;
+  }
+
+  .card li { margin-bottom: 6px; }
+
+  /* Checklist */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 17px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .checklist li::before {
+    content: '☐';
+    font-size: 18px;
+    color: var(--gold);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Timeline / issue steps */
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--gold), rgba(180,140,60,0.2));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--parchment);
+    box-shadow: 0 0 0 2px var(--gold);
+  }
+
+  .timeline-time {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 12px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .timeline-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .timeline-body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  /* Script blocks */
+  .script-you-say {
+    background: rgba(26,48,80,0.07);
+    border-left: 4px solid var(--blue-dark);
+    border-radius: 0 4px 4px 0;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--ink);
+    position: relative;
+  }
+
+  .script-you-say::before {
+    content: 'YOU SAY';
+    display: block;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--blue-dark);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .script-action {
+    background: rgba(180,140,60,0.1);
+    border: 1px dashed rgba(180,140,60,0.5);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--sepia);
+  }
+
+  .script-action::before {
+    content: '[ ';
+    color: var(--gold);
+    font-style: normal;
+  }
+  .script-action::after {
+    content: ' ]';
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  /* Quote blocks */
+  .quote-block {
+    border-left: 3px solid var(--gold);
+    padding: 14px 20px;
+    margin: 16px 0;
+    background: rgba(180,140,60,0.06);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  .quote-attribution {
+    font-style: normal;
+    font-size: 14px;
+    color: var(--sepia);
+    margin-top: 8px;
+    display: block;
+    font-family: 'Libre Baskerville', serif;
+  }
+
+  /* Two-column factions */
+  .faction-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 700px) {
+    .faction-grid { grid-template-columns: 1fr; }
+    .main-content { padding: 30px 24px; }
+    .header { padding: 40px 24px 30px; }
+    .nav-tabs { padding: 0 10px; }
+    .nav-tab { padding: 10px 12px; font-size: 12px; }
+  }
+
+  .faction-card {
+    border-radius: 4px;
+    padding: 22px 24px;
+    border: 1px solid;
+  }
+
+  .faction-card.federalist {
+    background: rgba(26,48,80,0.07);
+    border-color: rgba(26,48,80,0.25);
+  }
+
+  .faction-card.antifed {
+    background: rgba(139,26,26,0.07);
+    border-color: rgba(139,26,26,0.25);
+  }
+
+  .faction-card.moderate {
+    background: rgba(26,58,34,0.07);
+    border-color: rgba(26,58,34,0.25);
+  }
+
+  .faction-label {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .faction-card.federalist .faction-label { color: var(--blue-dark); }
+  .faction-card.antifed .faction-label { color: var(--red); }
+  .faction-card.moderate .faction-label { color: var(--green-dark); }
+
+  .faction-card ul {
+    padding-left: 18px;
+    margin-top: 6px;
+  }
+
+  .faction-card li {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 5px;
+    color: var(--ink);
+  }
+
+  /* Score table */
+  .score-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    margin: 16px 0;
+  }
+
+  .score-table th {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sepia);
+    border-bottom: 2px solid var(--gold);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  .score-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(180,140,60,0.2);
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .score-table tr:nth-child(even) td {
+    background: rgba(180,140,60,0.05);
+  }
+
+  /* Rating scale */
+  .rating-scale {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 16px 0;
+  }
+
+  .rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    font-size: 16px;
+  }
+
+  .rating-score {
+    font-family: 'Libre Baskerville', serif;
+    font-weight: 700;
+    font-size: 18px;
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .rating-row.fed-strong { background: rgba(26,48,80,0.12); }
+  .rating-row.fed-mild { background: rgba(26,48,80,0.07); }
+  .rating-row.dead { background: rgba(180,140,60,0.1); }
+  .rating-row.anti-mild { background: rgba(139,26,26,0.07); }
+  .rating-row.anti-strong { background: rgba(139,26,26,0.12); }
+
+  /* Issue accordion */
+  .issue-section {
+    border: 1px solid rgba(180,140,60,0.3);
+    border-radius: 4px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .issue-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    background: rgba(180,140,60,0.08);
+    transition: background 0.2s;
+    user-select: none;
+  }
+
+  .issue-header:hover {
+    background: rgba(180,140,60,0.14);
+  }
+
+  .issue-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .issue-number {
+    font-family: 'IM Fell English', serif;
+    font-size: 28px;
+    color: var(--gold);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .issue-title-text {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .issue-subtitle {
+    font-size: 14px;
+    color: var(--sepia);
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  .issue-toggle {
+    font-size: 22px;
+    color: var(--gold);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+
+  .issue-header.open .issue-toggle {
+    transform: rotate(180deg);
+  }
+
+  .issue-body {
+    display: none;
+    padding: 24px 24px;
+    border-top: 1px solid rgba(180,140,60,0.2);
+  }
+
+  .issue-body.open {
+    display: block;
+  }
+
+  /* Live scorecard */
+  .scorecard {
+    background: rgba(255,255,255,0.4);
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .scorecard-title {
+    font-family: 'IM Fell English', serif;
+    font-size: 22px;
+    color: var(--sepia);
+    margin-bottom: 20px;
+  }
+
+  .score-issues {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .score-issue-btn {
+    border: 2px solid rgba(180,140,60,0.4);
+    border-radius: 4px;
+    padding: 14px 18px;
+    background: var(--parchment-mid);
+    cursor: pointer;
+    min-width: 140px;
+    transition: all 0.2s;
+    font-family: 'Libre Baskerville', serif;
+  }
+
+  .score-issue-btn:hover {
+    border-color: var(--gold);
+    background: rgba(180,140,60,0.12);
+  }
+
+  .score-issue-label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sepia);
+    margin-bottom: 8px;
+  }
+
+  .score-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .score-btn {
+    padding: 6px 12px;
+    border: 1px solid;
+    border-radius: 3px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .score-btn.fed {
+    border-color: var(--blue-dark);
+    color: var(--blue-dark);
+    background: transparent;
+  }
+  .score-btn.fed.selected, .score-btn.fed:hover {
+    background: var(--blue-dark);
+    color: white;
+  }
+
+  .score-btn.anti {
+    border-color: var(--red);
+    color: var(--red);
+    background: transparent;
+  }
+  .score-btn.anti.selected, .score-btn.anti:hover {
+    background: var(--red);
+    color: white;
+  }
+
+  .score-result {
+    font-family: 'IM Fell English', serif;
+    font-size: 36px;
+    color: var(--ink);
+    margin: 16px 0 6px;
+  }
+
+  .score-rating-label {
+    font-size: 18px;
+    color: var(--sepia);
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+
+  .score-outcome {
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* Dice roller */
+  .dice-section {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+
+  .dice-card {
+    flex: 1;
+    min-width: 200px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(180,140,60,0.3);
+    border-radius: 4px;
+    padding: 20px 24px;
+    text-align: center;
+  }
+
+  .dice-card-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--sepia);
+    margin-bottom: 12px;
+  }
+
+  .dice-display {
+    font-size: 56px;
+    margin: 10px 0;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+
+  .dice-display.rolling {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-15deg) scale(1.1); }
+    40% { transform: rotate(15deg) scale(1.1); }
+    60% { transform: rotate(-10deg); }
+    80% { transform: rotate(10deg); }
+  }
+
+  .dice-result {
+    font-size: 15px;
+    color: var(--ink);
+    min-height: 40px;
+    line-height: 1.4;
+    margin-top: 6px;
+  }
+
+  .dice-result.ratified { color: var(--green-dark); font-weight: 700; }
+  .dice-result.rejected { color: var(--red); font-weight: 700; }
+
+  .roll-btn {
+    margin-top: 12px;
+    padding: 10px 24px;
+    background: var(--sepia);
+    color: var(--parchment);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .roll-btn:hover {
+    background: var(--ink);
+  }
+
+  /* Rubric table */
+  .rubric-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin: 16px 0;
+  }
+
+  .rubric-table th {
+    background: rgba(180,140,60,0.12);
+    font-family: 'Libre Baskerville', serif;
+    font-size: 13px;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid rgba(180,140,60,0.3);
+    color: var(--ink);
+  }
+
+  .rubric-table td {
+    padding: 10px 12px;
+    border: 1px solid rgba(180,140,60,0.2);
+    vertical-align: top;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+
+  .rubric-table tr:nth-child(even) td {
+    background: rgba(180,140,60,0.04);
+  }
+
+  /* Sub-heading */
+  h2.sub {
+    font-family: 'IM Fell English', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--ink);
+    margin: 32px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2.sub::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(180,140,60,0.4), transparent);
+  }
+
+  h3.sub3 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--sepia);
+    margin: 22px 0 10px;
+  }
+
+  /* Tips */
+  .tip-box {
+    background: rgba(26,58,34,0.07);
+    border: 1px solid rgba(26,58,34,0.2);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .tip-box strong { color: var(--green-dark); }
+
+  .warn-box {
+    background: rgba(139,26,26,0.07);
+    border: 1px solid rgba(139,26,26,0.2);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .warn-box strong { color: var(--red); }
+
+  /* Print */
+  @media print {
+    body { background: white; padding: 0; }
+    .outer-frame { box-shadow: none; border: 1px solid #ccc; }
+    .nav-tabs { display: none; }
+    .section { display: block !important; }
+    .issue-body { display: block !important; }
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 30px;
+    border-top: 1px solid rgba(180,140,60,0.3);
+    font-size: 14px;
+    color: var(--sepia);
+    font-style: italic;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin: 2px;
+  }
+  .badge.fed { background: rgba(26,48,80,0.12); color: var(--blue-dark); }
+  .badge.anti { background: rgba(139,26,26,0.1); color: var(--red); }
+  .badge.mod { background: rgba(26,58,34,0.1); color: var(--green-dark); }
+
+  p { font-size: 17px; line-height: 1.65; margin-bottom: 12px; }
+  strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="outer-frame">
+  <!-- Corner ornaments -->
+  <div class="corner tl">⚜</div>
+  <div class="corner tr">⚜</div>
+  <div class="corner bl">⚜</div>
+  <div class="corner br">⚜</div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-year">Poughkeepsie · June 1788 · Week 9</div>
+    <h1>New York Ratifying Convention<em>Instructor Simulation Guide</em></h1>
+    <div class="header-divider"></div>
+    <div class="header-sub">HIST 101: Democratic Norms &amp; the American Revolution &nbsp;·&nbsp; Tuesday &amp; Thursday, March 10–12</div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('setup', this)">Setup</button>
+    <button class="nav-tab" onclick="showSection('opening', this)">Opening</button>
+    <button class="nav-tab" onclick="showSection('issues', this)">The 3 Issues</button>
+    <button class="nav-tab" onclick="showSection('scorecard', this)">Live Scorecard</button>
+    <button class="nav-tab" onclick="showSection('thursday', this)">Thursday Debrief</button>
+    <button class="nav-tab" onclick="showSection('rubrics', this)">Rubrics</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- ============ SETUP ============ -->
+    <div id="setup" class="section active">
+      <div class="section-title">Before Class Checklist</div>
+      <div class="section-intro">Everything you need before students walk in Tuesday, March 10.</div>
+
+      <div class="faction-grid">
+        <div>
+          <h2 class="sub">Print & Prepare</h2>
+          <ul class="checklist">
+            <li>Role sheets (1 per student — Federalist, Antifederalist, or Moderate)</li>
+            <li>Primary source excerpt packet (Handout 1)</li>
+            <li>Instructor scorecard (Handout 2)</li>
+            <li>2 standard six-sided dice</li>
+            <li>Name tents / placards (optional but recommended)</li>
+            <li>Timer (phone or classroom clock)</li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="sub">Canvas Setup</h2>
+          <ul class="checklist">
+            <li>Post Wednesday's reflection essay prompt</li>
+            <li>Confirm primary sources from Week 3 are still accessible</li>
+            <li>Make simulation scoring rubric visible</li>
+          </ul>
+          <h2 class="sub" style="margin-top:24px;">Room Setup</h2>
+          <ul class="checklist">
+            <li>Desks in three sections: <span class="badge fed">Federalists</span> left, <span class="badge mod">Moderates</span> center, <span class="badge anti">Antifederalists</span> right</li>
+            <li>Clear space at front for speakers</li>
+            <li>Board space for tracking votes</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Faction Assignments</h2>
+      <p>Assign roles before class or as students enter. Recommended distribution for ~30 students:</p>
+
+      <div class="faction-grid">
+        <div class="faction-card federalist">
+          <div class="faction-label">⚖ Federalists</div>
+          <ul>
+            <li>~10 students (seated left)</li>
+            <li>Argue for Constitution <em>as written</em></li>
+            <li>Key figures: Hamilton, Jay, Livingston</li>
+            <li>Goal: Persuade Moderates to vote NO on amendments</li>
+          </ul>
+        </div>
+        <div class="faction-card antifed">
+          <div class="faction-label">✦ Antifederalists</div>
+          <ul>
+            <li>~10 students (seated right)</li>
+            <li>Argue for Constitutional amendments</li>
+            <li>Key figures: Clinton, Melancton Smith, Lansing</li>
+            <li>Goal: Persuade Moderates to vote YES on amendments</li>
+          </ul>
+        </div>
+      </div>
+      <div class="faction-card moderate" style="margin-top:0;">
+        <div class="faction-label">⚐ Moderates (Swing Votes)</div>
+        <ul>
+          <li>~10 students (seated center) — this is where elections are won</li>
+          <li>Ask probing questions; vote after each debate</li>
+          <li>Their votes determine the convention's Constitutional Rating</li>
+        </ul>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Timing Overview — 75 Minutes</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-time">0:00 – 5:00</div>
+          <div class="timeline-title">Opening &amp; Context Setting</div>
+          <div class="timeline-body">Set the scene. Roll dice for New Hampshire &amp; Virginia. Explain stakes.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">5:00 – 25:00</div>
+          <div class="timeline-title">Issue 1: Size of Electoral Districts</div>
+          <div class="timeline-body">Speeches, Moderate questions, open debate, vote.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">25:00 – 30:00</div>
+          <div class="timeline-title">Break</div>
+          <div class="timeline-body">Students stretch; informal faction discussions encouraged.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">30:00 – 50:00</div>
+          <div class="timeline-title">Issue 2: Senate Term Limits &amp; Recall</div>
+          <div class="timeline-body">Speeches, Moderate questions, open debate, vote.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">50:00 – 70:00</div>
+          <div class="timeline-title">Issue 3: Instructed Voting</div>
+          <div class="timeline-body">Most complex issue — extra time allocated. Core of research papers.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">70:00 – 75:00</div>
+          <div class="timeline-title">Tally, Rating &amp; Historical Reveal</div>
+          <div class="timeline-body">Score, reveal Constitutional Rating, share what really happened in 1788.</div>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Timing Adjustments</h2>
+      <div class="faction-grid">
+        <div class="tip-box">
+          <strong>Running SHORT?</strong><br>Cut 2 min from each open debate. Reduce Moderate questions from 5 min to 3 min.
+        </div>
+        <div class="tip-box">
+          <strong>Running LONG?</strong><br>Add Issue 4: "Size of the House" — should there be more representatives? Extend final debate to 15 min.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ OPENING ============ -->
+    <div id="opening" class="section">
+      <div class="section-title">Opening Script</div>
+      <div class="section-intro">0:00–5:00 &nbsp;·&nbsp; Set the scene before a single argument is made.</div>
+
+      <div class="script-action">Students enter and find their assigned seats by faction</div>
+
+      <div class="script-you-say">
+        "Welcome to Poughkeepsie, New York. It's June 1788, and you are delegates to the New York Ratifying Convention. This is one of the most important moments in American history. The Constitution needs 9 states to go into effect — and right now, 8 have ratified.
+        <br><br>
+        Before we begin, we need to know what's happening in two other crucial states. Let me roll the dice to see if New Hampshire and Virginia have ratified."
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Dice Roll — Live State News</h2>
+      <p>Roll dice in front of the class. Use the interactive roller below, or use physical dice.</p>
+
+      <div class="dice-section">
+        <div class="dice-card">
+          <div class="dice-card-title">🎲 New Hampshire</div>
+          <div class="dice-display" id="nh-dice">—</div>
+          <div class="dice-result" id="nh-result">Roll to find out...</div>
+          <button class="roll-btn" onclick="rollDice('nh')">Roll Die</button>
+          <div style="font-size:13px;color:var(--sepia);margin-top:10px;">1–4 = Ratified &nbsp;·&nbsp; 5–6 = Rejected</div>
+        </div>
+        <div class="dice-card">
+          <div class="dice-card-title">🎲 Virginia</div>
+          <div class="dice-display" id="va-dice">—</div>
+          <div class="dice-result" id="va-result">Roll to find out...</div>
+          <button class="roll-btn" onclick="rollDice('va')">Roll Die</button>
+          <div style="font-size:13px;color:var(--sepia);margin-top:10px;">1–3 = Ratified &nbsp;·&nbsp; 4–6 = Rejected</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Scripted Responses by Outcome</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+          <div>
+            <strong>NH Ratified:</strong>
+            <div class="script-you-say" style="margin-top:6px;font-size:15px;">"News just arrived by courier: New Hampshire has ratified! They're the 9th state — the Constitution is now legally adopted. But without New York, it's practically worthless."</div>
+          </div>
+          <div>
+            <strong>NH Rejected:</strong>
+            <div class="script-you-say" style="margin-top:6px;font-size:15px;">"Breaking news: New Hampshire has rejected the Constitution! We're still at 8 states. New York's decision is even more critical."</div>
+          </div>
+          <div>
+            <strong>VA Ratified:</strong>
+            <div class="script-you-say" style="margin-top:6px;font-size:15px;">"Virginia just ratified, but barely — it was close. George Washington's influence carried the day."</div>
+          </div>
+          <div>
+            <strong>VA Rejected:</strong>
+            <div class="script-you-say" style="margin-top:6px;font-size:15px;">"Shocking news: Virginia has rejected the Constitution! Patrick Henry has won. This changes everything."</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Stakes &amp; Ground Rules</h2>
+
+      <div class="script-you-say">
+        "Here's what's at stake: If New York rejects the Constitution, the nation splits geographically. The southern states would be cut off from New England. Some say this could mean war, economic collapse, or foreign invasion.
+        <br><br>
+        Your job today: debate three specific issues about representation in the new Constitution. At the end, you'll vote on whether to ratify. But remember — this isn't about winning or losing. It's about understanding the arguments that shaped American democracy."
+      </div>
+
+      <div class="card">
+        <div class="card-title">Critical Rules (Post on Board)</div>
+        <ul>
+          <li>Stay in character — you've read the primary sources, you know your faction's arguments</li>
+          <li>Moderates are the swing votes — Federalists and Antifederalists must persuade <em>them</em></li>
+          <li>Listen carefully — you'll write a reflection essay about what you learned</li>
+          <li>Be respectful — these were real debates among real people</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ ISSUES ============ -->
+    <div id="issues" class="section">
+      <div class="section-title">The Three Debates</div>
+      <div class="section-intro">Click any issue to expand the full script, arguments, quotes, and vote instructions.</div>
+
+      <!-- ISSUE 1 -->
+      <div class="issue-section">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <div class="issue-header-left">
+            <div class="issue-number">I</div>
+            <div>
+              <div class="issue-title-text">Size of Electoral Districts</div>
+              <div class="issue-subtitle">5:00 – 25:00 &nbsp;·&nbsp; 20 minutes</div>
+            </div>
+          </div>
+          <div class="issue-toggle">▾</div>
+        </div>
+        <div class="issue-body">
+          <div class="script-action">Write on board: "Should House representatives be elected from SMALL districts (local, familiar) or LARGE districts (broader perspective)?"</div>
+
+          <div class="script-you-say">
+            "The Constitution says House districts will have about 30,000 people each. Antifederalists say this is too large — representatives won't know the people. Federalists say large districts prevent local demagogues from getting elected.
+            <br><br>Federalists, you have 3 minutes to make your opening argument. Who's your speaker?"
+          </div>
+
+          <div class="faction-grid">
+            <div class="faction-card federalist">
+              <div class="faction-label">⚖ Federalist Argument (Large Districts)</div>
+              <ul>
+                <li><strong>Filters demagogues</strong> — In a district of 30,000, only people with real merit can win. Local troublemakers can't manipulate that many voters.</li>
+                <li><strong>Prevents corruption</strong> — Much harder to bribe 30,000 voters than 5,000.</li>
+                <li><strong>Attracts better candidates</strong> — Prominent, experienced leaders will run.</li>
+                <li><strong>National perspective</strong> — Reps think about the nation, not just hometown concerns.</li>
+              </ul>
+              <div class="quote-block">
+                "In large districts, the corruption of the electors is much more difficult"
+                <span class="quote-attribution">— Hamilton, NY Debates, June 21</span>
+              </div>
+              <div class="quote-block">
+                "Refine and enlarge the public views"
+                <span class="quote-attribution">— Madison, Federalist No. 10</span>
+              </div>
+              <div class="tip-box"><strong>Strategy:</strong> Ask Moderates — "Do you want your doctor to be your neighbor, or the best doctor available?"</div>
+            </div>
+            <div class="faction-card antifed">
+              <div class="faction-label">✦ Antifederalist Argument (Small Districts)</div>
+              <ul>
+                <li><strong>Only elites get elected</strong> — In a district of 30,000, only wealthy, well-known aristocrats can win.</li>
+                <li><strong>Representatives lose touch</strong> — How can someone represent 30,000 people they don't know?</li>
+                <li><strong>Resemblance matters</strong> — A true representative should BE like the people.</li>
+                <li><strong>Local knowledge lost</strong> — Small districts mean reps know your roads, taxes, concerns.</li>
+              </ul>
+              <div class="quote-block">
+                Representatives should be "a true picture of the people, possess a knowledge of their circumstances"
+                <span class="quote-attribution">— Melancton Smith, NY Debates, June 21</span>
+              </div>
+              <div class="quote-block">
+                "They are the sign — the people are the thing signified"
+                <span class="quote-attribution">— Brutus, Essay 3</span>
+              </div>
+              <div class="tip-box"><strong>Strategy:</strong> Ask Moderates — "Do you want to be represented by someone who KNOWS you, or a stranger 50 miles away?"</div>
+            </div>
+          </div>
+
+          <div class="rule"></div>
+          <h3 class="sub3">Moderate Questions (5 min) — Prompt if Needed</h3>
+          <ul class="card" style="padding-left:44px;">
+            <li style="margin-bottom:6px;">"Federalists: Won't large districts just elect rich people?"</li>
+            <li style="margin-bottom:6px;">"Antifederalists: Don't small districts elect unqualified people?"</li>
+            <li style="margin-bottom:6px;">"Federalists: How does a rep from a large district actually LEARN what people need?"</li>
+            <li>"Antifederalists: What if my local district elects a corrupt demagogue?"</li>
+          </ul>
+
+          <h3 class="sub3">Open Debate (6 min) — Your Role as Moderator</h3>
+          <ul class="card" style="padding-left:44px;">
+            <li style="margin-bottom:6px;">Keep time (1 minute per speaker)</li>
+            <li style="margin-bottom:6px;">Call on different students; redirect off-topic: "Bring it back to district size"</li>
+            <li>If stalling: "Moderates, what do you need to hear to make a decision?"</li>
+          </ul>
+
+          <h3 class="sub3">Vote (3 min)</h3>
+          <div class="script-you-say">
+            "Time to vote. The question: Should the Constitution REQUIRE small electoral districts?<br>
+            YES = Antifederalist position (add amendment for small districts)<br>
+            NO = Federalist position (keep Constitution as written)"
+          </div>
+        </div>
+      </div>
+
+      <!-- ISSUE 2 -->
+      <div class="issue-section">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <div class="issue-header-left">
+            <div class="issue-number">II</div>
+            <div>
+              <div class="issue-title-text">Senate Term Limits &amp; Recall</div>
+              <div class="issue-subtitle">30:00 – 50:00 &nbsp;·&nbsp; 20 minutes &nbsp;·&nbsp; connects to "Put Country First" (Haass)</div>
+            </div>
+          </div>
+          <div class="issue-toggle">▾</div>
+        </div>
+        <div class="issue-body">
+          <div class="script-action">Write on board: "Should Senators face MANDATORY ROTATION (term limits) and be subject to RECALL by state legislatures?"</div>
+
+          <div class="script-you-say">
+            "Welcome back. Issue 2 connects directly to the democratic norm 'Put Country First' from Richard Haass. The question: Should senators serve unlimited terms, or face mandatory rotation — maybe 6 years on, 6 years off? And should state legislatures be able to RECALL senators mid-term?"
+          </div>
+
+          <div class="faction-grid">
+            <div class="faction-card antifed">
+              <div class="faction-label">✦ Antifederalist Argument (Term Limits &amp; Recall)</div>
+              <ul>
+                <li><strong>Prevents aristocracy</strong> — Without term limits, senators become a permanent ruling class.</li>
+                <li><strong>Keeps them accountable</strong> — State legislatures sent these senators; if they betray their state, fire them.</li>
+                <li><strong>Refreshes ideas</strong> — Rotation brings new voices; long tenure breeds arrogance.</li>
+                <li><strong>They're AGENTS, not kings</strong> — When your agent betrays you, you fire them.</li>
+              </ul>
+              <div class="quote-block">
+                "Senators are agents of their states"
+                <span class="quote-attribution">— Melancton Smith, NY Debates, June 24</span>
+              </div>
+              <div class="quote-block">
+                "Office separates its holder from the people served"
+                <span class="quote-attribution">— Federal Farmer, Letter 8</span>
+              </div>
+              <div class="tip-box"><strong>Strategy:</strong> "If your senator votes against everything you believe, shouldn't you be able to fire them?"</div>
+            </div>
+            <div class="faction-card federalist">
+              <div class="faction-label">⚖ Federalist Argument (No Rotation/Recall)</div>
+              <ul>
+                <li><strong>Encourages selfishness</strong> — A senator who must leave soon grabs power while they can.</li>
+                <li><strong>Destroys independence</strong> — Senators should vote for the national good, not whatever their state legislature wants this week.</li>
+                <li><strong>Expertise matters</strong> — It takes years to master foreign policy. Forcing experienced senators out wastes that knowledge.</li>
+                <li><strong>They're TRUSTEES, not messengers</strong> — Need freedom to do what's right for the country.</li>
+              </ul>
+              <div class="quote-block">
+                "Senators are agents for the Union, trustees of the common good"
+                <span class="quote-attribution">— Hamilton, NY Debates, June 25</span>
+              </div>
+              <div class="quote-block">
+                "When a man knows he must quit his station, he will turn his attention chiefly to his own emolument"
+                <span class="quote-attribution">— Hamilton, NY Debates, June 25</span>
+              </div>
+              <div class="tip-box"><strong>Strategy:</strong> "Do you want senators focused on the nation's long-term good, or scared of being recalled every time they make a tough vote?"</div>
+            </div>
+          </div>
+
+          <div class="rule"></div>
+          <h3 class="sub3">Moderate Questions (5 min)</h3>
+          <ul class="card" style="padding-left:44px;">
+            <li style="margin-bottom:6px;">"Antifederalists: What if rotation forces out our best senators?"</li>
+            <li style="margin-bottom:6px;">"Federalists: Without recall, what stops a corrupt senator?"</li>
+            <li>"Both sides: How does this affect 'Put Country First'?"</li>
+          </ul>
+
+          <h3 class="sub3">Moderator Prompts for Open Debate (6 min)</h3>
+          <ul class="card" style="padding-left:44px;">
+            <li style="margin-bottom:6px;">"How does this connect to Burke's speech? Is a senator an 'agent' or a 'trustee'?"</li>
+            <li>"Moderates, which side better serves the LONG-TERM health of the republic?"</li>
+          </ul>
+
+          <h3 class="sub3">Vote (3 min)</h3>
+          <div class="script-you-say">
+            "Vote: Should the Constitution be amended to require rotation (term limits) and allow state legislatures to recall senators?<br>
+            YES = Antifederalist position &nbsp;·&nbsp; NO = Federalist position"
+          </div>
+        </div>
+      </div>
+
+      <!-- ISSUE 3 -->
+      <div class="issue-section">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <div class="issue-header-left">
+            <div class="issue-number">III</div>
+            <div>
+              <div class="issue-title-text">Instructed Voting</div>
+              <div class="issue-subtitle">50:00 – 70:00 &nbsp;·&nbsp; 25 minutes &nbsp;·&nbsp; ⭐ Core issue — connects directly to research papers</div>
+            </div>
+          </div>
+          <div class="issue-toggle">▾</div>
+        </div>
+        <div class="issue-body">
+          <div class="script-action">Write on board: "Should representatives be BOUND by instructions from constituents, or use their own JUDGMENT?"</div>
+
+          <div class="script-you-say">
+            "This is the BIG ONE. This is the heart of your research papers. Edmund Burke said representatives owe constituents their judgment, NOT obedience. Antifederalists say that's aristocratic nonsense — representatives should FOLLOW instructions from the people.
+            <br><br>This gets directly at: What IS representation? Are reps agents or trustees? Should they mirror public opinion or refine it?"
+          </div>
+
+          <div class="faction-grid">
+            <div class="faction-card antifed">
+              <div class="faction-label">✦ Antifederalist: Instructed Voting is ESSENTIAL</div>
+              <ul>
+                <li><strong>People know their own interests</strong> — We don't need aristocrats telling us what's good for us.</li>
+                <li><strong>Prevents betrayal</strong> — Without instructions, reps can ignore us completely.</li>
+                <li><strong>True democracy</strong> — If reps override the people's will, how is that different from monarchy?</li>
+                <li><strong>Resemblance requires obedience</strong> — If reps should BE like us, they should VOTE like us.</li>
+              </ul>
+              <div class="quote-block">
+                "There is no possible way to effect this but by an equal, full and fair representation"
+                <span class="quote-attribution">— Brutus, Essay 4</span>
+              </div>
+              <div class="quote-block">
+                Representatives should collect "interests, feelings, opinions and views of the people...as they would be were the people all assembled"
+                <span class="quote-attribution">— Federal Farmer, Letter 7</span>
+              </div>
+              <div class="tip-box"><strong>Strategy:</strong> "If the people can't instruct their reps, then the people aren't really governing at all."</div>
+            </div>
+            <div class="faction-card federalist">
+              <div class="faction-label">⚖ Federalist: Instructed Voting DESTROYS Good Government</div>
+              <ul>
+                <li><strong>Passion vs. Reason</strong> — The people feel their grievances but don't always know the best solutions.</li>
+                <li><strong>National good sacrificed</strong> — If every rep must obey local instructions, national interests are ignored.</li>
+                <li><strong>Deliberation becomes impossible</strong> — Congress should debate and compromise. Can't do that if everyone's hands are tied.</li>
+                <li><strong>Accountability still exists</strong> — We have ELECTIONS. If reps betray us, we vote them out.</li>
+              </ul>
+              <div class="quote-block">
+                "Your representative owes you...his judgment; and he betrays, instead of serving you, if he sacrifices it to your opinion"
+                <span class="quote-attribution">— Burke, Bristol Speech, 1774</span>
+              </div>
+              <div class="quote-block">
+                "Parliament is...a deliberative assembly of one nation, with one interest, that of the whole"
+                <span class="quote-attribution">— Burke, Bristol Speech</span>
+              </div>
+              <div class="tip-box"><strong>Strategy:</strong> "Do you want your representative to be a messenger, or a leader? A parrot, or a statesman?"</div>
+            </div>
+          </div>
+
+          <div class="rule"></div>
+          <h3 class="sub3">Moderate Questions (6 min — extra time)</h3>
+          <ul class="card" style="padding-left:44px;">
+            <li style="margin-bottom:6px;">"Federalists: What if a rep's 'judgment' means ignoring the people completely?"</li>
+            <li style="margin-bottom:6px;">"Antifederalists: What if the people's instructions are based on false information?"</li>
+            <li style="margin-bottom:6px;">"Both: How do elections provide accountability if reps can ignore us between elections?"</li>
+            <li style="margin-bottom:6px;">"Federalists: Isn't Burke's argument basically saying 'we're smarter than you'?"</li>
+            <li>"Antifederalists: If reps must follow instructions, why have reps at all? Why not direct democracy?"</li>
+          </ul>
+
+          <h3 class="sub3">Open Debate (10 min — extra time) — Key Moments to Highlight</h3>
+          <div class="card">
+            <ul style="padding-left:18px;">
+              <li style="margin-bottom:6px;"><strong>Federalist strength:</strong> "We elect people smarter/more informed than us for a reason"</li>
+              <li style="margin-bottom:6px;"><strong>Antifederalist strength:</strong> "If they can ignore us, they're not really representing us"</li>
+              <li><strong>The paradox:</strong> "Can representatives be independent AND accountable?"</li>
+            </ul>
+          </div>
+          <ul class="card" style="padding-left:44px;margin-top:12px;">
+            <li style="margin-bottom:6px;">Draw out competing visions of democracy — ask Moderates: "What does 'government by the people' actually MEAN?"</li>
+            <li>Connect to research papers: "How does your democratic norm relate to this?"</li>
+          </ul>
+
+          <h3 class="sub3">Vote (3 min)</h3>
+          <div class="script-you-say">
+            "Final vote: Should the Constitution be amended to allow constituents to give BINDING INSTRUCTIONS to their representatives?<br>
+            YES = Antifederalist position (instructed voting) &nbsp;·&nbsp; NO = Federalist position (independent judgment)"
+          </div>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">After the Votes — Historical Reveal</h2>
+      <div class="script-you-say">
+        "In real life, New York ratified on July 26, 1788, by a vote of 30–27. It was incredibly close. Alexander Hamilton threatened that New York City would secede from the state if the convention rejected. Melancton Smith actually switched sides at the last minute after hearing New Hampshire and Virginia had ratified.
+        <br><br>
+        The real convention lasted SIX WEEKS. We just did it in 70 minutes. But you experienced the core arguments that shaped American democracy."
+      </div>
+
+      <div class="card blue">
+        <div class="card-title">Common Student Struggles & Your Responses</div>
+        <div style="margin-top:8px;">
+          <strong>"I don't understand the difference between agents and trustees"</strong>
+          <div class="tip-box" style="margin-top:6px;">"An agent follows orders (like a lawyer following client's wishes). A trustee makes decisions for you (like a financial advisor managing your money). Which should a representative be?"</div>
+
+          <strong>"These arguments seem contradictory"</strong>
+          <div class="tip-box" style="margin-top:6px;">"YES! That's the point. Both Federalists and Antifederalists had valid concerns. Democracy requires balancing them."</div>
+
+          <strong>"How do I connect this to my democratic norm?"</strong>
+          <div class="tip-box" style="margin-top:6px;">"Ask yourself: How does [your norm] require representatives to behave? Does Burke's view support or undermine your norm?"</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SCORECARD ============ -->
+    <div id="scorecard" class="section">
+      <div class="section-title">Live Scorecard</div>
+      <div class="section-intro">Track issue outcomes and calculate the Constitutional Rating in real time.</div>
+
+      <div class="scorecard">
+        <div class="scorecard-title">Record the Winner of Each Issue</div>
+        <div class="score-issues">
+          <div class="score-issue-btn">
+            <div class="score-issue-label">Issue I — Districts</div>
+            <div class="score-buttons">
+              <button class="score-btn fed" id="i1-fed" onclick="setWinner(1,'fed')">Federalist</button>
+              <button class="score-btn anti" id="i1-anti" onclick="setWinner(1,'anti')">Antifed</button>
+            </div>
+          </div>
+          <div class="score-issue-btn">
+            <div class="score-issue-label">Issue II — Term Limits</div>
+            <div class="score-buttons">
+              <button class="score-btn fed" id="i2-fed" onclick="setWinner(2,'fed')">Federalist</button>
+              <button class="score-btn anti" id="i2-anti" onclick="setWinner(2,'anti')">Antifed</button>
+            </div>
+          </div>
+          <div class="score-issue-btn">
+            <div class="score-issue-label">Issue III — Instructed Voting</div>
+            <div class="score-buttons">
+              <button class="score-btn fed" id="i3-fed" onclick="setWinner(3,'fed')">Federalist</button>
+              <button class="score-btn anti" id="i3-anti" onclick="setWinner(3,'anti')">Antifed</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="score-result" id="score-total">?</div>
+        <div class="score-rating-label" id="score-label">Awaiting results...</div>
+        <div class="score-outcome" id="score-outcome"></div>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Constitutional Rating Scale</h2>
+      <div class="rating-scale">
+        <div class="rating-row fed-strong">
+          <div class="rating-score" style="color:var(--blue-dark);">+3</div>
+          <div><strong>Pure Federalist</strong> — Constitution ratified unchanged</div>
+        </div>
+        <div class="rating-row fed-strong">
+          <div class="rating-score" style="color:var(--blue-dark);">+2</div>
+          <div><strong>Strong Federalist</strong> — Constitution ratified, minor changes</div>
+        </div>
+        <div class="rating-row fed-mild">
+          <div class="rating-score" style="color:var(--blue-dark);">+1</div>
+          <div><strong>Mild Federalist</strong> — Constitution ratified, several amendments</div>
+        </div>
+        <div class="rating-row dead">
+          <div class="rating-score" style="color:var(--gold);">0</div>
+          <div><strong>Deadlock</strong> — Convention stalls, must reconvene</div>
+        </div>
+        <div class="rating-row anti-mild">
+          <div class="rating-score" style="color:var(--red);">−1</div>
+          <div><strong>Mild Antifederalist</strong> — Heavy amendments required</div>
+        </div>
+        <div class="rating-row anti-strong">
+          <div class="rating-score" style="color:var(--red);">−2</div>
+          <div><strong>Strong Antifederalist</strong> — Constitution rejected, major rewrite needed</div>
+        </div>
+        <div class="rating-row anti-strong">
+          <div class="rating-score" style="color:var(--red);">−3</div>
+          <div><strong>Pure Antifederalist</strong> — Constitution rejected entirely</div>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Closing Scripts by Outcome</h2>
+      <div class="card">
+        <div class="card-title">If Ratified</div>
+        <div class="script-you-say" style="margin-top:8px;">"Federalists, you've won. The Constitution is accepted by New York. Antifederalists, you fought hard, but you lost. Some of you are furious."</div>
+      </div>
+      <div class="card red">
+        <div class="card-title">If Rejected</div>
+        <div class="script-you-say" style="margin-top:8px;">"Antifederalists, you've won. The Constitution is rejected by New York unless it's heavily amended. Federalists, you're devastated."</div>
+      </div>
+    </div>
+
+    <!-- ============ THURSDAY ============ -->
+    <div id="thursday" class="section">
+      <div class="section-title">Thursday, March 12 — Debrief &amp; Workshop</div>
+      <div class="section-intro">75 minutes: 25 min historical debrief + 50 min research paper workshop.</div>
+
+      <h2 class="sub">Part 1 — Historical Reality (5:00–30:00)</h2>
+
+      <div class="script-action">Distribute Handout 4: "What Really Happened at the New York Convention"</div>
+
+      <div class="card blue">
+        <div class="card-title">The Real Convention — Fast Facts</div>
+        <table class="score-table">
+          <tr><th>Factor</th><th>Reality</th></tr>
+          <tr><td>Dates</td><td>June 17 – July 26, 1788 (six weeks)</td></tr>
+          <tr><td>Initial count</td><td>Antifederalists 46, Federalists 19</td></tr>
+          <tr><td>Final vote</td><td>30–27 to ratify</td></tr>
+          <tr><td>Key turn</td><td>Melancton Smith switched sides July 23</td></tr>
+          <tr><td>NH ratified</td><td>July 2, 1788 (9th state)</td></tr>
+          <tr><td>VA ratified</td><td>July 11, 1788 (89–79 vote)</td></tr>
+        </table>
+      </div>
+
+      <h3 class="sub3">How Did Federalists Win Despite Being Outnumbered?</h3>
+      <div class="card">
+        <ul style="padding-left:18px;">
+          <li style="margin-bottom:8px;"><strong>Delay:</strong> Hamilton stalled for time, knowing NH and VA were voting soon.</li>
+          <li style="margin-bottom:8px;"><strong>Threat:</strong> Hamilton warned that NYC would secede from NY State and ratify independently.</li>
+          <li style="margin-bottom:8px;"><strong>Persuasion:</strong> Genuine intellectual debates; some Antifederalists were genuinely swayed.</li>
+          <li><strong>News as weapon:</strong> Once NH (July 2) and VA (July 11) ratified, the question shifted from "Should we?" to "Can we afford NOT to?"</li>
+        </ul>
+      </div>
+
+      <div class="rule"></div>
+      <h3 class="sub3">Discussion Questions (10 min)</h3>
+      <div class="card">
+        <ul style="padding-left:18px;">
+          <li style="margin-bottom:8px;"><strong>"How was our simulation similar to the real convention?"</strong><br><em>Expected: Core arguments were the same, Moderates as swing votes, close outcome</em></li>
+          <li style="margin-bottom:8px;"><strong>"How was it different?"</strong><br><em>Expected: We didn't know outside context (NH/VA ratifying), compressed 6 weeks into 70 min</em></li>
+          <li style="margin-bottom:8px;"><strong>"What does Melancton Smith's switch tell us about politics?"</strong><br><em>Expected: Context matters, pragmatism vs. principles, external events shape decisions</em></li>
+          <li><strong>"Which faction do YOU think was right?"</strong><br><em>Let students debate — no right answer</em></li>
+        </ul>
+      </div>
+
+      <h3 class="sub3">Agent vs. Trustee Framework (Write on Board)</h3>
+      <div class="faction-grid">
+        <div class="faction-card antifed">
+          <div class="faction-label">Agent Model (Antifederalist)</div>
+          <ul>
+            <li>Rep = Messenger</li>
+            <li>Follows instructions</li>
+            <li>Mirrors constituents</li>
+            <li>Accountability = obedience</li>
+            <li><em>Risk: Mob rule</em></li>
+          </ul>
+        </div>
+        <div class="faction-card federalist">
+          <div class="faction-label">Trustee Model (Federalist)</div>
+          <ul>
+            <li>Rep = Leader</li>
+            <li>Uses judgment</li>
+            <li>Refines public opinion</li>
+            <li>Accountability = elections</li>
+            <li><em>Risk: Aristocracy</em></li>
+          </ul>
+        </div>
+      </div>
+      <div class="script-you-say">"Most modern democracies use a HYBRID model: Representatives use judgment day-to-day, but elections provide accountability. Burke's view won historically, but the tension remains."</div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Part 2 — Small Group Workshop (30:00–75:00)</h2>
+
+      <div class="card">
+        <div class="card-title">Group Assignments by Democratic Norm</div>
+        <table class="score-table">
+          <tr><th>Norm</th><th>Table</th></tr>
+          <tr><td>Civic Participation</td><td>Table 1</td></tr>
+          <tr><td>Respect for Truth</td><td>Table 2</td></tr>
+          <tr><td>Compromise</td><td>Table 3</td></tr>
+          <tr><td>Civility</td><td>Table 4</td></tr>
+          <tr><td>Respect for Institutions / Rule of Law</td><td>Table 5</td></tr>
+          <tr><td>Pluralism and Tolerance</td><td>Table 6</td></tr>
+          <tr><td>Responsibility to the Common Good</td><td>Table 7</td></tr>
+        </table>
+      </div>
+
+      <h3 class="sub3">Small Group Discussion Prompts (25 min)</h3>
+      <div class="card">
+        <ol style="padding-left:22px;">
+          <li style="margin-bottom:10px;">How did your democratic norm appear in the ratification debates? Which primary sources connect to your norm?</li>
+          <li style="margin-bottom:10px;">What surprised you about how your norm was understood in 1787–88? Is the revolutionary-era understanding different from today?</li>
+          <li style="margin-bottom:10px;">Which primary source quotations will you use in your paper? Share specific quotes.</li>
+          <li style="margin-bottom:10px;">If you've conducted your civic engagement interview: Share what you learned. How does modern practice compare to 1787?</li>
+          <li>What's your tentative thesis? Practice articulating your argument in one sentence.</li>
+        </ol>
+      </div>
+
+      <div class="warn-box"><strong>Common Paper Mistakes to Warn Students About:</strong> Don't just summarize sources — ANALYZE them. Don't ignore the opposition. Don't forget Haass. Don't skip the civic engagement interview (worth 20%). Don't wait — start drafting NOW.</div>
+    </div>
+
+    <!-- ============ RUBRICS ============ -->
+    <div id="rubrics" class="section">
+      <div class="section-title">Assessment Rubrics</div>
+      <div class="section-intro">All rubrics for Tuesday simulation, Wednesday reflection essay, and the research paper.</div>
+
+      <h2 class="sub">Simulation Participation (20 pts)</h2>
+      <div style="overflow-x:auto;">
+        <table class="rubric-table">
+          <tr>
+            <th>Criteria</th>
+            <th>Excellent (5)</th>
+            <th>Good (4)</th>
+            <th>Satisfactory (3)</th>
+            <th>Needs Improvement (2)</th>
+          </tr>
+          <tr>
+            <td><strong>Preparation</strong></td>
+            <td>Clearly read primary sources; referenced specific quotes</td>
+            <td>Read sources; general knowledge</td>
+            <td>Some preparation evident</td>
+            <td>Little preparation</td>
+          </tr>
+          <tr>
+            <td><strong>In-Character Engagement</strong></td>
+            <td>Stayed in role throughout; used faction's arguments</td>
+            <td>Mostly in character; some lapses</td>
+            <td>Occasionally in character</td>
+            <td>Rarely engaged</td>
+          </tr>
+          <tr>
+            <td><strong>Contribution to Debate</strong></td>
+            <td>Spoke multiple times; moved discussion forward</td>
+            <td>Spoke at least once; relevant points</td>
+            <td>Spoke minimally</td>
+            <td>Did not participate verbally</td>
+          </tr>
+          <tr>
+            <td><strong>Listening &amp; Response</strong></td>
+            <td>Responded to others' arguments; built on ideas</td>
+            <td>Listened actively; some responses</td>
+            <td>Listened; minimal response</td>
+            <td>Did not engage with others</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Reflection Essay (100 pts) — Due Wednesday Before Class</h2>
+
+      <div class="card">
+        <div class="card-title">Essay Prompt &amp; Requirements</div>
+        <p>2–3 pages (500–750 words) · Double-spaced, 12pt font · Upload to Canvas</p>
+        <ul style="padding-left:18px;margin-top:10px;">
+          <li style="margin-bottom:6px;"><strong>Q1 (1 page):</strong> What did this simulation reveal about representation? Agent vs. trustee? Which faction made the stronger argument?</li>
+          <li style="margin-bottom:6px;"><strong>Q2 (1 page):</strong> How does your chosen democratic norm connect to the ratification debates? Use specific examples.</li>
+          <li><strong>Q3 (½ page):</strong> What surprised you about Federalist or Antifederalist arguments? Which side was more persuasive on each issue?</li>
+        </ul>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="rubric-table">
+          <tr>
+            <th>Criteria</th>
+            <th>Points</th>
+            <th>Excellent (A)</th>
+            <th>Good (B)</th>
+            <th>Satisfactory (C)</th>
+            <th>Needs Improvement</th>
+          </tr>
+          <tr>
+            <td><strong>Depth of Reflection</strong></td>
+            <td>40 pts</td>
+            <td>Sophisticated analysis; original insights; goes beyond simulation</td>
+            <td>Good analysis; clear understanding; some depth</td>
+            <td>Surface-level; mostly summary</td>
+            <td>Minimal reflection</td>
+          </tr>
+          <tr>
+            <td><strong>Connection to Norm</strong></td>
+            <td>30 pts</td>
+            <td>Specific, thoughtful connection with examples</td>
+            <td>Clear connection; some examples</td>
+            <td>General connection; few examples</td>
+            <td>Vague or missing connection</td>
+          </tr>
+          <tr>
+            <td><strong>Evidence from Simulation</strong></td>
+            <td>20 pts</td>
+            <td>Multiple specific quotes and examples</td>
+            <td>Some quotes and references</td>
+            <td>Limited references</td>
+            <td>No specific evidence</td>
+          </tr>
+          <tr>
+            <td><strong>Writing Quality</strong></td>
+            <td>10 pts</td>
+            <td>Clear, organized, polished</td>
+            <td>Generally clear</td>
+            <td>Some clarity issues</td>
+            <td>Hard to follow</td>
+          </tr>
+          <tr>
+            <td><strong>Total</strong></td>
+            <td><strong>100 pts</strong></td>
+            <td colspan="4" style="text-align:center;font-style:italic;">Quote primary sources · Reference simulation moments · Analyze, don't summarize</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="rule"></div>
+      <h2 class="sub">Research Paper Components</h2>
+      <div class="card">
+        <ol style="padding-left:22px;">
+          <li style="margin-bottom:8px;"><strong>Introduction</strong> — Define your democratic norm (Haass); thesis; preview of successes and failures</li>
+          <li style="margin-bottom:8px;"><strong>Historical Analysis (3–4 pages)</strong> — 2–3 primary sources; both Federalist and Antifederalist views; Turabian citations</li>
+          <li style="margin-bottom:8px;"><strong>Modern Connection (1 page)</strong> — Civic engagement interview (15–30 min); compare past and present</li>
+          <li style="margin-bottom:8px;"><strong>Conclusion</strong> — What did successes/failures reveal about consequences of the Revolution? Did the Revolution strengthen or weaken your norm?</li>
+          <li><strong>Citations</strong> — Turabian (Author-Date); primary AND secondary sources</li>
+        </ol>
+      </div>
+      <div class="warn-box" style="margin-top:16px;">
+        <strong>Interview reminder:</strong> The civic engagement interview is worth 20% of the paper grade. Students should schedule interviews with faculty or community leaders NOW — not the week it's due.
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <div class="footer">
+    HIST 101: Democratic Norms &amp; the American Revolution &nbsp;·&nbsp; Week 9, March 10–12 &nbsp;·&nbsp; profhauselmann.org
+  </div>
+</div><!-- /outer-frame -->
+
+<script>
+  // Tab navigation
+  function showSection(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Issue accordion
+  function toggleIssue(header) {
+    const body = header.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.issue-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.issue-header').forEach(h => h.classList.remove('open'));
+    // Toggle clicked
+    if (!isOpen) {
+      body.classList.add('open');
+      header.classList.add('open');
+    }
+  }
+
+  // Dice roller
+  const diceFaces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  const nhScripts = {
+    ratified: 'News just arrived: New Hampshire has ratified! They\'re the 9th state — the Constitution is now law. But without New York, it\'s practically worthless.',
+    rejected: 'Breaking news: New Hampshire has rejected the Constitution! Still at 8 states. New York\'s decision is even more critical.'
+  };
+  const vaScripts = {
+    ratified: 'Virginia just ratified, but barely — 89 to 79. George Washington\'s influence carried the day.',
+    rejected: 'Shocking news: Virginia has rejected the Constitution! Patrick Henry has won. This changes everything.'
+  };
+
+  function rollDice(state) {
+    const diceEl = document.getElementById(state + '-dice');
+    const resultEl = document.getElementById(state + '-result');
+    diceEl.classList.add('rolling');
+    resultEl.textContent = '';
+    resultEl.className = 'dice-result';
+    let count = 0;
+    const interval = setInterval(() => {
+      diceEl.textContent = diceFaces[Math.floor(Math.random() * 6)];
+      count++;
+      if (count >= 10) {
+        clearInterval(interval);
+        diceEl.classList.remove('rolling');
+        const roll = Math.ceil(Math.random() * 6);
+        diceEl.textContent = diceFaces[roll - 1];
+        let outcome, script;
+        if (state === 'nh') {
+          outcome = roll <= 4 ? 'ratified' : 'rejected';
+          script = nhScripts[outcome];
+        } else {
+          outcome = roll <= 3 ? 'ratified' : 'rejected';
+          script = vaScripts[outcome];
+        }
+        resultEl.textContent = `Roll: ${roll} → ${outcome.toUpperCase()}\n"${script}"`;
+        resultEl.classList.add(outcome);
+      }
+    }, 60);
+  }
+
+  // Scorecard
+  const winners = { 1: null, 2: null, 3: null };
+  const outcomes = {
+    3:  { label: 'Pure Federalist', text: 'Constitution ratified by New York, unchanged. Antifederalists are furious but have been defeated.' },
+    2:  { label: 'Strong Federalist', text: 'Constitution ratified. Minor recommended amendments sent to the new Congress.' },
+    1:  { label: 'Mild Federalist', text: 'Constitution ratified with several major amendments demanded. A Federalist win, but a close one.' },
+    0:  { label: 'Deadlock', text: 'Convention stalls. The future of the union hangs in the balance. New York must reconvene.' },
+    '-1': { label: 'Mild Antifederalist', text: 'Constitution conditionally rejected. Antifederalists demand heavy amendments before ratification.' },
+    '-2': { label: 'Strong Antifederalist', text: 'Constitution rejected. Major rewrite required before New York will consider ratification.' },
+    '-3': { label: 'Pure Antifederalist', text: 'Constitution entirely rejected by New York. The union faces a geographic and constitutional crisis.' },
+  };
+
+  function setWinner(issue, faction) {
+    // Toggle if already selected
+    if (winners[issue] === faction) {
+      winners[issue] = null;
+      document.getElementById('i' + issue + '-fed').classList.remove('selected');
+      document.getElementById('i' + issue + '-anti').classList.remove('selected');
+    } else {
+      winners[issue] = faction;
+      document.getElementById('i' + issue + '-fed').classList.toggle('selected', faction === 'fed');
+      document.getElementById('i' + issue + '-anti').classList.toggle('selected', faction === 'anti');
+    }
+    updateScore();
+  }
+
+  function updateScore() {
+    let score = 0;
+    let counted = 0;
+    for (let i = 1; i <= 3; i++) {
+      if (winners[i]) {
+        counted++;
+        score += winners[i] === 'fed' ? 1 : -1;
+      }
+    }
+    const totalEl = document.getElementById('score-total');
+    const labelEl = document.getElementById('score-label');
+    const outcomeEl = document.getElementById('score-outcome');
+    if (counted === 0) {
+      totalEl.textContent = '?';
+      labelEl.textContent = 'Awaiting results...';
+      outcomeEl.textContent = '';
+      return;
+    }
+    const key = score.toString();
+    const data = outcomes[key];
+    totalEl.textContent = (score > 0 ? '+' : '') + score;
+    totalEl.style.color = score > 0 ? 'var(--blue-dark)' : score < 0 ? 'var(--red)' : 'var(--gold)';
+    if (data) {
+      labelEl.textContent = data.label;
+      outcomeEl.textContent = counted < 3 ? '(' + (3 - counted) + ' issue(s) remaining...)' : data.text;
+    }
+  }
+</script>
+</body>
+</html>
