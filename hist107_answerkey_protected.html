@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIST 107 — Study Guide Answer Key</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        @media print {
+            body { display: none !important; }
+        }
+        
+        :root {
+            --ink:       #1a1208;
+            --parchment: #fdf6e3;
+            --aged:      #f5e9c8;
+            --rust:      #8B3A0F;
+            --rust-light:#c4622d;
+            --gold:      #c9972a;
+            --gold-light:#f1c40f;
+            --slate:     #2c3e50;
+            --correct:   #1e5631;
+            --correct-bg:#d6f0dc;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            background: var(--aged);
+            min-height: 100vh;
+            color: var(--ink);
+        }
+
+        /* ── LOCK SCREEN ── */
+        #lock-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--slate);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 39px,
+                    rgba(255,255,255,.04) 39px,
+                    rgba(255,255,255,.04) 40px
+                );
+        }
+
+        .lock-card {
+            background: var(--parchment);
+            border-radius: 12px;
+            padding: 48px 52px;
+            max-width: 460px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 24px 64px rgba(0,0,0,.45);
+            border-top: 6px solid var(--rust);
+        }
+
+        .lock-icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .lock-card h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.6rem;
+            color: var(--rust);
+            margin-bottom: 8px;
+        }
+
+        .lock-card p {
+            color: #555;
+            margin-bottom: 28px;
+            line-height: 1.6;
+            font-size: .96rem;
+        }
+
+        .lock-btn {
+            background: var(--rust);
+            color: white;
+            border: none;
+            padding: 13px 36px;
+            font-size: 1rem;
+            font-family: 'Source Serif 4', serif;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background .25s, transform .2s;
+            width: 100%;
+        }
+        .lock-btn:hover { background: var(--rust-light); transform: translateY(-1px); }
+
+        .lock-error {
+            margin-top: 16px;
+            color: #9b1c1c;
+            font-weight: 600;
+            font-size: .9rem;
+            display: none;
+        }
+
+        .lock-hint {
+            margin-top: 18px;
+            font-size: .82rem;
+            color: #888;
+        }
+
+        /* ── ANSWER KEY PAGE ── */
+        #answer-key {
+            display: none;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px 64px;
+        }
+
+        /* masthead */
+        .masthead {
+            background: var(--rust);
+            color: white;
+            text-align: center;
+            padding: 40px 32px 32px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .masthead::before {
+            content: '';
+            position: absolute;
+            bottom: -18px;
+            left: 0;
+            right: 0;
+            height: 18px;
+            background: var(--rust);
+            clip-path: polygon(0 0, 100% 0, 100% 40%, 50% 100%, 0 40%);
+        }
+        .masthead .course-label {
+            font-size: .8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: .8;
+            margin-bottom: 10px;
+        }
+        .masthead h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        .masthead p {
+            opacity: .85;
+            font-style: italic;
+            font-size: .95rem;
+        }
+
+        .unlock-banner {
+            background: var(--correct-bg);
+            border: 2px solid var(--correct);
+            border-radius: 8px;
+            color: var(--correct);
+            padding: 14px 20px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 36px;
+            font-size: .95rem;
+        }
+
+        /* section headers */
+        .part-header {
+            background: var(--slate);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 6px;
+            margin: 40px 0 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .part-header .part-num {
+            background: var(--gold);
+            color: var(--slate);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-family: 'Source Serif 4', serif;
+        }
+
+        /* Q&A blocks */
+        .qa-block {
+            background: white;
+            border: 1px solid #e0d5c0;
+            border-left: 4px solid var(--rust);
+            border-radius: 6px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .qa-block .question {
+            font-size: .82rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #888;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .qa-block .answer {
+            color: var(--correct);
+            font-weight: 600;
+            font-size: 1.02rem;
+            line-height: 1.65;
+        }
+        .qa-block .answer em {
+            font-style: normal;
+            color: var(--rust);
+        }
+        .qa-block .note {
+            margin-top: 8px;
+            font-size: .88rem;
+            color: #666;
+            font-style: italic;
+            border-top: 1px dashed #ddd;
+            padding-top: 8px;
+        }
+
+        /* skill pills */
+        .skill-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .skill-card {
+            background: white;
+            border: 1px solid #e0d5c0;
+            border-radius: 6px;
+            padding: 14px 16px;
+        }
+        .skill-card .skill-name {
+            font-weight: 700;
+            color: var(--rust);
+            margin-bottom: 4px;
+            font-size: .95rem;
+        }
+        .skill-card .skill-def {
+            font-size: .88rem;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        /* comparison tables */
+        .compare-wrap { overflow-x: auto; margin-bottom: 14px; }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: .93rem;
+        }
+        .compare-table thead tr {
+            background: var(--slate);
+            color: white;
+        }
+        .compare-table thead th {
+            padding: 12px 18px;
+            text-align: left;
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+        }
+        .compare-table tbody tr:nth-child(even) { background: #faf5e8; }
+        .compare-table tbody td {
+            padding: 11px 18px;
+            border-bottom: 1px solid #ede6d0;
+            vertical-align: top;
+            line-height: 1.5;
+        }
+        .compare-table tbody td:first-child {
+            color: #666;
+            font-style: italic;
+            font-size: .82rem;
+            width: 140px;
+        }
+        .compare-table .ans { color: var(--correct); font-weight: 600; }
+
+        /* vocab grid */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+        }
+        .vocab-card {
+            background: white;
+            border: 1px solid #e0d5c0;
+            border-radius: 6px;
+            padding: 14px 16px;
+        }
+        .vocab-term {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--rust);
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        .vocab-def {
+            font-size: .88rem;
+            color: #333;
+            line-height: 1.55;
+        }
+
+        /* checklist */
+        .checklist {
+            background: white;
+            border: 1px solid #e0d5c0;
+            border-radius: 6px;
+            padding: 20px 24px;
+        }
+        .checklist li {
+            list-style: none;
+            padding: 6px 0;
+            padding-left: 28px;
+            position: relative;
+            font-size: .95rem;
+            border-bottom: 1px dashed #ede6d0;
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--correct);
+            font-weight: 700;
+        }
+
+        @media (max-width: 600px) {
+            .skill-list { grid-template-columns: 1fr; }
+            .masthead h1 { font-size: 1.7rem; }
+            .lock-card { padding: 32px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ LOCK SCREEN ═══════════════ -->
+<div id="lock-screen">
+    <div class="lock-card">
+        <span class="lock-icon">🔐</span>
+        <h1>Answer Key</h1>
+        <p>HIST 107 — Test #1 Study Guide<br>Enter the password you earned from the cipher puzzle to unlock the answer key.</p>
+        <div style="max-width: 400px; margin: 0 auto 20px;">
+            <input type="text" id="password-input" placeholder="ENTER PASSWORD" 
+                   style="width: 100%; padding: 15px; border: 3px solid var(--slate); border-radius: 8px; 
+                          font-size: 1.5em; text-align: center; font-weight: bold; letter-spacing: 3px; 
+                          font-family: 'Playfair Display', serif;">
+        </div>
+        <button class="lock-btn" id="unlock-btn">Unlock Answer Key</button>
+        <div class="lock-error" id="lock-error">❌ Incorrect password. Go back and solve the cipher!</div>
+        <p class="lock-hint">Haven't solved the cipher yet? <a href="hist107_cipher_puzzle.html" style="color:var(--rust);">Return to the puzzle →</a></p>
+    </div>
+</div>
+
+<!-- ═══════════════ ANSWER KEY ═══════════════ -->
+<div id="answer-key">
+    <div class="masthead">
+        <div class="course-label">HIST 107 · Test #1</div>
+        <h1>Study Guide Answer Key</h1>
+        <p>Early Modern Global History</p>
+    </div>
+
+    <div style="padding: 0 0; max-width: 960px; margin: 0 auto;">
+        <div class="unlock-banner">🎉 Cipher solved! You've unlocked the full answer key.</div>
+
+        <!-- ═══ PART 1 ═══ -->
+        <div class="part-header">
+            <span class="part-num">PART 1</span>
+            Historical Thinking Skills &amp; Core Frameworks
+        </div>
+
+        <div class="skill-list">
+            <div class="skill-card">
+                <div class="skill-name">Sourcing</div>
+                <div class="skill-def">Who created it? When? Why? Consider the author's purpose and perspective.</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">Contextualization</div>
+                <div class="skill-def">What else was happening at the time? What broader forces shaped this source?</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">Corroboration</div>
+                <div class="skill-def">How do multiple sources compare? Why do they differ? What can we infer from agreement or disagreement?</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">Interpretation</div>
+                <div class="skill-def">What most likely happened based on evidence? What argument does the evidence support?</div>
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q2 — Beckert passage: which skill explains why power is described as "limited"?</div>
+            <div class="answer"><em>Sourcing</em> — understanding Beckert's purpose: he describes European power as "limited" to show that participation ≠ control. Europeans were present in Indian markets but depended entirely on banias for credit and access.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Participation ≠ Control</div>
+            <div class="answer">Being present in a system doesn't mean dominating it or setting its rules.</div>
+            <div class="note"><strong>Example:</strong> European merchants in Indian cotton markets (1600s–1700s) participated but relied on banias for credit, coordination, and access to weavers. They couldn't control prices or production.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Capacity ≠ Control</div>
+            <div class="answer">Having the technology or resources to act does not guarantee global dominance.</div>
+            <div class="note"><strong>Example:</strong> Zheng He commanded superior ships and navigational knowledge, yet the Ming Dynasty did not establish an overseas empire — illustrating that capability alone doesn't create sustained global control.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Multipolar World</div>
+            <div class="answer">Multiple centres of economic and political power existing simultaneously — no single civilisation dominated.</div>
+            <div class="note"><strong>3 centres before 1500:</strong> Ottoman Empire, Mughal India, Ming China (also accept: Safavid Empire, East African city-states, Southeast Asian states)</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">War Capitalism (Beckert)</div>
+            <div class="answer">The fusion of merchant capital, state violence, and overseas empire to reorganise global production.</div>
+            <div class="note">It involves: <em>armed trade</em>, <em>coercion</em>, and <em>legal asymmetry</em> (monopoly charters that gave companies special rights unavailable to local competitors)</div>
+        </div>
+
+        <!-- ═══ PART 2 ═══ -->
+        <div class="part-header">
+            <span class="part-num">PART 2</span>
+            Key Comparisons
+        </div>
+
+        <div class="compare-wrap">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Household Cotton</th>
+                        <th>Plantation Cotton</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>crops</td><td class="ans">Mixed with <em>food</em> crops</td><td class="ans"><em>Monoculture</em> for export</td></tr>
+                    <tr><td>labour</td><td class="ans"><em>Seasonal</em> rhythms</td><td class="ans">Coerced labour (<em>slavery</em>)</td></tr>
+                    <tr><td>control</td><td class="ans">Household <em>autonomy</em></td><td class="ans">Production for <em>distant</em> markets</td></tr>
+                    <tr><td>purpose</td><td class="ans">Used locally + as <em>tax/tribute</em></td><td class="ans">Organised around <em>extraction</em></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="compare-wrap">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Gunpowder Empires</th>
+                        <th>European Maritime Empires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>base</td><td class="ans"><em>Land</em>-based power</td><td class="ans"><em>Sea</em>-based power</td></tr>
+                    <tr><td>economy</td><td class="ans"><em>Tax</em> existing production</td><td class="ans"><em>Reorganise</em> economies for export</td></tr>
+                    <tr><td>control</td><td class="ans">Control routes and ports</td><td class="ans">Control land, <em>labour</em>, and rules</td></tr>
+                    <tr><td>governance</td><td class="ans">Govern through <em>bureaucracy / intermediaries</em></td><td class="ans">Backed by <em>chartered</em> companies</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Before 1700 / After 1750</div>
+            <div class="answer">Before 1700: Europe and Asia were <em>comparable</em>.<br>After 1750: Global inequality became <em>durable</em>.</div>
+        </div>
+
+        <!-- ═══ PART 3 ═══ -->
+        <div class="part-header">
+            <span class="part-num">PART 3</span>
+            Important Arguments
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Beckert's Main Argument about Cotton</div>
+            <div class="answer">
+                a. Cotton was global <em>before</em> Europe mattered.<br>
+                b. European "breakthrough" = <em>violence</em> + state backing — NOT just technology.<br>
+                c. <em>War</em> capitalism came before industrial capitalism.
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Pomeranz on the Great Divergence</div>
+            <div class="answer">
+                Europe and <em>Asian</em> regions were comparable until ~1700.<br>
+                Europe escaped ecological limits through:<br>
+                &nbsp;&nbsp;i. <em>Coal</em> (geography — coal deposits near population centres)<br>
+                &nbsp;&nbsp;ii. <em>Colonies</em> / Ghost Acres (American land + forced labour)
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Ferguson's "Competition" Argument</div>
+            <div class="answer">
+                Competition explains state <em>capacity</em>.<br>
+                BUT: doesn't explain where <em>surplus</em> came from.<br>
+                Missing: <em>coercion</em>, slavery, colonial extraction.
+            </div>
+        </div>
+
+        <!-- ═══ PART 4 ═══ -->
+        <div class="part-header">
+            <span class="part-num">PART 4</span>
+            Key Examples — Fill in the Blanks
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q13 — Zheng He's voyages (1405–1433)</div>
+            <div class="answer"><em>Maritime / Naval</em> capacity alone does not create sustained global <em>control</em>.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q14 — Indian Ocean trade before 1500</div>
+            <div class="answer"><em>Merchant</em>-based coordination without centralised <em>coercion</em>.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q15 — British East India Company factory system (1600s–1700s)</div>
+            <div class="answer">
+                a. Europeans depended on <em>banias</em> (local traders) for credit and coordination.<br>
+                b. Weavers controlled their own <em>tools / production</em> and could sell to anyone.<br>
+                c. European power was <em>limited</em> to port cities and forts.
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q16 — After 1765 in Bengal</div>
+            <div class="answer">
+                a. Europeans bypassed <em>independent</em> merchants.<br>
+                b. They regulated <em>production</em> directly.<br>
+                c. This shift represents moving from <em>participation</em> to <em>control</em>.
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q17 — Portuguese cartaz system</div>
+            <div class="answer">Using <em>armed</em> force to extract value without controlling <em>production</em>.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q18 — The Florentine Codex</div>
+            <div class="answer">Power operates through <em>translation</em>, documentation, and <em>constraint</em>.</div>
+        </div>
+
+        <!-- ═══ PART 5 ═══ -->
+        <div class="part-header">
+            <span class="part-num">PART 5</span>
+            Contingency &amp; World-Systems Thinking
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q19 — Contingency means</div>
+            <div class="answer">Historical outcomes were not inevitable; they depended on specific conditions, choices, and accidents. Things could have turned out differently.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q20–21 — Examples of moments that could have turned out differently</div>
+            <div class="answer">
+                • Ming Dynasty continuing maritime expansion after Zheng He's voyages<br>
+                • European factory system remaining limited to coastal participation<br>
+                • China accessing coal deposits near major population centres
+            </div>
+            <div class="note"><strong>What would have needed to change:</strong> Different imperial priorities / cost-benefit decisions; stronger resistance from Indian producers; alternative geography / infrastructure investment.</div>
+        </div>
+
+        <div class="qa-block">
+            <div class="question">Q22 — World-Systems Analysis</div>
+            <div class="answer">
+                a. Stop thinking in terms of <em>civilisations</em>.<br>
+                b. Think about <em>position</em> in global networks.<br>
+                c. Ask: Who controls <em>connections</em>? Who sets <em>rules</em>? Who absorbs <em>costs</em>?
+            </div>
+        </div>
+
+        <!-- ═══ PART 6 ═══ -->
+        <div class="part-header">
+            <span class="part-num">PART 6</span>
+            Vocabulary
+        </div>
+
+        <div class="vocab-grid">
+            <div class="vocab-card">
+                <div class="vocab-term">War Capitalism</div>
+                <div class="vocab-def">Fusion of merchant capital, state violence, and overseas empire</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Multipolar</div>
+                <div class="vocab-def">Multiple centres of power existing simultaneously</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Great Divergence</div>
+                <div class="vocab-def">When global inequality became durable after 1750</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Gunpowder Empires</div>
+                <div class="vocab-def">Ottoman, Safavid, Mughal</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Chartered Companies</div>
+                <div class="vocab-def">State-backed companies like the British East India Company</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Banias</div>
+                <div class="vocab-def">Indian merchants and financiers who organised production</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Factory System</div>
+                <div class="vocab-def">Warehouses / trading posts — NOT industrial mills!</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Monoculture</div>
+                <div class="vocab-def">Single crop grown for export</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Contingency</div>
+                <div class="vocab-def">Outcomes were not inevitable</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Coercion</div>
+                <div class="vocab-def">Force used to reorganise production</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-term">Extraction</div>
+                <div class="vocab-def">Taking resources / value without producing</div>
+            </div>
+        </div>
+
+        <!-- ═══ CHECKLIST ═══ -->
+        <div class="part-header">
+            <span class="part-num">CHECKLIST</span>
+            Exam Preparation
+        </div>
+
+        <div class="checklist">
+            <ul>
+                <li>Name and explain all 4 historical thinking skills</li>
+                <li>Define Participation ≠ Control with a specific example</li>
+                <li>Explain why Zheng He's voyages show Capacity ≠ Control</li>
+                <li>Compare household vs. plantation cotton production</li>
+                <li>Compare gunpowder empires vs. European maritime empires</li>
+                <li>Explain Beckert's argument about war capitalism</li>
+                <li>Explain Pomeranz's argument about the Great Divergence</li>
+                <li>Describe what changed after 1765 in Bengal</li>
+                <li>Define contingency and give an example</li>
+                <li>Source and contextualise the Beckert passage about European merchants</li>
+            </ul>
+        </div>
+
+        <p style="text-align:center; margin-top:40px; color:#888; font-style:italic; font-size:.9rem;">
+            Remember: Historians don't just memorise — we analyse sources, explain change, and make evidence-based arguments.
+        </p>
+    </div>
+</div>
+
+<script>
+    // Disable right-click
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    
+    // Disable copy
+    document.addEventListener('copy', e => e.preventDefault());
+    
+    // Disable paste
+    document.addEventListener('paste', e => {
+        if (!e.target.matches('#password-input')) {
+            e.preventDefault();
+        }
+    });
+    
+    // Disable keyboard shortcuts for copying/printing
+    document.addEventListener('keydown', e => {
+        // Ctrl+C, Ctrl+P, Ctrl+S, Ctrl+A, Cmd+C, Cmd+P, Cmd+S, Cmd+A
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'p' || e.key === 's' || e.key === 'a')) {
+            e.preventDefault();
+        }
+        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U (dev tools)
+        if (e.key === 'F12' || 
+            ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+            ((e.ctrlKey || e.metaKey) && e.key === 'u')) {
+            e.preventDefault();
+        }
+    });
+
+    // Password from cipher puzzle: 15-18-8-2-15-4-14-1
+    const CORRECT = '1518821541141';
+
+    const passwordInput = document.getElementById('password-input');
+    const unlockBtn = document.getElementById('unlock-btn');
+    const lockError = document.getElementById('lock-error');
+
+    // Auto-focus the input
+    passwordInput.focus();
+
+    // Allow Enter key to submit
+    passwordInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            attempt();
+        }
+    });
+
+    unlockBtn.addEventListener('click', attempt);
+
+    function attempt() {
+        const entered = passwordInput.value.trim();
+        if (entered === CORRECT) {
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('answer-key').style.display  = 'block';
+            window.scrollTo(0, 0);
+        } else {
+            lockError.style.display = 'block';
+            passwordInput.value = '';
+            passwordInput.style.borderColor = '#c0392b';
+            setTimeout(() => {
+                passwordInput.style.borderColor = '';
+                lockError.style.display = 'none';
+            }, 2500);
+            passwordInput.focus();
+        }
+    }
+</script>
+</body>
+</html>
