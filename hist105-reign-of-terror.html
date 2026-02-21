@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Reign of Terror — HIST 105</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream:   #f7f0e2;
+            --parch:   #ede0c4;
+            --aged:    #d9c89a;
+            --ink:     #0f0b06;
+            --faded:   #5c5040;
+            --blue:    #001f5b;
+            --red:     #9b1c1c;
+            --gold:    #c49a2a;
+            --white-r: #f0f4ff;
+            --triblue: #002395;
+            --trired:  #ED2939;
+            --shadow:  rgba(0,0,0,0.45);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: #0a0a12;
+            background-image:
+                radial-gradient(ellipse at 15% 30%, rgba(0,31,91,0.25) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 70%, rgba(155,28,28,0.2) 0%, transparent 55%),
+                repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.012) 60px, rgba(255,255,255,0.012) 61px);
+            color: var(--ink);
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .wrap { max-width: 940px; margin: 0 auto; }
+
+        /* ===== TRICOLOR BANNER ===== */
+        .tricolor {
+            display: flex;
+            height: 8px;
+            margin-bottom: 0;
+        }
+        .tricolor div { flex: 1; }
+        .tricolor .t-blue { background: var(--triblue); }
+        .tricolor .t-white { background: #fff; }
+        .tricolor .t-red { background: var(--trired); }
+
+        /* ===== MASTHEAD ===== */
+        .masthead {
+            background: var(--cream);
+            border: 3px solid var(--ink);
+            border-top: none;
+            margin-bottom: 28px;
+            box-shadow: 8px 8px 0 var(--shadow), inset 0 0 100px rgba(196,154,42,0.07);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .masthead-body {
+            padding: 32px 40px 28px;
+            text-align: center;
+            border-bottom: 4px double var(--ink);
+        }
+
+        .republic-line {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--faded);
+            margin-bottom: 10px;
+        }
+
+        .masthead h1 {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: 3.8em;
+            color: var(--ink);
+            line-height: 1.05;
+            margin-bottom: 4px;
+            letter-spacing: 2px;
+        }
+
+        .masthead h1 .accent { color: var(--red); }
+
+        .ornament {
+            color: var(--gold);
+            font-size: 1.1em;
+            letter-spacing: 8px;
+            margin: 10px 0;
+            opacity: 0.7;
+        }
+
+        .masthead-sub {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 3px;
+            color: var(--faded);
+            text-transform: uppercase;
+        }
+
+        .central-question {
+            background: var(--blue);
+            color: var(--white-r);
+            padding: 15px 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+            text-align: center;
+            line-height: 1.55;
+        }
+
+        .central-question em {
+            color: var(--gold);
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress {
+            display: flex;
+            background: var(--parch);
+            border: 2px solid var(--ink);
+            border-top: none;
+            margin-bottom: 28px;
+        }
+
+        .p-step {
+            flex: 1;
+            text-align: center;
+            padding: 9px 4px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 1px;
+            color: var(--faded);
+            border-right: 1px solid var(--aged);
+            transition: all 0.25s;
+            line-height: 1.45;
+            text-transform: uppercase;
+        }
+        .p-step:last-child { border-right: none; }
+        .p-step .sicon { display: block; font-size: 1.2em; margin-bottom: 2px; }
+        .p-step.active { background: var(--red); color: #fceaea; }
+        .p-step.done   { background: var(--blue); color: #c8d4f0; }
+
+        /* ===== PANELS ===== */
+        .panel { display: none; animation: appear 0.35s ease; }
+        .panel.active { display: block; }
+        @keyframes appear {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--cream);
+            border: 2px solid var(--ink);
+            margin-bottom: 22px;
+            box-shadow: 5px 5px 0 var(--shadow);
+        }
+
+        .card-head {
+            background: var(--ink);
+            color: var(--cream);
+            padding: 10px 24px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-head::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.18); }
+
+        .card-head.red-head { background: var(--red); }
+        .card-head.blue-head { background: var(--blue); }
+
+        .card-body { padding: 28px 32px; }
+
+        h2 {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.85em;
+            color: var(--blue);
+            margin-bottom: 16px;
+            line-height: 1.2;
+            border-bottom: 2px solid var(--aged);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1em;
+            font-weight: 600;
+            color: var(--red);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 22px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--aged);
+        }
+
+        p { line-height: 1.82; margin-bottom: 14px; font-size: 1.05em; }
+
+        strong { color: var(--blue); }
+
+        /* ===== STUDENT INFO ===== */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0 4px; }
+        .fgroup { display: flex; flex-direction: column; gap: 5px; }
+        .fgroup label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.7em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--faded);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: #fffdf6;
+            border: 1px solid var(--aged);
+            border-bottom: 2px solid var(--ink);
+            color: var(--ink);
+            font-family: 'Crimson Text', serif;
+            font-size: 1em;
+            transition: border-color 0.2s;
+            border-radius: 0;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: #fff;
+        }
+        textarea { min-height: 90px; resize: vertical; line-height: 1.65; }
+
+        /* ===== TIMELINE ===== */
+        .timeline { margin: 18px 0; }
+        .tl-row {
+            display: flex;
+            gap: 14px;
+            padding: 11px 14px;
+            margin-bottom: 7px;
+            background: #fdfaf3;
+            border-left: 3px solid var(--aged);
+            font-size: 0.97em;
+            line-height: 1.6;
+        }
+        .tl-row.key { border-left-color: var(--red); background: rgba(155,28,28,0.05); }
+        .tl-row.blue-key { border-left-color: var(--blue); background: rgba(0,31,91,0.05); }
+        .tl-yr {
+            font-family: 'Courier Prime', monospace;
+            color: var(--red);
+            font-size: 0.8em;
+            font-weight: 700;
+            min-width: 72px;
+            padding-top: 2px;
+        }
+        .tl-row.blue-key .tl-yr { color: var(--blue); }
+
+        /* ===== DOCUMENT BLOCK ===== */
+        .doc-block {
+            background: #fdfaf2;
+            border: 1px solid var(--aged);
+            border-left: 5px solid var(--blue);
+            padding: 22px 26px;
+            margin: 18px 0;
+            line-height: 1.9;
+            font-size: 1em;
+            position: relative;
+        }
+        .doc-block.doc-red { border-left-color: var(--red); }
+        .doc-block.doc-dark { border-left-color: var(--ink); }
+
+        .doc-label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--faded);
+            margin-bottom: 14px;
+            display: block;
+            border-bottom: 1px solid var(--aged);
+            padding-bottom: 8px;
+        }
+
+        .doc-source {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--aged);
+            font-size: 0.82em;
+            color: var(--faded);
+            font-style: italic;
+        }
+
+        /* decree / legal style */
+        .decree-art {
+            padding: 10px 0 10px 16px;
+            border-left: 3px solid var(--gold);
+            margin: 10px 0;
+            font-size: 1em;
+        }
+        .decree-art-num {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8em;
+            color: var(--gold);
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ===== QUESTION GROUPS ===== */
+        .qgroup {
+            background: rgba(0,0,0,0.025);
+            border: 1px solid var(--aged);
+            border-top: 3px solid var(--gold);
+            padding: 20px 22px;
+            margin: 20px 0;
+        }
+        .qgroup.q-blue { border-top-color: var(--blue); }
+        .qgroup.q-red  { border-top-color: var(--red); }
+
+        .qgroup-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 18px;
+        }
+        .qgroup.q-blue .qgroup-title { color: var(--blue); }
+        .qgroup.q-red  .qgroup-title { color: var(--red); }
+
+        .qitem { margin-bottom: 18px; }
+        .qitem:last-child { margin-bottom: 0; }
+
+        .qitem label {
+            display: block;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 8px;
+            font-size: 0.97em;
+            line-height: 1.55;
+        }
+
+        .qnum {
+            display: inline-block;
+            background: var(--red);
+            color: #fff;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.7em;
+            padding: 1px 7px;
+            margin-right: 6px;
+            letter-spacing: 1px;
+            vertical-align: middle;
+        }
+        .qgroup.q-blue .qnum { background: var(--blue); }
+        .qgroup.q-red  .qnum { background: var(--red); }
+
+        /* ===== NOTICE ===== */
+        .notice {
+            padding: 13px 17px;
+            border-left: 4px solid var(--gold);
+            background: rgba(196,154,42,0.08);
+            margin: 16px 0;
+            font-size: 0.95em;
+            line-height: 1.7;
+            color: var(--faded);
+        }
+        .notice.n-blue { border-left-color: var(--blue); background: rgba(0,31,91,0.06); color: var(--ink); }
+        .notice.n-red  { border-left-color: var(--red);  background: rgba(155,28,28,0.06); font-style: italic; }
+
+        /* ===== VERDICT / FINAL ===== */
+        .verdict-banner {
+            background: var(--blue);
+            color: var(--white-r);
+            padding: 22px 32px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px solid #00143a;
+            box-shadow: 4px 4px 0 var(--shadow);
+        }
+        .verdict-banner h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5em;
+            color: var(--gold);
+            border: none;
+            text-transform: none;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .verdict-banner p {
+            color: #c0ccee;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.82em;
+            letter-spacing: 1px;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* ===== REVEAL ===== */
+        .reveal-dark {
+            background: #0d1a3a;
+            color: #c8d4f0;
+            padding: 26px 30px;
+            margin: 20px 0;
+            border: 2px solid #060e20;
+            box-shadow: 5px 5px 0 var(--shadow);
+        }
+        .reveal-dark h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.3em;
+            border: none;
+            text-transform: none;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+        .reveal-dark p, .reveal-dark li { color: #b0c0e8; line-height: 1.82; }
+        .reveal-dark ul { margin-left: 20px; margin-top: 10px; }
+        .reveal-dark li { margin-bottom: 10px; }
+
+        .reveal-red {
+            background: #2a0808;
+            color: #e8c0c0;
+            padding: 26px 30px;
+            margin: 20px 0;
+            border: 2px solid #180404;
+            box-shadow: 5px 5px 0 var(--shadow);
+        }
+        .reveal-red h3 {
+            font-family: 'Cinzel', serif;
+            color: #f0c040;
+            font-size: 1.3em;
+            border: none;
+            text-transform: none;
+            margin-bottom: 14px;
+        }
+        .reveal-red p { color: #d8a8a8; line-height: 1.82; }
+
+        .stamp {
+            display: inline-block;
+            font-family: 'Cinzel', serif;
+            font-size: 1.3em;
+            font-weight: 700;
+            letter-spacing: 5px;
+            border: 4px solid var(--red);
+            color: var(--red);
+            padding: 8px 20px;
+            transform: rotate(-3deg);
+            opacity: 0.85;
+            margin: 14px 0;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+        .btn {
+            font-family: 'Cinzel', serif;
+            font-size: 0.82em;
+            letter-spacing: 2px;
+            padding: 12px 28px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-transform: uppercase;
+        }
+        .btn-primary { background: var(--red); color: var(--cream); border-color: #6a1010; }
+        .btn-primary:hover:not(:disabled) { background: #6a1010; transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
+        .btn-blue { background: var(--blue); color: var(--white-r); border-color: #00143a; }
+        .btn-blue:hover:not(:disabled) { background: #00143a; transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
+        .btn-ghost { background: transparent; color: var(--ink); border-color: var(--aged); }
+        .btn-ghost:hover { border-color: var(--ink); background: rgba(0,0,0,0.05); }
+        .btn-gold { background: var(--gold); color: var(--ink); border-color: #8a6a10; }
+        .btn-gold:hover:not(:disabled) { background: #a07820; transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+        /* ===== MISC ===== */
+        #submitMessage { margin-top: 14px; }
+        .success-msg { background: var(--blue); color: #d4e0ff; padding: 14px 18px; border-left: 4px solid var(--gold); font-family: 'Courier Prime', monospace; font-size: 0.85em; letter-spacing: 1px; }
+        .error-msg   { background: rgba(155,28,28,0.12); color: var(--red); padding: 14px 18px; border-left: 4px solid var(--red); font-size: 0.9em; }
+
+        .breadcrumb {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.7em;
+            letter-spacing: 2px;
+            color: #6a6050;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+        .breadcrumb a { color: var(--gold); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb .sep { margin: 0 8px; opacity: 0.4; }
+
+        @media (max-width: 640px) {
+            .masthead h1 { font-size: 2.4em; }
+            .info-grid { grid-template-columns: 1fr; }
+            .p-step { font-size: 0.58em; }
+            .card-body { padding: 20px 18px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="breadcrumb">
+        <a href="index.html">Home</a><span class="sep">›</span>
+        <a href="activities.html">Interactive Activities</a><span class="sep">›</span>
+        <span>The Reign of Terror</span>
+    </nav>
+
+    <!-- TRICOLOR + MASTHEAD -->
+    <div class="tricolor"><div class="t-blue"></div><div class="t-white"></div><div class="t-red"></div></div>
+    <div class="masthead">
+        <div class="masthead-body">
+            <div class="republic-line">HIST 105 · Western Civilization · Prof. Hauselmann</div>
+            <h1>The Reign of <span class="accent">Terror</span></h1>
+            <div class="ornament">— ✦ —</div>
+            <div class="masthead-sub">A Historical Investigation · France, 1793–1794</div>
+        </div>
+        <div class="central-question">
+            Central Question: <em>Was the main goal of the Committee of Public Safety to "protect the Revolution from its enemies"?</em>
+        </div>
+    </div>
+    <div class="tricolor"><div class="t-blue"></div><div class="t-white"></div><div class="t-red"></div></div>
+
+    <!-- PROGRESS -->
+    <div class="progress" id="progressBar">
+        <div class="p-step active" data-phase="0"><span class="sicon">📋</span>Briefing</div>
+        <div class="p-step" data-phase="1"><span class="sicon">📖</span>Textbook</div>
+        <div class="p-step" data-phase="2"><span class="sicon">⚖️</span>Doc A</div>
+        <div class="p-step" data-phase="3"><span class="sicon">📜</span>Doc B</div>
+        <div class="p-step" data-phase="4"><span class="sicon">🗳️</span>Verdict</div>
+        <div class="p-step" data-phase="5"><span class="sicon">🔍</span>Reveal</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 0: BRIEFING                                            -->
+    <!-- ============================================================ -->
+    <div class="panel active" id="phase0">
+
+        <div class="card">
+            <div class="card-head">📋 Student Identification</div>
+            <div class="card-body">
+                <p>Enter your information before beginning the investigation.</p>
+                <div class="info-grid">
+                    <div class="fgroup">
+                        <label>Full Name</label>
+                        <input type="text" id="student-name" placeholder="Enter your full name">
+                    </div>
+                    <div class="fgroup">
+                        <label>Section Number</label>
+                        <input type="text" id="section-number" placeholder="e.g., 105, 106">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">⚜️ Background — The Road to the Terror</div>
+            <div class="card-body">
+                <h2>Setting the Scene</h2>
+                <p>The French Revolution began in 1789 as a movement to end feudalism, curb royal power, and establish the ideals of <strong>Liberty, Equality, and Fraternity</strong>. But revolutions are rarely orderly. By 1793, France faced war with most of Europe, internal rebellions, and deep political divisions — and the Revolution itself became a weapon.</p>
+
+                <h3>Key Background</h3>
+                <p>The <strong>Committee of Public Safety</strong>, dominated by Maximilien Robespierre, took control of France in 1793. The Committee claimed it was protecting the Revolution — that radical measures were necessary to defend the gains made since 1789 against enemies both foreign and domestic.</p>
+                <p>But what did "protecting the Revolution" actually mean in practice? That is what you will investigate today.</p>
+
+                <h3>Timeline of the Revolution</h3>
+                <div class="timeline">
+                    <div class="tl-row"><div class="tl-yr">1789</div><div>The Revolution begins. The Third Estate forms the National Assembly. The Bastille is stormed. The Declaration of the Rights of Man and Citizen is adopted.</div></div>
+                    <div class="tl-row"><div class="tl-yr">1789–1791</div><div>The first phase of the Revolution abolishes feudalism. A constitutional monarchy is established — the king remains, but property ownership is required to vote.</div></div>
+                    <div class="tl-row"><div class="tl-yr">1792</div><div>The Jacobins — a more radical political faction — take over. The National Convention abolishes the monarchy entirely. Universal male suffrage is established.</div></div>
+                    <div class="tl-row key"><div class="tl-yr">Jan. 1793</div><div><strong>King Louis XVI is executed by guillotine. France declares war on Britain and the Netherlands. Counterrevolutionary rebellions break out inside France.</strong></div></div>
+                    <div class="tl-row key"><div class="tl-yr">July 1793</div><div><strong>The Committee of Public Safety, led by Robespierre, takes effective control of France. It declares that extraordinary measures are needed to save the Revolution from its enemies.</strong></div></div>
+                    <div class="tl-row key"><div class="tl-yr">Sept. 1793–<br>July 1794</div><div><strong>The Reign of Terror. An estimated 17,000 people are officially executed; tens of thousands more die in prison or without trial.</strong></div></div>
+                    <div class="tl-row blue-key"><div class="tl-yr">July 1794</div><div><strong>Robespierre himself is arrested and guillotined. The Terror ends. The Committee of Public Safety is dissolved.</strong></div></div>
+                </div>
+
+                <div class="notice n-blue">
+                    <strong>Key Tension:</strong> The Committee of Public Safety said its goal was to protect the ideals of the Revolution — Liberty, Equality, Fraternity — from those who would destroy them. As you read today's documents, ask yourself: do the Committee's actions actually match that claim?
+                </div>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">✍️ Warm-Up: Before You Read</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> The Revolution's slogan was <em>Liberté, Égalité, Fraternité</em> — Liberty, Equality, Fraternity. In your own words, what do these three ideals mean? What would a government look like that truly upheld them?</label>
+                        <textarea id="warmup-q1" placeholder="What does each word mean? What would a government based on these ideals actually do?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> Can a government use violence or extreme measures to "protect" freedom? Or does that contradict the idea of freedom itself? Explain your thinking.</label>
+                        <textarea id="warmup-q2" placeholder="Think about whether the ends can justify the means — or whether the means matter as much as the goals..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="startInvestigation()">Begin the Investigation →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 1: TEXTBOOK                                            -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase1">
+
+        <div class="card">
+            <div class="card-head">📖 The Standard Account</div>
+            <div class="card-body">
+                <h2>What the Textbook Says</h2>
+                <p>Before examining primary sources, read the textbook account of the Reign of Terror. This is the version most students encounter first — the "standard story." Read it carefully, then answer the questions below.</p>
+
+                <div class="qgroup q-blue" style="margin-bottom: 0;">
+                    <div class="qgroup-title">🔎 Sourcing — Answer BEFORE Reading</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> Who writes textbooks, and for what purpose? Whose perspectives tend to be included — and whose might be left out?</label>
+                        <textarea id="txt-q1" placeholder="Think about who produces textbooks, who approves them, and what they are designed to do..." style="min-height:72px;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head blue-head">📖 Now Read — Textbook Excerpt</div>
+            <div class="card-body">
+                <div class="doc-block">
+                    <span class="doc-label">Textbook Excerpt · Modern World History: Patterns of Interaction (McDougal Littell, 2006), pp. 226–227</span>
+                    <p>Jacobin leaders unleashed the Reign of Terror in the summer of 1793. Across France, guillotines were set up in public squares. Thousands of people died in the months that followed.</p>
+                    <p>The guillotine was a machine designed to execute people by cutting off their heads quickly and efficiently. In Paris, executions became a public spectacle. People would gather in the square to watch, as if it were a form of entertainment.</p>
+                    <p>To justify the Terror, Robespierre argued that it was necessary to protect the Republic. <strong>"Terror is nothing more than speedy, severe, and inflexible justice,"</strong> he declared. He believed that those who opposed the Revolution, or were merely suspected of opposing it, deserved death. Many people who were not genuine enemies of the Revolution were killed.</p>
+                    <p>The Committee of Public Safety went far beyond killing political enemies. It also <strong>tried to wipe out every trace of the old way of life.</strong> Churches were closed. Even the calendar was changed — months were renamed and Sundays were eliminated — to break from the past and Christianity.</p>
+                    <p>By mid-1794, even loyal revolutionaries were being killed. No one felt safe. Finally, in July 1794, a group of conspirators turned against Robespierre. He was arrested and guillotined — by the very same machine he had used on so many others. The Reign of Terror was over.</p>
+                    <div class="doc-source">Source: Modern World History: Patterns of Interaction. Evanston, IL: McDougal Littell (2006), pp. 226–227.</div>
+                </div>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">📖 Close Reading — Textbook Account</div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> The Committee of Public Safety tried to "wipe out every trace of the old way of life" — including changing the calendar and closing churches. Why might the Jacobins have wanted to do this? What does it tell you about their vision of the Revolution?</label>
+                        <textarea id="txt-q2" placeholder="Think about what the Jacobins believed the Revolution stood for — and what they were rejecting..."></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">3</span> Based on the textbook, did the Committee of Public Safety "protect the Revolution" — or did it betray the Revolution's ideals of Liberty, Equality, and Fraternity? Use specific evidence from the textbook to support your answer.</label>
+                        <textarea id="txt-q3" placeholder="Refer back to the ideals you defined in the warm-up. Did the Terror uphold or violate them?"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(0)">← Back</button>
+            <button class="btn btn-primary" onclick="nextValidated(1, 2, ['txt-q1','txt-q2','txt-q3'])">Continue to Document A →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 2: DOCUMENT A — DECREE AGAINST PROFITEERS             -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase2">
+
+        <div class="card">
+            <div class="card-head red-head">⚖️ Document A — Decree Against Profiteers</div>
+            <div class="card-body">
+                <h2>The Law Against Profiteers</h2>
+                <p>The Committee of Public Safety passed many laws during the Terror. Some targeted political opponents. Others targeted economic behavior. Document A is one such economic law — the Decree Against Profiteers, passed in 1793.</p>
+
+                <div class="qgroup q-blue" style="margin-bottom: 0;">
+                    <div class="qgroup-title">🔎 Sourcing — Answer BEFORE Reading</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> This is an official government decree — a law — issued by the Committee of Public Safety. How does that differ from a private letter or a diary entry as a historical source? What can it tell us — and what can't it tell us?</label>
+                        <textarea id="docA-q1" placeholder="Think about who writes laws, what purpose they serve, and what they reveal about a government's intentions..." style="min-height:72px;"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> Based on the title "Decree Against Profiteers," who do you predict this law targets? What is a "profiteer"?</label>
+                        <input type="text" id="docA-q2" placeholder="What is a profiteer? Who might this law be aimed at?">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head red-head">⚖️ Now Read — Decree Against Profiteers (1793)</div>
+            <div class="card-body">
+                <div class="doc-block doc-red">
+                    <span class="doc-label">Document A · Decree Against Profiteers · Committee of Public Safety, 1793</span>
+
+                    <div class="decree-art">
+                        <span class="decree-art-num">Article I</span>
+                        Any person who is convicted of having hoarded, within the boundaries of the Republic, commodities of prime necessity, such as bread, meat, wine, grain, flour, vegetables, fruits, sugar, salt, provisions in general, beer, fuel, candles, oil, wool, fabrics, leather, iron, and all metals, with the intention of selling them at a price higher than the maximum established by the law . . . shall be punished by death.
+                    </div>
+
+                    <div class="decree-art">
+                        <span class="decree-art-num">Article II</span>
+                        Any person convicted of selling above the maximum price shall be punished by confiscation of the goods and a monetary fine of two times the value of the goods sold.
+                    </div>
+
+                    <div class="decree-art">
+                        <span class="decree-art-num">Article III</span>
+                        Any merchant, dealer, or tradesman who, after having received payment, shall refuse to deliver the goods sold, shall be considered to have committed the act of hoarding and punished accordingly.
+                    </div>
+
+                    <div class="doc-source">Source: Stewart, J.H. (1951). A Documentary Survey of the French Revolution, 469–71. New York: Macmillan. Retrieved from http://chnm.gmu.edu/revolution/d/414/</div>
+                </div>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">📖 Close Reading — Decree Against Profiteers</div>
+                    <div class="qitem">
+                        <label><span class="qnum">3</span> In your own words, what does this decree prohibit? Who does it target, and what are the punishments?</label>
+                        <textarea id="docA-q3" placeholder="What behavior is being outlawed? Who would be affected by this law?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">4</span> Why might hoarding or price-gouging food be seen as a threat to the ideals of the Revolution — Liberty, Equality, Fraternity? Who would benefit most from this law, and who would be most harmed by it?</label>
+                        <textarea id="docA-q4" placeholder="Think about who hoards food and sells at high prices — and who suffers when they do..."></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">5</span> Does Document A support or undermine the claim that the Committee of Public Safety was "protecting the Revolution from its enemies"? Explain your reasoning.</label>
+                        <textarea id="docA-q5" placeholder="Does this decree fit the ideals of the Revolution — or does it go too far? What does the death penalty for hoarding tell you?"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(1)">← Back</button>
+            <button class="btn btn-primary" onclick="nextValidated(2, 3, ['docA-q1','docA-q2','docA-q3','docA-q4','docA-q5'])">Continue to Document B →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 3: DOCUMENT B — LAW OF SUSPECTS                        -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase3">
+
+        <div class="card">
+            <div class="card-head red-head">📜 Document B — The Law of Suspects</div>
+            <div class="card-body">
+                <h2>Defining the Enemy</h2>
+                <p>If Document A targeted economic "enemies" of the Revolution, Document B targeted political ones. The Law of Suspects, also passed in 1793, defined who could be arrested as an enemy of the Revolution — and the list is striking.</p>
+
+                <div class="qgroup q-blue" style="margin-bottom: 0;">
+                    <div class="qgroup-title">🔎 Sourcing — Answer BEFORE Reading</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> This law defines who is a "suspect." Before you read, who do you expect would be considered a suspect by a government claiming to protect a revolution against its enemies?</label>
+                        <textarea id="docB-q1" placeholder="Make a prediction: who would you expect this law to target?" style="min-height:72px;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head red-head">📜 Now Read — Law of Suspects (1793)</div>
+            <div class="card-body">
+                <div class="doc-block doc-dark">
+                    <span class="doc-label">Document B · Law of Suspects · National Convention, September 17, 1793</span>
+
+                    <p>The following are declared suspects:</p>
+
+                    <div class="decree-art">
+                        <span class="decree-art-num">1st</span>
+                        Those who, by their conduct, associations, talk, or writings have shown themselves partisans of tyranny or federalism and enemies of liberty.
+                    </div>
+                    <div class="decree-art">
+                        <span class="decree-art-num">2nd</span>
+                        Those who are unable to justify, in the manner prescribed by the decree of 21 March last, their means of existence and the performance of their civic duties.
+                    </div>
+                    <div class="decree-art">
+                        <span class="decree-art-num">3rd</span>
+                        Those to whom certificates of patriotism have been refused.
+                    </div>
+                    <div class="decree-art">
+                        <span class="decree-art-num">4th</span>
+                        Public functionaries suspended or removed from their functions by the National Convention or by its commissioners, and not reinstated, especially those who have been or are to be removed by virtue of the law of 14 August last.
+                    </div>
+                    <div class="decree-art">
+                        <span class="decree-art-num">5th</span>
+                        Those former nobles, husbands, wives, fathers, mothers, sons or daughters, brothers or sisters, and agents of the émigrés [those who fled France], who have not steadily manifested their attachment to the Revolution.
+                    </div>
+                    <div class="decree-art">
+                        <span class="decree-art-num">6th</span>
+                        Those who have emigrated from France in the interval from 1 July 1789, to the publication of the law of 8 April 1792, although they may have returned to France within the period established by that law or earlier.
+                    </div>
+
+                    <div class="doc-source">Source: Duvergier, J-B. (1793). Collection complète des lois, décrets, ordonnances . . . Paris, 6:172–73. Retrieved from http://sourcebook.fitchburgstate.edu/history/lawofsuspects.html</div>
+                </div>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">📖 Close Reading — Law of Suspects</div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> Look carefully at categories 5 and 6. Who can be arrested as a "suspect" under these provisions? What do these people have in common — and what do they NOT have in common with being an actual enemy of the Revolution?</label>
+                        <textarea id="docB-q2" placeholder="Who specifically is targeted in categories 5 and 6? Could these people be guilty of anything other than association or ancestry?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">3</span> Compare Document B to Document A. Document A targeted people who hoarded food. Document B targets people who have not "manifested their attachment to the Revolution" or who are related to people who fled France. How do the standards of guilt differ between the two documents?</label>
+                        <textarea id="docB-q3" placeholder="What has to be proven to convict someone under Document A? Under Document B? Which seems more and less fair?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">4</span> Does Document B support or undermine the claim that the Committee of Public Safety was "protecting the Revolution from its enemies"? Is someone who is the relative of an émigré necessarily an enemy of the Revolution?</label>
+                        <textarea id="docB-q4" placeholder="Does the Law of Suspects protect the Revolution — or overreach? Can you be guilty by association or ancestry?"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(2)">← Back</button>
+            <button class="btn btn-primary" onclick="nextValidated(3, 4, ['docB-q1','docB-q2','docB-q3','docB-q4'])">Continue to Verdict →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 4: VERDICT                                             -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase4">
+
+        <div class="card">
+            <div class="card-head">🗳️ Final Analysis — Your Verdict</div>
+            <div class="card-body">
+                <h2>Weighing the Evidence</h2>
+                <p>You have read the textbook account and two primary source documents from the Committee of Public Safety itself. It is time to render your verdict on the central question.</p>
+
+                <div class="verdict-banner">
+                    <h3>The Central Question</h3>
+                    <p>Was the main goal of the Committee of Public Safety to "protect the Revolution from its enemies"?</p>
+                </div>
+
+                <div class="notice n-blue">
+                    <strong>Before you write:</strong> Consider both sides. Document A (Decree Against Profiteers) may have genuinely protected the poor. Document B (Law of Suspects) may have gone far beyond legitimate self-defense. A strong verdict acknowledges complexity and uses evidence from both documents.
+                </div>
+
+                <div class="qgroup q-red">
+                    <div class="qgroup-title">⚖️ Your Verdict</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> Using evidence from the textbook and BOTH documents, write a well-reasoned paragraph responding to the central question: <em>Was the main goal of the Committee of Public Safety to "protect the Revolution from its enemies"?</em> State a clear position and support it with specific evidence. Acknowledge what the other side might argue.</label>
+                        <textarea id="verdict-q1" placeholder="State your position clearly. Use evidence from the textbook and both documents. Acknowledge counterarguments." style="min-height:150px;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(3)">← Back</button>
+            <button class="btn btn-primary" onclick="submitVerdict()">Submit Verdict & See What Historians Say →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 5: REVEAL                                              -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase5">
+
+        <div class="card">
+            <div class="card-head blue-head">🔍 Historical Context — What Do Historians Say?</div>
+            <div class="card-body">
+                <h2>The Bigger Picture</h2>
+
+                <div style="text-align:center; padding: 8px 0 20px;">
+                    <div class="stamp">INVESTIGATION COMPLETE</div>
+                </div>
+
+                <div class="reveal-dark">
+                    <h3>Why This Question Matters</h3>
+                    <p>Historians have debated the Reign of Terror for over two centuries. Was it a necessary response to genuine existential threats — or a system of political terror that betrayed the Revolution's own values? Here is what the scholarly record shows:</p>
+                    <ul>
+                        <li><strong>The threats were real.</strong> France was at war with most of Europe. There were genuine counterrevolutionary rebellions inside France — particularly in the Vendée region, where tens of thousands died. Some historians argue that without the Terror, the Revolution would have been crushed entirely.</li>
+                        <li><strong>The scale was extraordinary.</strong> An estimated 17,000 people were officially executed; historians believe as many as 40,000 more died in prison or without trial. The vast majority were not aristocrats or foreign agents — they were peasants, workers, and ordinary people.</li>
+                        <li><strong>The Law of Suspects is widely seen as a turning point.</strong> Most historians argue that defining guilt by association — arresting people because of who their relatives were — crossed the line from defense into repression.</li>
+                        <li><strong>Robespierre's own words are contested.</strong> When he declared "Terror is speedy, severe, and inflexible justice," was he justifying necessary emergency measures — or rationalizing political murder? Historians continue to debate his sincerity.</li>
+                        <li><strong>The Terror consumed itself.</strong> That Robespierre was ultimately guillotined by the same machine he had used on others illustrates the central paradox: a revolution devoted to liberty had created a system of fear that spared no one.</li>
+                    </ul>
+                </div>
+
+                <div class="reveal-red">
+                    <h3>About the Documents</h3>
+                    <p><strong style="color: #f0c040;">Decree Against Profiteers (Document A)</strong> — This decree is often cited as evidence that the Committee genuinely cared about economic equality. Price controls and punishments for hoarding protected poor consumers from wealthy merchants who exploited shortages. Many historians see it as consistent with the Revolution's egalitarian ideals — even if the death penalty for hoarding is extreme.</p>
+                    <br>
+                    <p><strong style="color: #f0c040;">Law of Suspects (Document B)</strong> — This law is almost universally cited by historians as evidence that the Terror had moved beyond legitimate self-defense. Arresting people for being the relatives of émigrés, or for failing to display sufficient "attachment" to the Revolution, meant that anyone could be accused with almost no evidence. The vagueness of the categories was not accidental — it gave local committees enormous power to target political opponents.</p>
+                </div>
+
+                <div class="card" style="margin-top: 24px; box-shadow: none; border: 1px solid var(--aged);">
+                    <div class="card-head">✍️ Final Reflections</div>
+                    <div class="card-body">
+                        <div class="qgroup">
+                            <div class="qgroup-title">🔍 After the Reveal</div>
+                            <div class="qitem">
+                                <label><span class="qnum">1</span> How does what you learned here compare to your verdict? Did the historical context change or reinforce your position? What would you add or revise?</label>
+                                <textarea id="ref-q1" placeholder="Reflect on how the historian's perspective compares to your own argument..."></textarea>
+                            </div>
+                            <div class="qitem">
+                                <label><span class="qnum">2</span> The Reign of Terror raises a timeless question: can a government use extreme measures to "protect" freedom without ultimately destroying it? Based on what you've read, what do you think — and why?</label>
+                                <textarea id="ref-q2" placeholder="Use evidence from the documents and historical context to support your answer..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-gold" onclick="downloadPDF()">📄 Download PDF</button>
+                    <button class="btn btn-blue" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Prof. Hauselmann</button>
+                    <button class="btn btn-ghost" onclick="goToPhase(4)">← Back</button>
+                </div>
+                <div id="submitMessage"></div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- end wrap -->
+
+<script>
+    // ===== CONFIG =====
+    const SUPABASE_URL      = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const ASSIGNMENT_OPEN   = true;
+    const SUBMISSION_CUTOFF = null; // e.g. '2026-05-01T23:59:59'
+
+    let currentPhase = 0;
+    let verdictSubmitted = false;
+
+    // ===== NAVIGATION =====
+    function goToPhase(n) {
+        document.getElementById(`phase${currentPhase}`).classList.remove('active');
+        document.getElementById(`phase${n}`).classList.add('active');
+        currentPhase = n;
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+
+    function updateProgress() {
+        document.querySelectorAll('.p-step').forEach((el, i) => {
+            el.classList.remove('active', 'done');
+            if (i < currentPhase) el.classList.add('done');
+            else if (i === currentPhase) el.classList.add('active');
+        });
+    }
+
+    function startInvestigation() {
+        const name = document.getElementById('student-name').value.trim();
+        if (!name) { alert('Please enter your name before continuing.'); document.getElementById('student-name').focus(); return; }
+        const q1 = document.getElementById('warmup-q1').value.trim();
+        const q2 = document.getElementById('warmup-q2').value.trim();
+        if (!q1 || !q2) { alert('Please complete both warm-up questions before continuing.'); return; }
+        goToPhase(1);
+    }
+
+    function nextValidated(from, to, fieldIds) {
+        for (const id of fieldIds) {
+            const el = document.getElementById(id);
+            if (!el || !el.value.trim()) {
+                alert('Please complete all questions before continuing.');
+                if (el) el.focus();
+                return;
+            }
+        }
+        goToPhase(to);
+    }
+
+    function submitVerdict() {
+        const el = document.getElementById('verdict-q1');
+        if (!el.value.trim()) {
+            alert('Please write your verdict paragraph before continuing.');
+            el.focus();
+            return;
+        }
+        verdictSubmitted = true;
+        goToPhase(5);
+    }
+
+    // ===== PDF =====
+    function buildPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+        const lh = 7, ph = doc.internal.pageSize.height, m = 20;
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+
+        function add(text, size = 11, bold = false) {
+            doc.setFontSize(size);
+            doc.setFont(undefined, bold ? 'bold' : 'normal');
+            const lines = doc.splitTextToSize(String(text || '[Not answered]'), 170);
+            lines.forEach(l => { if (y > ph - m) { doc.addPage(); y = 20; } doc.text(l, 20, y); y += lh; });
+            y += 3;
+        }
+
+        add('The Reign of Terror Investigation', 18, true); y += 3;
+        add('HIST 105 — Was the Committee of Public Safety protecting the Revolution?', 13);
+        add(`Student: ${name}`, 12, true);
+        if (section) add(`Section: ${section}`, 12, true);
+        add(`Completed: ${new Date().toLocaleString()}`, 10); y += 5;
+
+        add('WARM-UP', 13, true);
+        add('1. What do Liberty, Equality, Fraternity mean?', 11, true);
+        add(document.getElementById('warmup-q1').value);
+        add('2. Can violence protect freedom without contradicting it?', 11, true);
+        add(document.getElementById('warmup-q2').value); y += 5;
+
+        add('TEXTBOOK ACCOUNT', 13, true);
+        add('1. Who writes textbooks, and whose perspectives are included?', 11, true);
+        add(document.getElementById('txt-q1').value);
+        add('2. Why did the Jacobins want to wipe out the old way of life?', 11, true);
+        add(document.getElementById('txt-q2').value);
+        add('3. Did the Committee protect or betray the ideals of the Revolution?', 11, true);
+        add(document.getElementById('txt-q3').value); y += 5;
+
+        add('DOCUMENT A — Decree Against Profiteers', 13, true);
+        add('1. How does an official decree differ as a source?', 11, true);
+        add(document.getElementById('docA-q1').value);
+        add('2. Who is a "profiteer"?', 11, true);
+        add(document.getElementById('docA-q2').value);
+        add('3. What does the decree prohibit, and what are the punishments?', 11, true);
+        add(document.getElementById('docA-q3').value);
+        add('4. Why might hoarding threaten the ideals of the Revolution?', 11, true);
+        add(document.getElementById('docA-q4').value);
+        add('5. Does Document A support or undermine the claim the Committee protected the Revolution?', 11, true);
+        add(document.getElementById('docA-q5').value); y += 5;
+
+        add('DOCUMENT B — Law of Suspects', 13, true);
+        add('1. Who did you predict the Law of Suspects would target?', 11, true);
+        add(document.getElementById('docB-q1').value);
+        add('2. Who is targeted by categories 5 and 6?', 11, true);
+        add(document.getElementById('docB-q2').value);
+        add('3. How do the standards of guilt differ between Documents A and B?', 11, true);
+        add(document.getElementById('docB-q3').value);
+        add('4. Does Document B support or undermine the claim the Committee protected the Revolution?', 11, true);
+        add(document.getElementById('docB-q4').value); y += 5;
+
+        add('VERDICT', 13, true);
+        add('Was the main goal of the Committee to protect the Revolution from its enemies?', 11, true);
+        add(document.getElementById('verdict-q1').value); y += 5;
+
+        add('FINAL REFLECTIONS', 13, true);
+        add('1. How does the historical context compare to your verdict?', 11, true);
+        add(document.getElementById('ref-q1').value);
+        add('2. Can extreme measures protect freedom without ultimately destroying it?', 11, true);
+        add(document.getElementById('ref-q2').value);
+
+        return doc;
+    }
+
+    function downloadPDF() {
+        if (!verdictSubmitted) { alert('Please submit your verdict first.'); return; }
+        const name = document.getElementById('student-name').value.trim();
+        if (!name) { alert('Please enter your name in the Briefing section.'); return; }
+        try {
+            buildPDF().save(`Reign_of_Terror_${name.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+        } catch(e) { console.error(e); alert('Error generating PDF: ' + e.message); }
+    }
+
+    async function submitToSupabase() {
+        if (!ASSIGNMENT_OPEN) {
+            document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ This assignment is now closed. Please contact Prof. Hauselmann.</div>';
+            return;
+        }
+        if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
+            document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ Submission deadline has passed. Contact Prof. Hauselmann.</div>';
+            return;
+        }
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+        if (!name)    { alert('Please enter your name.'); return; }
+        if (!section) { alert('Please enter your section number.'); return; }
+        if (!verdictSubmitted) { alert('Please submit your verdict first.'); return; }
+
+        const btn = document.getElementById('submitBtn');
+        const msg = document.getElementById('submitMessage');
+        btn.disabled = true; btn.textContent = '⏳ Submitting...';
+        msg.innerHTML = '<div style="padding:12px;color:var(--faded);font-style:italic;">Generating and uploading your worksheet...</div>';
+
+        try {
+            const blob = buildPDF().output('blob');
+            const ts   = new Date().toISOString().replace(/[:.]/g, '-');
+            const safe = name.replace(/[^a-zA-Z0-9]/g, '_');
+            const path = `reign-of-terror/${section}/${safe}_${ts}.pdf`;
+
+            const { error: upErr } = await supabaseClient.storage
+                .from('student-submissions')
+                .upload(path, blob, { contentType: 'application/pdf', upsert: false });
+            if (upErr) throw new Error(upErr.message);
+
+            const { data: urlData } = supabaseClient.storage.from('student-submissions').getPublicUrl(path);
+
+            const allData = {};
+            document.querySelectorAll('input[type=text], textarea').forEach(el => { if (el.id) allData[el.id] = el.value; });
+
+            await supabaseClient.from('worksheet_submissions').insert({
+                student_name:   name,
+                section_number: section,
+                worksheet_type: 'reign-of-terror',
+                file_path:      path,
+                file_url:       urlData.publicUrl,
+                form_data:      allData,
+                submitted_at:   new Date().toISOString()
+            });
+
+            msg.innerHTML = '<div class="success-msg">✅ Successfully submitted to Prof. Hauselmann.</div>';
+            btn.textContent = '✓ Submitted';
+        } catch(e) {
+            console.error(e);
+            msg.innerHTML = `<div class="error-msg">❌ Submission failed: ${e.message}. Download the PDF and email it as a backup.</div>`;
+            btn.disabled = false; btn.textContent = '📤 Submit to Prof. Hauselmann';
+        }
+    }
+
+    // ===== BLOCK PASTE =====
+    document.addEventListener('paste', function(e) {
+        const target = e.target;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+            e.preventDefault();
+            target.style.outline = '2px solid var(--red)';
+            setTimeout(() => target.style.outline = '', 800);
+        }
+    });
+
+    // ===== AUTO-SAVE =====
+    setInterval(() => {
+        const s = {};
+        document.querySelectorAll('input[type=text], textarea').forEach(el => { if (el.id) s[el.id] = el.value; });
+        localStorage.setItem('reignOfTerror', JSON.stringify(s));
+    }, 30000);
+
+    window.onload = () => {
+        const saved = localStorage.getItem('reignOfTerror');
+        if (saved) {
+            try {
+                if (confirm('Restore your previous session?')) {
+                    const s = JSON.parse(saved);
+                    Object.entries(s).forEach(([id, val]) => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = val;
+                    });
+                }
+            } catch(e) {}
+        }
+        updateProgress();
+    };
+</script>
+</body>
+</html>
