@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shays' Rebellion Investigation — HIST 101</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital,wght@0,400;0,600;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper:   #f2e8d0;
+            --newsprint: #e8ddc0;
+            --aged:    #d9c99a;
+            --ink:     #160f04;
+            --faded:   #5a4a32;
+            --rule:    #2c1e08;
+            --red:     #8b1a0a;
+            --blue:    #0f2744;
+            --teal:    #1a4040;
+            --gold:    #b8902a;
+            --light:   #faf5e8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Lora', Georgia, serif;
+            background: #1a1208;
+            background-image:
+                radial-gradient(ellipse at 0% 100%, rgba(139,26,10,0.12) 0%, transparent 55%),
+                radial-gradient(ellipse at 100% 0%, rgba(15,39,68,0.12) 0%, transparent 55%);
+            color: var(--ink);
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .wrap {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+
+        /* ===== BROADSIDE MASTHEAD ===== */
+        .masthead {
+            background: var(--paper);
+            border: 4px double var(--ink);
+            padding: 0;
+            margin-bottom: 28px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5), inset 0 0 80px rgba(184,144,42,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .masthead::before {
+            content: '✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦';
+            display: block;
+            text-align: center;
+            font-size: 0.65em;
+            padding: 6px 10px;
+            color: var(--faded);
+            background: var(--aged);
+            border-bottom: 2px solid var(--ink);
+            letter-spacing: 4px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .masthead-inner {
+            padding: 28px 36px 24px;
+            text-align: center;
+            border-bottom: 3px double var(--ink);
+        }
+
+        .pub-line {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--faded);
+            margin-bottom: 8px;
+        }
+
+        .masthead h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 900;
+            font-size: 4.2em;
+            color: var(--ink);
+            line-height: 1;
+            margin-bottom: 4px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.12);
+        }
+
+        .masthead-rule {
+            border: none;
+            border-top: 2px solid var(--ink);
+            margin: 10px 0;
+        }
+
+        .masthead-sub {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.78em;
+            letter-spacing: 3px;
+            color: var(--faded);
+            text-transform: uppercase;
+        }
+
+        .central-question {
+            background: var(--ink);
+            color: var(--paper);
+            padding: 14px 36px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.88em;
+            letter-spacing: 2px;
+            text-align: center;
+            border-bottom: 4px double var(--rule);
+        }
+
+        .central-question em { color: var(--gold); font-style: normal; font-weight: 700; }
+
+        .masthead::after {
+            content: '✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦';
+            display: block;
+            text-align: center;
+            font-size: 0.65em;
+            padding: 6px 10px;
+            color: var(--faded);
+            background: var(--aged);
+            border-top: 1px solid var(--ink);
+            letter-spacing: 4px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress {
+            display: flex;
+            background: var(--newsprint);
+            border: 2px solid var(--ink);
+            border-top: none;
+            margin-bottom: 28px;
+        }
+
+        .p-step {
+            flex: 1;
+            text-align: center;
+            padding: 9px 4px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 1px;
+            color: var(--faded);
+            border-right: 1px solid var(--aged);
+            transition: all 0.25s;
+            line-height: 1.4;
+        }
+
+        .p-step:last-child { border-right: none; }
+        .p-step .sicon { display: block; font-size: 1.15em; margin-bottom: 2px; }
+        .p-step.active { background: var(--red); color: #f5ead5; }
+        .p-step.done   { background: var(--teal); color: #b8ddd8; }
+
+        /* ===== PANELS ===== */
+        .panel { display: none; animation: appear 0.35s ease; }
+        .panel.active { display: block; }
+
+        @keyframes appear {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--paper);
+            border: 2px solid var(--ink);
+            margin-bottom: 22px;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.35);
+            background-image: 
+                repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.04) 27px, rgba(0,0,0,0.04) 28px);
+            background-attachment: local;
+        }
+
+        .card-head {
+            background: var(--ink);
+            color: var(--paper);
+            padding: 10px 22px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-head::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.2); }
+
+        .card-body { padding: 26px 28px; }
+
+        h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            font-size: 2em;
+            color: var(--rule);
+            margin-bottom: 14px;
+            line-height: 1.2;
+        }
+
+        h3 {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.95em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin: 22px 0 12px;
+            border-bottom: 1px solid var(--aged);
+            padding-bottom: 6px;
+        }
+
+        p { line-height: 1.8; margin-bottom: 14px; font-size: 1em; }
+
+        /* ===== STUDENT INFO ===== */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0 4px; }
+
+        .fgroup { display: flex; flex-direction: column; gap: 5px; }
+        .fgroup label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--faded);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 9px 13px;
+            background: var(--light);
+            border: 1px solid var(--aged);
+            border-bottom: 2px solid var(--ink);
+            color: var(--ink);
+            font-family: 'Lora', serif;
+            font-size: 0.95em;
+            transition: border-color 0.2s;
+            border-radius: 0;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: #fff;
+        }
+
+        textarea { min-height: 88px; resize: vertical; line-height: 1.65; }
+
+        /* ===== TIMELINE ===== */
+        .timeline { margin: 18px 0; }
+
+        .tl-row {
+            display: flex;
+            gap: 14px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            background: var(--light);
+            border-left: 3px solid var(--aged);
+            font-size: 0.95em;
+        }
+
+        .tl-row.key { border-left-color: var(--red); background: rgba(139,26,10,0.05); }
+
+        .tl-yr {
+            font-family: 'Courier Prime', monospace;
+            color: var(--red);
+            font-size: 0.82em;
+            min-width: 80px;
+            font-weight: 700;
+            padding-top: 2px;
+        }
+
+        /* ===== DOCUMENT BLOCK ===== */
+        .doc-block {
+            background: var(--light);
+            border: 1px solid var(--aged);
+            border-left: 5px solid var(--blue);
+            padding: 22px 24px;
+            margin: 18px 0;
+            line-height: 1.9;
+            font-size: 1em;
+            position: relative;
+        }
+
+        .doc-block.textbook { border-left-color: var(--teal); }
+        .doc-block.jefferson { border-left-color: var(--red); }
+
+        .doc-label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.7em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--faded);
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .doc-source {
+            margin-top: 16px;
+            padding-top: 10px;
+            border-top: 1px solid var(--aged);
+            font-size: 0.82em;
+            color: var(--faded);
+            font-style: italic;
+        }
+
+        /* ===== QUESTION SECTIONS ===== */
+        .qgroup {
+            background: rgba(0,0,0,0.03);
+            border: 1px solid var(--aged);
+            border-top: 3px solid var(--gold);
+            padding: 20px 22px;
+            margin: 20px 0;
+        }
+
+        .qgroup-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 18px;
+        }
+
+        .qitem { margin-bottom: 18px; }
+        .qitem:last-child { margin-bottom: 0; }
+
+        .qitem label {
+            display: block;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            line-height: 1.55;
+        }
+
+        .qnum {
+            display: inline-block;
+            background: var(--red);
+            color: #fff;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            padding: 1px 6px;
+            margin-right: 6px;
+            letter-spacing: 1px;
+        }
+
+        .qgroup.blue { border-top-color: var(--blue); }
+        .qgroup.blue .qgroup-title { color: var(--blue); }
+        .qgroup.blue .qnum { background: var(--blue); }
+
+        .qgroup.teal { border-top-color: var(--teal); }
+        .qgroup.teal .qgroup-title { color: var(--teal); }
+        .qgroup.teal .qnum { background: var(--teal); }
+
+        /* ===== NOTICE BOXES ===== */
+        .notice {
+            padding: 13px 17px;
+            border-left: 4px solid var(--gold);
+            background: rgba(184,144,42,0.08);
+            margin: 16px 0;
+            font-size: 0.9em;
+            line-height: 1.65;
+        }
+
+        .notice.transition {
+            border-left-color: var(--red);
+            background: rgba(139,26,10,0.06);
+            font-style: italic;
+        }
+
+        /* ===== TWO COLUMN COMPARE ===== */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin: 18px 0;
+        }
+
+        .compare-col {
+            background: var(--light);
+            border: 1px solid var(--aged);
+            padding: 18px;
+        }
+
+        .compare-col h4 {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.75em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid currentColor;
+        }
+
+        .compare-col.textbook h4 { color: var(--teal); }
+        .compare-col.jefferson h4 { color: var(--red); }
+
+        .compare-col p { font-size: 0.9em; line-height: 1.7; }
+
+        /* ===== VERDICT ===== */
+        .verdict-banner {
+            background: var(--blue);
+            color: var(--paper);
+            padding: 22px 28px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px solid #0a1a2e;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+        }
+
+        .verdict-banner p {
+            color: #c8d8ec;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .verdict-banner h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            font-size: 1.9em;
+            color: var(--gold);
+            border: none;
+            letter-spacing: 0;
+            margin-bottom: 6px;
+            text-transform: none;
+        }
+
+        /* ===== REVEAL ===== */
+        .reveal-dark {
+            background: var(--rule);
+            color: #d8cbb0;
+            padding: 26px 28px;
+            margin: 20px 0;
+            border: 2px solid #0a0800;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.45);
+        }
+
+        .reveal-dark h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 1.5em;
+            margin-bottom: 14px;
+            border: none;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .reveal-dark p, .reveal-dark li { color: #c8bba0; line-height: 1.8; }
+        .reveal-dark ul { margin-left: 20px; margin-top: 10px; }
+        .reveal-dark li { margin-bottom: 8px; }
+
+        .stamp {
+            display: inline-block;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.4em;
+            font-weight: 700;
+            letter-spacing: 6px;
+            border: 4px solid var(--red);
+            color: var(--red);
+            padding: 7px 18px;
+            transform: rotate(-3deg);
+            opacity: 0.85;
+            margin: 14px 0;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+
+        .btn {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.85em;
+            letter-spacing: 2px;
+            padding: 12px 26px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-transform: uppercase;
+        }
+
+        .btn-primary { background: var(--red); color: var(--paper); border-color: #6a1208; }
+        .btn-primary:hover:not(:disabled) { background: #6a1208; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+        .btn-blue { background: var(--blue); color: var(--paper); border-color: #0a1a2e; }
+        .btn-blue:hover:not(:disabled) { background: #0a1a2e; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+        .btn-teal { background: var(--teal); color: #d0e8e0; border-color: #0f2a2a; }
+        .btn-teal:hover:not(:disabled) { background: #0f2a2a; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+        .btn-ghost { background: transparent; color: var(--ink); border-color: var(--aged); }
+        .btn-ghost:hover { border-color: var(--ink); background: rgba(0,0,0,0.05); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+        /* ===== MISC ===== */
+        #submitMessage { margin-top: 14px; }
+        .success-msg { background: var(--teal); color: #d0e8e0; padding: 14px 18px; border-left: 4px solid var(--gold); font-family: 'Courier Prime', monospace; font-size: 0.85em; letter-spacing: 1px; }
+        .error-msg   { background: rgba(139,26,10,0.12); color: var(--red); padding: 14px 18px; border-left: 4px solid var(--red); font-size: 0.9em; }
+
+        .breadcrumb {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 2px;
+            color: #7a6540;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+        .breadcrumb a { color: var(--gold); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb .sep { margin: 0 8px; opacity: 0.4; }
+
+        .drop-cap::first-letter {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 3.5em;
+            float: left;
+            line-height: 0.75;
+            margin: 4px 6px 0 0;
+            color: var(--rule);
+        }
+
+        @media (max-width: 640px) {
+            .masthead h1 { font-size: 2.6em; }
+            .info-grid, .compare-grid { grid-template-columns: 1fr; }
+            .p-step { font-size: 0.6em; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="breadcrumb">
+        <a href="index.html">Home</a><span class="sep">›</span>
+        <a href="activities.html">Interactive Activities</a><span class="sep">›</span>
+        <span>Shays' Rebellion</span>
+    </nav>
+
+    <!-- ===== MASTHEAD ===== -->
+    <div class="masthead">
+        <div class="masthead-inner">
+            <div class="pub-line">HIST 101 · American History · Prof. Hauselmann</div>
+            <h1>Shays' Rebellion</h1>
+            <hr class="masthead-rule">
+            <div class="masthead-sub">A Historical Investigation · Massachusetts, 1786–1787</div>
+        </div>
+        <div class="central-question">
+            Central Question: <em>How did Americans react to Shays' Rebellion?</em>
+        </div>
+    </div>
+
+    <!-- ===== PROGRESS ===== -->
+    <div class="progress" id="progressBar">
+        <div class="p-step active" data-phase="0"><span class="sicon">📋</span>Briefing</div>
+        <div class="p-step" data-phase="1"><span class="sicon">📰</span>Textbook</div>
+        <div class="p-step" data-phase="2"><span class="sicon">✒️</span>Jefferson</div>
+        <div class="p-step" data-phase="3"><span class="sicon">⚖️</span>Compare</div>
+        <div class="p-step" data-phase="4"><span class="sicon">🗞️</span>Reveal</div>
+    </div>
+
+    <!-- ======================================= -->
+    <!-- PHASE 0: BRIEFING                        -->
+    <!-- ======================================= -->
+    <div class="panel active" id="phase0">
+
+        <div class="card">
+            <div class="card-head">📋 Student Identification</div>
+            <div class="card-body">
+                <p>Before beginning, enter your information below.</p>
+                <div class="info-grid">
+                    <div class="fgroup">
+                        <label>Full Name</label>
+                        <input type="text" id="student-name" placeholder="Enter your full name">
+                    </div>
+                    <div class="fgroup">
+                        <label>Section Number</label>
+                        <input type="text" id="section-number" placeholder="e.g., 101, 102">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">📜 Background — The Road to Rebellion</div>
+            <div class="card-body">
+                <h2>Setting the Scene</h2>
+                <p class="drop-cap">The American Revolution ended in 1783, but independence created as many problems as it solved. The new nation needed a government — and fast. In 1781, the states adopted their first constitution: the <strong>Articles of Confederation</strong>.</p>
+
+                <h3>The Articles of Confederation</h3>
+                <p>The Articles created a very weak central government. There was no president, no national court system, and — critically — <strong>Congress could not tax</strong> citizens directly. It had to ask the states for money, and the states often refused. The national government could not pay its war debts or its soldiers.</p>
+                <p>Many Americans <em>wanted</em> a weak central government. They had just fought a revolution against what they saw as a tyrannical central power. Why would they immediately hand power to a new one?</p>
+
+                <h3>Timeline of Events</h3>
+                <div class="timeline">
+                    <div class="tl-row"><div class="tl-yr">1781</div><div>Articles of Confederation ratified — America's first constitution creates a weak central government.</div></div>
+                    <div class="tl-row"><div class="tl-yr">1783</div><div>Revolutionary War ends. The new nation faces crushing war debts.</div></div>
+                    <div class="tl-row"><div class="tl-yr">1785–1786</div><div>Economic depression hits Massachusetts hard. Farmers fall into debt and face foreclosure on their land.</div></div>
+                    <div class="tl-row key"><div class="tl-yr">Aug.–Dec.<br>1786</div><div><strong>Daniel Shays leads an uprising of Massachusetts farmers against the courts collecting debts. Courthouses are shut down by armed protesters.</strong></div></div>
+                    <div class="tl-row key"><div class="tl-yr">Jan. 1787</div><div><strong>Shays' rebels attempt to seize a federal arsenal. State militia crushes the rebellion.</strong></div></div>
+                    <div class="tl-row"><div class="tl-yr">May 1787</div><div>Constitutional Convention opens in Philadelphia. Shays' Rebellion is cited as evidence the Articles are "too weak."</div></div>
+                    <div class="tl-row"><div class="tl-yr">Nov. 1787</div><div>Thomas Jefferson, in Paris as ambassador to France, writes a letter about Shays' Rebellion to William Smith.</div></div>
+                    <div class="tl-row"><div class="tl-yr">1788</div><div>The new Constitution is ratified, replacing the Articles of Confederation.</div></div>
+                </div>
+
+                <div class="notice">
+                    <strong>Key Context:</strong> Daniel Shays was a farmer and Revolutionary War veteran who could not pay his debts. The people at Shays' Rebellion were mostly poor farmers — not wealthy merchants, landowners, or lawyers. The men who gathered at the Constitutional Convention were mostly from that wealthier class. Keep this in mind as you read the documents.
+                </div>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">✍️ Warm-Up: Before You Read</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> Why might some Americans WANT a weak central government after the Revolution? Why might others want a STRONG one?</label>
+                        <textarea id="warmup-q1" placeholder="Think about the different groups of Americans and their experiences..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="startInvestigation()">Begin the Investigation →</button>
+        </div>
+    </div>
+
+    <!-- ======================================= -->
+    <!-- PHASE 1: TEXTBOOK                        -->
+    <!-- ======================================= -->
+    <div class="panel" id="phase1">
+
+        <div class="card">
+            <div class="card-head">📰 Document 1 — The Textbook Account</div>
+            <div class="card-body">
+                <h2>The Standard Story</h2>
+                <p>Every history class begins somewhere. This is the account most American students encounter first — the textbook version of Shays' Rebellion. Read it carefully, then answer the sourcing questions below.</p>
+
+                <div class="qgroup blue" style="margin-bottom: 0;">
+                    <div class="qgroup-title">🔎 Sourcing — Answer BEFORE Reading</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> Who writes textbooks, and for what purpose? Whose perspectives might be emphasized — and whose left out?</label>
+                        <textarea id="txt-q1" placeholder="Think about who produces textbooks and why..." style="min-height:72px;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">📰 Now Read — Textbook Excerpt</div>
+            <div class="card-body">
+                <div class="doc-block textbook">
+                    <span class="doc-label">Document 1 · Textbook Excerpt · The American Vision (2003)</span>
+                    <p>In August 1786, mobs of angry farmers began forcibly shutting down courts in western Massachusetts to prevent judges from foreclosing on their farms. The leader of the largest group was Daniel Shays, a former Revolutionary War captain.</p>
+                    <p>The farmers' actions were in part a reaction to the state government's economic policies. Massachusetts had levied heavy taxes to pay off its war debt. When farmers could not pay the taxes, their farms were seized and they were thrown in jail.</p>
+                    <p>State officials called out the militia to stop Shays, but many militia members joined the protesters instead. In January 1787, Shays led some 1,200 men to capture the federal arsenal in Springfield. State forces stopped the raid and quickly crushed the uprising. Shays fled to Vermont.</p>
+                    <p>Though quickly put down, Shays' Rebellion alarmed many American leaders. They interpreted it as a sign of the growing disorder in American society, and as evidence of the Articles' weaknesses. <strong>"We are fast verging to anarchy and confusion," wrote George Washington</strong> after hearing of the rebellion.</p>
+                    <p>Congress quickly sought ways to raise funds to maintain a standing army to deal with unrest like Shays' Rebellion. The uprising also convinced many political leaders that a stronger national government was necessary. In February 1787, Congress authorized a Constitutional Convention.</p>
+                    <div class="doc-source">Source: <em>The American Vision</em> (2003), eds. Joyce Appleby, Alan Brinkley, Albert Broussard, James McPherson, Donald Ritchie. Glencoe McGraw-Hill, pp. 161–162.</div>
+                </div>
+
+                <div class="qgroup teal">
+                    <div class="qgroup-title">📖 Close Reading — Textbook Account</div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> According to the textbook, what happened in Shays' Rebellion, and how did American leaders respond?</label>
+                        <textarea id="txt-q2" placeholder="What happened? Whose reaction does the textbook focus on?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">3</span> The textbook quotes George Washington: "We are fast verging to anarchy and confusion." What perspective does the textbook center — and whose voices are missing?</label>
+                        <textarea id="txt-q3" placeholder="Think about who is quoted and who is not represented in this account..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(0)">← Back</button>
+            <button class="btn btn-primary" onclick="nextValidated(1, 2, ['txt-q1','txt-q2','txt-q3'])">Continue to Jefferson's Letter →</button>
+        </div>
+    </div>
+
+    <!-- ======================================= -->
+    <!-- PHASE 2: JEFFERSON LETTER                -->
+    <!-- ======================================= -->
+    <div class="panel" id="phase2">
+
+        <div class="card">
+            <div class="card-head">✒️ Document 2 — Thomas Jefferson's Letter</div>
+            <div class="card-body">
+                <h2>A Different Voice</h2>
+                <p>The textbook gives us one perspective on Shays' Rebellion — that of political leaders who saw the uprising as proof that the Articles were too weak. But not everyone agreed. Now you will read a letter by one of the most important Founding Fathers, written just months after the rebellion.</p>
+
+                <div class="notice transition">
+                    The common story about Shays' Rebellion is that the Founding Fathers all agreed: the Articles of Confederation were too weak, and the central government needed more power to control popular uprisings. But did <em>all</em> Americans think this way?
+                </div>
+
+                <div class="qgroup blue" style="margin-bottom: 0;">
+                    <div class="qgroup-title">🔎 Sourcing — Answer BEFORE Reading</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> Jefferson was in Paris as ambassador when he wrote this. This is also a private letter to a friend. How might these two facts shape what he says and how he says it?</label>
+                        <textarea id="jeff-q1" placeholder="Think about distance from the events, and the difference between private and public writing..." style="min-height:72px;"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> Based on what you know about Jefferson's political beliefs, predict: will he agree with the textbook's account? Why or why not?</label>
+                        <textarea id="jeff-q2" placeholder="Make a prediction before reading..." style="min-height:72px;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">✒️ Now Read — Jefferson's Letter</div>
+            <div class="card-body">
+                <div class="doc-block jefferson">
+                    <span class="doc-label">Document 2 · Thomas Jefferson to William Smith · November 13, 1787</span>
+                    <p>I do not know whether it is to yourself or Mr. Adams I am to give my thanks for the copy of the Boston debates. The spirit of resistance to government is so valuable on certain occasions that I wish it to be always kept alive. It will often be exercised when wrong, but better so than not to be exercised at all.</p>
+                    <p>I like a little rebellion now and then. <strong>It is like a storm in the Atmosphere.</strong></p>
+                    <p>It is wonderful that no letters are yet arrived from thence. <strong>The tree of liberty must be refreshed from time to time with the blood of patriots and tyrants. It is its natural manure.</strong></p>
+                    <p>Our convention has been too much impressed by the insurrection of Massachusetts: and in the sway of that impression have established two or three things which may produce a great deal of evil. The instability of our laws is really an immense evil, but it is one which our present form of government will not cure: because the powers of amendment are not given to the federal bodies, and cannot, I think, be given without dangerous extension of their powers.</p>
+                    <p>I think our governments will remain virtuous for many centuries; as long as they are chiefly agricultural; and this will be as long as there shall be vacant lands in America. When they get piled upon one another in large cities, as in Europe, they will become corrupt as in Europe. Above all things I hope the education of the common people will be attended to; convinced that on their good sense we may rely with the most security for the preservation of a due degree of liberty.</p>
+                    <div class="doc-source">Source: Thomas Jefferson, letter to William Smith, November 13, 1787. Library of Congress.</div>
+                </div>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">📖 Close Reading — Jefferson's Letter</div>
+                    <div class="qitem">
+                        <label><span class="qnum">3</span> In your own words, what is Jefferson's reaction to Shays' Rebellion? Does he see it as a crisis?</label>
+                        <textarea id="jeff-q3" placeholder="What does Jefferson actually think about the rebellion?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">4</span> Jefferson writes: "The tree of liberty must be refreshed from time to time with the blood of patriots and tyrants." What does he mean — and what does this tell us about his view of rebellion?</label>
+                        <textarea id="jeff-q4" placeholder="What is the 'tree of liberty'? What does 'refreshed with blood' mean? What are 'patriots and tyrants'?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">5</span> Jefferson says the Constitutional Convention was "too much impressed" by Shays' Rebellion. What is he criticizing?</label>
+                        <textarea id="jeff-q5" placeholder="What does Jefferson think the Convention got wrong?"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(1)">← Back</button>
+            <button class="btn btn-primary" onclick="nextValidated(2, 3, ['jeff-q1','jeff-q2','jeff-q3','jeff-q4','jeff-q5'])">Continue to Comparison →</button>
+        </div>
+    </div>
+
+    <!-- ======================================= -->
+    <!-- PHASE 3: COMPARISON & ANALYSIS           -->
+    <!-- ======================================= -->
+    <div class="panel" id="phase3">
+
+        <div class="card">
+            <div class="card-head">⚖️ Comparing the Accounts</div>
+            <div class="card-body">
+                <h2>Two Stories, One Event</h2>
+                <p>You have now read two very different accounts of how Americans responded to Shays' Rebellion. It is time to put them side by side and think carefully about what each source reveals — and conceals.</p>
+
+                <div class="compare-grid">
+                    <div class="compare-col textbook">
+                        <h4>📰 The Textbook</h4>
+                        <p><em>Key claim:</em> Americans saw Shays' Rebellion as evidence of the Articles' fatal weakness and demanded a stronger government.</p>
+                        <p><em>Voice centered:</em> Political elites — Washington, Congress, the Constitutional Convention.</p>
+                        <p><em>Tone:</em> Alarm and urgency about disorder and instability.</p>
+                    </div>
+                    <div class="compare-col jefferson">
+                        <h4>✒️ Jefferson's Letter</h4>
+                        <p><em>Key claim:</em> A little rebellion is healthy. The Convention overreacted. Liberty requires periodic resistance.</p>
+                        <p><em>Voice centered:</em> An individual Founder writing privately, skeptical of centralized power.</p>
+                        <p><em>Tone:</em> Calm, even enthusiastic about the spirit of resistance.</p>
+                    </div>
+                </div>
+
+                <div class="qgroup teal">
+                    <div class="qgroup-title">🔍 Comparison Questions</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> What is the most important difference between the textbook and Jefferson's letter? What does each source say about how Americans reacted to Shays' Rebellion?</label>
+                        <textarea id="cmp-q1" placeholder="What is the central disagreement? What is each source's main claim?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> The men at the Constitutional Convention were mostly wealthy landowners, lawyers, and merchants. The Shaysites were poor farmers in debt. Why would a rebellion by poor farmers be especially frightening to the Convention delegates?</label>
+                        <textarea id="cmp-q2" placeholder="Think about class, property, and who had the most to lose from disorder..."></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">3</span> Why might many textbooks make it seem like everyone wanted a strong central government after Shays' Rebellion? How does Jefferson's letter challenge that story?</label>
+                        <textarea id="cmp-q3" placeholder="Think about whose voices textbooks center — and whose they leave out..."></textarea>
+                    </div>
+                </div>
+
+                <div class="qgroup blue">
+                    <div class="qgroup-title">⚖️ Final Argument</div>
+                    <div class="qitem">
+                        <label><span class="qnum">4</span> Based on both documents, write a more complete answer to the central question: <em>How did Americans react to Shays' Rebellion?</em> Include multiple perspectives and cite evidence from both sources.</label>
+                        <textarea id="cmp-q4" placeholder="Go beyond the textbook version — represent more than one perspective and acknowledge complexity..." style="min-height:120px;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(2)">← Back</button>
+            <button class="btn btn-primary" onclick="nextValidated(3, 4, ['cmp-q1','cmp-q2','cmp-q3','cmp-q4'])">See the Historical Context →</button>
+        </div>
+    </div>
+
+    <!-- ======================================= -->
+    <!-- PHASE 4: REVEAL                          -->
+    <!-- ======================================= -->
+    <div class="panel" id="phase4">
+
+        <div class="card">
+            <div class="card-head">🗞️ Historical Context — What Do Historians Say?</div>
+            <div class="card-body">
+                <h2>The Bigger Picture</h2>
+
+                <div style="text-align:center; padding: 8px 0 18px;">
+                    <div class="stamp">INVESTIGATION COMPLETE</div>
+                </div>
+
+                <div class="reveal-dark">
+                    <h3>Why This Question Matters</h3>
+                    <p>Historians have long debated how "unanimous" the reaction to Shays' Rebellion really was — and what it tells us about the creation of the Constitution. Here is what the scholarly record shows:</p>
+                    <ul>
+                        <li><strong>The textbook narrative is real — but partial.</strong> Many elite Americans were genuinely alarmed. Washington, Hamilton, and Madison used Shays' Rebellion to argue for a stronger central government. Their reaction shaped the Constitution.</li>
+                        <li><strong>Jefferson was not alone in his skepticism.</strong> Many Anti-Federalists, farmers, and ordinary citizens viewed the Constitutional Convention's reaction as an overreach by the wealthy and powerful.</li>
+                        <li><strong>Class matters here.</strong> The men at the Constitutional Convention were overwhelmingly wealthy landowners, lawyers, and merchants. They had property to protect. The Shaysites were poor farmers drowning in debt. These were not the same Americans.</li>
+                        <li><strong>The Constitution itself was controversial.</strong> It was not ratified without a fight. Many states only agreed to it after being promised a Bill of Rights would follow. The idea that "everyone" wanted a stronger government is a myth.</li>
+                        <li><strong>"The tree of liberty" quote</strong> became one of Jefferson's most famous and debated lines. Some see it as a celebration of democratic resistance; others point out that Jefferson himself was one of the wealthiest slaveholders in Virginia — complicating his image as a champion of the common man.</li>
+                    </ul>
+                </div>
+
+                <div class="reveal-dark" style="background: var(--blue); margin-top: 20px;">
+                    <h3>About the Documents</h3>
+                    <p><strong style="color: var(--gold);">The Textbook</strong> — Textbooks serve an institutional purpose: to convey the "standard" story of national history to mass audiences. They are shaped by state curriculum standards, editorial choices, and the politics of textbook adoption committees. They tend to emphasize consensus and order, and to center the voices of political elites who left the most written records.</p>
+                    <br>
+                    <p><strong style="color: var(--gold);">Jefferson's Letter</strong> — Private letters are among historians' most valuable sources because they capture what people actually thought, not what they said for public consumption. Jefferson wrote this knowing it would likely be shared among friends — but not expecting it to become a famous historical document. His distance from Massachusetts may have given him perspective, or it may have insulated him from the genuine fear that gripped Massachusetts' creditor class.</p>
+                </div>
+
+                <div class="card" style="margin-top: 22px; box-shadow: none; border: 1px solid var(--aged);">
+                    <div class="card-head">✍️ Final Reflections</div>
+                    <div class="card-body">
+                        <div class="qgroup">
+                            <div class="qgroup-title">🔍 After the Reveal</div>
+                            <div class="qitem">
+                                <label><span class="qnum">1</span> What was missing from the textbook's account? If you were writing the textbook, whose voices would you add — and why?</label>
+                                <textarea id="ref-q1" placeholder="Reflect on whose perspectives were left out and what a more complete history would include..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-blue" onclick="downloadPDF()">📄 Download PDF</button>
+                    <button class="btn btn-teal" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Prof. Hauselmann</button>
+                    <button class="btn btn-ghost" onclick="goToPhase(3)">← Back</button>
+                </div>
+                <div id="submitMessage"></div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- end wrap -->
+
+<script>
+    // ===== CONFIG =====
+    const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const ASSIGNMENT_OPEN  = true;
+    const SUBMISSION_CUTOFF = null; // e.g. '2026-04-10T23:59:59'
+
+    let currentPhase = 0;
+
+    // ===== NAVIGATION =====
+    function goToPhase(n) {
+        document.getElementById(`phase${currentPhase}`).classList.remove('active');
+        document.getElementById(`phase${n}`).classList.add('active');
+        currentPhase = n;
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+
+    function updateProgress() {
+        document.querySelectorAll('.p-step').forEach((el, i) => {
+            el.classList.remove('active', 'done');
+            if (i < currentPhase) el.classList.add('done');
+            else if (i === currentPhase) el.classList.add('active');
+        });
+    }
+
+    function startInvestigation() {
+        const name = document.getElementById('student-name').value.trim();
+        if (!name) { alert('Please enter your name before continuing.'); document.getElementById('student-name').focus(); return; }
+        if (!document.getElementById('warmup-q1').value.trim() || !document.getElementById('warmup-q2').value.trim()) {
+            alert('Please complete both warm-up questions before continuing.');
+            return;
+        }
+        goToPhase(1);
+    }
+
+    function nextValidated(from, to, fieldIds) {
+        for (const id of fieldIds) {
+            const el = document.getElementById(id);
+            if (!el || !el.value.trim()) {
+                alert('Please complete all questions before continuing.');
+                if (el) el.focus();
+                return;
+            }
+        }
+        goToPhase(to);
+    }
+
+    // ===== PDF =====
+    function buildPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+        const lh = 7, ph = doc.internal.pageSize.height, m = 20;
+        const name = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+
+        function add(text, size=11, bold=false) {
+            doc.setFontSize(size);
+            doc.setFont(undefined, bold ? 'bold' : 'normal');
+            const lines = doc.splitTextToSize(String(text||'[Not answered]'), 170);
+            lines.forEach(l => { if (y > ph-m) { doc.addPage(); y=20; } doc.text(l,20,y); y+=lh; });
+            y += 3;
+        }
+
+        add("Shays' Rebellion Investigation", 18, true); y+=3;
+        add("HIST 101 — How did Americans react to Shays' Rebellion?", 13);
+        add(`Student: ${name}`, 12, true);
+        if (section) add(`Section: ${section}`, 12, true);
+        add(`Completed: ${new Date().toLocaleString()}`, 10); y+=5;
+
+        add('WARM-UP', 13, true);
+        add('1. Why might some Americans want a weak vs. strong central government?', 11, true);
+        add(document.getElementById('warmup-q1').value); y+=5;
+
+        add('TEXTBOOK ACCOUNT', 13, true);
+        add('1. Who writes textbooks, and whose perspectives might be left out?', 11, true);
+        add(document.getElementById('txt-q1').value);
+        add('2. What happened in Shays\' Rebellion, and how did American leaders respond?', 11, true);
+        add(document.getElementById('txt-q2').value);
+        add('3. What perspective does the textbook center — and whose voices are missing?', 11, true);
+        add(document.getElementById('txt-q3').value); y+=5;
+
+        add("JEFFERSON'S LETTER", 13, true);
+        add('1. How might Jefferson\'s location and private letter format shape what he says?', 11, true);
+        add(document.getElementById('jeff-q1').value);
+        add('2. Prediction: will Jefferson agree with the textbook?', 11, true);
+        add(document.getElementById('jeff-q2').value);
+        add('3. What is Jefferson\'s reaction to Shays\' Rebellion?', 11, true);
+        add(document.getElementById('jeff-q3').value);
+        add('4. What does the "tree of liberty" quote mean?', 11, true);
+        add(document.getElementById('jeff-q4').value);
+        add('5. What is Jefferson criticizing about the Constitutional Convention?', 11, true);
+        add(document.getElementById('jeff-q5').value); y+=5;
+
+        add('COMPARISON & ANALYSIS', 13, true);
+        add('1. Most important difference between the textbook and Jefferson?', 11, true);
+        add(document.getElementById('cmp-q1').value);
+        add('2. Why would poor farmers rebelling be frightening to Convention delegates?', 11, true);
+        add(document.getElementById('cmp-q2').value);
+        add('3. Why do textbooks emphasize consensus? How does Jefferson challenge that?', 11, true);
+        add(document.getElementById('cmp-q3').value);
+        add('4. Final argument: How did Americans react to Shays\' Rebellion?', 11, true);
+        add(document.getElementById('cmp-q4').value); y+=5;
+
+        add('FINAL REFLECTION', 13, true);
+        add('1. What was missing from the textbook? Whose voices would you add?', 11, true);
+        add(document.getElementById('ref-q1').value);
+
+        return doc;
+    }
+
+    function downloadPDF() {
+        const name = document.getElementById('student-name').value.trim();
+        if (!name) { alert('Please enter your name in the Briefing section.'); return; }
+        try {
+            buildPDF().save(`Shays_Rebellion_${name.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+        } catch(e) { console.error(e); alert('Error generating PDF: ' + e.message); }
+    }
+
+    async function submitToSupabase() {
+        if (!ASSIGNMENT_OPEN) {
+            document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ This assignment is now closed. Please contact Prof. Hauselmann.</div>';
+            return;
+        }
+        if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
+            document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ Submission deadline has passed. Contact Prof. Hauselmann.</div>';
+            return;
+        }
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+        if (!name)    { alert('Please enter your name.'); return; }
+        if (!section) { alert('Please enter your section number.'); return; }
+
+        const btn = document.getElementById('submitBtn');
+        const msg = document.getElementById('submitMessage');
+        btn.disabled = true; btn.textContent = '⏳ Submitting...';
+        msg.innerHTML = '<div style="padding:12px;color:var(--faded);font-style:italic;">Generating and uploading your worksheet...</div>';
+
+        try {
+            const blob = buildPDF().output('blob');
+            const ts   = new Date().toISOString().replace(/[:.]/g,'-');
+            const safe = name.replace(/[^a-zA-Z0-9]/g,'_');
+            const path = `shays-rebellion/${section}/${safe}_${ts}.pdf`;
+
+            const { error: upErr } = await supabaseClient.storage
+                .from('student-submissions')
+                .upload(path, blob, { contentType:'application/pdf', upsert:false });
+            if (upErr) throw new Error(upErr.message);
+
+            const { data: urlData } = supabaseClient.storage.from('student-submissions').getPublicUrl(path);
+
+            const allData = {};
+            document.querySelectorAll('input[type=text], textarea').forEach(el => { if(el.id) allData[el.id] = el.value; });
+
+            await supabaseClient.from('worksheet_submissions').insert({
+                student_name: name, section_number: section,
+                worksheet_type: 'shays-rebellion',
+                file_path: path, file_url: urlData.publicUrl,
+                form_data: allData, submitted_at: new Date().toISOString()
+            });
+
+            msg.innerHTML = '<div class="success-msg">✅ Successfully submitted to Prof. Hauselmann.</div>';
+            btn.textContent = '✓ Submitted';
+        } catch(e) {
+            console.error(e);
+            msg.innerHTML = `<div class="error-msg">❌ Submission failed: ${e.message}. Download the PDF and email it as a backup.</div>`;
+            btn.disabled = false; btn.textContent = '📤 Submit to Prof. Hauselmann';
+        }
+    }
+
+    // ===== BLOCK PASTE =====
+    document.addEventListener('paste', function(e) {
+        const target = e.target;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+            e.preventDefault();
+            target.style.outline = '2px solid var(--red)';
+            setTimeout(() => target.style.outline = '', 800);
+        }
+    });
+
+
+    setInterval(() => {
+        const s = {};
+        document.querySelectorAll('input[type=text], textarea').forEach(el => { if(el.id) s[el.id]=el.value; });
+        localStorage.setItem('shaysRebellion', JSON.stringify(s));
+    }, 30000);
+
+    window.onload = () => {
+        const saved = localStorage.getItem('shaysRebellion');
+        if (saved) {
+            try {
+                if (confirm('Restore your previous session?')) {
+                    const s = JSON.parse(saved);
+                    Object.entries(s).forEach(([id,val]) => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = val;
+                    });
+                }
+            } catch(e) {}
+        }
+        updateProgress();
+    };
+</script>
+</body>
+</html>
