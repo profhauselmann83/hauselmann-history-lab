@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manchester, 1800 — HIST 107</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coal:    #1a1612;
+            --iron:    #2c2620;
+            --soot:    #3d3830;
+            --ash:     #6b6358;
+            --smoke:   #8a8078;
+            --parch:   #f2ead8;
+            --cream:   #faf6ec;
+            --paper:   #efe8d5;
+            --furnace: #b84800;
+            --amber:   #c87800;
+            --rust:    #8b3a00;
+            --steam:   #5a5248;
+            --ledger:  #e8f0e8;
+            --ink:     #1a1612;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:'Libre Baskerville',Georgia,serif;
+            background: #d8ceb8;
+            background-image:
+                repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(0,0,0,0.04) 28px,rgba(0,0,0,0.04) 29px),
+                repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(0,0,0,0.02) 28px,rgba(0,0,0,0.02) 29px);
+            min-height:100vh; padding:20px 16px 60px; color:var(--ink);
+        }
+        .wrap { max-width:960px; margin:0 auto; }
+
+        .masthead { background:var(--coal); border:3px solid var(--coal); border-top:8px solid var(--furnace); margin-bottom:4px; position:relative; overflow:hidden; }
+        .masthead::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,0.03) 60px,rgba(255,255,255,0.03) 61px); pointer-events:none; }
+        .masthead-eyebrow { background:var(--furnace); padding:6px 24px; font-family:'Courier Prime',monospace; font-size:0.62em; font-weight:700; letter-spacing:5px; text-transform:uppercase; color:#fff; }
+        .masthead-body { padding:28px 36px 24px; position:relative; z-index:1; }
+        .masthead-kicker { font-family:'Courier Prime',monospace; font-size:0.65em; letter-spacing:5px; text-transform:uppercase; color:#8a8078; margin-bottom:8px; }
+        h1 { font-family:'Fjalla One',sans-serif; font-size:3.8em; color:var(--cream); line-height:0.95; letter-spacing:-1px; margin-bottom:8px; }
+        h1 .accent { color:var(--furnace); }
+        .masthead-rule { height:2px; background:linear-gradient(to right,var(--furnace),#6b6358,transparent); margin:12px 0; }
+        .masthead-sub { font-size:0.96em; color:#c8bfb0; line-height:1.6; font-style:italic; max-width:680px; }
+        .central-q { background:var(--furnace); color:#fff; padding:12px 36px; font-family:'Fjalla One',sans-serif; font-size:0.95em; letter-spacing:1px; }
+
+        .progress { display:flex; background:var(--iron); border:3px solid var(--coal); border-top:none; margin-bottom:28px; }
+        .ps { flex:1; padding:8px 3px; text-align:center; font-family:'Courier Prime',monospace; font-size:0.52em; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#8a8078; border-right:1px solid var(--soot); transition:all 0.2s; line-height:1.5; }
+        .ps:last-child { border-right:none; }
+        .ps .si { display:block; font-size:1.3em; margin-bottom:2px; }
+        .ps.active { background:var(--furnace); color:#fff; }
+        .ps.done   { background:#2a3d2a; color:#8abf8a; }
+
+        .panel { display:none; animation:rise 0.3s ease; }
+        .panel.active { display:block; }
+        @keyframes rise { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+        .card { background:var(--cream); border:1px solid #c8bfaa; border-left:4px solid #c8bfaa; margin-bottom:20px; box-shadow:4px 4px 0 rgba(0,0,0,0.15); }
+        .card.af { border-left-color:var(--furnace); }
+        .card.aa { border-left-color:var(--amber); }
+        .card.ag { border-left-color:#4a7a4a; }
+        .card-head { background:var(--iron); padding:9px 22px; font-family:'Courier Prime',monospace; font-size:0.6em; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:#b0a898; border-bottom:1px solid var(--coal); display:flex; align-items:center; gap:10px; }
+        .card-head.hf { background:var(--furnace); color:#fff; }
+        .card-head.ha { background:var(--iron); color:var(--amber); }
+        .card-head.hg { background:var(--iron); color:#8abf8a; }
+        .card-head::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.12); }
+        .card-body { padding:24px 28px; }
+
+        h2 { font-family:'Fjalla One',sans-serif; font-size:1.7em; color:var(--coal); margin-bottom:12px; line-height:1.1; }
+        h3 { font-family:'Courier Prime',monospace; font-size:0.67em; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--furnace); margin:18px 0 8px; padding-bottom:5px; border-bottom:2px solid var(--furnace); }
+        p { line-height:1.85; margin-bottom:12px; color:var(--steam); font-size:0.97em; }
+        p strong { color:var(--coal); }
+        p em { color:var(--ash); }
+
+        .ig { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0 4px; }
+        .fg { display:flex; flex-direction:column; gap:5px; }
+        .fg label { font-family:'Courier Prime',monospace; font-size:0.6em; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--ash); }
+        input[type="text"], input[type="number"], textarea, select {
+            width:100%; padding:9px 13px; background:var(--paper); border:1px solid #b8b0a0; border-bottom:2px solid var(--furnace);
+            color:var(--coal); font-family:'Libre Baskerville',serif; font-size:0.95em; transition:border-color 0.2s;
+        }
+        input:focus, textarea:focus { outline:none; border-color:var(--furnace); background:#fff; }
+        input[type="number"] { -moz-appearance:textfield; }
+        textarea { min-height:82px; resize:vertical; line-height:1.65; }
+
+        /* ROLE CARDS */
+        .role-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:16px 0; }
+        .role-opt { border:2px solid #c8bfaa; padding:13px 8px; cursor:pointer; text-align:center; transition:all 0.18s; background:var(--paper); }
+        .role-opt:hover { border-color:var(--furnace); background:var(--cream); }
+        .role-opt.selected { border-color:var(--furnace); background:#fff3eb; box-shadow:0 0 0 1px var(--furnace); }
+        .role-opt input { display:none; }
+        .ri { font-size:1.5em; display:block; margin-bottom:5px; }
+        .rl { font-family:'Fjalla One',sans-serif; font-size:0.83em; color:var(--coal); letter-spacing:1px; display:block; }
+        .rs { font-family:'Courier Prime',monospace; font-size:0.57em; color:var(--ash); display:block; margin-top:3px; }
+
+        .role-info { display:none; }
+        .role-info.visible { display:block; }
+        .rcard { border:1px solid #c8bfaa; border-left:4px solid var(--furnace); padding:16px 18px; margin:12px 0; background:var(--paper); }
+        .rcard.rw { border-left-color:var(--ash); }
+        .rcard.ru { border-left-color:#9a3a2a; }
+        .rcard.rm { border-left-color:var(--amber); }
+
+        /* LEDGER */
+        .ledger-wrap { overflow-x:auto; margin:12px 0; }
+        table.ledger { width:100%; border-collapse:collapse; font-family:'Courier Prime',monospace; font-size:0.8em; }
+        .ledger th { background:var(--iron); color:#c8b898; padding:7px 10px; text-align:left; border:1px solid var(--coal); letter-spacing:2px; white-space:nowrap; }
+        .ledger td { padding:6px 10px; border:1px solid #c8bfaa; background:var(--cream); color:var(--coal); vertical-align:middle; }
+        .ledger td input[type="number"] { padding:4px 7px; font-size:0.88em; min-height:0; border-bottom:2px solid var(--furnace); background:var(--paper); width:70px; color:var(--coal); }
+        .ledger tr.tot td { background:var(--iron); color:#c8b898; font-weight:700; border-color:var(--coal); }
+        .bp { color:#2a6a2a !important; font-weight:700; }
+        .bn { color:#8a2a2a !important; font-weight:700; }
+
+        .money-panel { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:14px 0; }
+        .mc { background:var(--iron); border:1px solid var(--coal); padding:12px 14px; text-align:center; }
+        .mc-lbl { font-family:'Courier Prime',monospace; font-size:0.58em; letter-spacing:3px; text-transform:uppercase; color:#8a8078; display:block; margin-bottom:4px; }
+        .mc-val { font-family:'Fjalla One',sans-serif; font-size:2em; display:inline-block; color:#8abf8a; }
+
+        /* ROUND BLOCKS */
+        .round-block { background:var(--paper); border:1px solid #c8bfaa; padding:16px 18px; margin:12px 0; }
+        .round-block.rbs { border-color:var(--furnace); background:#fff8f3; }
+        .round-lbl { background:var(--coal); color:var(--parch); padding:2px 10px; font-family:'Courier Prime',monospace; font-size:0.72em; font-weight:700; letter-spacing:2px; display:inline-block; margin-bottom:10px; }
+
+        /* STAMP ALERT */
+        .stamp-alert { background:#fff8f3; border:2px solid var(--furnace); padding:16px 20px; margin:14px 0; }
+        .sa-head { font-family:'Fjalla One',sans-serif; font-size:1.05em; color:var(--furnace); letter-spacing:2px; margin-bottom:8px; }
+
+        /* QGROUPS */
+        .qg { background:#fff; border:1px solid #c8bfaa; border-top:3px solid var(--furnace); padding:16px 18px; margin:14px 0; }
+        .qg.qa { border-top-color:var(--amber); }
+        .qg.qgr { border-top-color:#4a8a4a; }
+        .qg.qs { border-top-color:var(--ash); }
+        .qg-lbl { font-family:'Courier Prime',monospace; font-size:0.6em; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--furnace); margin-bottom:13px; display:flex; align-items:center; gap:8px; }
+        .qg-lbl::after { content:''; flex:1; height:1px; background:#c8bfaa; }
+        .qg.qa .qg-lbl { color:var(--amber); }
+        .qg.qgr .qg-lbl { color:#4a8a4a; }
+        .qg.qs .qg-lbl { color:var(--ash); }
+        .qi { margin-bottom:15px; }
+        .qi:last-child { margin-bottom:0; }
+        .qi label { display:block; font-weight:700; color:var(--coal); margin-bottom:7px; font-size:0.94em; line-height:1.55; }
+        .qn { display:inline-block; background:var(--furnace); color:#fff; font-family:'Courier Prime',monospace; font-size:0.67em; font-weight:700; padding:1px 7px; margin-right:5px; vertical-align:middle; }
+        .qg.qa .qn { background:var(--amber); color:#fff; }
+        .qg.qgr .qn { background:#4a8a4a; color:#fff; }
+        .qg.qs .qn { background:var(--ash); color:#fff; }
+
+        .notice { padding:10px 14px; border-left:3px solid var(--amber); background:#fdf6e8; margin:11px 0; font-size:0.88em; line-height:1.7; color:var(--steam); font-style:italic; }
+        .nf { border-left-color:var(--furnace); background:#fff3eb; }
+        .ng { border-left-color:#4a8a4a; background:#f0f7f0; }
+        .nr { border-left-color:#9a3a2a; background:#fdf0ee; color:#6a2a1a; font-style:normal; }
+
+        .sg { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0; }
+        .sc { display:flex; flex-direction:column; gap:4px; }
+        .sc label { font-family:'Courier Prime',monospace; font-size:0.58em; letter-spacing:3px; text-transform:uppercase; color:var(--ash); }
+
+        .doc-block { background:var(--paper); border:1px solid #c8bfaa; border-left:5px solid var(--amber); padding:18px 20px; margin:14px 0; font-size:0.96em; line-height:1.9; }
+        .doc-block p { color:var(--coal); margin-bottom:10px; }
+        .doc-block p:last-of-type { margin-bottom:0; }
+        .doc-src { margin-top:13px; padding-top:9px; border-top:1px solid #c8bfaa; font-family:'Courier Prime',monospace; font-size:0.68em; color:var(--ash); letter-spacing:0.5px; }
+
+        .verdict-box { background:var(--iron); border:2px solid var(--furnace); padding:18px 22px; margin:16px 0; text-align:center; }
+        .vq { font-family:'Fjalla One',sans-serif; font-size:1.25em; color:var(--cream); line-height:1.3; }
+        .stamp { display:inline-block; font-family:'Fjalla One',sans-serif; font-size:0.95em; letter-spacing:5px; color:var(--furnace); border:3px solid var(--furnace); padding:7px 16px; transform:rotate(-2deg); opacity:0.9; margin:12px 0; }
+
+        .tl { margin:14px 0; }
+        .tl-row { display:flex; gap:13px; padding:8px 12px; margin-bottom:4px; border-left:3px solid #c8bfaa; background:var(--paper); }
+        .tl-row.hot { border-left-color:var(--furnace); background:#fff8f3; }
+        .tl-yr { font-family:'Courier Prime',monospace; color:var(--furnace); font-size:0.72em; font-weight:700; min-width:55px; padding-top:2px; }
+        .tl-row p { margin:0; font-size:0.91em; }
+
+        .btn-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
+        .btn { font-family:'Fjalla One',sans-serif; font-size:0.85em; letter-spacing:3px; text-transform:uppercase; padding:11px 24px; border:2px solid transparent; cursor:pointer; transition:all 0.18s; }
+        .bp-btn { background:var(--furnace); color:#fff; border-color:var(--rust); }
+        .bp-btn:hover:not(:disabled) { background:var(--rust); color:#fff; transform:translateY(-2px); box-shadow:0 4px 0 rgba(0,0,0,0.25); }
+        .ba-btn { background:var(--amber); color:#fff; border-color:#a06000; }
+        .ba-btn:hover:not(:disabled) { background:#a06000; color:#fff; transform:translateY(-2px); box-shadow:0 4px 0 rgba(0,0,0,0.25); }
+        .bg-btn { background:transparent; color:var(--steam); border-color:#c8bfaa; }
+        .bg-btn:hover { border-color:var(--ash); color:var(--coal); }
+        .btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+        .breadcrumb { font-family:'Courier Prime',monospace; font-size:0.58em; letter-spacing:2px; text-transform:uppercase; color:var(--ash); margin-bottom:12px; }
+        .breadcrumb a { color:var(--furnace); text-decoration:none; }
+        .breadcrumb .sep { margin:0 8px; opacity:0.4; }
+
+        #submitMessage { margin-top:12px; }
+        .success-msg { background:#f0f7f0; color:#2a5a2a; padding:12px 16px; border-left:4px solid #4a8a4a; font-family:'Courier Prime',monospace; font-size:0.77em; letter-spacing:1px; }
+        .error-msg   { background:#fff3eb; color:#8a2a00; padding:12px 16px; border-left:4px solid var(--furnace); font-size:0.87em; }
+
+        @media(max-width:680px){
+            h1{font-size:2.5em;} .role-grid{grid-template-columns:1fr 1fr;}
+            .ig{grid-template-columns:1fr;} .sg{grid-template-columns:1fr;}
+            .money-panel{grid-template-columns:1fr 1fr;} .ps{font-size:0.46em;}
+            .card-body{padding:16px 14px;}
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="breadcrumb">
+    <a href="index.html">Home</a><span class="sep">›</span>
+    <a href="activities.html">Interactive Activities</a><span class="sep">›</span>
+    <span>Manchester, 1800</span>
+</nav>
+
+<div class="masthead">
+    <div class="masthead-eyebrow">HIST 107 · Global Commodities &amp; Trade · Prof. Hauselmann</div>
+    <div class="masthead-body">
+        <div class="masthead-kicker">Manchester, England · c. 1800</div>
+        <h1>The <span class="accent">Factory</span><br>Question</h1>
+        <div class="masthead-rule"></div>
+        <p class="masthead-sub">A digital simulation of early industrial capitalism, followed by primary source analysis on the health of English factory workers.</p>
+    </div>
+    <div class="central-q">Central Question: Were textile factories bad for the health of English workers?</div>
+</div>
+
+<div class="progress" id="progressBar">
+    <div class="ps active"><span class="si">📋</span>Briefing</div>
+    <div class="ps"><span class="si">🏭</span>Simulation</div>
+    <div class="ps"><span class="si">💬</span>Debrief</div>
+    <div class="ps"><span class="si">📜</span>Doc A</div>
+    <div class="ps"><span class="si">📜</span>Doc B</div>
+    <div class="ps"><span class="si">📜</span>C–D</div>
+    <div class="ps"><span class="si">⚖️</span>Verdict</div>
+    <div class="ps"><span class="si">📤</span>Submit</div>
+</div>
+
+<!-- ============================================================ PHASE 0 -->
+<div class="panel active" id="phase0">
+    <div class="card af">
+        <div class="card-head hf">📋 Situation Report</div>
+        <div class="card-body">
+            <h2>Manchester, 1800</h2>
+            <p>It is the dawn of the Industrial Revolution. Manchester, where raw cotton pours in from slave plantations in America, is becoming the factory capital of the world. New machines — the spinning mule, the steam engine — produce cloth at speeds no human can match.</p>
+            <p>You are about to enter this world. You will play one of four roles in a factory economy, make decisions, earn or lose money, and experience firsthand the logic — and the brutality — of early industrial capitalism.</p>
+            <div class="tl">
+                <div class="tl-row hot"><div class="tl-yr">~1800</div><div><p><strong>The setting.</strong> Factories multiply. Workers flood in from the countryside. Some grow wealthy; most barely survive.</p></div></div>
+                <div class="tl-row"><div class="tl-yr">How it works</div><div><p><strong>4 rounds.</strong> Each round you produce goods, sell at the Market, pay expenses, and repay loans. The rules can change at any moment. <strong>Goal: make as much money as you can.</strong></p></div></div>
+            </div>
+            <h3>A Global Revolution</h3>
+            <div class="notice nf" style="font-style:normal;">
+                <strong>Before you enter the factory floor, zoom out.</strong> Manchester in 1800 was not an island. The cotton being spun in those mills was grown by enslaved people in the American South. The beef feeding malnourished English workers was extracted from the grasslands of Uruguay. The silk worn by wealthy Europeans was woven by young women locked in Japanese dormitories. The sugar in English tea was harvested by Chinese "coolies" under contract in Cuba. <strong>The Industrial Revolution was never just English — it was a global system from the very beginning.</strong>
+            </div>
+
+            <div class="card" style="border-left-color:var(--amber);margin:0 0 4px 0;box-shadow:none;">
+                <div class="card-head ha" style="font-size:0.58em;">🌍 The World That Made Manchester Possible</div>
+                <div class="card-body" style="padding:20px 24px;">
+
+                    <div class="tl">
+                        <div class="tl-row hot">
+                            <div class="tl-yr">Cotton</div>
+                            <div><p>The raw material feeding Manchester's mills came overwhelmingly from <strong>slave plantations in the American South</strong>. You could not grow cotton in England. Every yard of cloth produced in a Manchester factory depended on enslaved labor an ocean away.</p></div>
+                        </div>
+                        <div class="tl-row hot">
+                            <div class="tl-yr">Sugar — Cuba</div>
+                            <div><p>By the mid-19th century, Cuba was the world's leading sugar producer. Facing a dwindling labor force, planters imported tens of thousands of Chinese workers under fixed contracts — "coolies" — and laid thousands of miles of railroad track using that labor to connect plantations to ports. British and American investment flowed in; the profits flowed out.</p></div>
+                        </div>
+                        <div class="tl-row hot">
+                            <div class="tl-yr">Beef — Uruguay</div>
+                            <div><p>A German biochemist invented a beef extract to feed Europe's malnourished factory workers. He couldn't afford European cattle. A German engineer working on railroad construction in Uruguay had seen thousands of cattle carcasses abandoned on the grasslands — slaughtered only for their hides. Belgian investors financed a factory; British corporations marketed the product. German science, Uruguayan cattle, Belgian capital, British markets: one product, four continents.</p></div>
+                        </div>
+                        <div class="tl-row hot">
+                            <div class="tl-yr">Silk — Japan</div>
+                            <div><p>After the Meiji Restoration of 1868, the Japanese government deliberately industrialized the silk industry to compete globally. Girls as young as ten were recruited from impoverished farming villages — often with false promises — to work 14-hour days in factory dormitories, their wages sent home to support their families. By the end of the century, women dominated Japan's factory workforce. They were paid far less than men.</p></div>
+                        </div>
+                        <div class="tl-row">
+                            <div class="tl-yr">Railroads</div>
+                            <div><p>In Latin America, railroad lines built by British and American companies were, as historian Peter Winn put it, <em>"tools of empire"</em> — designed not to connect cities but to extract raw materials: timber, coal, rubber, cotton, sugar, wheat. The railroad that opened up the interior of Mexico linked directly to U.S. trunk lines at the border.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="notice" style="margin-top:14px;">
+                        <strong>The historian Jerry Bentley:</strong> "Where did the cotton come from that fed the early textile factories? Where did the rubber come from? You couldn't grow cotton and you couldn't produce rubber in Europe... Even in the very earliest days of the process, industrialization was not exclusively a European or British affair. Rather it's a business that extended its tentacles to almost all parts of the world."
+                    </div>
+
+                    <div class="notice nf" style="margin-top:10px;font-style:normal;">
+                        <strong>Keep this in mind as you play.</strong> When the factory owner in today's simulation buys raw materials, ask yourself: where did those materials come from? Who produced them? Under what conditions? The Manchester factory was one visible node in a global system — most of which was invisible to the people inside it.
+                    </div>
+                </div>
+            </div>
+
+            <h3>Your Information</h3>
+            <div class="ig">
+                <div class="fg"><label>Full Name</label><input type="text" id="student-name" placeholder="Enter your full name"></div>
+                <div class="fg"><label>Section Number — 4 digits after the course number</label><input type="text" id="section-number" placeholder="e.g., 1234 (from HIST 107-1234)"></div>
+            </div>
+            <h3>Choose Your Role</h3>
+            <p>Select your assigned role. Each begins with different resources, goals, and risks.</p>
+            <div class="role-grid">
+                <label class="role-opt" onclick="selectRole('owner')"><input type="radio" name="role" value="owner"><span class="ri">🏭</span><span class="rl">Factory Owner</span><span class="rs">Industrialist</span></label>
+                <label class="role-opt" onclick="selectRole('worker')"><input type="radio" name="role" value="worker"><span class="ri">⚒️</span><span class="rl">Factory Worker</span><span class="rs">Wage laborer</span></label>
+                <label class="role-opt" onclick="selectRole('unemployed')"><input type="radio" name="role" value="unemployed"><span class="ri">🪙</span><span class="rl">Unemployed</span><span class="rs">Surplus labor</span></label>
+                <label class="role-opt" onclick="selectRole('merchant')"><input type="radio" name="role" value="merchant"><span class="ri">⚖️</span><span class="rl">Merchant</span><span class="rs">The Market</span></label>
+            </div>
+
+            <div class="role-info" id="info-owner">
+                <div class="rcard">
+                    <h3 style="margin-top:0">🏭 Factory Owner — Your Starting Position</h3>
+                    <p>You have borrowed <strong>30 coins</strong> from the Bank of England. You must repay <strong>12 coins per round</strong> for the first three rounds (36 total, including interest). Use your loan to buy paper (5 coins / 50 sheets) and pencils (1 coin each), then hire workers to produce drawings.</p>
+                    <p><strong>Risk:</strong> Miss a loan payment and your factory closes. <strong>Advantage:</strong> You may fire any worker at any time, for any reason. You control who eats and who doesn't.</p>
+                    <div class="notice nf"><strong>Starting funds: 30 coins</strong> (borrowed). Spend at least 5 on paper and some on pencils before Round 1.</div>
+                </div>
+            </div>
+            <div class="role-info" id="info-worker">
+                <div class="rcard rw">
+                    <h3 style="margin-top:0">⚒️ Factory Worker — Your Starting Position</h3>
+                    <p>You begin with <strong>0 coins</strong>. Each round you earn wages — if your owner can afford them and chooses to keep you. Each round you must also pay <strong>2 coins</strong> for food and lodging. If you can't pay, you begin to starve. Three rounds without paying: you are out.</p>
+                    <p><strong>Risk:</strong> You can be fired at any moment. There are always unemployed workers ready to take your place. <strong>Options:</strong> Organize, offer services, find other work if fired.</p>
+                    <div class="notice"><strong>Starting funds: 0 coins.</strong> You depend entirely on your employer.</div>
+                </div>
+            </div>
+            <div class="role-info" id="info-unemployed">
+                <div class="rcard ru">
+                    <h3 style="margin-top:0">🪙 Unemployed — Your Starting Position</h3>
+                    <p>No job. No income. <strong>This is not a mistake.</strong> You represent Manchester's vast surplus labor force — the crowds of hundreds who showed up each morning at factory gates hoping for a job opening. You begin with <strong>0 coins</strong> and still owe 2 coins per round for survival.</p>
+                    <p><strong>Options:</strong> Offer services to factory owners or merchants. Attempt to organize workers. Earn money through any means you can. Think creatively — this is a desperate situation.</p>
+                    <div class="notice nr"><strong>Starting funds: 0 coins.</strong> You must find income or face the consequences of destitution.</div>
+                </div>
+            </div>
+            <div class="role-info" id="info-merchant">
+                <div class="rcard rm">
+                    <h3 style="margin-top:0">⚖️ Merchant (The Market) — Your Starting Position</h3>
+                    <p>You begin with <strong>160 coins</strong>. Each round you may purchase up to <strong>30 drawings total</strong> from all factories at <strong>1 coin each</strong>. Buy only the neatest, most accurate, most consistent drawings — reject messy or creative interpretations.</p>
+                    <p><strong>Power:</strong> You decide which factories survive. Every factory depends entirely on your purchasing decisions. <strong>Goal:</strong> Maximize the quality of what you buy; maintain your capital.</p>
+                    <div class="notice nf"><strong>Starting funds: 160 coins.</strong> You are the most secure player — and the most powerful.</div>
+                </div>
+            </div>
+
+            <div class="qg" style="margin-top:16px;">
+                <div class="qg-lbl">Before the Simulation Begins</div>
+                <div class="qi">
+                    <label><span class="qn">1</span> What do you already know or expect about what working in an early industrial factory would have been like?</label>
+                    <textarea id="warmup-q1" placeholder="From textbooks, movies, other classes — what images or ideas come to mind?"></textarea>
+                </div>
+                <div class="qi">
+                    <label><span class="qn">2</span> Based on your role, what do you predict will happen over four rounds? What are your biggest advantages and vulnerabilities?</label>
+                    <textarea id="warmup-q2" placeholder="Make a prediction. What's your strategy? What will be hardest?"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-row">
+        <button class="btn bp-btn" onclick="startSim()">Enter the Factory →</button>
+    </div>
+</div>
+
+<!-- ============================================================ PHASE 1: SIMULATION -->
+<div class="panel" id="phase1">
+    <div class="card af">
+        <div class="card-head hf">🏭 The Simulation</div>
+        <div class="card-body">
+            <h2>It is Manchester, 1800.</h2>
+            <p>Laissez-faire capitalism is ascendant. New markets demand manufactured goods. For each round, record what happens in your ledger, then answer the event questions before continuing.</p>
+            <div class="notice nf"><strong>How to use this tracker:</strong> After each round ends, enter your earnings and expenses. The balance updates automatically. Then answer the round questions before the next round begins.</div>
+        </div>
+    </div>
+
+    <!-- LEDGER -->
+    <div class="card ag">
+        <div class="card-head hg">💰 Money Ledger</div>
+        <div class="card-body">
+            <div class="ledger-wrap">
+                <table class="ledger">
+                    <thead>
+                        <tr>
+                            <th>Round</th>
+                            <th>Income / Earnings</th>
+                            <th id="col-loan">Loan / Purchases</th>
+                            <th>Food &amp; Rent (2)</th>
+                            <th>Other Costs</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Start</strong></td><td id="start-disp">—</td><td>—</td><td>—</td><td>—</td><td id="bal-start">—</td></tr>
+                        <tr>
+                            <td><strong>Round 1</strong></td>
+                            <td><input type="number" id="r1-inc" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r1-loan" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r1-rent" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r1-other" min="0" value="0" oninput="recalc()"></td>
+                            <td id="bal-1">—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Round 2</strong></td>
+                            <td><input type="number" id="r2-inc" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r2-loan" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r2-rent" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r2-other" min="0" value="0" oninput="recalc()"></td>
+                            <td id="bal-2">—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Round 3</strong></td>
+                            <td><input type="number" id="r3-inc" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r3-loan" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r3-rent" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r3-other" min="0" value="0" oninput="recalc()"></td>
+                            <td id="bal-3">—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Round 4</strong></td>
+                            <td><input type="number" id="r4-inc" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r4-loan" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r4-rent" min="0" value="0" oninput="recalc()"></td>
+                            <td><input type="number" id="r4-other" min="0" value="0" oninput="recalc()"></td>
+                            <td id="bal-4">—</td>
+                        </tr>
+                        <tr class="tot"><td><strong>Final</strong></td><td colspan="4"></td><td id="bal-final">—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="money-panel">
+                <div class="mc"><span class="mc-lbl">Starting Funds</span><span class="mc-val" id="mv-start">—</span></div>
+                <div class="mc"><span class="mc-lbl">After Round 2</span><span class="mc-val" id="mv-r2">—</span></div>
+                <div class="mc"><span class="mc-lbl">Final Balance</span><span class="mc-val" id="mv-final">—</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROUND 1 -->
+    <div class="round-block">
+        <div class="round-lbl">ROUND 1</div>
+        <div class="qg">
+            <div class="qg-lbl">⚙️ After Round 1</div>
+            <div class="qi">
+                <label><span class="qn">1</span> What happened this round? Describe what you did, what decisions you made, and what the outcome was.</label>
+                <textarea id="r1-event" placeholder="What did you produce, earn, or lose? What decisions did you make?"></textarea>
+            </div>
+            <div class="qi">
+                <label><span class="qn">2</span> After paying expenses, are you better or worse off than when you started? What does your balance tell you about your position in this economy?</label>
+                <textarea id="r1-reflect" placeholder="What does your ledger balance mean for your survival next round?"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROUND 2 -->
+    <div class="round-block">
+        <div class="round-lbl">ROUND 2</div>
+        <div class="qg">
+            <div class="qg-lbl">⚙️ After Round 2</div>
+            <div class="qi">
+                <label><span class="qn">3</span> What happened this round? Did anything change from Round 1 — in your strategy, your position, or the dynamics between players?</label>
+                <textarea id="r2-event" placeholder="What changed? What stayed the same? Any surprises?"></textarea>
+            </div>
+            <div class="qi">
+                <label><span class="qn">4</span> The German workers' saying: <em>"die Miete frißt Alles"</em> — "the rent devours everything." Does this resonate with your experience so far? Explain.</label>
+                <textarea id="r2-reflect" placeholder="Are your wages covering your costs? What happens to workers who can't cover rent?"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAMP KIT -->
+    <div class="stamp-alert">
+        <div class="sa-head">⚡ MIDPOINT EVENT: THE STAMP KIT ARRIVES</div>
+        <p style="color:var(--coal);margin-bottom:8px;">Between Rounds 2 and 3, the instructor offers a <strong>stamp kit</strong> to the leading factory. It produces drawings of far higher quality and quantity — with far fewer workers. The factory that acquires it may now fire most of its workforce and still dominate the Market.</p>
+        <p style="color:var(--ash);margin-bottom:0;font-style:italic;">This represents the arrival of real industrial machinery — the spinning mule, the power loom, the steam engine. Technology that made factories vastly more productive while making human labor cheaper and more dispensable.</p>
+    </div>
+
+    <!-- ROUND 3 -->
+    <div class="round-block rbs">
+        <div class="round-lbl">ROUND 3</div>
+        <div class="qg qa">
+            <div class="qg-lbl">⚡ After Round 3 — The Machine Changes Everything</div>
+            <div class="qi">
+                <label><span class="qn">5</span> What happened after the stamp kit appeared? How did it change the simulation — who benefited, who was hurt?</label>
+                <textarea id="r3-event" placeholder="What happened to factories without the stamp kit? What happened to workers who were fired?"></textarea>
+            </div>
+            <div class="qi">
+                <label><span class="qn">6</span> The stamp kit represents real industrial machinery. Based on what happened, how does new technology under capitalism affect workers? Does it help them or hurt them?</label>
+                <textarea id="r3-reflect" placeholder="Think about the spinning mule or steam engine. What do they mean for employment, wages, and power?"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROUND 4 -->
+    <div class="round-block">
+        <div class="round-lbl">ROUND 4</div>
+        <div class="qg">
+            <div class="qg-lbl">⚙️ After Round 4 — The Final Round</div>
+            <div class="qi">
+                <label><span class="qn">7</span> Who "won" the Industrial Revolution in your class — and what did winning look like? What happened to those who lost?</label>
+                <textarea id="r4-event" placeholder="Who ended with the most money? Who went bankrupt or starved? What strategies worked?"></textarea>
+            </div>
+            <div class="qi">
+                <label><span class="qn">8</span> By the end, the Bank had collected repayments from every factory. Who held the most power in this simulation — and what does that tell you about finance capital and industrial capitalism?</label>
+                <textarea id="r4-reflect" placeholder="Who owed money to whom? Who could never lose? What does the Bank represent?"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn bg-btn" onclick="goToPhase(0)">← Back</button>
+        <button class="btn bp-btn" onclick="validateSim()">Simulation Complete — Debrief →</button>
+    </div>
+</div>
+
+<!-- ============================================================ PHASE 2: DEBRIEF -->
+<div class="panel" id="phase2">
+    <div class="card af">
+        <div class="card-head hf">💬 Simulation Debrief</div>
+        <div class="card-body">
+            <h2>What Just Happened?</h2>
+            <p>The simulation is over. Step back and analyze what you experienced — connecting it to the actual history of the Industrial Revolution.</p>
+            <div class="qg">
+                <div class="qg-lbl">🏭 Your Experience</div>
+                <div class="qi">
+                    <label><span class="qn">1</span> Overall, what was it like to be in your role? Describe the emotional experience — not just what happened financially, but how it felt to navigate this economy.</label>
+                    <textarea id="deb-q1" placeholder="Anxiety? Power? Helplessness? Describe the feeling, not just the facts."></textarea>
+                </div>
+                <div class="qi">
+                    <label><span class="qn">2</span> Was the outcome fair? Did the person who worked hardest or made the best decisions win — or was the outcome determined by something else? What does this suggest about capitalism as a system?</label>
+                    <textarea id="deb-q2" placeholder="Think about starting position, luck, the stamp kit, the Bank..."></textarea>
+                </div>
+            </div>
+            <div class="qg qa">
+                <div class="qg-lbl">📊 Connecting to History</div>
+                <div class="qi">
+                    <label><span class="qn">3</span> E. P. Thompson argued the Industrial Revolution transformed how people experienced <em>time</em> — factory work disciplined workers to the clock in a way pre-industrial labor never had. Did you feel this in the simulation? What does it mean for real workers in 1800?</label>
+                    <textarea id="deb-q3" placeholder="How did the rounds feel? How is that different from farming or cottage industry?"></textarea>
+                </div>
+                <div class="qi">
+                    <label><span class="qn">4</span> The presence of unemployed workers kept wages low and workers compliant — anyone could be replaced. Historians call this the <em>surplus labor force</em>. Did you observe this? What does it mean for workers' ability to demand better conditions?</label>
+                    <textarea id="deb-q4" placeholder="Could workers demand higher wages or better treatment? Why or why not?"></textarea>
+                </div>
+                <div class="qi">
+                    <label><span class="qn">5</span> By Round 4, one factory likely dominated while others collapsed. Marx called this one of capitalism's "internal contradictions" — free markets tend to produce monopoly, not competition. Did you see this? What caused it?</label>
+                    <textarea id="deb-q5" placeholder="Why did competition produce a winner-take-all outcome?"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-row">
+        <button class="btn bg-btn" onclick="goToPhase(1)">← Back</button>
+        <button class="btn bp-btn" onclick="validatePhase(2,3,['deb-q1','deb-q2','deb-q3','deb-q4','deb-q5'])">Continue to Documents →</button>
+    </div>
+</div>
+
+<!-- ============================================================ PHASE 3: DOC A -->
+<div class="panel" id="phase3">
+    <div class="card aa">
+        <div class="card-head ha">📜 Document A — Sourcing First</div>
+        <div class="card-body">
+            <h2>Examining the Evidence</h2>
+            <p>You will now analyze four primary source documents from 19th-century England, all addressing: <strong>Were textile factories bad for the health of English workers?</strong></p>
+            <p>For each document, practice <strong>sourcing</strong> (analyze before you read) and <strong>corroboration</strong> (compare documents to each other).</p>
+
+            <div class="notice nf" style="font-style:normal;margin:14px 0;">
+                <strong>⚠️ A critical limitation of this document set:</strong> All four documents were written by English people, about English factories, for English audiences. Before the simulation, you read about Cuban sugar workers, Japanese silk workers, and Uruguayan ranch laborers — none of whom appear in these documents. As you analyze each source, hold that gap in mind: <em>What would a Japanese girl locked in a silk factory dormitory say about factory health conditions? What would a Chinese contract laborer on a Cuban sugar plantation say?</em> The documents you are about to read are valuable evidence — but they are not the whole picture. Part of your job as a historian is to notice whose voices are missing.
+            </div>
+
+            <div class="notice"><strong>Sourcing Rule:</strong> Before reading, a historian asks — Who created this? When? For what audience? With what purpose? Answer sourcing questions first.</div>
+            <div class="qg">
+                <div class="qg-lbl">🔍 Document A — Before You Read</div>
+                <div class="sg">
+                    <div class="sc"><label>Who is the author/speaker?</label><input type="text" id="docA-who" placeholder="Dr. W. R. Ward — what do you know?"></div>
+                    <div class="sc"><label>What type of document?</label><input type="text" id="docA-type" placeholder="Testimony, diary, pamphlet...?"></div>
+                    <div class="sc"><label>When created? What was happening then?</label><input type="text" id="docA-when" placeholder="1819 — reform debates?"></div>
+                    <div class="sc"><label>Audience and likely purpose?</label><input type="text" id="docA-purpose" placeholder="House of Lords Committee..."></div>
+                </div>
+                <div class="qi" style="margin-top:10px;">
+                    <label><span class="qn">1</span> Based on source information alone, what do you predict this document will say? Does the author's position make them more or less likely to tell the truth?</label>
+                    <textarea id="docA-predict" placeholder="Predict before reading. What biases might shape this account?"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card aa">
+        <div class="card-head ha">📜 Document A — Now Read</div>
+        <div class="card-body">
+            <div class="doc-block">
+                <p><strong>Question:</strong> Will you have the goodness to state what has been the effect of long hours of labour upon the health and morals of the children in cotton factories, from your own observation?</p>
+                <p><strong>Answer:</strong> I have seen a great many children who have worked in the factories; I have generally found that those who have worked long hours are shorter in stature than other children of the same age, and frequently have distorted limbs, particularly those children who work at the spinning mule. I have also seen many cases of curvature of the spine, and other deformities, in children who have worked in cotton factories; and I attribute these deformities to the long hours of labour, and the constrained position in which they are obliged to work.</p>
+                <p>I have also observed that the children who work in factories are generally pale, and have an unhealthy appearance; their eyes are frequently affected with inflammation, which I attribute to the dust and bad air of the factories; and I think that the health of these children is materially injured by their long hours of labour in the factories.</p>
+                <div class="doc-src">Source: Testimony of Dr. W. R. Ward, interviewed by the House of Lords Committee appointed to inquire into the condition of children employed in cotton factories, 1819. House of Lords Sessional Papers (1806–1859).</div>
+            </div>
+            <div class="qg qa">
+                <div class="qg-lbl">📖 Close Reading — Document A</div>
+                <div class="qi"><label><span class="qn">2</span> What specific health effects does Dr. Ward describe? List at least three distinct observations.</label><textarea id="docA-q2" placeholder="Height, limbs, spine, eyes, appearance — be specific."></textarea></div>
+                <div class="qi"><label><span class="qn">3</span> To what causes does Ward attribute these health problems?</label><input type="text" id="docA-q3" placeholder="What specific conditions does he identify?"></div>
+                <div class="qi"><label><span class="qn">4</span> Does this confirm or complicate your prediction? How reliable is it as evidence?</label><textarea id="docA-q4" placeholder="Was Ward present? Is he an expert? Did he have reason to exaggerate or understate?"></textarea></div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-row">
+        <button class="btn bg-btn" onclick="goToPhase(2)">← Back</button>
+        <button class="btn bp-btn" onclick="validatePhase(3,4,['docA-who','docA-type','docA-when','docA-purpose','docA-predict','docA-q2','docA-q3','docA-q4'])">Continue to Document B →</button>
+    </div>
+</div>
+
+<!-- ============================================================ PHASE 4: DOC B -->
+<div class="panel" id="phase4">
+    <div class="card aa">
+        <div class="card-head ha">📜 Document B — Sourcing First</div>
+        <div class="card-body">
+            <h2>A Different Voice from the Same Institution</h2>
+            <p>Document B also comes from a House of Lords investigation — one year earlier, in 1818. The author is also being interviewed about factory conditions. But the account is strikingly different.</p>
+            <div class="qg">
+                <div class="qg-lbl">🔍 Document B — Before You Read</div>
+                <div class="sg">
+                    <div class="sc"><label>Who is the author/speaker?</label><input type="text" id="docB-who" placeholder="E. S. Holmes — what do you know?"></div>
+                    <div class="sc"><label>Same type as Document A?</label><input type="text" id="docB-type" placeholder="Government testimony, 1818..."></div>
+                    <div class="sc"><label>One year earlier — does that matter?</label><input type="text" id="docB-when" placeholder="1818 vs. 1819..."></div>
+                    <div class="sc"><label>Same audience. Different purpose?</label><input type="text" id="docB-purpose" placeholder="Both testimony — might their roles differ?"></div>
+                </div>
+                <div class="qi" style="margin-top:10px;">
+                    <label><span class="qn">1</span> Two witnesses, same body, back-to-back years — why might their accounts differ dramatically? Predict before reading.</label>
+                    <textarea id="docB-predict" placeholder="Who each person is, what they stood to gain or lose..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card aa">
+        <div class="card-head ha">📜 Document B — Now Read</div>
+        <div class="card-body">
+            <div class="doc-block">
+                <p><strong>Question:</strong> In your opinion, does the labour in factories affect the health of the children employed in them?</p>
+                <p><strong>Answer:</strong> In my opinion, taking all the circumstances into consideration, it does not; I think the children in factories are as healthy, and have as good an appearance, as children of the same age employed in other occupations. Their work is not laborious; it requires attention, but the exertion is trifling.</p>
+                <p>I have seen many children employed in factories, and I have generally found them to be in good health; I have not observed that their growth is stunted, or that they have any deformity attributable to their work in the factory. I think that the air of the factories, though not so pure as that of the open fields, is not injurious to the children, and that, in general, the children in factories are as healthy as children of the same age in other employments.</p>
+                <div class="doc-src">Source: Testimony of E. S. Holmes, interviewed by the House of Lords Committee, 1818. House of Lords Sessional Papers (1806–1859).</div>
+            </div>
+            <div class="qg qa">
+                <div class="qg-lbl">📖 Close Reading + Corroboration — A &amp; B</div>
+                <div class="qi"><label><span class="qn">2</span> Document B directly contradicts Document A. List at least two specific claims Holmes makes that contradict Ward's testimony.</label><textarea id="docB-q2" placeholder="Where specifically do Ward and Holmes disagree?"></textarea></div>
+                <div class="qi"><label><span class="qn">3</span> How is it possible for two witnesses testifying to the same body to offer such different accounts? What are some possible explanations?</label><textarea id="docB-q3" placeholder="Different factories? Personal interests? Different roles in the factory system?"></textarea></div>
+                <div class="qi"><label><span class="qn">4</span> Which document do you find more trustworthy, and why? Use specific evidence from both.</label><textarea id="docB-q4" placeholder="Expertise, access, motivation to deceive, specificity of claims..."></textarea></div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-row">
+        <button class="btn bg-btn" onclick="goToPhase(3)">← Back</button>
+        <button class="btn bp-btn" onclick="validatePhase(4,5,['docB-who','docB-type','docB-when','docB-purpose','docB-predict','docB-q2','docB-q3','docB-q4'])">Continue to Documents C &amp; D →</button>
+    </div>
+</div>
+
+<!-- ============================================================ PHASE 5: DOCS C & D -->
+<div class="panel" id="phase5">
+    <div class="card">
+        <div class="card-head ha">📜 Document C — The Worker's Account</div>
+        <div class="card-body">
+            <h2>Voices from the Mill Floor</h2>
+            <div class="qg qs">
+                <div class="qg-lbl">🔍 Document C — Before You Read</div>
+                <div class="qi">
+                    <label><span class="qn">1</span> Document C is from "J. Birley," published in the <em>Ashton Chronicle</em>, May 19, 1849. What kind of source is a regional newspaper in 1849? Who likely wrote for it and read it? What might "Birley" be — owner, worker, reformer?</label>
+                    <textarea id="docC-source" placeholder="A factory-town newspaper in 1849 — who reads it? Who is 'Birley'?"></textarea>
+                </div>
+            </div>
+            <div class="doc-block">
+                <p>I commenced work in a factory when I was about nine years old. I worked there for many years, and I can speak from experience of the hardships which the factory children had to endure. We were obliged to work from five in the morning till eight at night, with only half an hour for breakfast and an hour for dinner. The rooms were hot, the air was full of dust and fluff, and the noise of the machinery was so great that it was impossible to hear what was said unless you shouted. The overlookers were sometimes very cruel, and beat the children if they did not work fast enough, or if they fell asleep at their work. I have seen children come home at night so tired that they could not eat their supper, and have fallen asleep over it. I have also seen them come home with their hands and arms bleeding from the cuts they had received from the machinery.</p>
+                <div class="doc-src">Source: J. Birley, <em>The Ashton Chronicle</em>, 19 May 1849.</div>
+            </div>
+            <div class="qg qs">
+                <div class="qg-lbl">📖 Close Reading — Document C</div>
+                <div class="qi"><label><span class="qn">2</span> What specific physical conditions does Birley describe? What forms of harm appear in this account?</label><textarea id="docC-q2" placeholder="List specific conditions and injuries. How do they compare to Document A?"></textarea></div>
+                <div class="qi"><label><span class="qn">3</span> Birley writes about personal experience — but in 1849, not 1800. Does the gap matter? Does personal testimony carry more or less weight than expert testimony like Ward's?</label><input type="text" id="docC-q3" placeholder="Eyewitness vs. expert — advantages and limitations?"></div>
+            </div>
+        </div>
+    </div>
+    <div class="card ag">
+        <div class="card-head hg">📜 Document D — The Industrialist's Defence</div>
+        <div class="card-body">
+            <div class="qg qgr">
+                <div class="qg-lbl">🔍 Document D — Before You Read</div>
+                <div class="qi">
+                    <label><span class="qn">4</span> Document D comes from <em>A History of the Cotton Manufacture in Great Britain</em> by Edward Baines, 1835. Baines was a journalist and politician who supported free trade and the factory system. What do you predict this document will say?</label>
+                    <textarea id="docD-source" placeholder="A pro-free-trade journalist writing a 'History' of cotton — what perspective will he represent?"></textarea>
+                </div>
+            </div>
+            <div class="doc-block" style="border-left-color:#5a9a5a;">
+                <p>The cotton manufacture has been the main source of the prodigious increase of wealth and population in the manufacturing districts of England; and whilst this manufacture has brought with it many evils of a social and moral nature, it has been the source of immense and unmixed benefits in a national point of view.</p>
+                <p>The factories are well ventilated, and the health of the operatives is, in general, not worse than that of other classes of the working population. It is true that the work is sedentary and confined, but it is not laborious, and the wages are good. The children employed in factories are, in many instances, better fed, better clothed, and better educated than the children of agricultural labourers. The factory system, whatever may be its imperfections, has done more than any other cause to raise the general standard of living of the working classes of this country.</p>
+                <div class="doc-src">Source: Edward Baines, <em>History of the Cotton Manufacture in Great Britain</em> (London, 1835).</div>
+            </div>
+            <div class="qg qgr">
+                <div class="qg-lbl">📖 Close Reading + Corroboration — C &amp; D</div>
+                <div class="qi"><label><span class="qn">5</span> Baines acknowledges "many evils" but argues factories have been a net benefit. How does he make this argument? What does he compare factory workers to? What does he leave out?</label><textarea id="docD-q5" placeholder="What is his logic? What comparison does he make? What evidence does he ignore?"></textarea></div>
+                <div class="qi"><label><span class="qn">6</span> Documents C and D offer sharply different pictures. What specific claims in D does Birley's account in C directly contradict? Which do you find more convincing?</label><textarea id="docD-q6" placeholder="Compare specific claims: ventilation, health, wages, children's welfare..."></textarea></div>
+                <div class="qi"><label><span class="qn">7</span> You now have four documents. Which two are in sharpest disagreement? What does the pattern of agreement and disagreement tell you about whose voices are represented — and whose are missing?</label><textarea id="docD-q7" placeholder="Which voices are present? Whose are absent? What kinds of people produced surviving documents?"></textarea></div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-row">
+        <button class="btn bg-btn" onclick="goToPhase(4)">← Back</button>
+        <button class="btn bp-btn" onclick="validatePhase(5,6,['docC-source','docC-q2','docC-q3','docD-source','docD-q5','docD-q6','docD-q7'])">Continue to Final Verdict →</button>
+    </div>
+</div>
+
+<!-- ============================================================ PHASE 6: VERDICT -->
+<div class="panel" id="phase6">
+    <div class="card af">
+        <div class="card-head hf">⚖️ Final Verdict</div>
+        <div class="card-body">
+            <h2>Rendering Your Verdict</h2>
+            <div class="verdict-box"><div class="vq">Were textile factories bad for the health of English workers?</div></div>
+            <div class="qg">
+                <div class="qg-lbl">⚖️ Your Argument</div>
+                <div class="qi"><label><span class="qn">1</span> Based on the four documents, construct your answer to the central question. State a clear position and support it with specific evidence from at least three documents.</label><textarea id="verdict-q1" style="min-height:120px;" placeholder="State your claim. Provide evidence from at least 3 documents. Address the counter-evidence."></textarea></div>
+                <div class="qi"><label><span class="qn">2</span> Which single document do you find most convincing — and which least convincing? Explain your reasoning for both.</label><textarea id="verdict-q2" placeholder="Most convincing: [document] because... Least convincing: [document] because..."></textarea></div>
+                <div class="qi"><label><span class="qn">3</span> What other types of sources would help answer this question? What kinds of evidence are missing from these four documents?</label><textarea id="verdict-q3" placeholder="Statistical records, hospital admissions, factory inspection reports, letters from workers..."></textarea></div>
+            </div>
+            <div class="qg qa">
+                <div class="qg-lbl">🔗 Connecting Simulation to Documents</div>
+                <div class="qi"><label><span class="qn">4</span> In what ways did the documents confirm, complicate, or add to what you experienced in the simulation? What did the documents show that the simulation couldn't?</label><textarea id="verdict-q4" placeholder="What did the simulation make you feel that documents alone wouldn't convey? What did the documents add?"></textarea></div>
+                <div class="qi"><label><span class="qn">5</span> Friedrich Engels wrote that Manchester's factories created the industrial proletariat — a class who shared not just economic hardship but a common culture and, eventually, a common politics. Does that claim make sense based on what you have read and experienced today?</label><textarea id="verdict-q5" placeholder="Same hours, same risks, same powerlessness — how does shared experience create class consciousness?"></textarea></div>
+            </div>
+            <div style="text-align:center;padding:10px 0;"><div class="stamp">CASE CLOSED</div></div>
+        </div>
+    </div>
+    <div class="btn-row">
+        <button class="btn bg-btn" onclick="goToPhase(5)">← Back</button>
+        <button class="btn bp-btn" onclick="submitVerdict()">Submit &amp; Finish →</button>
+    </div>
+</div>
+
+<!-- ============================================================ PHASE 7: SUBMIT -->
+<div class="panel" id="phase7">
+    <div class="card af">
+        <div class="card-head hf">📤 Submission</div>
+        <div class="card-body">
+            <h2>You're Done</h2>
+            <p>You've completed the Manchester 1800 simulation and source analysis. Download a PDF copy for your records, then submit your work to Prof. Hauselmann.</p>
+            <div class="notice ng"><strong>Reminder:</strong> Both steps are required — the download gives you a personal copy; the submit button sends it to the instructor.</div>
+            <div class="btn-row" style="margin-top:14px;">
+                <button class="btn ba-btn" onclick="downloadPDF()">📄 Download PDF</button>
+                <button class="btn bp-btn" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Prof. Hauselmann</button>
+                <button class="btn bg-btn" onclick="goToPhase(6)">← Back</button>
+            </div>
+            <div id="submitMessage"></div>
+        </div>
+    </div>
+</div>
+
+</div><!-- end wrap -->
+<script>
+const SUPABASE_URL      = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const ASSIGNMENT_OPEN = true;
+
+let currentPhase = 0;
+let selectedRole = '';
+let verdictDone  = false;
+
+const START_FUNDS = { owner:30, worker:0, unemployed:0, merchant:160 };
+
+function selectRole(role) {
+    selectedRole = role;
+    document.querySelectorAll('.role-opt').forEach(e=>e.classList.remove('selected'));
+    document.querySelectorAll('.role-info').forEach(e=>e.classList.remove('visible'));
+    const opt = document.querySelector(`.role-opt[onclick="selectRole('${role}')"]`);
+    if(opt) opt.classList.add('selected');
+    const inf = document.getElementById(`info-${role}`);
+    if(inf) inf.classList.add('visible');
+
+    const loanCol = document.getElementById('col-loan');
+    loanCol.textContent = role==='merchant' ? 'Purchases Made' : role==='owner' ? 'Loan Payment' : 'Loan / Other';
+
+    const s = START_FUNDS[role]||0;
+    document.getElementById('start-disp').textContent = s;
+    document.getElementById('bal-start').textContent  = s;
+    document.getElementById('bal-start').className    = s>0?'bp':'';
+    document.getElementById('mv-start').textContent   = s;
+    document.getElementById('mv-start').className     = 'mc-val '+(s>0?'bp':'');
+    recalc();
+}
+
+function recalc() {
+    const s = START_FUNDS[selectedRole]||0;
+    let bal = s;
+    for(let r=1;r<=4;r++){
+        const inc  = parseFloat(document.getElementById(`r${r}-inc`).value)||0;
+        const loan = parseFloat(document.getElementById(`r${r}-loan`).value)||0;
+        const rent = parseFloat(document.getElementById(`r${r}-rent`).value)||0;
+        const oth  = parseFloat(document.getElementById(`r${r}-other`).value)||0;
+        bal = bal + inc - loan - rent - oth;
+        const c = document.getElementById(`bal-${r}`);
+        c.textContent = bal;
+        c.className = bal>=0?'bp':'bn';
+    }
+    document.getElementById('bal-final').textContent = bal;
+    document.getElementById('bal-final').className   = bal>=0?'bp':'bn';
+    document.getElementById('mv-final').textContent  = bal;
+    document.getElementById('mv-final').className    = 'mc-val '+(bal>=0?'bp':'bn');
+
+    let b2 = s;
+    for(let r=1;r<=2;r++){
+        b2 += (parseFloat(document.getElementById(`r${r}-inc`).value)||0)
+            - (parseFloat(document.getElementById(`r${r}-loan`).value)||0)
+            - (parseFloat(document.getElementById(`r${r}-rent`).value)||0)
+            - (parseFloat(document.getElementById(`r${r}-other`).value)||0);
+    }
+    document.getElementById('mv-r2').textContent = b2;
+    document.getElementById('mv-r2').className   = 'mc-val '+(b2>=0?'bp':'bn');
+}
+
+function goToPhase(n) {
+    document.getElementById(`phase${currentPhase}`).classList.remove('active');
+    document.getElementById(`phase${n}`).classList.add('active');
+    currentPhase = n;
+    document.querySelectorAll('.ps').forEach((el,i)=>{
+        el.classList.remove('active','done');
+        if(i<currentPhase) el.classList.add('done');
+        else if(i===currentPhase) el.classList.add('active');
+    });
+    window.scrollTo(0,0);
+}
+
+function validatePhase(from, to, fields) {
+    for(const id of fields){
+        const el = document.getElementById(id);
+        if(!el||!el.value.trim()){ alert('Please complete all questions before continuing.'); el?.focus(); return; }
+    }
+    goToPhase(to);
+}
+
+function startSim() {
+    if(!document.getElementById('student-name').value.trim()){ alert('Please enter your name.'); return; }
+    if(!selectedRole){ alert('Please select your role.'); return; }
+    if(!document.getElementById('warmup-q1').value.trim()||!document.getElementById('warmup-q2').value.trim()){ alert('Please answer both warm-up questions.'); return; }
+    goToPhase(1);
+}
+
+function validateSim() {
+    const simFields = ['r1-event','r1-reflect','r2-event','r2-reflect','r3-event','r3-reflect','r4-event','r4-reflect'];
+    for(const id of simFields){
+        if(!document.getElementById(id).value.trim()){ alert('Please complete all round questions before continuing.'); document.getElementById(id).focus(); return; }
+    }
+    goToPhase(2);
+}
+
+function submitVerdict() {
+    const f = ['verdict-q1','verdict-q2','verdict-q3','verdict-q4','verdict-q5'];
+    for(const id of f){ if(!document.getElementById(id).value.trim()){ alert('Please complete all final claim questions.'); document.getElementById(id).focus(); return; } }
+    verdictDone = true;
+    goToPhase(7);
+}
+
+function buildPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y=20; const lh=7, ph=doc.internal.pageSize.height, m=20;
+    const name    = document.getElementById('student-name').value.trim();
+    const section = document.getElementById('section-number').value.trim();
+    function add(text,size=11,bold=false){
+        doc.setFontSize(size); doc.setFont(undefined,bold?'bold':'normal');
+        doc.splitTextToSize(String(text||'[Not answered]'),170).forEach(l=>{
+            if(y>ph-m){doc.addPage();y=20;} doc.text(l,20,y); y+=lh;
+        }); y+=3;
+    }
+    add('Manchester, 1800 — The Factory Question',16,true); y+=2;
+    add('HIST 107 · Global Commodities & Trade · Prof. Hauselmann',12);
+    add(`Student: ${name}`,12,true);
+    if(section) add(`Section: ${section}`,12,true);
+    add(`Role: ${selectedRole||'Not selected'}`,12,true);
+    add(`Completed: ${new Date().toLocaleString()}`,10); y+=4;
+
+    add('GLOBAL CONTEXT: The World That Made Manchester Possible',13,true);
+    add('Students read about: cotton from American slave plantations; Cuban sugar and Chinese contract labor; Uruguayan beef and the Liebig Extract story; Japanese silk mills and young women workers; railroads as tools of empire in Latin America.',10);
+    y+=3;
+    add('WARM-UP',13,true);
+    [['warmup-q1','1. Prior knowledge'],['warmup-q2','2. Role prediction']].forEach(([id,q])=>{add(q,11,true);add(document.getElementById(id).value);});
+    y+=3;
+
+    add('LEDGER',13,true);
+    add(`Starting funds: ${START_FUNDS[selectedRole]||0}`,11,true);
+    for(let r=1;r<=4;r++){
+        const b = document.getElementById(`bal-${r}`).textContent;
+        add(`Round ${r}: Income=${document.getElementById(`r${r}-inc`).value||0}, Loan=${document.getElementById(`r${r}-loan`).value||0}, Rent=${document.getElementById(`r${r}-rent`).value||0}, Other=${document.getElementById(`r${r}-other`).value||0} → Balance: ${b}`,10);
+    }
+    add(`Final Balance: ${document.getElementById('bal-final').textContent}`,11,true); y+=3;
+
+    add('ROUND LOGS',13,true);
+    [['r1-event','Round 1 — What happened'],['r1-reflect','Round 1 — Reflection'],
+     ['r2-event','Round 2 — What happened'],['r2-reflect','Round 2 — Rent and wages'],
+     ['r3-event','Round 3 — Stamp kit'],['r3-reflect','Round 3 — Technology and workers'],
+     ['r4-event','Round 4 — Final round'],['r4-reflect','Round 4 — Finance capital']
+    ].forEach(([id,q])=>{add(q,11,true);add(document.getElementById(id).value);}); y+=3;
+
+    add('SIMULATION DEBRIEF',13,true);
+    [['deb-q1','1. What was it like in your role?'],['deb-q2','2. Was the outcome fair?'],
+     ['deb-q3','3. Time and work discipline'],['deb-q4','4. Surplus labor'],['deb-q5','5. Competition and monopoly']
+    ].forEach(([id,q])=>{add(q,11,true);add(document.getElementById(id).value);}); y+=3;
+
+    add('DOCUMENT A',13,true);
+    [['docA-who','Who?'],['docA-type','Type?'],['docA-when','When?'],['docA-purpose','Purpose?'],
+     ['docA-predict','1. Prediction'],['docA-q2','2. Health effects'],['docA-q3','3. Causes'],['docA-q4','4. Reliability']
+    ].forEach(([id,q])=>{add(q,11,true);add(document.getElementById(id).value);}); y+=3;
+
+    add('DOCUMENT B',13,true);
+    [['docB-who','Who?'],['docB-type','Type?'],['docB-when','When?'],['docB-purpose','Purpose?'],
+     ['docB-predict','1. Prediction'],['docB-q2','2. Contradictions'],['docB-q3','3. Why differ?'],['docB-q4','4. Which trustworthy?']
+    ].forEach(([id,q])=>{add(q,11,true);add(document.getElementById(id).value);}); y+=3;
+
+    add('DOCUMENTS C & D',13,true);
+    [['docC-source','Doc C sourcing'],['docC-q2','Doc C — Conditions'],['docC-q3','Doc C — Eyewitness vs expert'],
+     ['docD-source','Doc D sourcing'],['docD-q5','Doc D — Baines argument'],
+     ['docD-q6','Doc D — C vs D'],['docD-q7','Doc D — Agreement patterns']
+    ].forEach(([id,q])=>{add(q,11,true);add(document.getElementById(id).value);}); y+=3;
+
+    add('FINAL CLAIM',13,true);
+    [['verdict-q1','1. Central question answer'],['verdict-q2','2. Most/least convincing'],
+     ['verdict-q3','3. Missing sources'],['verdict-q4','4. Simulation + documents'],['verdict-q5','5. Engels and proletariat']
+    ].forEach(([id,q])=>{add(q,11,true);add(document.getElementById(id).value);});
+    return doc;
+}
+
+function downloadPDF() {
+    if(!verdictDone){alert('Please complete the final claim section first.');return;}
+    const name=document.getElementById('student-name').value.trim();
+    if(!name){alert('Please enter your name.');return;}
+    try{buildPDF().save(`Manchester1800_${name.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);}
+    catch(e){console.error(e);alert('Error generating PDF: '+e.message);}
+}
+
+async function submitToSupabase() {
+    if(!ASSIGNMENT_OPEN){document.getElementById('submitMessage').innerHTML='<div class="error-msg">❌ This assignment is now closed.</div>';return;}
+    const name=document.getElementById('student-name').value.trim();
+    const section=document.getElementById('section-number').value.trim();
+    if(!name){alert('Please enter your name.');return;}
+    if(!section){alert('Please enter your section number.');return;}
+    if(!verdictDone){alert('Please complete the final claim section first.');return;}
+    const btn=document.getElementById('submitBtn');
+    const msg=document.getElementById('submitMessage');
+    btn.disabled=true;btn.textContent='⏳ Submitting...';
+    msg.innerHTML='<div style="padding:12px;color:#7a7268;font-style:italic;">Generating and uploading...</div>';
+    try{
+        const blob=buildPDF().output('blob');
+        const ts=new Date().toISOString().replace(/[:.]/g,'-');
+        const safe=name.replace(/[^a-zA-Z0-9]/g,'_');
+        const path=`manchester-1800/${section}/${selectedRole}_${safe}_${ts}.pdf`;
+        const {error:upErr}=await sb.storage.from('student-submissions').upload(path,blob,{contentType:'application/pdf',upsert:false});
+        if(upErr)throw new Error(upErr.message);
+        const {data:urlData}=sb.storage.from('student-submissions').getPublicUrl(path);
+        const allData={role:selectedRole};
+        document.querySelectorAll('input[type=text],input[type=number],textarea').forEach(el=>{if(el.id)allData[el.id]=el.value;});
+        await sb.from('worksheet_submissions').insert({student_name:name,section_number:section,worksheet_type:'manchester-1800',file_path:path,file_url:urlData.publicUrl,form_data:allData,submitted_at:new Date().toISOString()});
+        msg.innerHTML='<div class="success-msg">✅ Successfully submitted to Prof. Hauselmann.</div>';
+        btn.textContent='✓ Submitted';
+    }catch(e){
+        console.error(e);
+        msg.innerHTML=`<div class="error-msg">❌ Submission failed: ${e.message}. Download the PDF and email it as a backup.</div>`;
+        btn.disabled=false;btn.textContent='📤 Submit to Prof. Hauselmann';
+    }
+}
+
+document.addEventListener('paste',function(e){
+    const t=e.target;
+    if(t.tagName==='INPUT'||t.tagName==='TEXTAREA'){
+        e.preventDefault();
+        t.style.outline='2px solid var(--furnace)';
+        setTimeout(()=>t.style.outline='',800);
+    }
+});
+
+setInterval(()=>{
+    const s={role:selectedRole};
+    document.querySelectorAll('input[type=text],input[type=number],textarea').forEach(el=>{if(el.id)s[el.id]=el.value;});
+    localStorage.setItem('manchester1800v2',JSON.stringify(s));
+},30000);
+
+window.onload=()=>{
+    const saved=localStorage.getItem('manchester1800v2');
+    if(saved){
+        try{
+            if(confirm('Restore your previous session?')){
+                const s=JSON.parse(saved);
+                if(s.role) selectRole(s.role);
+                Object.entries(s).forEach(([id,val])=>{const el=document.getElementById(id);if(el&&id!=='role')el.value=val;});
+                recalc();
+            }
+        }catch(e){}
+    }
+    document.querySelectorAll('.ps').forEach((el,i)=>{el.classList.remove('active','done');if(i===0)el.classList.add('active');});
+};
+</script>
+</body>
+</html>
