@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raising the Eleventh Pillar — Faction Role Sheets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #f5ead6;
+    --parchment-dark: #e8d5b0;
+    --ink: #1a1208;
+    --ink-light: #3d2b0e;
+    --fed-color: #1a3a5c;
+    --fed-bg: #dce8f5;
+    --fed-border: #3a6a9c;
+    --fed-mid: #2a5a8c;
+    --anti-color: #5c1a1a;
+    --anti-bg: #f5dcdc;
+    --anti-border: #9c3a3a;
+    --anti-mid: #8c2a2a;
+    --mod-color: #2d4a1e;
+    --mod-bg: #dff0d8;
+    --mod-border: #4a7a30;
+    --mod-mid: #3a6a28;
+    --gold: #9a7b2f;
+    --gold-light: #c9a84c;
+    --shadow: rgba(26,18,8,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: #c8b89a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23c8b89a'/%3E%3Ccircle cx='1' cy='1' r='0.5' fill='%23b8a888' opacity='0.4'/%3E%3Ccircle cx='3' cy='3' r='0.5' fill='%23b8a888' opacity='0.4'/%3E%3C/svg%3E");
+    font-family: 'Libre Baskerville', Georgia, serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--parchment);
+    text-align: center;
+    padding: 40px 20px 32px;
+    border-bottom: 4px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(154,123,47,0.06) 60px, rgba(154,123,47,0.06) 61px);
+    pointer-events: none;
+  }
+
+  .header-emblem { font-size: 2.2rem; margin-bottom: 10px; opacity: 0.85; letter-spacing: 0.1em; }
+
+  header h1 {
+    font-family: 'IM Fell English', serif;
+    font-size: clamp(1.5rem, 4vw, 2.6rem);
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  header h1 em { font-style: italic; color: var(--parchment-dark); }
+  header p { font-size: 0.92rem; opacity: 0.7; font-style: italic; margin-top: 6px; }
+
+  /* Nav tabs */
+  .faction-nav {
+    display: flex;
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .faction-tab {
+    flex: 1;
+    min-width: 200px;
+    font-family: 'IM Fell English', serif;
+    font-size: 1.1rem;
+    padding: 14px 20px;
+    border: 2px solid transparent;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .faction-tab.fed { background: var(--fed-bg); color: var(--fed-color); border-color: var(--fed-border); }
+  .faction-tab.anti { background: var(--anti-bg); color: var(--anti-color); border-color: var(--anti-border); }
+  .faction-tab.mod { background: var(--mod-bg); color: var(--mod-color); border-color: var(--mod-border); }
+
+  .faction-tab.active.fed { background: var(--fed-color); color: #fff; border-color: var(--fed-color); }
+  .faction-tab.active.anti { background: var(--anti-color); color: #fff; border-color: var(--anti-color); }
+  .faction-tab.active.mod { background: var(--mod-color); color: #fff; border-color: var(--mod-color); }
+
+  .faction-tab:hover:not(.active) { filter: brightness(0.95); }
+
+  /* Gate screen */
+  .faction-panel { display: none; max-width: 900px; margin: 0 auto; padding: 0 20px 40px; }
+  .faction-panel.active { display: block; }
+
+  .gate {
+    background: var(--parchment);
+    border-radius: 0 0 4px 4px;
+    padding: 50px 40px;
+    text-align: center;
+    box-shadow: 3px 6px 20px var(--shadow);
+    border: 1px solid var(--parchment-dark);
+    border-top: none;
+  }
+
+  .gate-icon { font-size: 2.5rem; margin-bottom: 16px; }
+
+  .gate h2 {
+    font-family: 'IM Fell English', serif;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  .gate p { font-size: 0.88rem; color: var(--ink-light); margin-bottom: 24px; font-style: italic; }
+
+  .gate-row { display: flex; gap: 8px; max-width: 360px; margin: 0 auto; }
+
+  .gate-input {
+    flex: 1;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.9rem;
+    padding: 9px 14px;
+    border: 2px solid var(--parchment-dark);
+    border-radius: 3px;
+    background: #fff;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .gate-input:focus { border-color: var(--gold); }
+
+  .gate-btn {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.85rem;
+    padding: 9px 20px;
+    border: 2px solid var(--gold);
+    border-radius: 3px;
+    background: var(--parchment-dark);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 700;
+  }
+
+  .gate-btn:hover { background: var(--gold); color: #fff; }
+
+  .gate-error {
+    font-size: 0.8rem;
+    color: var(--anti-color);
+    font-style: italic;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .gate-error.visible { display: block; }
+
+  /* Content panels */
+  .content { display: none; }
+  .content.visible {
+    display: block;
+    background: var(--parchment);
+    border: 1px solid var(--parchment-dark);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 3px 6px 20px var(--shadow);
+  }
+
+  /* Faction header band */
+  .content-header {
+    padding: 28px 36px 24px;
+    color: #fff;
+  }
+
+  .content-header.fed { background: linear-gradient(135deg, var(--fed-color) 0%, var(--fed-mid) 100%); }
+  .content-header.anti { background: linear-gradient(135deg, var(--anti-color) 0%, var(--anti-mid) 100%); }
+  .content-header.mod { background: linear-gradient(135deg, var(--mod-color) 0%, var(--mod-mid) 100%); }
+
+  .content-header h2 {
+    font-family: 'IM Fell English', serif;
+    font-size: 1.9rem;
+    margin-bottom: 6px;
+  }
+
+  .content-header p { font-size: 0.88rem; opacity: 0.8; font-style: italic; }
+
+  /* Content body */
+  .content-body { padding: 32px 36px; }
+
+  /* Sections */
+  .rs-section { margin-bottom: 36px; }
+
+  .rs-section-title {
+    font-family: 'IM Fell English', serif;
+    font-size: 1.25rem;
+    color: var(--ink);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rs-section-title .icon { font-size: 1rem; }
+
+  .rs-prose { font-size: 0.87rem; line-height: 1.8; color: var(--ink-light); }
+  .rs-prose p { margin-bottom: 12px; }
+  .rs-prose em { font-style: italic; }
+  .rs-prose strong { color: var(--ink); font-weight: 700; }
+
+  /* Issue accordion */
+  .issue-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .issue-card {
+    border: 1px solid var(--parchment-dark);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .issue-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'IM Fell English', serif;
+    font-size: 1.02rem;
+  }
+
+  .fed .issue-header { background: var(--fed-bg); color: var(--fed-color); }
+  .anti .issue-header { background: var(--anti-bg); color: var(--anti-color); }
+  .mod .issue-header { background: var(--mod-bg); color: var(--mod-color); }
+
+  .issue-header .issue-num {
+    font-size: 0.7rem;
+    font-family: 'Libre Baskerville', serif;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-right: 10px;
+  }
+
+  .issue-header .chevron { font-size: 0.8rem; transition: transform 0.2s; }
+  .issue-card.open .chevron { transform: rotate(180deg); }
+
+  .issue-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    background: var(--parchment);
+  }
+
+  .issue-card.open .issue-body { max-height: 2000px; }
+
+  .issue-inner { padding: 16px 18px 18px; }
+
+  .issue-position {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--ink-light);
+    margin-bottom: 14px;
+  }
+
+  .issue-position p { margin-bottom: 8px; }
+
+  .surprise-box {
+    border: 2px solid var(--gold);
+    border-radius: 3px;
+    padding: 12px 14px;
+    background: #fffaf0;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    margin: 12px 0;
+  }
+
+  .surprise-box .surprise-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .bib-list {
+    list-style: none;
+    border-top: 1px dotted var(--parchment-dark);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  .bib-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 8px;
+  }
+
+  .bib-list li {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    line-height: 1.55;
+    padding: 4px 0 4px 14px;
+    border-bottom: 1px dotted #e8d5b0;
+    position: relative;
+  }
+
+  .bib-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+  }
+
+  .bib-list li em { font-style: italic; }
+
+  /* Win box */
+  .win-box {
+    border: 2px solid var(--gold-light);
+    border-radius: 3px;
+    padding: 18px 20px;
+    background: #fffaf0;
+  }
+
+  .win-box .win-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .win-box p { font-size: 0.86rem; line-height: 1.7; color: var(--ink-light); margin-bottom: 8px; }
+  .win-box p:last-child { margin-bottom: 0; }
+  .win-box strong { color: var(--ink); }
+
+  /* Source list */
+  .source-list { list-style: none; }
+
+  .source-list li {
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    line-height: 1.6;
+    padding: 7px 0 7px 16px;
+    border-bottom: 1px dotted var(--parchment-dark);
+    position: relative;
+  }
+
+  .source-list li::before { content: '§'; position: absolute; left: 0; color: var(--gold); font-size: 0.9rem; }
+  .source-list li em { font-style: italic; }
+  .source-list li a { color: var(--fed-color); }
+
+  @media (max-width: 600px) {
+    .content-body { padding: 20px 18px; }
+    .content-header { padding: 20px 18px; }
+    .gate { padding: 36px 20px; }
+    .faction-nav { gap: 6px; }
+    .faction-tab { font-size: 0.9rem; padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-emblem">⚖ ✦ ⚖</div>
+  <h1>Raising the Eleventh Pillar<br><em>The Ratification Debate of 1788</em></h1>
+  <p>Factional Role Sheets · New York State Ratifying Convention · Poughkeepsie · June–July 1788</p>
+  <p style="margin-top:10px;font-size:0.85rem;opacity:0.6;">Select your faction and enter your password to access your role sheet</p>
+</header>
+
+<div class="faction-nav">
+  <button class="faction-tab fed active" data-panel="fed">⚑ Federalists</button>
+  <button class="faction-tab anti" data-panel="anti">⚐ Antifederalists</button>
+  <button class="faction-tab mod" data-panel="mod">⚖ Moderates</button>
+</div>
+
+<!-- ==================== FEDERALISTS ==================== -->
+<div class="faction-panel active" id="panel-fed">
+
+  <div class="gate" id="gate-fed">
+    <div class="gate-icon">🔒</div>
+    <h2 style="color:var(--fed-color)">Federalist Role Sheet</h2>
+    <p>Enter your faction password to access your instructions, game issues, and strategy.</p>
+    <div class="gate-row">
+      <input type="password" class="gate-input" id="input-fed" placeholder="Federalist password…">
+      <button class="gate-btn" data-faction="fed">Unlock</button>
+    </div>
+    <div class="gate-error" id="error-fed">Incorrect password. Try again.</div>
+  </div>
+
+  <div class="content fed" id="content-fed">
+    <div class="content-header fed">
+      <h2>Federalists</h2>
+      <p>Factional Role Sheet · New York State Ratifying Convention · 1788</p>
+    </div>
+    <div class="content-body">
+
+      <!-- Overview -->
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">📜</span> Who You Are</div>
+        <div class="rs-prose">
+          <p>You are a member of the Federalist party, so named because of the serial essays published in New York newspapers over the past nine months. Authored by the pseudonymous "Publius," these essays were collected and republished under the title <em>The Federalist</em>.</p>
+          <p>New York Federalists, with their base of operations in Manhattan, have organized locally to defend the Constitution and secure its ratification. Your party was hopeful that the April elections of delegates to the state ratifying convention would return a majority of candidates supportive of the ratification effort. But that was not the case, and the Federalist delegates now gathered in Poughkeepsie represent a distinct minority. You face an uphill, but not impossible, fight, since a third of the delegates, if not more, are only nominally Antifederalists; in fact, they are undecided Moderates, open to being won over to your side. Whether they are won over or not will depend on the persuasiveness of your arguments.</p>
+          <p>You need not concern yourself with the entire Federalist position, which includes, among other topics, the nature of the union (more consolidationist than confederal), the role of the states (subordinate entities), the structure of the national government (three independent branches approximately equal), its powers (enumerated, but with ambiguity as to scope), and the rights of individuals (unspecified, in the absence of a bill of rights).</p>
+          <p><strong>The sole issue before you is representation</strong>, by which is meant the qualities, responsibilities, and checks on representatives and senators.</p>
+          <p>Upon receiving your factional role sheet, you and your associates are to choose a party leader and a lieutenant (unless your instructor does that for you). If historical names are in use, they are, respectively, Chancellor Robert R. Livingston and Alexander Hamilton. Under their direction you are to divide up the writing/speaking assignments. <strong>There are three issues on the game schedule</strong> (Size of Electoral Districts, Rotation/Term Limits, and Instructed Voting). Likely one person will take responsibility for one issue. If more than three people make up your faction, plan on using the written work of some members for support and elaboration during the debate periods, because time constraints will probably not allow for more than three formal speeches at the podium. If your faction consists of fewer than three people, double duty will be required of some of you.</p>
+        </div>
+      </div>
+
+      <!-- Source Material -->
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">📚</span> Source Material</div>
+        <div class="rs-prose">
+          <p>The primary sources contained in the core texts in the game book reflect Federalist or Antifederalist positions. Those sources advocating the Federalist position are Edmund Burke, "Publius," and — at the New York convention — Alexander Hamilton and Robert Livingston. Those taking the Antifederalist position are "The Federal Farmer," "Brutus," and — at the convention — Melancton Smith and Gilbert Livingston. While Federalist writings are more useful for Federalist delegates, <strong>all primary documents should be read, if possible</strong>, because success in debate requires knowing what the other side will say. The secondary source, Gordon Wood's <em>The Creation of the American Republic, 1776–1787</em>, though intended mainly for Moderates, offers a comprehensive examination of the representation issue and is highly recommended for everyone.</p>
+          <p>Key repositories for source material:</p>
+        </div>
+        <ul class="source-list">
+          <li>Jonathan Elliot, ed., <em>The Debates of the Several State Conventions on the Adoption of the Federal Constitution</em>, vol. 2, 2nd ed. (Lippincott, 1896), June 20–25, pp. 216–325. Online at <em>www.constitution.org/rc/rat_ny.htm</em> or Online Library of Liberty. Select "Debates in the Convention of the State of New York." Speaker names appear in uppercase letters.</li>
+          <li>Philip B. Kurland and Ralph Lerner, eds., <em>The Founders' Constitution</em>, vols. 1–2. Online at <em>press-pubs.uchicago.edu/founders</em>. Click "Contents," then navigate by Major Themes or by article/section/clause of the Constitution.</li>
+          <li>James Madison, <em>Notes of Debates in the Federal Convention of 1787</em>. Online at <em>avalon.law.yale.edu/subject_menus/debcont.asp</em>. Click the relevant date; no page numbers in online version.</li>
+          <li>Alexander Hamilton, John Jay, James Madison ("Publius"), <em>The Federalist</em> (any edition). Online at <em>avalon.law.yale.edu/subject_menus/fed.asp</em>.</li>
+        </ul>
+      </div>
+
+      <!-- 7 Issues -->
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">⚔</span> The Three Game Issues</div>
+        <div class="issue-list" id="fed-issues">
+
+          <div class="issue-card fed">
+            <div class="issue-header"><span><span class="issue-num">Issue 1</span>Size of the Electoral District</span><span class="chevron">▼</span></div>
+            <div class="issue-body"><div class="issue-inner">
+              <div class="issue-position">
+                <p>Federalists prefer <strong>larger electoral districts</strong>, partly for aristocratic reasons — namely a better quality of candidate returned thereby — and partly for democratic reasons — namely increased comfort with popular elections if these occur under properly controlled conditions. Larger districts will attract men of national reputation who can rise above parochial concerns and govern the nation as a whole.</p>
+              </div>
+              <div class="surprise-box">
+                <span class="surprise-label">⚡ Surprise Argument</span>
+                The Antifederalists believe that with more representatives admitted to the legislature, space will open for persons of the middle class. But why not still more from the upper class? You might then propose, as a surety for middle-class success, that the upper house of the legislature be designated a set-aside for persons of wealth and eminence (à la the British House of Lords), freeing the lower house to fill its seats with candidates of the middling sort. Offer this as a debating point, not a speech from the podium.
+              </div>
+              <div class="bib-label">Recommended Sources</div>
+              <ul class="bib-list">
+                <li>NYRC speech by Alexander Hamilton, June 21, in game book p. 85.</li>
+                <li>Constitutional Convention speeches by James Wilson, in <em>Notes</em>, June 6 and 7, pp. 74, 85.</li>
+                <li>Pennsylvania State Ratifying Convention speech by James Wilson, December 4, 1787, in FC, vol. 2, pp. 51–52; under A1, S2, C1 no. 12.</li>
+                <li>James Wilson, <em>Lectures on Law</em>, vol. 1 (Harvard University Press, 1967), p. 417.</li>
+                <li>Gordon Wood, <em>Creation of the American Republic</em>, in game book pp. 123–25.</li>
+                <li>NYRC speech by Robert Livingston, June 23, in <em>Debates</em>, p. 278.</li>
+              </ul>
+            </div></div>
+          </div>
+
+          <div class="issue-card fed">
+            <div class="issue-header"><span><span class="issue-num">Issue 2</span>Rotation / Term Limits</span><span class="chevron">▼</span></div>
+            <div class="issue-body"><div class="issue-inner">
+              <div class="issue-position">
+                <p>The Federalists think it just crazy to <strong>deny government continued access to its best talent</strong>. No doubt there are other people available with skills sufficient for doing the representative's job. But such persons may not be prepared to step into the middle of complicated negotiations or to take the reins suddenly in an emergency situation. Plus, haven't the people the right to elect whomever they want?</p>
+                <p><em>The debate at the convention was structured around an amendment offered by Gilbert Livingston on June 24: "Resolved, That no person shall be eligible as a senator for more than six years in any term of twelve years, and that it shall be in the power of the legislatures of the several states to recall their senators, or either of them, and to elect others in their stead, to serve for the remainder of the time for which such senator or senators, so recalled, were appointed."</em></p>
+              </div>
+              <div class="bib-label">Recommended Sources</div>
+              <ul class="bib-list">
+                <li>NYRC speeches by Alexander Hamilton, June 21, in game book p. 85; June 24, in <em>Debates</em>, pp. 301–07; June 25, in game book p. 100.</li>
+                <li>NYRC speeches by Robert Livingston, June 24, in game book p. 94; also in <em>Debates</em>, pp. 296, 298–99.</li>
+                <li>NYRC speech by Richard Morris, June 24, in <em>Debates</em>, pp. 296–97.</li>
+                <li>NYRC speech by Richard Harrison, June 24, in <em>Debates</em>, pp. 297–98.</li>
+              </ul>
+            </div></div>
+          </div>
+
+          <div class="issue-card fed">
+            <div class="issue-header"><span><span class="issue-num">Issue 3</span>Instructed Voting</span><span class="chevron">▼</span></div>
+            <div class="issue-body"><div class="issue-inner">
+              <div class="issue-position">
+                <p>The Federalists see the national legislature as <strong>a deliberative body composed of the country's best minds</strong> and tasked with solving the country's most vexing problems. Instruction turns "best minds" into ciphers, ambassadors of their home states. A representative who cannot exercise independent judgment is no representative at all — merely a messenger.</p>
+              </div>
+              <div class="bib-label">Recommended Sources</div>
+              <ul class="bib-list">
+                <li>Edmund Burke, "Speech to the Electors of Bristol," in game book p. 47.</li>
+                <li>Letter from George Washington to Bushrod Washington, November 15, 1786, in FC, vol. 1, p. 399; under "Representation" no. 16.</li>
+                <li>House of Representatives debate, August 15, 1789, in FC, vol. 1, pp. 413–18 — speeches by Hartley, Page, Sherman, Jackson, Madison, Smith, Stone, Vining, Sedgwick, Ames, and Wadsworth; under "Representation" no. 39.</li>
+              </ul>
+            </div></div>
+          </div>
+
+        </div><!-- end issue-list -->
+      </div>
+
+      <!-- How to Win -->
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">🏆</span> How to Win</div>
+        <div class="win-box">
+          <span class="win-label">Victory Conditions — Federalists</span>
+          <p>The Federalists <strong>win</strong> if, on the final vote, a constitution rated Federalist is accepted <em>or</em> if a constitution rated Antifederalist is rejected. These results amount to the same thing, because an Antifederalist rating is tantamount to a demand for a second convention, and the rejection of that demand is tantamount to acceptance of the Constitution as is, or to ratification.</p>
+          <p>Before the final vote, there is winning, of a sort, regarding the several provision votes taken along the way (e.g., recall). But these wins and losses translate into a constitution rated Federalist or Antifederalist, and it is the acceptance or rejection of that constitution, as decided by the final vote, that determines victory or defeat in the end.</p>
+          <p><strong>End-Game Action:</strong> If the collected package of provisions is scored as Antifederalist in character, the Federalist leader, Chancellor Robert Livingston, in advance of the final vote, should threaten the secession of New York, Richmond, Kings, and Westchester counties from the state. The threat may unnerve the Moderates and dispose them to vote with you.</p>
+        </div>
+      </div>
+
+    </div><!-- end content-body -->
+  </div><!-- end content -->
+</div><!-- end panel-fed -->
+
+<!-- ==================== ANTIFEDERALISTS ==================== -->
+<div class="faction-panel" id="panel-anti">
+
+  <div class="gate" id="gate-anti">
+    <div class="gate-icon">🔒</div>
+    <h2 style="color:var(--anti-color)">Antifederalist Role Sheet</h2>
+    <p>Enter your faction password to access your instructions, game issues, and strategy.</p>
+    <div class="gate-row">
+      <input type="password" class="gate-input" id="input-anti" placeholder="Antifederalist password…">
+      <button class="gate-btn" data-faction="anti">Unlock</button>
+    </div>
+    <div class="gate-error" id="error-anti">Incorrect password. Try again.</div>
+  </div>
+
+  <div class="content anti" id="content-anti">
+    <div class="content-header anti">
+      <h2>Antifederalists</h2>
+      <p>Factional Role Sheet · New York State Ratifying Convention · 1788</p>
+    </div>
+    <div class="content-body">
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">📜</span> Who You Are</div>
+        <div class="rs-prose">
+          <p>You are any one of a number of prominent New Yorkers who opposes the Constitution. Or you come to Poughkeepsie thinking you do, because you were elected as a delegate to the state ratifying convention on an Antifederalist ticket. The party has been organized by the state's long-serving governor, George Clinton, despite his scrupulous care not to align the governorship with one side or the other.</p>
+          <p>Antifederalists oppose the Constitution because it replaces a confederal union with a consolidated one, or with a hybrid tending in a consolidationist direction. In a confederal union, the contracting parties are sovereign states, fully in charge of local matters, subordinate only in national matters — such as war and commerce. In a consolidated union, the contracting parties are individuals, and the laws of the national government apply to them directly. At the Constitutional Convention in Philadelphia, Antifederalist opinion was underrepresented, and the result was not a set of sensible amendments to the Articles of Confederation, but a wholly new form of union that is barely a confederation at all. Two of New York's delegates to the Convention left early to raise an alarm, and the newspaper war that began last summer has been ongoing ever since.</p>
+          <p>You need not concern yourself with the entire Antifederalist position, which includes, besides union, the structure of government, the powers of its branches, and the rights of individuals (unspecified, in the absence of a bill of rights).</p>
+          <p><strong>The sole issue before you is representation</strong>, by which is meant the qualities, responsibilities, and checks on representatives and senators.</p>
+          <p>Upon receiving your factional role sheet, you and your associates are to choose a party leader and a lieutenant (unless your instructor does that for you). If historical names are in use, they are, respectively, Governor George Clinton and Melancton Smith. Under their direction you are to divide up the writing/speaking assignments. <strong>There are three issues on the game schedule</strong> (Size of Electoral Districts, Rotation/Term Limits, and Instructed Voting). Likely one person will take responsibility for one issue. If more than three people make up your faction, plan on using the written work of some members for support and elaboration during the debate periods, because time constraints will probably not allow for more than three formal speeches at the podium. If your faction consists of fewer than three people, double duty will be required of some of you.</p>
+        </div>
+      </div>
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">📚</span> Source Material</div>
+        <div class="rs-prose">
+          <p>Those sources advocating the Federalist position are Edmund Burke, "Publius," and — at the New York convention — Alexander Hamilton and Robert Livingston. Those taking the Antifederalist position are "The Federal Farmer," "Brutus," and — at the convention — Melancton Smith and Gilbert Livingston. While Antifederalist writings are more useful for Antifederalist delegates, <strong>all primary documents should be read, if possible</strong>, because success in debate requires knowing what the other side will say. Gordon Wood's <em>The Creation of the American Republic, 1776–1787</em> offers a comprehensive examination of the representation issue and is highly recommended for everyone.</p>
+        </div>
+        <ul class="source-list">
+          <li>Jonathan Elliot, ed., <em>The Debates of the Several State Conventions on the Adoption of the Federal Constitution</em>, vol. 2, 2nd ed. (Lippincott, 1896), June 20–25, pp. 216–325. Online at <em>www.constitution.org/rc/rat_ny.htm</em> or Online Library of Liberty. Speaker names appear in uppercase letters.</li>
+          <li>Philip B. Kurland and Ralph Lerner, eds., <em>The Founders' Constitution</em>, vols. 1–2. Online at <em>press-pubs.uchicago.edu/founders</em>. Navigate by Major Themes or article/section/clause of the Constitution.</li>
+          <li>James Madison, <em>Notes of Debates in the Federal Convention of 1787</em>. Online at <em>avalon.law.yale.edu/subject_menus/debcont.asp</em>.</li>
+          <li>Herbert J. Storing, ed., <em>The Complete Anti-Federalist</em>, vol. 2 (University of Chicago Press, 1981). The three numbers in citations (e.g., 2.5.14) identify volume, table-of-contents entry, and paragraph.</li>
+        </ul>
+      </div>
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">⚔</span> The Three Game Issues</div>
+        <div class="issue-list" id="anti-issues">
+
+          <div class="issue-card anti">
+            <div class="issue-header"><span><span class="issue-num">Issue 1</span>Size of the Electoral District</span><span class="chevron">▼</span></div>
+            <div class="issue-body"><div class="issue-inner">
+              <div class="issue-position">
+                <p>Antifederalists want <strong>small electoral districts</strong> to ensure that representatives know about and are known by their constituents. The small electoral district explains why adding representatives also changes their character — or why, with a larger chamber, persons of the middle class will be elected. A representative from a massive district cannot possibly know his constituents' interests; he will inevitably drift toward the wealthy and well-connected who can make themselves heard across great distances.</p>
+              </div>
+              <div class="bib-label">Recommended Sources</div>
+              <ul class="bib-list">
+                <li>NYRC speeches by Melancton Smith, June 20, 21, and 23, in <em>Debates</em>, pp. 228, 246–48, 260, 280–81; also June 21, in game book, p. 78.</li>
+                <li>NYRC speech by John Williams, June 21, in <em>Debates</em>, p. 242.</li>
+                <li>NYRC speech by George Clinton, June 21, in <em>Debates</em>, p. 262.</li>
+                <li>Brutus, Essay 4, in game book p. 74.</li>
+                <li>Centinel, 1, <em>CA-F</em> (2.7.22).</li>
+                <li>Machiavelli, <em>Discourses on Livy</em>, I.47 (any edition).</li>
+                <li>Rakove, <em>Original Meanings</em>, pp. 231–32.</li>
+                <li>Woody Holton, <em>Unruly Americans and the Origin of the Constitution</em> (Hill &amp; Wang, 2007), pp. 170–72, 201–05, 254–56.</li>
+              </ul>
+            </div></div>
+          </div>
+
+          <div class="issue-card anti">
+            <div class="issue-header"><span><span class="issue-num">Issue 2</span>Rotation / Term Limits</span><span class="chevron">▼</span></div>
+            <div class="issue-body"><div class="issue-inner">
+              <div class="issue-position">
+                <p>Antifederalists see numerous benefits occurring, and numerous harms averted, when <strong>elected officials are obliged to surrender their offices and return to the citizenry</strong>. Among the benefits is the opening of the office for occupancy by another; among the harms is the corruption of officeholders too long away from their constituents. Rotation could apply equally to the House and Senate.</p>
+                <p><em>The debate at the convention was structured around an amendment offered by Gilbert Livingston on June 24: "Resolved, That no person shall be eligible as a senator for more than six years in any term of twelve years, and that it shall be in the power of the legislatures of the several states to recall their senators, or either of them, and to elect others in their stead, to serve for the remainder of the time for which such senator or senators, so recalled, were appointed."</em></p>
+              </div>
+              <div class="surprise-box">
+                <span class="surprise-label">⚡ Surprise Argument</span>
+                If the Federalists argue that rotation is undemocratic for denying the electorate the right to elect candidates of their choice, you can use against them the words of Publius, their champion controversialist. For Publius has the temerity to claim that the Supreme Court, embodying a more fundamental and legitimate popular will than that expressed by majorities of the moment, acts democratically when it overturns laws passed by the democratically elected legislature. Offer this as a debating point, meant to confound, not as a speech from the podium. See: NYRC speech by John Lansing, June 24, in <em>Debates</em>, p. 295; Alexander Hamilton, <em>Federalist</em> No. 78.
+              </div>
+              <div class="bib-label">Recommended Sources</div>
+              <ul class="bib-list">
+                <li>NYRC speech by Gilbert Livingston, June 24, in game book p. 92.</li>
+                <li>NYRC speeches by John Lansing, June 24, in <em>Debates</em>, pp. 290, 293–96, 300, 308–09.</li>
+                <li>NYRC speech by Melancton Smith, June 25, in game book p. 96.</li>
+                <li>Federal Farmer, Letter 11, in <em>CA-F</em> (2.8.147); excerpt in FC, vol. 1, pp. 63–64; under "Popular Basis of Political Authority" no. 16.</li>
+                <li>Brutus, no. 16, in <em>CA-F</em> (2.9.201); excerpt in FC, vol. 2, p. 220; under A1, S3, C1 and 2 no. 13.</li>
+                <li>Machiavelli, <em>Discourses on Livy</em>, I.36 (any edition).</li>
+              </ul>
+            </div></div>
+          </div>
+
+          <div class="issue-card anti">
+            <div class="issue-header"><span><span class="issue-num">Issue 3</span>Instructed Voting</span><span class="chevron">▼</span></div>
+            <div class="issue-body"><div class="issue-inner">
+              <div class="issue-position">
+                <p><strong>A representative is hardly an agent if his constituents cannot tell him how to vote.</strong> Delegates to the Continental Congress were instructed; so too should representatives to the new Congress be instructed. Without this power, constituents have no meaningful check on their representative between elections.</p>
+              </div>
+              <div class="bib-label">Recommended Sources</div>
+              <ul class="bib-list">
+                <li>James Burgh, <em>Political Disquisitions</em>, in FC, vol. 1, pp. 54–55; 393; under "Popular Basis of Political Authority" no. 6; under "Representation" no. 8.</li>
+                <li>House of Representatives debate, August 15, 1789, in FC, vol. 1, pp. 413–18 — speeches by Tucker, Page, Gerry, and Sumter; under "Representation" no. 39.</li>
+              </ul>
+            </div></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">🏆</span> How to Win</div>
+        <div class="win-box">
+          <span class="win-label">Victory Conditions — Antifederalists</span>
+          <p>The Antifederalists <strong>win</strong> if, on the final vote, a constitution rated Federalist is rejected <em>or</em> if a constitution rated Antifederalist is accepted. These results amount to the same thing, because an Antifederalist rating is tantamount to a demand for a second convention, and the rejection of that demand is tantamount to acceptance of the Constitution as is, or to ratification.</p>
+          <p>Before the final vote, there is winning, of a sort, regarding the several provision votes taken along the way (e.g., recall). But these wins and losses translate into a constitution rated Federalist or Antifederalist, and it is the acceptance or rejection of that constitution, as decided by the final vote, that determines victory or defeat in the end.</p>
+          <p><strong>End-Game Action:</strong> If the collected package of provisions is scored as Federalist in character, the Antifederalist leader, Governor George Clinton, in advance of the final vote, should threaten to express his displeasure in a circular letter sent to the other governors, calling on them to demand a second convention. The threat may dispose the Moderates to vote against ratification in the hope that a second convention will produce essential amendments to the Constitution.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- end panel-anti -->
+
+<!-- ==================== MODERATES ==================== -->
+<div class="faction-panel" id="panel-mod">
+
+  <div class="gate" id="gate-mod">
+    <div class="gate-icon">🔒</div>
+    <h2 style="color:var(--mod-color)">Moderate Role Sheet</h2>
+    <p>Enter your faction password to access your instructions and source material.</p>
+    <div class="gate-row">
+      <input type="password" class="gate-input" id="input-mod" placeholder="Moderate password…">
+      <button class="gate-btn" data-faction="mod">Unlock</button>
+    </div>
+    <div class="gate-error" id="error-mod">Incorrect password. Try again.</div>
+  </div>
+
+  <div class="content mod" id="content-mod">
+    <div class="content-header mod">
+      <h2>Moderates</h2>
+      <p>Factional Role Sheet · New York State Ratifying Convention · 1788</p>
+    </div>
+    <div class="content-body">
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">📜</span> Who You Are</div>
+        <div class="rs-prose">
+          <p>With an exception or two, you were elected to the state ratifying convention on an Antifederalist ticket from an Antifederalist-leaning county, and so technically you are an Antifederalist delegate. But only technically, because unlike real Antifederalists, you have little appetite for the fight with Federalists and are <strong>desperate to keep New York in the union</strong>. Outright rejection of the Constitution is almost unthinkable.</p>
+          <p>What would that mean? The old union under the Articles of Confederation cannot be expected to continue, not after the authority of its Congress has been defied. And a new union without New York would fast become an enemy of the state. New York has many natural assets, but these assets would turn to liabilities if the state were left to fend for itself.</p>
+          <p>Consider: (1) New York has the country's best harbor, (2) the Hudson River connects the north of the state with the south, (3) ample land awaits settlement in the west, (4) the war debt is small and can be discharged with the sale of western lands, and (5) imposts pay most of the taxes. But outside of union, the seaport is defenseless in case of war; the Hudson River is a door left open for invasion from Canada; the northwestern part of the state is still occupied by the British; the territory of Vermont is threatening rebellion; and no other state will likely ally with New York in a separate confederation, because the state's immediate neighbors have ratified already.</p>
+          <p>You thus belong to a subgroup of the Antifederalists that wants to ratify but is not especially happy with the Constitution as presented. Perhaps amendments are the answer; perhaps a second convention. On the other hand, perhaps asking for too much and pushing too hard will cause the Constitution to unravel and the union to dissolve. You don't really know, which is why you are undecided, a Moderate.</p>
+          <p><strong>What is it that Moderates are expected to do?</strong> Listen and learn more than declaim and persuade. Moderates do not give speeches at the podium; they do though join in debate, and they do vote. Indeed, the votes of Moderates might well decide the issue. The issue is representation, by which is meant the qualities, responsibilities, and checks on members of Congress, representatives and senators alike.</p>
+          <p>The Federalists have in mind a representative who, while tied to the people by way of election, is otherwise fairly independent. This independence Federalists prize because it allows the representative to look at problems from a national perspective. The Antifederalists, though not indifferent to the importance of talent, are worried about the purposes to which this talent might be put. They want the representative tied to the electorate in as many ways as possible.</p>
+          <p>You, a Moderate, are free to go in either direction depending on how convincing a case is made by the parties. How you decide — should you all decide the same — will almost certainly determine the outcome.</p>
+        </div>
+      </div>
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">🤝</span> Liaisons &amp; Your Role in Debate</div>
+        <div class="rs-prose">
+          <p>Upon receiving your factional role sheet, you will meet to elect two heads, one to serve as <strong>liaison to the Federalist faction</strong>, the other as <strong>liaison to the Antifederalist faction</strong>. (Alternatively, your instructor might make the decisions by distributing individual delegate roles identified as liaisons.) The first responsibility of the liaisons is to recruit support for their adopted factions from among the Moderate contingent. The liaisons are working against each other and, if equally effective, will cause the Moderates to divide in two. The liaisons' second responsibility is to persuade their recruits to join in the debates that follow formal speechmaking, with questions, comments, or declarations supportive of their respective sides.</p>
+          <p><strong>Those who speak in debate, whether for or against a provision, have their vote doubled for that one provision.</strong> Individual Moderates can therefore exercise considerable influence simply by choosing to participate.</p>
+          <p>You Moderates are free agents, which means that speaking and voting with Federalists or Antifederalists on one provision does not obligate you to speak and vote with them on any other. It might rather be your purpose to put together a blend of Federalist and Antifederalist elements.</p>
+          <p>Moderates fear being left out of the union; but they fear even more the dismemberment of the state. That could happen if the final package of provisions is ruled more Antifederalist than Federalist in character — which could provoke the Federalist leader, Chancellor Robert Livingston, to threaten the secession of New York, Richmond, Kings, and Westchester counties. Consider whether this threat is a bluff, and respond as you see fit.</p>
+          <p>Also, Moderates represent Antifederalist counties whose constituents likely will be displeased if the convention approves a package of provisions rated more Federalist than Antifederalist. Before that could happen, Governor Clinton might threaten to call for a second constitutional convention. You too welcome amendments — but unlike the hardliners, you fear the consequences of a ratification effort that fails. You are free to judge whether the governor's maneuver is a case of bomb throwing by a sore loser or a case of turning a sow's ear into a silk purse.</p>
+        </div>
+      </div>
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">📚</span> Source Material</div>
+        <div class="rs-prose">
+          <p>In preparation for the game, Moderates are to complete a <strong>take-home, open-book exam</strong>, based on Gordon Wood's <em>The Creation of the American Republic, 1776–1787</em> (University of North Carolina Press, 1969), pp. 483–99, 506–18; game book p. 105. The exam is more a study guide than a test, though your instructor might wish to count it as part of the course grade. Return the exam promptly so your instructor can grade it and <strong>assign bonus votes to the winner(s), good throughout the game.</strong></p>
+          <p>The other core text selections, all of which should be read, advocate either Federalist or Antifederalist positions. Expounding the Federalist position are Edmund Burke, "Publius," and — at the New York convention — Alexander Hamilton and Robert Livingston. Taking the Antifederalist side are "The Federal Farmer," "Brutus," and — at the convention — Melancton Smith and Gilbert Livingston.</p>
+        </div>
+      </div>
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">📖</span> Liaison Reading</div>
+        <div class="rs-prose">
+          <p>To assist with the work of persuasion, the <strong>Federalist liaison</strong> should read <em>An Address to the People of the State of New York</em>, by "A Citizen of New York" (generally understood to be John Jay); while the <strong>Antifederalist liaison</strong> should read <em>An Address to the People of the State of New York</em>, by "A Plebeian" (possibly Melancton Smith).</p>
+          <p>Excerpts from these identically titled essays can be found in Philip B. Kurland and Ralph Lerner, eds., <em>The Founders' Constitution</em>, vol. 1 (University of Chicago Press/Liberty Fund, 1987), pp. 233–35 and 180–81, respectively; also available online at <em>press-pubs.uchicago.edu/founders</em>.</p>
+          <p>When using the online version, click "Contents," then under Major Themes click "Union" for A Citizen of New York (no. 22) and "Deficiencies of the Confederation" for A Plebeian (no. 26).</p>
+          <p>The essays do not address the issue of representation. They offer practical reasons for ratifying the Constitution now and as is (A Citizen) or for addressing problems at the socioeconomic level first, before venturing radical alterations of the form of government (A Plebeian).</p>
+        </div>
+      </div>
+
+      <div class="rs-section">
+        <div class="rs-section-title"><span class="icon">🏆</span> How to Win</div>
+        <div class="win-box">
+          <span class="win-label">Victory Conditions — Moderates</span>
+          <p>A consequence of being neutral arbiters is that Moderates have no victory objectives of their own. Moderates, therefore, as a group, do not win or lose in this game.</p>
+          <p><strong>But as individuals</strong>, you Moderates share in the victory, or defeat, of the faction you support on the final vote. Choose wisely — and listen carefully to the arguments made.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- end panel-mod -->
+
+<script>
+  const PASSWORDS = { fed: 'FEDS1788', anti: 'ANTIFEDS1788', mod: 'MODS1788' };
+
+  // Tab switching
+  document.querySelectorAll('.faction-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.panel;
+      document.querySelectorAll('.faction-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.faction-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + target).classList.add('active');
+    });
+  });
+
+  // Password unlock
+  function tryUnlock(faction) {
+    const input = document.getElementById('input-' + faction);
+    const error = document.getElementById('error-' + faction);
+    const gate = document.getElementById('gate-' + faction);
+    const content = document.getElementById('content-' + faction);
+    if (input.value.trim().toUpperCase() === PASSWORDS[faction]) {
+      gate.style.display = 'none';
+      content.classList.add('visible');
+    } else {
+      error.classList.add('visible');
+      input.value = '';
+    }
+  }
+
+  document.querySelectorAll('.gate-btn').forEach(btn => {
+    btn.addEventListener('click', () => tryUnlock(btn.dataset.faction));
+  });
+
+  document.querySelectorAll('.gate-input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const faction = input.id.replace('input-', '');
+        tryUnlock(faction);
+      }
+    });
+  });
+
+  // Issue accordion
+  document.querySelectorAll('.issue-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const card = header.closest('.issue-card');
+      card.classList.toggle('open');
+    });
+  });
+</script>
+</body>
+</html>
