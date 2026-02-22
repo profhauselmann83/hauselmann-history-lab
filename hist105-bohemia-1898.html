@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bohemia 1898 — HIST 105</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&family=Sorts+Mill+Goudy:ital@0;1&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black:    #0e0c09;
+            --ink:      #1c1810;
+            --cream:    #f4eed8;
+            --parch:    #ede3c4;
+            --aged:     #d6c99a;
+            --warm:     #c8b87a;
+            --imperial: #6b0f1a;
+            --gold:     #a8862a;
+            --goldlt:   #d4aa44;
+            --czech:    #cc2a1a;
+            --german:   #1a3a6b;
+            --amphibian:#2a5a2a;
+            --faded:    #6a5e42;
+            --shadow:   rgba(0,0,0,0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'IM Fell English', Georgia, serif;
+            background: #1a1208;
+            background-image:
+                radial-gradient(ellipse at 20% 25%, rgba(107,15,26,0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 75%, rgba(26,58,107,0.15) 0%, transparent 50%),
+                repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(255,255,255,0.008) 80px, rgba(255,255,255,0.008) 81px);
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+            color: var(--ink);
+        }
+
+        .wrap { max-width: 960px; margin: 0 auto; }
+
+        /* ===== DECORATIVE BORDER FRAME ===== */
+        .imperial-frame {
+            border: 1px solid var(--gold);
+            padding: 3px;
+            margin-bottom: 28px;
+        }
+        .imperial-frame-inner {
+            border: 3px double var(--gold);
+            padding: 2px;
+        }
+
+        /* ===== MASTHEAD ===== */
+        .masthead {
+            background: var(--cream);
+            background-image: linear-gradient(160deg, #f7f2e0 0%, #ede3c4 60%, #e4d8b0 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .masthead::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(168,134,42,0.04) 40px, rgba(168,134,42,0.04) 41px),
+                repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(168,134,42,0.04) 40px, rgba(168,134,42,0.04) 41px);
+            pointer-events: none;
+        }
+
+        .masthead-top {
+            background: var(--imperial);
+            padding: 7px 20px;
+            text-align: center;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 5px;
+            color: #e8c8b0;
+            text-transform: uppercase;
+        }
+
+        .masthead-body {
+            padding: 28px 40px 24px;
+            text-align: center;
+            border-bottom: 3px double var(--gold);
+            position: relative;
+            z-index: 1;
+        }
+
+        .eagle-ornament {
+            font-size: 2.2em;
+            opacity: 0.5;
+            margin-bottom: 6px;
+            display: block;
+            letter-spacing: 12px;
+            color: var(--gold);
+        }
+
+        .masthead h1 {
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: 4.2em;
+            color: var(--ink);
+            line-height: 1;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+
+        .masthead-divider {
+            color: var(--gold);
+            font-size: 0.9em;
+            letter-spacing: 10px;
+            margin: 6px 0;
+            opacity: 0.7;
+        }
+
+        .masthead-sub {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 3px;
+            color: var(--faded);
+            text-transform: uppercase;
+        }
+
+        .masthead-question {
+            background: var(--ink);
+            color: var(--cream);
+            padding: 14px 40px;
+            font-family: 'IM Fell English', serif;
+            font-size: 0.95em;
+            font-style: italic;
+            text-align: center;
+            letter-spacing: 0.5px;
+            line-height: 1.6;
+        }
+
+        .masthead-question strong {
+            color: var(--goldlt);
+            font-style: normal;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.85em;
+            letter-spacing: 2px;
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress {
+            display: flex;
+            background: var(--parch);
+            border: 2px solid var(--ink);
+            border-top: none;
+            margin-bottom: 28px;
+        }
+        .p-step {
+            flex: 1;
+            text-align: center;
+            padding: 9px 4px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.62em;
+            letter-spacing: 1px;
+            color: var(--faded);
+            border-right: 1px solid var(--aged);
+            transition: all 0.25s;
+            text-transform: uppercase;
+            line-height: 1.5;
+        }
+        .p-step:last-child { border-right: none; }
+        .p-step .si { display: block; font-size: 1.3em; margin-bottom: 2px; }
+        .p-step.active { background: var(--imperial); color: #fce8d8; }
+        .p-step.done   { background: #2a3a1a; color: #b8d4a8; }
+
+        /* ===== PANELS ===== */
+        .panel { display: none; animation: appear 0.35s ease; }
+        .panel.active { display: block; }
+        @keyframes appear {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--cream);
+            background-image: linear-gradient(160deg, #f7f2e0 0%, #ede3c4 100%);
+            border: 2px solid var(--ink);
+            margin-bottom: 22px;
+            box-shadow: 5px 5px 0 var(--shadow);
+            position: relative;
+        }
+
+        .card-head {
+            background: var(--ink);
+            color: var(--cream);
+            padding: 9px 22px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-head::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.15); }
+        .card-head.imperial { background: var(--imperial); }
+        .card-head.german   { background: var(--german); }
+        .card-head.czech    { background: var(--czech); }
+        .card-head.amph     { background: var(--amphibian); }
+        .card-head.gold-bg  { background: var(--gold); color: var(--ink); }
+
+        .card-body { padding: 26px 30px; }
+
+        h2 {
+            font-family: 'Sorts+Mill+Goudy', 'IM Fell English', serif;
+            font-size: 1.9em;
+            color: var(--imperial);
+            margin-bottom: 14px;
+            line-height: 1.2;
+            border-bottom: 2px solid var(--aged);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.8em;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--aged);
+        }
+
+        p { line-height: 1.85; margin-bottom: 14px; font-size: 1.02em; }
+        strong { color: var(--imperial); }
+        em { color: var(--faded); }
+
+        /* ===== ROLE SELECTOR ===== */
+        .role-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .role-card {
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 20px 18px;
+            background: #faf5e8;
+            position: relative;
+            overflow: hidden;
+        }
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+        }
+        .role-card.r-czech::before   { background: var(--czech); }
+        .role-card.r-german::before  { background: var(--german); }
+        .role-card.r-imperial::before { background: var(--imperial); }
+        .role-card.r-amph::before    { background: var(--amphibian); }
+
+        .role-card:hover { transform: translateY(-3px); box-shadow: 0 6px 0 var(--shadow); }
+        .role-card.selected { border-color: var(--gold); box-shadow: 0 0 0 3px var(--goldlt), 4px 4px 0 var(--shadow); }
+
+        .role-card input[type="radio"] { display: none; }
+
+        .role-name {
+            font-family: 'IM Fell English', serif;
+            font-size: 1.25em;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .r-czech .role-name    { color: var(--czech); }
+        .r-german .role-name   { color: var(--german); }
+        .r-imperial .role-name { color: var(--imperial); }
+        .r-amph .role-name     { color: var(--amphibian); }
+
+        .role-desc {
+            font-size: 0.88em;
+            color: var(--faded);
+            line-height: 1.55;
+            font-style: italic;
+        }
+
+        .role-check {
+            position: absolute;
+            top: 10px; right: 12px;
+            font-size: 1.3em;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .role-card.selected .role-check { opacity: 1; }
+
+        /* ===== INFO GRID ===== */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0 4px; }
+        .fgroup { display: flex; flex-direction: column; gap: 5px; }
+        .fgroup label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--faded);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px 13px;
+            background: #fffdf6;
+            border: 1px solid var(--aged);
+            border-bottom: 2px solid var(--ink);
+            color: var(--ink);
+            font-family: 'IM Fell English', serif;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--imperial);
+            background: #fff;
+        }
+        textarea { min-height: 90px; resize: vertical; line-height: 1.65; }
+
+        /* ===== BACKGROUND READING ===== */
+        .bg-block {
+            background: #fdfaf0;
+            border: 1px solid var(--aged);
+            border-left: 5px solid var(--gold);
+            padding: 20px 24px;
+            margin: 18px 0;
+            line-height: 1.9;
+            font-size: 0.98em;
+        }
+        .bg-block.b-czech   { border-left-color: var(--czech); }
+        .bg-block.b-german  { border-left-color: var(--german); }
+        .bg-block.b-imperial { border-left-color: var(--imperial); }
+        .bg-block.b-amph    { border-left-color: var(--amphibian); }
+
+        .bg-label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--faded);
+            display: block;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--aged);
+            padding-bottom: 7px;
+        }
+
+        /* ===== TIMELINE ===== */
+        .tl-row {
+            display: flex;
+            gap: 14px;
+            padding: 11px 14px;
+            margin-bottom: 6px;
+            background: #fdfaf3;
+            border-left: 3px solid var(--aged);
+            font-size: 0.97em;
+            line-height: 1.65;
+        }
+        .tl-row.hot { border-left-color: var(--imperial); background: rgba(107,15,26,0.05); }
+        .tl-yr {
+            font-family: 'Courier Prime', monospace;
+            color: var(--imperial);
+            font-size: 0.78em;
+            font-weight: 700;
+            min-width: 65px;
+            padding-top: 2px;
+        }
+
+        /* ===== QUESTION GROUPS ===== */
+        .qgroup {
+            background: rgba(0,0,0,0.025);
+            border: 1px solid var(--aged);
+            border-top: 3px solid var(--gold);
+            padding: 20px 22px;
+            margin: 20px 0;
+        }
+        .qgroup.q-czech    { border-top-color: var(--czech); }
+        .qgroup.q-german   { border-top-color: var(--german); }
+        .qgroup.q-imperial { border-top-color: var(--imperial); }
+        .qgroup.q-amph     { border-top-color: var(--amphibian); }
+
+        .qgroup-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 16px;
+        }
+        .qgroup.q-czech    .qgroup-title { color: var(--czech); }
+        .qgroup.q-german   .qgroup-title { color: var(--german); }
+        .qgroup.q-imperial .qgroup-title { color: var(--imperial); }
+        .qgroup.q-amph     .qgroup-title { color: var(--amphibian); }
+
+        .qitem { margin-bottom: 18px; }
+        .qitem:last-child { margin-bottom: 0; }
+        .qitem label {
+            display: block;
+            font-weight: bold;
+            color: var(--ink);
+            margin-bottom: 8px;
+            font-size: 0.97em;
+            line-height: 1.55;
+        }
+        .qnum {
+            display: inline-block;
+            background: var(--imperial);
+            color: #fff;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.7em;
+            padding: 1px 7px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .qgroup.q-czech    .qnum { background: var(--czech); }
+        .qgroup.q-german   .qnum { background: var(--german); }
+        .qgroup.q-imperial .qnum { background: var(--imperial); }
+        .qgroup.q-amph     .qnum { background: var(--amphibian); }
+
+        /* ===== NOTICE ===== */
+        .notice {
+            padding: 13px 17px;
+            border-left: 4px solid var(--gold);
+            background: rgba(168,134,42,0.08);
+            margin: 16px 0;
+            font-size: 0.93em;
+            line-height: 1.72;
+            color: var(--faded);
+            font-style: italic;
+        }
+        .notice.n-red { border-left-color: var(--imperial); background: rgba(107,15,26,0.06); }
+
+        /* ===== ROLE DISPLAY BADGE ===== */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border: 2px solid currentColor;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.78em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .role-badge.rb-czech    { color: var(--czech);    background: rgba(204,42,26,0.07); }
+        .role-badge.rb-german   { color: var(--german);   background: rgba(26,58,107,0.07); }
+        .role-badge.rb-imperial { color: var(--imperial); background: rgba(107,15,26,0.07); }
+        .role-badge.rb-amph     { color: var(--amphibian);background: rgba(42,90,42,0.07); }
+
+        /* ===== OUTCOME REVEAL ===== */
+        .outcome-banner {
+            background: var(--ink);
+            color: var(--cream);
+            padding: 22px 30px;
+            text-align: center;
+            margin: 20px 0;
+            border: 3px double var(--gold);
+            box-shadow: 5px 5px 0 var(--shadow);
+        }
+        .outcome-banner h3 {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 1.9em;
+            color: var(--goldlt);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        .outcome-banner p { color: #e8dfc8; font-size: 0.95em; margin: 0; }
+
+        .reveal-block {
+            background: var(--parch);
+            color: var(--ink);
+            padding: 24px 28px;
+            margin: 18px 0;
+            border: 2px solid var(--ink);
+            border-left: 6px solid var(--gold);
+            box-shadow: 4px 4px 0 var(--shadow);
+        }
+        .reveal-block h3 {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.78em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--imperial);
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--aged);
+            padding-bottom: 8px;
+        }
+        .reveal-block p { color: var(--ink); line-height: 1.85; font-size: 0.97em; }
+        .reveal-block ul { margin-left: 20px; margin-top: 8px; }
+        .reveal-block li { color: var(--ink); margin-bottom: 10px; line-height: 1.75; }
+
+        .verdict-stamp {
+            display: inline-block;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.1em;
+            font-weight: 700;
+            letter-spacing: 5px;
+            border: 4px solid var(--imperial);
+            color: var(--imperial);
+            padding: 8px 18px;
+            transform: rotate(-2deg);
+            opacity: 0.85;
+            margin: 14px 0;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+        .btn {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.78em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 12px 26px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .btn-primary   { background: var(--imperial); color: var(--cream); border-color: #3a0808; }
+        .btn-primary:hover:not(:disabled)   { background: #3a0808; transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
+        .btn-gold      { background: var(--gold); color: var(--ink); border-color: #7a6010; }
+        .btn-gold:hover:not(:disabled)      { background: #7a6010; color: var(--cream); transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
+        .btn-ghost     { background: transparent; color: var(--ink); border-color: var(--aged); }
+        .btn-ghost:hover { border-color: var(--ink); background: rgba(0,0,0,0.05); }
+        .btn:disabled  { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+        /* ===== MISC ===== */
+        .breadcrumb {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 2px;
+            color: #6a5e42;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+        .breadcrumb a { color: var(--goldlt); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb .sep { margin: 0 8px; opacity: 0.4; }
+
+        #submitMessage { margin-top: 14px; }
+        .success-msg { background: #e8f4e8; color: #1a3a1a; padding: 14px 18px; border-left: 4px solid #2a5a2a; font-family: 'Courier Prime', monospace; font-size: 0.82em; letter-spacing: 1px; }
+        .error-msg   { background: rgba(107,15,26,0.12); color: var(--imperial); padding: 14px 18px; border-left: 4px solid var(--imperial); font-size: 0.9em; }
+
+        /* Hidden role sections */
+        .role-section { display: none; }
+        .role-section.visible { display: block; }
+
+        @media (max-width: 640px) {
+            .masthead h1 { font-size: 2.6em; }
+            .role-grid { grid-template-columns: 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+            .p-step { font-size: 0.55em; }
+            .card-body { padding: 18px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="breadcrumb">
+        <a href="index.html">Home</a><span class="sep">›</span>
+        <a href="activities.html">Interactive Activities</a><span class="sep">›</span>
+        <span>Bohemia 1898</span>
+    </nav>
+
+    <!-- MASTHEAD -->
+    <div class="imperial-frame">
+    <div class="imperial-frame-inner">
+    <div class="masthead">
+        <div class="masthead-top">HIST 105 · Western Civilization · Prof. Hauselmann</div>
+        <div class="masthead-body">
+            <span class="eagle-ornament">✦ ✦ ✦</span>
+            <h1>Bohemia 1898</h1>
+            <div class="masthead-divider">— ✦ —</div>
+            <div class="masthead-sub">A Simulation of Nationalist Conflict in the Austro-Hungarian Empire</div>
+        </div>
+        <div class="masthead-question">
+            <strong>Central Question:</strong> Does the rise of nationalism doom the Austro-Hungarian Empire — or can it be managed?
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress" id="progressBar">
+        <div class="p-step active"><span class="si">📋</span>Briefing</div>
+        <div class="p-step"><span class="si">🎭</span>Your Role</div>
+        <div class="p-step"><span class="si">📖</span>Background</div>
+        <div class="p-step"><span class="si">✍️</span>Strategy</div>
+        <div class="p-step"><span class="si">🗳️</span>Outcome</div>
+        <div class="p-step"><span class="si">🔍</span>Reflection</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 0: BRIEFING                                            -->
+    <!-- ============================================================ -->
+    <div class="panel active" id="phase0">
+
+        <div class="card">
+            <div class="card-head imperial">📋 Situation Report</div>
+            <div class="card-body">
+                <h2>It is January 1898, and the fate of an empire hangs in the balance.</h2>
+
+                <p>The Austro-Hungarian Empire spans a dozen languages and dozens of peoples. For centuries it has held together through dynastic loyalty, Catholic tradition, and Habsburg bureaucratic authority. But since the middle of the nineteenth century, a new and dangerous force has swept across Europe: <strong>nationalism</strong> — the idea that shared language and culture should determine political identity and loyalty.</p>
+
+                <p>Nowhere is this tension more acute than in <strong>Bohemia</strong>, in the northwest corner of the empire. The town of <strong>Budweis/Budějovice</strong> — about 100 miles south of Prague — is about to hold municipal elections. Czech and German nationalists are competing for control. Imperial officials are trying to keep order. And many ordinary residents aren't sure which side, if any, to join.</p>
+
+                <div class="notice n-red">
+                    <strong>Your Task:</strong> You will take on the role of one participant in this drama — a Czech nationalist, a German nationalist, an Imperial official, or an "Amphibian" with unclear loyalties. You will read about your group, develop your strategy for the election, and then discover what actually happened.
+                </div>
+
+                <div class="tl-row hot" style="margin-top: 20px;">
+                    <div class="tl-yr">Jan. 6</div>
+                    <div><strong>The election campaign is announced in Budweis/Budějovice.</strong> Twelve days remain until the vote.</div>
+                </div>
+                <div class="tl-row hot">
+                    <div class="tl-yr">Jan. 18</div>
+                    <div><strong>Election Day.</strong> The town's future — and perhaps the empire's — is at stake.</div>
+                </div>
+
+                <h3>Before You Choose Your Role</h3>
+                <div class="info-grid">
+                    <div class="fgroup">
+                        <label>Full Name</label>
+                        <input type="text" id="student-name" placeholder="Enter your full name">
+                    </div>
+                    <div class="fgroup">
+                        <label>Section Number</label>
+                        <input type="text" id="section-number" placeholder="e.g., 105, 106">
+                    </div>
+                </div>
+
+                <div class="qgroup" style="margin-top: 20px;">
+                    <div class="qgroup-title">✍️ Warm-Up: Before You Begin</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> What is nationalism? In your own words, explain what it means to be a "nationalist" — and how that might conflict with loyalty to a multi-ethnic empire like Austria-Hungary.</label>
+                        <textarea id="warmup-q1" placeholder="Think about the difference between loyalty to a state (a government) and loyalty to a nation (an ethnic/cultural group)..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="startActivity()">Choose Your Role →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 1: ROLE SELECTION                                      -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase1">
+
+        <div class="card">
+            <div class="card-head gold-bg">🎭 Choose Your Role</div>
+            <div class="card-body">
+                <h2>Who Will You Be?</h2>
+                <p>Select the role you will play in the Budweis/Budějovice election of 1898. Each role comes with its own goals, advantages, and challenges. Read the descriptions carefully before deciding.</p>
+
+                <div class="qgroup" style="margin-bottom: 24px;">
+                    <div class="qgroup-title">✍️ Before You Choose</div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> Looking at the four groups below, which do you expect will have the most power in this situation? Which do you expect will have the least? Why?</label>
+                        <textarea id="warmup-q2" placeholder="Consider: Czech nationalists, German nationalists, Imperial authorities, and Amphibians. Think about numbers, wealth, political power, and unity..."></textarea>
+                    </div>
+                </div>
+
+                <div class="role-grid">
+                    <label class="role-card r-czech" id="card-czech" onclick="selectRole('czech')">
+                        <input type="radio" name="role" value="czech">
+                        <span class="role-check">✓</span>
+                        <div class="role-name">🇨🇿 Czech Nationalist</div>
+                        <div class="role-desc">You represent the Czech-speaking majority of Budweis — more numerous but politically underrepresented. You want linguistic equality and greater Czech political power in a town long dominated by German speakers.</div>
+                    </label>
+                    <label class="role-card r-german" id="card-german" onclick="selectRole('german')">
+                        <input type="radio" name="role" value="german">
+                        <span class="role-check">✓</span>
+                        <div class="role-name">🇩🇪 German Nationalist</div>
+                        <div class="role-desc">You represent the German-speaking minority — wealthier and currently in control of local government. You want to maintain German cultural and political dominance against a rising Czech tide.</div>
+                    </label>
+                    <label class="role-card r-imperial" id="card-imperial" onclick="selectRole('imperial')">
+                        <input type="radio" name="role" value="imperial">
+                        <span class="role-check">✓</span>
+                        <div class="role-name">🦅 Imperial Authority</div>
+                        <div class="role-desc">You are an official of the Habsburg Empire — likely from outside Bohemia entirely. Your job is to maintain order, prevent violence, and keep both nationalist groups from tearing the empire apart.</div>
+                    </label>
+                    <label class="role-card r-amph" id="card-amph" onclick="selectRole('amph')">
+                        <input type="radio" name="role" value="amph">
+                        <span class="role-check">✓</span>
+                        <div class="role-name">🐸 Amphibian</div>
+                        <div class="role-desc">You are bilingual, from a mixed family, or simply indifferent to nationalism. You are a constant frustration to both nationalist groups — and both sides are desperately trying to win you over.</div>
+                    </label>
+                </div>
+
+                <div id="role-selected-notice" style="display:none;" class="notice">
+                    Role selected. Continue to read your background briefing.
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(0)">← Back</button>
+            <button class="btn btn-primary" onclick="confirmRole()">Confirm Role & Read Briefing →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 2: BACKGROUND READING                                  -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase2">
+        <div class="card">
+            <div class="card-head" id="bg-head">📖 Your Briefing</div>
+            <div class="card-body">
+
+                <div id="role-badge-display"></div>
+                <h2 id="bg-title">Your Role Briefing</h2>
+
+                <!-- CONTEXT FOR ALL ROLES -->
+                <div class="bg-block">
+                    <span class="bg-label">📍 The Setting — Budweis/Budějovice, Bohemia, January 1898</span>
+                    <p>You are a resident of <strong>Budweis/Budějovice</strong>, a town of about 40,000 people in southern Bohemia, roughly 100 miles south of Prague. The town is famous for its brewery — in fact, there are now two: one German, one Czech. That tells you something about the state of things.</p>
+                    <p>According to the 1900 census, the town has approximately <strong>23,000 Czech-dominant speakers</strong> and <strong>15,000 German-dominant speakers</strong> — but these numbers are contested, because the official census asked about "language of daily use" rather than "mother tongue," which tended to record more German speakers than there may actually have been.</p>
+                    <p>The recent <strong>Badeni Crisis of 1897</strong> — in which the Austrian Prime Minister granted full Czech linguistic autonomy, triggering German riots, then was forced to resign — has left the entire empire on edge. Municipal elections in Budweis on <strong>January 18</strong> will be one of the first tests of whether the empire can hold together.</p>
+                </div>
+
+                <!-- CZECH NATIONALIST BRIEFING -->
+                <div class="role-section" id="bg-czech">
+                    <div class="bg-block b-czech">
+                        <span class="bg-label">🇨🇿 Czech Nationalist — Your Briefing</span>
+                        <p>Czech speakers make up the majority of Budweis/Budějovice, but the town's political and economic life has long been dominated by the German-speaking minority. German speakers are generally wealthier, hold more positions in local government, and benefit from cultural and institutional connections across the empire.</p>
+                        <p>Czech nationalism has been growing since the 1848 revolution. By 1898, Czech nationalist politics is being driven by the <strong>Young Czechs</strong> (Mladočeši), who favor direct political engagement, and newer, more radical parties like the <strong>Czech National Socialists</strong>, founded this very year. Despite internal divisions over tactics, Czechs remain remarkably united around shared goals: linguistic equality, political representation, and recognition of their cultural identity.</p>
+                        <p>The Badeni Crisis gave Czechs hope — and then crushed it. Badeni's decree granting Czech linguistic autonomy was revoked under German pressure. Now the election in Budweis is a chance to demonstrate Czech political strength at the local level.</p>
+                        <p><strong>Your advantages:</strong> You are the numerical majority. You have growing political organization and momentum. Czech schools are overflowing with students. Demographic trends are in your favor.<br>
+                        <strong>Your disadvantages:</strong> You are less wealthy than your German counterparts. Germans currently dominate local government. The election system is divided into curias (property-based districts) that favor wealthy voters.</p>
+                    </div>
+                </div>
+
+                <!-- GERMAN NATIONALIST BRIEFING -->
+                <div class="role-section" id="bg-german">
+                    <div class="bg-block b-german">
+                        <span class="bg-label">🇩🇪 German Nationalist — Your Briefing</span>
+                        <p>German speakers are the minority in Budweis/Budějovice by raw numbers, but they have long been the dominant group politically and economically. German speakers tend to be wealthier, hold more municipal offices, and have connections to the broader German-speaking world — including the powerful German Empire next door.</p>
+                        <p>German nationalism in this period is split between two camps: <strong>liberal nationalists</strong>, who define German identity through language and culture (and are relatively open to bilingual speakers joining the German camp), and <strong>völkisch nationalists</strong>, who insist German identity is ethnic and hereditary. This division makes it harder for German nationalists to present a unified front — especially when compared to the relatively cohesive Czech movement.</p>
+                        <p>The Badeni Crisis was, from your perspective, a triumph: German mass protests and parliamentary obstruction forced the revocation of a decree that would have required German bureaucrats to learn Czech. But the crisis also revealed how precarious German dominance is becoming as Czech demographic and political strength grows.</p>
+                        <p><strong>Your advantages:</strong> Wealth, political connections, and control of local government. The curia (property-based) voting system gives disproportionate weight to wealthy voters. You have institutional momentum.<br>
+                        <strong>Your disadvantages:</strong> You are a shrinking demographic minority. Internal divisions between liberal and völkisch nationalists weaken your unity. The empire is nominally neutral, which limits how far it will go to protect German dominance.</p>
+                    </div>
+                </div>
+
+                <!-- IMPERIAL AUTHORITY BRIEFING -->
+                <div class="role-section" id="bg-imperial">
+                    <div class="bg-block b-imperial">
+                        <span class="bg-label">🦅 Imperial Authority — Your Briefing</span>
+                        <p>You are an official of the Habsburg Imperial administration, likely stationed in Budweis precisely because you are <em>not</em> from Bohemia — officials were often posted far from their home regions to ensure they would act as neutral arbiters rather than partisan allies of one ethnic group or another.</p>
+                        <p>The empire's position is delicate. You are not neutral in the sense of having no opinions, but you are committed to maintaining the empire's integrity above all else. This means you cannot simply take the side of the Germans (even though German culture has historically been dominant in the imperial administration) — doing so would alienate the Czechs. But supporting Czech demands too strongly would trigger German riots like those of 1897.</p>
+                        <p>The empire has already tried several approaches: the 1867 Ausgleich gave Hungary its own administration; the Taaffe government of the 1880s tried to balance Czech and German interests; the Badeni decrees were an attempt to satisfy Czech demands that backfired dramatically. Every solution seems to create new problems.</p>
+                        <p><strong>Your advantages:</strong> You have the legal authority of the state. You can use force if necessary. You are theoretically above the fray of nationalist politics.<br>
+                        <strong>Your disadvantages:</strong> Any action you take will be read as taking sides. You cannot use force without political consequences. The empire itself is divided between those sympathetic to German culture and those who want to be a genuinely supranational authority.</p>
+                    </div>
+                </div>
+
+                <!-- AMPHIBIAN BRIEFING -->
+                <div class="role-section" id="bg-amph">
+                    <div class="bg-block b-amph">
+                        <span class="bg-label">🐸 Amphibian — Your Briefing</span>
+                        <p>You are one of the many residents of Budweis/Budějovice who does not fit neatly into either the Czech or German nationalist camp. You might be bilingual (approximately 16% of children in Budweis were recorded as bilingual). You might be from a mixed Czech-German family. You might simply be someone who thinks of yourself primarily as a Habsburg subject, a Christian, a craftsman, or a neighbor — not as a "Czech" or a "German."</p>
+                        <p>Both nationalist groups desperately want your support, and both find you deeply frustrating. Historians sometimes call people like you "nationally indifferent," though that phrase doesn't fully capture the diversity of reasons people refused to align with nationalist movements. Some of you are actively opposed to nationalism. Some of you are waiting to see which way the wind blows. Some of you have already shifted toward one camp or another for practical reasons — a job, a marriage, a business contract — and could shift back again.</p>
+                        <p>You are not powerless. In a closely contested election, the "amphibian" vote can be decisive. Both nationalist groups know this, which is why their propaganda is often aimed directly at you.</p>
+                        <p><strong>Your advantages:</strong> You are courted by everyone. You can make pragmatic decisions without ideological constraints. You are not obligated to escalate or take extreme positions.<br>
+                        <strong>Your disadvantages:</strong> You have no organized political party or movement. Nationalist pressure — social, economic, and sometimes physical — can make it difficult to remain neutral. The longer the conflict goes on, the harder it becomes to stay out of it.</p>
+                    </div>
+                </div>
+
+                <div class="notice">
+                    <strong>Remember:</strong> You are playing this role individually — thinking through what someone in your position would want, believe, and do. There are no right or wrong answers, but your responses should show that you've engaged seriously with the historical situation.
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(1)">← Back</button>
+            <button class="btn btn-primary" onclick="goToPhase(3)">Continue to Strategy →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 3: STRATEGY WORKSHEET                                  -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase3">
+        <div class="card">
+            <div class="card-head" id="strat-head">✍️ Your Strategy</div>
+            <div class="card-body">
+                <div id="strat-badge"></div>
+                <h2 id="strat-title">Strategy Worksheet</h2>
+                <p>Answer the questions below based on your role. Think carefully about your group's goals, resources, and the political situation. There are no right or wrong answers — but your responses should reflect serious engagement with the historical circumstances.</p>
+
+                <!-- CZECH QUESTIONS -->
+                <div class="role-section" id="strat-czech">
+                    <div class="qgroup q-czech">
+                        <div class="qgroup-title">🇨🇿 Czech Nationalist Strategy — Budweis, January 1898</div>
+                        <div class="qitem">
+                            <label><span class="qnum">1</span> What does your group want from the upcoming election? What would a "win" look like for Czech nationalists in Budweis?</label>
+                            <textarea id="cz-q1" placeholder="Think about seats on the municipal council, symbolic victories, and longer-term goals beyond this election..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">2</span> What arguments can you make to your fellow Czech supporters to motivate them to vote and participate? What appeals to Czech identity, pride, or interest would be most effective?</label>
+                            <textarea id="cz-q2" placeholder="Think about what Czech nationalists care about — language, culture, economic opportunity, historical injustice..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">3</span> What arguments can you make to the Amphibians — the bilingual, mixed, or indifferent residents who haven't chosen a side? What might convince them that their interests align with the Czech cause?</label>
+                            <textarea id="cz-q3" placeholder="Remember: Amphibians are not already convinced. What would appeal to someone who doesn't see themselves as a Czech nationalist?"></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">4</span> What election tactics can you use? Think about rallies, press, petitions, door-to-door outreach. What methods does your movement have access to?</label>
+                            <textarea id="cz-q4" placeholder="Think practically: how do you reach voters in a town of 40,000 in 1898?"></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">5</span> What can you do <em>beyond the ballot box</em>? The election is not the only arena for political action. What other forms of pressure, organizing, or action are available to you?</label>
+                            <textarea id="cz-q5" placeholder="Think about: economic pressure, cultural institutions, education, street-level organizing, or even more confrontational approaches..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">6</span> How do you think the Germans and Imperial authorities will respond to your campaign? What countermoves do you expect?</label>
+                            <textarea id="cz-q6" placeholder="Put yourself in their shoes: what will they do to stop you or undermine your campaign?"></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">7</span> How will you respond to them? If the Germans escalate, if the Imperial authorities intervene, what is your next move?</label>
+                            <textarea id="cz-q7" placeholder="Think about escalation and de-escalation. What are your red lines? What would you be willing to do?"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GERMAN QUESTIONS -->
+                <div class="role-section" id="strat-german">
+                    <div class="qgroup q-german">
+                        <div class="qgroup-title">🇩🇪 German Nationalist Strategy — Budweis, January 1898</div>
+                        <div class="qitem">
+                            <label><span class="qnum">1</span> What does your group want from the upcoming election? You currently control local government — what does "winning" mean for you?</label>
+                            <textarea id="de-q1" placeholder="Is a win simply holding what you have? Or do you want to consolidate and expand your advantage?"></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">2</span> What arguments can you make to achieve your goals? Who will you appeal to — German speakers, business owners, those who fear Czech radicalism?</label>
+                            <textarea id="de-q2" placeholder="Think about what German nationalists care about — cultural prestige, economic stability, the dangers of Czech radicalism..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">3</span> What will you do on election day itself? Given that the election is divided into curias (property-based voting districts), where is your campaign most and least likely to succeed?</label>
+                            <textarea id="de-q3" placeholder="The curia system gives more weight to wealthy voters. Think about which districts you can win and which you might lose..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">4</span> What will you do before and after the election — in terms of organizing, propaganda, and political maneuvering?</label>
+                            <textarea id="de-q4" placeholder="Think about the press, rallies, backroom deals, and how you manage the aftermath regardless of the outcome..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">5</span> How do you think other groups — Czech nationalists, the Imperial authorities, and Amphibians — will respond to your campaign?</label>
+                            <textarea id="de-q5" placeholder="Think about what each group wants and how your campaign threatens or appeals to them..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">6</span> How will you respond to them? If the Czechs make gains, if the empire seems to side against you, what is your next move?</label>
+                            <textarea id="de-q6" placeholder="Think about escalation — and about your internal divisions between liberal and völkisch nationalists..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IMPERIAL QUESTIONS -->
+                <div class="role-section" id="strat-imperial">
+                    <div class="qgroup q-imperial">
+                        <div class="qgroup-title">🦅 Imperial Authority Strategy — Budweis, January 1898</div>
+                        <div class="qitem">
+                            <label><span class="qnum">1</span> What does the empire want to happen in this election? What outcome would best serve Habsburg interests — and what outcome would be a disaster?</label>
+                            <textarea id="im-q1" placeholder="Think about stability, legitimacy, and precedent. What result would make your job harder?"></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">2</span> What is the empire's best argument for convincing nationalist groups — both Czech and German — to remain loyal to the Habsburg state rather than pursuing their ethnic agendas?</label>
+                            <textarea id="im-q2" placeholder="What does the empire offer that nationalism cannot? Think about security, economic benefits, and the alternatives..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">3</span> What could you do as an Imperial authority if you do not like the outcome of the election — or if violence breaks out? And what are the risks of using those tools?</label>
+                            <textarea id="im-q3" placeholder="Think about your legal authority, your ability to use force, and the political costs of intervention on either side..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AMPHIBIAN QUESTIONS -->
+                <div class="role-section" id="strat-amph">
+                    <div class="qgroup q-amph">
+                        <div class="qgroup-title">🐸 Amphibian Worksheet — Budweis, January 1898</div>
+                        <div class="qitem">
+                            <label><span class="qnum">1</span> Why might you be an Amphibian? What are some of the reasons someone in 1898 Budweis might refuse to identify strongly with either Czech or German nationalism?</label>
+                            <textarea id="am-q1" placeholder="Think about practical reasons (family, business, language), ideological reasons (opposition to nationalism itself), and personal reasons..."></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">2</span> What does your group want from the upcoming election? You may not have a unified political agenda — but what outcomes would be good or bad for someone in your position?</label>
+                            <textarea id="am-q2" placeholder="Think about what you need from local government: stability, fair treatment, economic opportunity. Who is more likely to provide that?"></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">3</span> Both Czech and German nationalists are trying to win you over. What arguments might actually work on you? What would it take to convince you to support one side?</label>
+                            <textarea id="am-q3" placeholder="What would have to be true — what would either side have to offer or threaten — for you to choose a side?"></textarea>
+                        </div>
+                        <div class="qitem">
+                            <label><span class="qnum">4</span> What election outcome would you like? Is there anything you absolutely do not want to happen — regardless of which side wins?</label>
+                            <textarea id="am-q4" placeholder="What are your red lines? What result would be genuinely threatening to your way of life?"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(2)">← Back</button>
+            <button class="btn btn-primary" onclick="submitStrategy()">Submit Strategy & See What Happened →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 4: WHAT ACTUALLY HAPPENED                              -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase4">
+        <div class="card">
+            <div class="card-head imperial">🗳️ The Outcome — What Actually Happened</div>
+            <div class="card-body">
+                <h2>The Budweis Election of 1898</h2>
+
+                <div class="outcome-banner">
+                    <h3>Die Deutschen haben gewonnen.</h3>
+                    <p>The Germans won — but only barely, and at a terrible cost.</p>
+                </div>
+
+                <div class="reveal-block">
+                    <h3>The Campaign and the Vote</h3>
+                    <p>The election was fought in three curias — property-based voting districts. In the first two curias, the Germans held a strong advantage based on wealth. But the third curia was bitterly contested.</p>
+                    <p>In the lead-up to the vote, both nationalist camps focused on rallying their supporters through the press and public rallies. The election itself was extremely close: each German candidate who won defeated his Czech opponent by fewer than 120 votes. The campaign was also marred by accusations of fraud and bribery on both sides.</p>
+                    <p>One colorful incident: a voter sold his vote to the highest bidder. He received, as payment, <em>"five goulashes, two sausages, two portions of Emmental cheese, and nine sardines"</em> — and then suffered such bad indigestion that he missed the election entirely.</p>
+                </div>
+
+                <div class="reveal-block">
+                    <h3>The Aftermath: Riot</h3>
+                    <p>Czech supporters who had gathered expecting victory responded to the German win with violence. They smashed more than <strong>2,500 windows</strong> in German-identified buildings, attacked the homes of German politicians, targeted German-language schools — and also attacked Jewish-owned shops, as Czech nationalists generally assumed Jews to be German sympathizers.</p>
+                    <p>Imperial authorities made over 60 arrests. The municipal government — dominated by German sympathizers — then made the townspeople bear the full cost of repairing the broken windows, which amounted to a de facto tax on the Czech community, whose windows had not been broken.</p>
+                </div>
+
+                <div class="reveal-block">
+                    <h3>The Longer View</h3>
+                    <ul>
+                        <li>Despite the German victory in 1898, <strong>demographic trends favored the Czechs</strong>. By the turn of the century, the census recorded 23,400 Czech-dominant residents versus 15,400 German-dominant ones. Czech schools ran half-day shifts to accommodate demand.</li>
+                        <li>As Czech demographic strength grew, the <strong>Czech movement maintained its unity</strong> — while German nationalists fractured into hostile liberal and völkisch factions.</li>
+                        <li>Despite all of this, <strong>neither side could imagine the empire's collapse</strong>. In 1900, both Czech and German nationalists still operated within the framework of Habsburg authority — fighting for advantage within the empire, not for its destruction. The fracture of the Austro-Hungarian Empire would not come until 1918, less than twenty years later.</li>
+                    </ul>
+                </div>
+
+                <div style="text-align:center; padding: 16px 0;">
+                    <div class="verdict-stamp">HISTORY RENDERED</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToPhase(3)">← Back</button>
+            <button class="btn btn-primary" onclick="goToPhase(5)">Continue to Reflection →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 5: REFLECTION                                          -->
+    <!-- ============================================================ -->
+    <div class="panel" id="phase5">
+        <div class="card">
+            <div class="card-head imperial">🔍 Final Reflection</div>
+            <div class="card-body">
+                <div id="reflect-badge"></div>
+                <h2>Looking Back — What Did This Teach Us?</h2>
+                <p>Now that you know what actually happened in Budweis in 1898 — and what happened to the empire over the next two decades — take a step back and reflect.</p>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">📊 Comparing Your Strategy to History</div>
+                    <div class="qitem">
+                        <label><span class="qnum">1</span> How did what actually happened compare to the strategy you developed? What did you predict correctly? What surprised you?</label>
+                        <textarea id="ref-q1" placeholder="Look back at your strategy worksheet. Where were you right? Where were you wrong?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">2</span> From your role's perspective, what went wrong in the 1898 election and its aftermath? Was there anything your group could have done differently?</label>
+                        <textarea id="ref-q2" placeholder="Think about the riot, the narrow German victory, the de facto Czech tax, the vote-selling incident..."></textarea>
+                    </div>
+                </div>
+
+                <div class="qgroup q-imperial">
+                    <div class="qgroup-title">🦅 The Empire's Dilemma</div>
+                    <div class="qitem">
+                        <label><span class="qnum">3</span> The Central Question of this activity was: does the rise of nationalism doom the Austro-Hungarian Empire? Based on what you've read and experienced in this simulation, what is your answer — and why? Use specific evidence from the Budweis case.</label>
+                        <textarea id="ref-q3" placeholder="Take a clear position. Was the empire doomed by nationalism — or was there a path to survival? Use specific evidence from Budweis and the broader context..." style="min-height:130px;"></textarea>
+                    </div>
+                </div>
+
+                <div class="qgroup">
+                    <div class="qgroup-title">🌍 Broader Connections</div>
+                    <div class="qitem">
+                        <label><span class="qnum">4</span> The historian Pieter Judson argues that many people in the Habsburg Empire were "nationally indifferent" — and that nationalist activists constantly had to work to make people care about national identity. Do you find this surprising? What does it suggest about the nature of nationalism?</label>
+                        <textarea id="ref-q4" placeholder="Think about whether nationalism is natural or constructed, inevitable or contingent. What does the Amphibian's existence tell us?"></textarea>
+                    </div>
+                    <div class="qitem">
+                        <label><span class="qnum">5</span> In 1900, neither Czech nor German nationalists could have imagined the Austro-Hungarian Empire collapsing. By 1918, it was gone. What does this tell us about the relationship between nationalism and empires — and about how historical change happens?</label>
+                        <textarea id="ref-q5" placeholder="Think about how processes that seem manageable in the short term can become catastrophic. Are there lessons here for other times and places?"></textarea>
+                    </div>
+                </div>
+
+                <div class="btn-row" style="margin-top: 0;">
+                    <button class="btn btn-gold" onclick="downloadPDF()">📄 Download PDF</button>
+                    <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Prof. Hauselmann</button>
+                    <button class="btn btn-ghost" onclick="goToPhase(4)">← Back</button>
+                </div>
+                <div id="submitMessage"></div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- end wrap -->
+
+<script>
+    // ===== CONFIG =====
+    const SUPABASE_URL      = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const ASSIGNMENT_OPEN   = true;
+    const SUBMISSION_CUTOFF = null;
+
+    let currentPhase  = 0;
+    let selectedRole  = null;
+    let stratSubmitted = false;
+
+    const ROLES = {
+        czech:    { label: 'Czech Nationalist',  emoji: '🇨🇿', cls: 'czech',    headCls: 'czech',    badgeCls: 'rb-czech' },
+        german:   { label: 'German Nationalist', emoji: '🇩🇪', cls: 'german',   headCls: 'german',   badgeCls: 'rb-german' },
+        imperial: { label: 'Imperial Authority', emoji: '🦅', cls: 'imperial', headCls: 'imperial', badgeCls: 'rb-imperial' },
+        amph:     { label: 'Amphibian',          emoji: '🐸', cls: 'amph',     headCls: 'amph',     badgeCls: 'rb-amph' },
+    };
+
+    // Role-specific strategy field IDs
+    const STRAT_FIELDS = {
+        czech:    ['cz-q1','cz-q2','cz-q3','cz-q4','cz-q5','cz-q6','cz-q7'],
+        german:   ['de-q1','de-q2','de-q3','de-q4','de-q5','de-q6'],
+        imperial: ['im-q1','im-q2','im-q3'],
+        amph:     ['am-q1','am-q2','am-q3','am-q4'],
+    };
+
+    // ===== NAVIGATION =====
+    function goToPhase(n) {
+        document.getElementById(`phase${currentPhase}`).classList.remove('active');
+        document.getElementById(`phase${n}`).classList.add('active');
+        currentPhase = n;
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+
+    function updateProgress() {
+        document.querySelectorAll('.p-step').forEach((el, i) => {
+            el.classList.remove('active', 'done');
+            if      (i < currentPhase)  el.classList.add('done');
+            else if (i === currentPhase) el.classList.add('active');
+        });
+    }
+
+    // ===== ROLE SELECTION =====
+    function selectRole(role) {
+        selectedRole = role;
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById(`card-${role}`).classList.add('selected');
+        document.getElementById('role-selected-notice').style.display = 'block';
+    }
+
+    function confirmRole() {
+        if (!selectedRole) { alert('Please select a role before continuing.'); return; }
+        const q2 = document.getElementById('warmup-q2').value.trim();
+        if (!q2) { alert('Please answer the question above before choosing your role.'); document.getElementById('warmup-q2').focus(); return; }
+        applyRoleUI();
+        goToPhase(2);
+    }
+
+    function applyRoleUI() {
+        const r = ROLES[selectedRole];
+
+        // Background phase
+        document.getElementById('bg-head').className = `card-head ${r.headCls}`;
+        document.getElementById('bg-head').textContent = `📖 Your Briefing — ${r.label}`;
+        document.getElementById('bg-title').textContent = `Your Role: ${r.emoji} ${r.label}`;
+        document.getElementById('role-badge-display').innerHTML = `<div class="role-badge rb-${r.cls}">${r.emoji} ${r.label}</div>`;
+        document.querySelectorAll('#phase2 .role-section').forEach(el => el.classList.remove('visible'));
+        document.getElementById(`bg-${selectedRole}`)?.classList.add('visible');
+
+        // Strategy phase
+        document.getElementById('strat-head').className = `card-head ${r.headCls}`;
+        document.getElementById('strat-head').textContent = `✍️ Strategy Worksheet — ${r.label}`;
+        document.getElementById('strat-title').textContent = `${r.emoji} ${r.label} Strategy`;
+        document.getElementById('strat-badge').innerHTML = `<div class="role-badge rb-${r.cls}">${r.emoji} ${r.label}</div>`;
+        document.querySelectorAll('#phase3 .role-section').forEach(el => el.classList.remove('visible'));
+        document.getElementById(`strat-${selectedRole}`)?.classList.add('visible');
+
+        // Reflection phase
+        document.getElementById('reflect-badge').innerHTML = `<div class="role-badge rb-${r.cls}">${r.emoji} ${r.label}</div>`;
+    }
+
+    // ===== FORM VALIDATION =====
+    function startActivity() {
+        const name = document.getElementById('student-name').value.trim();
+        if (!name) { alert('Please enter your name before continuing.'); document.getElementById('student-name').focus(); return; }
+        const q1 = document.getElementById('warmup-q1').value.trim();
+        if (!q1) { alert('Please complete the warm-up question before continuing.'); return; }
+        goToPhase(1);
+    }
+
+    function submitStrategy() {
+        if (!selectedRole) { alert('No role selected.'); return; }
+        const fields = STRAT_FIELDS[selectedRole];
+        for (const id of fields) {
+            const el = document.getElementById(id);
+            if (!el || !el.value.trim()) {
+                alert('Please complete all strategy questions before continuing.');
+                el?.focus();
+                return;
+            }
+        }
+        stratSubmitted = true;
+        goToPhase(4);
+    }
+
+    // ===== PDF =====
+    function buildPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+        const lh = 7, ph = doc.internal.pageSize.height, m = 20;
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+        const role    = selectedRole ? ROLES[selectedRole].label : 'Unknown';
+
+        function add(text, size = 11, bold = false) {
+            doc.setFontSize(size);
+            doc.setFont(undefined, bold ? 'bold' : 'normal');
+            const lines = doc.splitTextToSize(String(text || '[Not answered]'), 170);
+            lines.forEach(l => { if (y > ph - m) { doc.addPage(); y = 20; } doc.text(l, 20, y); y += lh; });
+            y += 3;
+        }
+
+        add('Bohemia 1898 — Nationalist Conflict in the Habsburg Empire', 16, true); y += 2;
+        add('HIST 105 · Western Civilization · Prof. Hauselmann', 12);
+        add(`Student: ${name}`, 12, true);
+        if (section) add(`Section: ${section}`, 12, true);
+        add(`Role: ${role}`, 12, true);
+        add(`Completed: ${new Date().toLocaleString()}`, 10); y += 4;
+
+        add('WARM-UP', 13, true);
+        add('1. What is nationalism, and how does it conflict with a multi-ethnic empire?', 11, true);
+        add(document.getElementById('warmup-q1').value);
+        add('2. Which group did you expect to have the most/least power?', 11, true);
+        add(document.getElementById('warmup-q2').value); y += 4;
+
+        add('STRATEGY WORKSHEET', 13, true);
+        if (selectedRole === 'czech') {
+            [['cz-q1','1. What does your group want from the election?'],
+             ['cz-q2','2. Arguments to Czech supporters?'],
+             ['cz-q3','3. Arguments to Amphibians?'],
+             ['cz-q4','4. Election tactics?'],
+             ['cz-q5','5. Beyond the ballot box?'],
+             ['cz-q6','6. How will others respond?'],
+             ['cz-q7','7. How will you respond to them?']
+            ].forEach(([id,q]) => { add(q, 11, true); add(document.getElementById(id).value); });
+        } else if (selectedRole === 'german') {
+            [['de-q1','1. What does your group want from the election?'],
+             ['de-q2','2. Arguments and appeals?'],
+             ['de-q3','3. Plans for election day?'],
+             ['de-q4','4. Before and after the election?'],
+             ['de-q5','5. How will others respond?'],
+             ['de-q6','6. How will you respond to them?']
+            ].forEach(([id,q]) => { add(q, 11, true); add(document.getElementById(id).value); });
+        } else if (selectedRole === 'imperial') {
+            [['im-q1','1. What does the empire want from the election?'],
+             ['im-q2','2. Best argument for imperial loyalty?'],
+             ['im-q3','3. Options if the outcome is bad?']
+            ].forEach(([id,q]) => { add(q, 11, true); add(document.getElementById(id).value); });
+        } else if (selectedRole === 'amph') {
+            [['am-q1','1. Why might you be an Amphibian?'],
+             ['am-q2','2. What does your group want from the election?'],
+             ['am-q3','3. What arguments might convince you?'],
+             ['am-q4','4. What outcome do you want?']
+            ].forEach(([id,q]) => { add(q, 11, true); add(document.getElementById(id).value); });
+        }
+        y += 4;
+
+        add('FINAL REFLECTION', 13, true);
+        [['ref-q1','1. How did what happened compare to your strategy?'],
+         ['ref-q2','2. What could your group have done differently?'],
+         ['ref-q3','3. Does nationalism doom the Austro-Hungarian Empire?'],
+         ['ref-q4','4. What does national indifference tell us about nationalism?'],
+         ['ref-q5','5. What does the empire\'s collapse tell us about historical change?']
+        ].forEach(([id,q]) => { add(q, 11, true); add(document.getElementById(id).value); });
+
+        return doc;
+    }
+
+    function downloadPDF() {
+        const name = document.getElementById('student-name').value.trim();
+        if (!name) { alert('Please enter your name in the Briefing section.'); return; }
+        if (!stratSubmitted) { alert('Please complete the strategy worksheet first.'); return; }
+        try { buildPDF().save(`Bohemia1898_${name.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`); }
+        catch(e) { console.error(e); alert('Error generating PDF: ' + e.message); }
+    }
+
+    async function submitToSupabase() {
+        if (!ASSIGNMENT_OPEN) {
+            document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ This assignment is now closed.</div>'; return;
+        }
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+        if (!name)    { alert('Please enter your name.'); return; }
+        if (!section) { alert('Please enter your section number.'); return; }
+        if (!stratSubmitted) { alert('Please complete the strategy worksheet first.'); return; }
+
+        const btn = document.getElementById('submitBtn');
+        const msg = document.getElementById('submitMessage');
+        btn.disabled = true; btn.textContent = '⏳ Submitting...';
+        msg.innerHTML = '<div style="padding:12px;color:var(--faded);font-style:italic;">Generating and uploading...</div>';
+
+        try {
+            const blob = buildPDF().output('blob');
+            const ts   = new Date().toISOString().replace(/[:.]/g, '-');
+            const safe = name.replace(/[^a-zA-Z0-9]/g, '_');
+            const role = selectedRole || 'unknown';
+            const path = `bohemia-1898/${section}/${role}_${safe}_${ts}.pdf`;
+
+            const { error: upErr } = await supabaseClient.storage.from('student-submissions')
+                .upload(path, blob, { contentType: 'application/pdf', upsert: false });
+            if (upErr) throw new Error(upErr.message);
+
+            const { data: urlData } = supabaseClient.storage.from('student-submissions').getPublicUrl(path);
+
+            const allData = {};
+            document.querySelectorAll('input[type=text], textarea').forEach(el => { if (el.id) allData[el.id] = el.value; });
+            allData['selected_role'] = role;
+
+            await supabaseClient.from('worksheet_submissions').insert({
+                student_name:   name,
+                section_number: section,
+                worksheet_type: 'bohemia-1898',
+                file_path:      path,
+                file_url:       urlData.publicUrl,
+                form_data:      allData,
+                submitted_at:   new Date().toISOString()
+            });
+
+            msg.innerHTML = '<div class="success-msg">✅ Successfully submitted to Prof. Hauselmann.</div>';
+            btn.textContent = '✓ Submitted';
+        } catch(e) {
+            console.error(e);
+            msg.innerHTML = `<div class="error-msg">❌ Submission failed: ${e.message}. Download the PDF and email it as a backup.</div>`;
+            btn.disabled = false; btn.textContent = '📤 Submit to Prof. Hauselmann';
+        }
+    }
+
+    // ===== BLOCK PASTE =====
+    document.addEventListener('paste', function(e) {
+        const t = e.target;
+        if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') {
+            e.preventDefault();
+            t.style.outline = '2px solid var(--imperial)';
+            setTimeout(() => t.style.outline = '', 800);
+        }
+    });
+
+    // ===== AUTO-SAVE =====
+    setInterval(() => {
+        const s = { role: selectedRole };
+        document.querySelectorAll('input[type=text], textarea').forEach(el => { if (el.id) s[el.id] = el.value; });
+        localStorage.setItem('bohemia1898', JSON.stringify(s));
+    }, 30000);
+
+    window.onload = () => {
+        const saved = localStorage.getItem('bohemia1898');
+        if (saved) {
+            try {
+                if (confirm('Restore your previous session?')) {
+                    const s = JSON.parse(saved);
+                    if (s.role) { selectRole(s.role); applyRoleUI(); }
+                    Object.entries(s).forEach(([id, val]) => {
+                        if (id === 'role') return;
+                        const el = document.getElementById(id);
+                        if (el) el.value = val;
+                    });
+                }
+            } catch(e) {}
+        }
+        updateProgress();
+    };
+</script>
+</body>
+</html>
