@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>HIST 107 Research Lab - Hauselmann's History Lab</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        header h1 { margin: 0 0 8px 0; }
+        header p { margin: 0; opacity: 0.85; }
+        nav {
+            background-color: #34495e;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        nav a:hover { text-decoration: underline; }
+
+        .breadcrumb {
+            background-color: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .breadcrumb a { color: #3498db; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* ── INTRO BOX ── */
+        .assignment-info {
+            background-color: #e8f4f8;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .assignment-info h3 { margin-top: 0; color: #2c3e50; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.88em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.18s, transform 0.1s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-copy {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-copy:hover { background-color: #2980b9; }
+        .btn-copy.copied { background-color: #27ae60; }
+
+        .btn-jstor {
+            background-color: #8e44ad;
+            color: white;
+        }
+        .btn-jstor:hover { background-color: #7d3c98; }
+
+        .btn-muse {
+            background-color: #1a6b3a;
+            color: white;
+        }
+        .btn-muse:hover { background-color: #145a30; }
+
+        .search-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        /* ── PHRASE BANK CARDS ── */
+        .section-title {
+            color: #2c3e50;
+            margin-top: 40px;
+            margin-bottom: 4px;
+        }
+
+        .lens-card {
+            background-color: white;
+            padding: 22px 25px;
+            margin: 16px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid #ccc;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .lens-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.13);
+        }
+        .lens-card.lens-prod  { border-left-color: #27ae60; }
+        .lens-card.lens-labor { border-left-color: #e67e22; }
+        .lens-card.lens-emp   { border-left-color: #2980b9; }
+        .lens-card.lens-circ  { border-left-color: #8e44ad; }
+
+        .lens-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .lens-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 0.78em;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.04em;
+        }
+        .lens-prod  .lens-badge { background-color: #27ae60; }
+        .lens-labor .lens-badge { background-color: #e67e22; }
+        .lens-emp   .lens-badge { background-color: #2980b9; }
+        .lens-circ  .lens-badge { background-color: #8e44ad; }
+
+        .lens-card h3 { margin: 0; color: #2c3e50; font-size: 1.05em; }
+
+        .lens-focus {
+            font-size: 0.88em;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 14px;
+        }
+
+        .phrase-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .phrase-tag {
+            display: inline-block;
+            background-color: #f0f0f0;
+            border: 1.5px solid #ddd;
+            border-radius: 20px;
+            padding: 5px 13px;
+            font-size: 0.82em;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+            user-select: none;
+        }
+        .phrase-tag:hover { background-color: #d4e8f7; border-color: #3498db; color: #1a5276; }
+        .phrase-tag.selected { background-color: #3498db; border-color: #2980b9; color: white; }
+
+        .addon-label {
+            font-size: 0.8em;
+            font-weight: 700;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 10px 0 6px;
+        }
+
+        /* ── COMMODITY & REGION PILLS ── */
+        .pill-section {
+            background-color: white;
+            padding: 22px 25px;
+            margin: 16px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .pill-section h3 { margin-top: 0; color: #2c3e50; }
+
+        /* ── TIPS ── */
+        .tip-card {
+            background-color: #d4edda;
+            border-left: 4px solid #27ae60;
+            padding: 20px 25px;
+            margin: 16px 0;
+            border-radius: 5px;
+        }
+        .tip-card h3 { margin-top: 0; color: #2c3e50; }
+        .tip-card ul { margin: 0; padding-left: 20px; }
+        .tip-card li { margin-bottom: 6px; line-height: 1.55; }
+
+        /* ── FOOTER ── */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+        }
+
+        /* ── COPY TOAST ── */
+        #toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #2c3e50;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-size: 0.88em;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            z-index: 9999;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ── SELECTED PHRASES BAR ── */
+        #selectedBar {
+            background: #fff9e6;
+            border: 1.5px solid #f39c12;
+            border-radius: 5px;
+            padding: 14px 18px;
+            margin: 16px 0;
+            display: none;
+        }
+        #selectedBar h4 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+        #selectedPhrases {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f39c12;
+            color: white;
+            padding: 4px 11px;
+            border-radius: 15px;
+            font-size: 0.82em;
+            font-weight: 600;
+        }
+        .selected-tag button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1em;
+            line-height: 1;
+            opacity: 0.8;
+        }
+        .selected-tag button:hover { opacity: 1; }
+        .bar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-clear { background-color: #e74c3c; color: white; }
+        .btn-clear:hover { background-color: #c0392b; }
+
+        code {
+            background: #f0f0f0;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🔎 HIST 107 Research Lab</h1>
+    <p>Search Phrase Bank &amp; Query Builder — Shared Commodity, Divided Lenses</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a>
+</nav>
+
+<div class="breadcrumb">
+    <a href="research-hist107.html">← Back to HIST 107 Research Guide</a>
+</div>
+
+<div class="assignment-info">
+    <h3>📋 How to Use This Page</h3>
+    <p>This tool helps you build effective academic search strings. Browse the phrase banks below and click any tag to add it to your collected query — then copy or search directly.</p>
+    <p style="margin-bottom:0;"><strong>Remember:</strong> You are not collecting background — you are collecting <em>interpretations</em>. If your article doesn't clearly take a position or make an argument, it's probably not strong enough.</p>
+</div>
+
+
+
+<!-- ═══════════════════════════════════════
+     SELECTED PHRASES BAR
+════════════════════════════════════════ -->
+<div id="selectedBar">
+    <h4>🗂️ Your Selected Phrases — click tags below to add more</h4>
+    <div id="selectedPhrases"></div>
+    <div class="bar-actions">
+        <button class="btn btn-copy" id="barCopyBtn" onclick="copySelected()">📋 Copy Combined Query</button>
+        <button class="btn btn-jstor" onclick="searchSelectedJSTOR()">🔍 Search JSTOR</button>
+        <button class="btn btn-muse" onclick="searchSelectedMuse()">🔍 Search Project MUSE</button>
+        <button class="btn btn-clear" onclick="clearSelected()">✕ Clear All</button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PHRASE BANKS — LENSES
+════════════════════════════════════════ -->
+<h2 class="section-title">🔬 Analytical Lens Phrase Banks</h2>
+<p style="color:#555; margin-top:0;">Click any phrase tag to add it to your collected query above. Each lens corresponds to one group member's research focus.</p>
+
+<!-- LENS 1: Production & Environment -->
+<div class="lens-card lens-prod">
+    <div class="lens-header">
+        <span class="lens-badge">Lens 1</span>
+        <h3>🌱 Production &amp; Environment</h3>
+    </div>
+    <p class="lens-focus">Focus: extraction, ecology, landscape change, pre-imperial systems</p>
+    <div class="phrase-grid" id="phrases-prod"></div>
+    <div class="addon-label">Useful Add-On Terms</div>
+    <div class="phrase-grid" id="addons-prod"></div>
+</div>
+
+<!-- LENS 2: Labor & Coercion -->
+<div class="lens-card lens-labor">
+    <div class="lens-header">
+        <span class="lens-badge">Lens 2</span>
+        <h3>⚒️ Labor &amp; Coercion</h3>
+    </div>
+    <p class="lens-focus">Focus: slavery, indenture, wage labor, discipline, resistance</p>
+    <div class="phrase-grid" id="phrases-labor"></div>
+    <div class="addon-label">Useful Add-On Terms</div>
+    <div class="phrase-grid" id="addons-labor"></div>
+</div>
+
+<!-- LENS 3: Empire, State & Corporations -->
+<div class="lens-card lens-emp">
+    <div class="lens-header">
+        <span class="lens-badge">Lens 3</span>
+        <h3>🏛️ Empire, State &amp; Corporations</h3>
+    </div>
+    <p class="lens-focus">Focus: tariffs, chartered companies, state-building, imperial governance</p>
+    <div class="phrase-grid" id="phrases-emp"></div>
+    <div class="addon-label">Useful Add-On Terms</div>
+    <div class="phrase-grid" id="addons-emp"></div>
+</div>
+
+<!-- LENS 4: Circulation & Consumption -->
+<div class="lens-card lens-circ">
+    <div class="lens-header">
+        <span class="lens-badge">Lens 4</span>
+        <h3>🌍 Circulation &amp; Consumption</h3>
+    </div>
+    <p class="lens-focus">Focus: trade routes, finance, global demand, consumer culture</p>
+    <div class="phrase-grid" id="phrases-circ"></div>
+    <div class="addon-label">Useful Add-On Terms</div>
+    <div class="phrase-grid" id="addons-circ"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     COMMODITY PILLS
+════════════════════════════════════════ -->
+<h2 class="section-title">📦 Commodity Keywords</h2>
+<p style="color:#555; margin-top:0;">Click to add any commodity to your query.</p>
+<div class="pill-section">
+    <div class="phrase-grid" id="commodities"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     REGIONAL MODIFIERS
+════════════════════════════════════════ -->
+<h2 class="section-title">🗺️ Regional Modifiers</h2>
+<p style="color:#555; margin-top:0;">Add one to narrow your results to a specific area.</p>
+<div class="pill-section">
+    <div class="phrase-grid" id="regions"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     COMPARATIVE & THEORETICAL
+════════════════════════════════════════ -->
+<h2 class="section-title">🔄 Comparative &amp; Theoretical Terms</h2>
+<p style="color:#555; margin-top:0;">Use these for stronger, argument-driven articles.</p>
+<div class="pill-section">
+    <div class="phrase-grid" id="comparative"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SEARCH TECHNIQUE TIPS
+════════════════════════════════════════ -->
+<h2 class="section-title">🔧 Search Technique Tips</h2>
+<div class="tip-card">
+    <h3>How to Search Effectively</h3>
+    <ul>
+        <li>Use <strong>quotation marks</strong> for exact phrases: <code>"free trade imperialism"</code></li>
+        <li>Use <strong>AND</strong> to narrow: <code>cotton AND tariff AND Mexico</code></li>
+        <li>Use <strong>OR</strong> for broader results: <code>slavery OR indenture OR coercion</code></li>
+        <li>In database filters, select <strong>Peer-reviewed only</strong> and limit to <strong>1800–1914</strong></li>
+        <li><strong>Best formula:</strong> Commodity + Lens + Region + Date — e.g., <code>"rubber labor coercion Congo 1890"</code></li>
+        <li>If your article doesn't take a position or make an argument, <strong>keep looking</strong> — you need interpretations, not background summaries.</li>
+    </ul>
+</div>
+
+<!-- ═══════════════════════════════════════
+     RESOURCES
+════════════════════════════════════════ -->
+<div class="assignment-info" style="margin-top: 30px;">
+    <h3>📚 Research Databases &amp; Citation Help</h3>
+    <p><strong>Project Instructions:</strong><br>
+    <a href="https://docs.google.com/document/d/1t3emdNLT5o4kTeq7QrrYfs2OL1emXyW8XcJ2OpbU2yg/edit?usp=sharing" target="_blank" style="color:#2980b9;">HIST 107 Research Group Project Instructions (Google Doc)</a></p>
+    <p><strong>Databases:</strong><br>
+    <a href="https://www.jstor.org/" target="_blank" style="color:#2980b9;">JSTOR</a> &nbsp;|&nbsp;
+    <a href="https://muse.jhu.edu/" target="_blank" style="color:#2980b9;">Project MUSE</a> &nbsp;|&nbsp;
+    <a href="https://libguides.mjc.edu/az.php" target="_blank" style="color:#2980b9;">MJC Library Databases A–Z</a></p>
+    <p style="margin-bottom:0;"><strong>Citation Style:</strong><br>
+    <a href="https://libguides.mjc.edu/chicago/stylebasics" target="_blank" style="color:#2980b9;">Turabian / Chicago Style Guide (MJC Library)</a> &nbsp;|&nbsp;
+    <a href="https://www.chicagomanualofstyle.org/tools_citationguide.html" target="_blank" style="color:#2980b9;">Chicago Manual of Style</a></p>
+</div>
+
+<footer>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<div id="toast">✓ Copied to clipboard!</div>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const DATA = {
+    commodities: ['Cotton','Sugar','Rubber','Tea','Coffee','Indigo','Silk','Opium','Copper','Silver','Wheat','Rice','Coal','Oil','Beef','Bananas'],
+
+    regions: ['Mexico','Egypt','India','Ottoman Empire','Brazil','Cuba','Congo','West Africa','Southeast Asia','Argentina','Caribbean','China','Japan'],
+
+    comparative: [
+        'Great Divergence cotton','war capitalism industrial capitalism','global inequality 19th century',
+        'industrialization and empire','deindustrialization India 19th century','state protectionism industrialization',
+        'global South industrial failure','capitalism and coercion'
+    ],
+
+    lenses: {
+        prod: {
+            phrases: [
+                'cotton ecological transformation 19th century',
+                'sugar plantation environmental change',
+                'rubber extraction Congo environmental impact',
+                'tea cultivation colonial India ecology',
+                'commodity frontier expansion 1800–1900',
+                'agricultural intensification imperialism',
+                'deforestation plantation economy',
+                'cash crops and environmental change',
+                'irrigation and cotton Egypt 19th century',
+                'monoculture and empire'
+            ],
+            addons: ['agrarian capitalism','environmental history','frontier expansion','extractive economy','ecological imperialism']
+        },
+        labor: {
+            phrases: [
+                'indentured labor Caribbean sugar',
+                'coolie labor 19th century',
+                'factory discipline textile mills',
+                'enslaved labor cotton economy',
+                'wage labor industrial capitalism',
+                'labor migration global 1800–1900',
+                'debt peonage Latin America',
+                'labor coercion plantation economy',
+                'proletarianization 19th century',
+                'labor resistance industrialization'
+            ],
+            addons: ['unfree labor','racial capitalism','labor regimes','industrial discipline','plantation slavery']
+        },
+        emp: {
+            phrases: [
+                'tariff policy industrialization Mexico',
+                'free trade imperialism Egypt',
+                'British informal empire 19th century',
+                'chartered companies industrial capitalism',
+                'state capacity industrial development',
+                'import substitution 19th century',
+                'colonial infrastructure railways',
+                'corporate imperialism',
+                'finance capital empire',
+                'Anglo-Ottoman treaty 1838'
+            ],
+            addons: ['mercantilism vs free trade','fiscal-military state','customs enforcement','sovereign debt empire','investment and imperialism']
+        },
+        circ: {
+            phrases: [
+                'global commodity chains 19th century',
+                'cotton consumption Britain',
+                'tea consumption culture empire',
+                'commodity flows Atlantic world',
+                'railroads and global trade',
+                'steamships trade integration',
+                'price convergence 19th century',
+                'consumer revolution industrial age',
+                'marketing imperial goods',
+                'finance and commodity trade'
+            ],
+            addons: ['world market','Atlantic economy','Indian Ocean trade','global demand','commodity fetishism']
+        }
+    }
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+
+let selectedPhrases = [];
+
+// ── RENDER TAGS ───────────────────────────────────────────────────────────────
+
+function renderTags(containerId, phrases) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    phrases.forEach(phrase => {
+        const tag = document.createElement('span');
+        tag.className = 'phrase-tag';
+        tag.textContent = phrase;
+        tag.addEventListener('click', () => togglePhrase(phrase, tag));
+        container.appendChild(tag);
+    });
+}
+
+function togglePhrase(phrase, tagEl) {
+    const idx = selectedPhrases.indexOf(phrase);
+    if (idx === -1) {
+        selectedPhrases.push(phrase);
+        tagEl.classList.add('selected');
+    } else {
+        selectedPhrases.splice(idx, 1);
+        tagEl.classList.remove('selected');
+    }
+    updateSelectedBar();
+}
+
+function updateSelectedBar() {
+    const bar = document.getElementById('selectedBar');
+    const container = document.getElementById('selectedPhrases');
+    if (selectedPhrases.length === 0) {
+        bar.style.display = 'none';
+        return;
+    }
+    bar.style.display = 'block';
+    container.innerHTML = '';
+    selectedPhrases.forEach(phrase => {
+        const el = document.createElement('span');
+        el.className = 'selected-tag';
+        el.innerHTML = `"${phrase}" <button onclick="removePhrase('${phrase.replace(/'/g,"\\'")}')">✕</button>`;
+        container.appendChild(el);
+    });
+}
+
+function removePhrase(phrase) {
+    selectedPhrases = selectedPhrases.filter(p => p !== phrase);
+    // Deselect tag if visible
+    document.querySelectorAll('.phrase-tag').forEach(t => {
+        if (t.textContent === phrase) t.classList.remove('selected');
+    });
+    updateSelectedBar();
+}
+
+function clearSelected() {
+    selectedPhrases = [];
+    document.querySelectorAll('.phrase-tag.selected').forEach(t => t.classList.remove('selected'));
+    updateSelectedBar();
+}
+
+// ── SELECTED BAR ACTIONS ──────────────────────────────────────────────────────
+
+function getSelectedQuery() {
+    return selectedPhrases.map(p => `"${p}"`).join(' OR ');
+}
+
+function copySelected() {
+    const q = getSelectedQuery();
+    if (!q) return;
+    navigator.clipboard.writeText(q).then(() => {
+        const btn = document.getElementById('barCopyBtn');
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        showToast();
+        setTimeout(() => { btn.textContent = '📋 Copy Combined Query'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+function searchSelectedJSTOR() {
+    const q = getSelectedQuery();
+    if (!q) return;
+    window.open('https://www.jstor.org/action/doBasicSearch?Query=' + encodeURIComponent(q), '_blank');
+}
+
+function searchSelectedMuse() {
+    const q = getSelectedQuery();
+    if (!q) return;
+    window.open('https://muse.jhu.edu/search?action=search&query=' + encodeURIComponent(q), '_blank');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+
+function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+renderTags('commodities', DATA.commodities);
+renderTags('regions', DATA.regions);
+renderTags('comparative', DATA.comparative);
+
+renderTags('phrases-prod', DATA.lenses.prod.phrases);
+renderTags('addons-prod', DATA.lenses.prod.addons);
+renderTags('phrases-labor', DATA.lenses.labor.phrases);
+renderTags('addons-labor', DATA.lenses.labor.addons);
+renderTags('phrases-emp', DATA.lenses.emp.phrases);
+renderTags('addons-emp', DATA.lenses.emp.addons);
+renderTags('phrases-circ', DATA.lenses.circ.phrases);
+renderTags('addons-circ', DATA.lenses.circ.addons);
+</script>
+
+</body>
+</html>
