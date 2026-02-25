@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Tracker | Democracy in the Public Space</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=League+Gothic&family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --navy: #001f60;
+  --red: #a71930;
+  --black: #000000;
+  --white: #ffffff;
+  --gray-light: #f5f5f5;
+  --gray-medium: #666666;
+  --gray-dark: #333333;
+  --green: #1a6e3c;
+  --green-light: #e8f5ee;
+  --font-display: 'Bebas Neue', 'Arial Black', impact, sans-serif;
+  --font-title: 'League Gothic', 'Impact', sans-serif;
+  --font-body: 'Arial', 'Helvetica', sans-serif;
+  --font-accent: 'Antonio', 'Oswald', sans-serif;
+  --container-width: 1200px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--gray-light); color: var(--gray-dark); min-height: 100vh; }
+
+/* ── SCREEN MANAGEMENT ─────────────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── PASSWORD SCREEN ───────────────────────────────── */
+#password-screen {
+  min-height: 100vh;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stripe decoration */
+#password-screen::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 12px;
+  background: linear-gradient(to bottom, var(--red) 33.3%, var(--black) 33.3%, var(--black) 66.6%, var(--white) 66.6%);
+}
+#password-screen::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 12px;
+  background: linear-gradient(to bottom, var(--red) 33.3%, var(--black) 33.3%, var(--black) 66.6%, var(--white) 66.6%);
+}
+
+.pw-card {
+  background: var(--white);
+  padding: 3rem 3.5rem;
+  max-width: 480px;
+  width: 90%;
+  border-top: 8px solid var(--red);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  text-align: center;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.pw-card .pw-eyebrow {
+  font-family: var(--font-accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-medium);
+  margin-bottom: 0.5rem;
+}
+
+.pw-card h1 {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  color: var(--navy);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.pw-card .pw-sub {
+  font-family: var(--font-accent);
+  font-size: 1rem;
+  color: var(--gray-medium);
+  letter-spacing: 0.08em;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+
+.pw-card label {
+  display: block;
+  font-family: var(--font-accent);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.pw-card input[type="password"],
+.pw-card input[type="text"] {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 2px solid #ddd;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--gray-dark);
+  margin-bottom: 1.25rem;
+  transition: border-color 0.2s;
+}
+
+.pw-card input:focus { outline: none; border-color: var(--navy); }
+
+.pw-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pw-btn:hover { background: var(--red); }
+
+.pw-error {
+  margin-top: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: #fde8e8;
+  border-left: 4px solid var(--red);
+  color: var(--red);
+  font-size: 0.85rem;
+  text-align: left;
+  display: none;
+}
+
+.pw-divider {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* ── BRAND HEADER ──────────────────────────────────── */
+.brand-header {
+  background: var(--white);
+  border-top: 3px solid var(--gray-light);
+  border-bottom: 3px solid var(--gray-light);
+}
+
+.header-content {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  position: relative;
+}
+
+.horizontal-stripes-left,
+.horizontal-stripes-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 280px;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+}
+.horizontal-stripes-left { left: 0; }
+.horizontal-stripes-right { right: 0; }
+.horizontal-stripe { flex: 1; }
+.horizontal-stripe.blue { background: var(--navy); }
+.horizontal-stripe.red { background: var(--red); }
+.horizontal-stripe.black { background: var(--black); }
+
+.logo-container {
+  background: var(--white);
+  padding: 0.5rem 1.5rem;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.democracy-title { line-height: 1; }
+.democracy-word {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 8rem);
+  color: var(--black);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.header-subtitle {
+  display: block;
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 2vw, 1.5rem);
+  color: var(--black);
+  margin-top: 0.25rem;
+}
+.header-subtitle .highlight {
+  font-weight: 700;
+  background: var(--black);
+  color: var(--white);
+  padding: 0.1em 0.3em;
+}
+
+/* ── NAVIGATION ────────────────────────────────────── */
+.main-nav {
+  background: var(--navy);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+.main-nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+.nav-btn {
+  display: block;
+  padding: 1rem 2rem;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+.nav-btn:hover { background: var(--red); border-bottom-color: var(--white); }
+.nav-btn.active { background: var(--red); border-bottom-color: var(--white); }
+.nav-btn.logout { color: rgba(255,255,255,0.5); }
+.nav-btn.logout:hover { background: rgba(255,255,255,0.1); color: var(--white); border-bottom-color: transparent; }
+
+/* ── MAIN CONTAINER ────────────────────────────────── */
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+section { padding: 3rem 0; }
+
+.section-title {
+  font-family: var(--font-title);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--navy);
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 400;
+}
+
+/* ── DASHBOARD ─────────────────────────────────────── */
+.dash-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, #003380 100%);
+  color: var(--white);
+  padding: 2.5rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.dash-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px);
+  pointer-events: none;
+}
+.dash-hero h2 {
+  font-family: var(--font-title);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 400;
+  position: relative;
+}
+.dash-hero p {
+  font-family: var(--font-accent);
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-top: 0.5rem;
+  position: relative;
+}
+
+.stats-bar {
+  background: var(--red);
+  padding: 1.5rem 2rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+.stat-item {
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-right: 1px solid rgba(255,255,255,0.2);
+  color: var(--white);
+}
+.stat-item:last-child { border-right: none; }
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  display: block;
+}
+.stat-label {
+  font-family: var(--font-accent);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
+
+/* Event progress cards */
+.events-grid {
+  display: grid;
+  gap: 1.25rem;
+  padding: 2.5rem 2rem;
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+
+.progress-card {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  background: var(--white);
+  border: 3px solid var(--navy);
+  border-left: 10px solid var(--red);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: fadeInUp 0.5s ease-out both;
+}
+.progress-card:nth-child(even) { border-left-color: var(--navy); }
+.progress-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,31,96,0.18);
+}
+
+.pc-date {
+  background: var(--navy);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+}
+.pc-date .day {
+  font-family: var(--font-title);
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 1;
+}
+.pc-date .month {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+}
+
+.pc-info {
+  padding: 1rem 1.5rem;
+  flex: 1;
+}
+.pc-title {
+  font-family: var(--font-title);
+  font-size: 1.6rem;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+  margin-bottom: 0.2rem;
+}
+.pc-speaker { font-size: 0.9rem; font-weight: 700; color: var(--red); margin-bottom: 0.15rem; }
+.pc-meta { font-size: 0.8rem; color: var(--gray-medium); }
+
+.pc-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.5rem;
+  min-width: 110px;
+  border-left: 1px solid var(--gray-light);
+}
+.pc-pct {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  color: var(--navy);
+  line-height: 1;
+}
+.pc-pct.full { color: var(--green); }
+.progress-track {
+  width: 80px;
+  height: 6px;
+  background: #e0e0e0;
+  margin-top: 0.4rem;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--navy), var(--red));
+  transition: width 0.6s ease;
+}
+.progress-fill.complete { background: var(--green); }
+.pc-sub {
+  font-family: var(--font-accent);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-medium);
+  margin-top: 0.3rem;
+}
+
+/* Animation delays */
+.progress-card:nth-child(1) { animation-delay: 0.05s; }
+.progress-card:nth-child(2) { animation-delay: 0.1s; }
+.progress-card:nth-child(3) { animation-delay: 0.15s; }
+.progress-card:nth-child(4) { animation-delay: 0.2s; }
+.progress-card:nth-child(5) { animation-delay: 0.25s; }
+.progress-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* ── CHECKLIST VIEW ────────────────────────────────── */
+.event-tabs-wrap {
+  background: var(--white);
+  border-bottom: 3px solid var(--navy);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.event-tabs {
+  display: flex;
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+.event-tab {
+  padding: 0.85rem 1.25rem;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gray-medium);
+  cursor: pointer;
+  border-bottom: 4px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.event-tab:hover { color: var(--navy); }
+.event-tab.active { color: var(--navy); border-bottom-color: var(--red); }
+
+/* Event header banner */
+.event-banner {
+  background: linear-gradient(135deg, var(--navy) 0%, #003380 100%);
+  padding: 2rem 2rem;
+  position: relative;
+  overflow: hidden;
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+.event-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px);
+}
+.event-banner-inner {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+.eb-left .eb-series {
+  font-family: var(--font-accent);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 0.3rem;
+}
+.eb-left h3 {
+  font-family: var(--font-title);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 400;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.eb-left .eb-speaker {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 0.1rem;
+}
+.eb-left .eb-note {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  background: var(--red);
+  color: var(--white);
+  font-size: 0.75rem;
+  font-family: var(--font-accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.eb-right { text-align: right; flex-shrink: 0; }
+.eb-right .eb-meta {
+  font-family: var(--font-accent);
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.eb-right .eb-pct {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  color: var(--white);
+  line-height: 1;
+  margin-top: 0.5rem;
+}
+.eb-right .eb-count {
+  font-family: var(--font-accent);
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Checklist table */
+.checklist-wrap {
+  max-width: var(--container-width);
+  margin: 1.5rem auto;
+  padding: 0 2rem;
+}
+
+.checklist-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border: 3px solid var(--navy);
+  border-left: 10px solid var(--red);
+}
+.checklist-table thead th {
+  background: var(--navy);
+  color: var(--white);
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  font-family: var(--font-accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.checklist-table thead th:nth-child(2) { text-align: center; width: 110px; }
+.checklist-table tbody tr {
+  border-bottom: 1px solid #e8e8e8;
+  transition: background 0.1s;
+}
+.checklist-table tbody tr:last-child { border-bottom: none; }
+.checklist-table tbody tr:hover { background: var(--gray-light); }
+.checklist-table tbody tr.completed td:first-child {
+  color: var(--gray-medium);
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+}
+.checklist-table td { padding: 0.85rem 1.25rem; font-size: 0.9rem; }
+.checklist-table td:nth-child(2) { text-align: center; }
+.task-name { font-weight: 600; }
+
+/* Custom checkbox */
+.check-wrap { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.check-wrap input[type="checkbox"] { display: none; }
+.check-box {
+  width: 22px; height: 22px;
+  border: 2px solid #ccc;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  background: var(--white);
+}
+.check-wrap input:checked + .check-box { background: var(--navy); border-color: var(--navy); }
+.check-wrap input:checked + .check-box::after { content: '✓'; color: var(--white); font-size: 13px; font-weight: bold; }
+.check-wrap:hover .check-box { border-color: var(--navy); }
+
+.notes-input {
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  border: 2px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--gray-dark);
+  background: transparent;
+  resize: none;
+  min-height: 34px;
+  transition: all 0.15s;
+}
+.notes-input:hover { border-color: #ddd; background: var(--gray-light); }
+.notes-input:focus { outline: none; border-color: var(--navy); background: var(--white); }
+
+.save-status {
+  font-family: var(--font-accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-medium);
+  margin-left: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.save-status.visible { opacity: 1; }
+.save-status.saved { color: var(--green); }
+.save-status.saving { color: var(--red); }
+
+/* ── REPORT VIEW ───────────────────────────────────── */
+.report-hero {
+  background: var(--red);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+.report-hero h2 {
+  font-family: var(--font-title);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+.report-hero p {
+  font-family: var(--font-accent);
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+}
+
+.report-controls {
+  background: var(--white);
+  border-bottom: 3px solid var(--navy);
+  padding: 0.75rem 2rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 0.45rem 1.25rem;
+  border: 2px solid #ddd;
+  background: var(--white);
+  font-family: var(--font-accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-medium);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+.filter-btn:hover:not(.active) { border-color: var(--navy); color: var(--navy); }
+
+.print-btn {
+  margin-left: auto;
+  padding: 0.5rem 1.5rem;
+  background: var(--red);
+  color: var(--white);
+  border: none;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.print-btn:hover { background: var(--navy); }
+
+.report-content {
+  max-width: var(--container-width);
+  margin: 2rem auto;
+  padding: 0 2rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.report-card {
+  background: var(--white);
+  border: 3px solid var(--navy);
+  border-left: 10px solid var(--red);
+  overflow: hidden;
+  page-break-inside: avoid;
+}
+.report-card:nth-child(even) { border-left-color: var(--navy); }
+
+.report-card-header {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  background: var(--gray-light);
+  border-bottom: 2px solid #e0e0e0;
+}
+.rch-date {
+  background: var(--navy);
+  color: var(--white);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+}
+.rch-date .rday { font-family: var(--font-title); font-size: 2.2rem; font-weight: 400; line-height: 1; }
+.rch-date .rmonth { font-family: var(--font-display); font-size: 1rem; letter-spacing: 0.1em; }
+.rch-info { padding: 0.75rem 1rem; }
+.rch-title {
+  font-family: var(--font-title);
+  font-size: 1.4rem;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+}
+.rch-speaker { font-size: 0.85rem; font-weight: 700; color: var(--red); }
+.rch-meta { font-size: 0.78rem; color: var(--gray-medium); margin-top: 0.2rem; }
+.rch-badge {
+  padding: 0 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.badge {
+  padding: 0.3rem 0.85rem;
+  font-family: var(--font-accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.badge.done { background: var(--green-light); color: var(--green); border: 2px solid var(--green); }
+.badge.partial { background: #fef9e7; color: #856000; border: 2px solid #e8c840; }
+.badge.pending { background: #fde8e8; color: var(--red); border: 2px solid var(--red); }
+
+.report-tasks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+.report-task {
+  padding: 0.65rem 1rem;
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  display: flex; align-items: center; gap: 0.6rem;
+  font-size: 0.85rem;
+}
+.report-task .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.report-task.done .dot { background: var(--green); }
+.report-task.todo .dot { background: #ddd; border: 1.5px solid #bbb; }
+.report-task.done { color: var(--gray-medium); }
+.report-task .task-note { font-size: 0.75rem; color: #aaa; font-style: italic; }
+.report-notes-row {
+  grid-column: 1 / -1;
+  padding: 0.65rem 1rem;
+  font-size: 0.82rem;
+  color: var(--gray-medium);
+  font-style: italic;
+  border-top: 1px solid #eee;
+  background: var(--gray-light);
+}
+
+/* ── SETUP SCREEN ──────────────────────────────────── */
+#setup-screen {
+  min-height: 100vh;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding: 2rem;
+}
+#setup-screen::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 12px;
+  background: linear-gradient(to bottom, var(--red) 33.3%, var(--black) 33.3%, var(--black) 66.6%, var(--white) 66.6%);
+}
+#setup-screen::after {
+  content: '';
+  position: absolute; right: 0; top: 0; bottom: 0; width: 12px;
+  background: linear-gradient(to bottom, var(--red) 33.3%, var(--black) 33.3%, var(--black) 66.6%, var(--white) 66.6%);
+}
+.setup-card {
+  background: var(--white);
+  padding: 3rem 3.5rem;
+  max-width: 520px; width: 100%;
+  border-top: 8px solid var(--red);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  animation: fadeInUp 0.5s ease-out;
+}
+.setup-card .setup-title {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  color: var(--navy);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+.setup-card .setup-sub {
+  font-family: var(--font-accent);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-medium);
+  margin-bottom: 1.5rem;
+}
+.setup-card p {
+  font-size: 0.88rem; color: var(--gray-medium); line-height: 1.6; margin-bottom: 1.5rem;
+}
+.setup-card label {
+  display: block;
+  font-family: var(--font-accent);
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--navy); margin-bottom: 0.4rem;
+}
+.setup-card input {
+  width: 100%; padding: 0.8rem 1rem;
+  border: 2px solid #ddd;
+  font-family: var(--font-body); font-size: 0.9rem;
+  color: var(--gray-dark); margin-bottom: 1.25rem;
+  transition: border-color 0.2s;
+}
+.setup-card input:focus { outline: none; border-color: var(--navy); }
+.setup-error {
+  margin-top: 0.75rem; padding: 0.65rem 1rem;
+  background: #fde8e8; border-left: 4px solid var(--red);
+  color: var(--red); font-size: 0.85rem; display: none;
+}
+details {
+  margin-top: 1.5rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+details summary {
+  font-family: var(--font-accent);
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--navy); cursor: pointer; font-weight: 700;
+}
+pre {
+  margin-top: 0.75rem;
+  background: var(--navy);
+  color: #aad4ff;
+  padding: 1rem; font-size: 0.72rem;
+  overflow-x: auto; line-height: 1.6; border-radius: 2px;
+}
+
+/* ── FOOTER ────────────────────────────────────────── */
+footer {
+  background: var(--black);
+  color: var(--white);
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+/* ── UTILITIES ─────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loading-msg {
+  text-align: center; padding: 3rem;
+  font-family: var(--font-accent);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gray-medium); font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .progress-card { grid-template-columns: 70px 1fr; }
+  .pc-progress { display: none; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .event-banner-inner { flex-direction: column; }
+  .eb-right { text-align: left; }
+  .report-card-header { grid-template-columns: 70px 1fr; }
+  .rch-badge { display: none; }
+  .horizontal-stripes-left, .horizontal-stripes-right { width: 100px; }
+}
+
+@media print {
+  .brand-header, .main-nav, .report-controls, .dash-hero, .stats-bar { display: none !important; }
+  .report-hero { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .report-card { page-break-inside: avoid; }
+  body { background: white; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ PASSWORD SCREEN ═══════════════════════════════════════ -->
+<div id="password-screen" class="screen active">
+  <div class="pw-card">
+    <div class="pw-eyebrow">MJC · School of Behavioral &amp; Social Sciences</div>
+    <h1>DEMOCRACY</h1>
+    <div class="pw-sub">Event Tracker · Spring 2025</div>
+    <label for="pw-input">Enter Password</label>
+    <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter') checkPassword()">
+    <button class="pw-btn" onclick="checkPassword()">Enter</button>
+    <div class="pw-error" id="pw-error">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- Setup screen removed — credentials hardcoded -->
+
+<!-- ══ MAIN APP ════════════════════════════════════════════════ -->
+<div id="app-screen" class="screen">
+
+  <!-- Brand Header -->
+  <header class="brand-header">
+    <div class="header-content">
+      <div class="horizontal-stripes-left">
+        <div class="horizontal-stripe blue"></div>
+        <div class="horizontal-stripe red"></div>
+        <div class="horizontal-stripe black"></div>
+      </div>
+      <div class="logo-container">
+        <div class="democracy-title">
+          <span class="democracy-word">DEMOCRACY</span>
+          <span class="header-subtitle">in the <span class="highlight">Public Space</span> · Event Tracker</span>
+        </div>
+      </div>
+      <div class="horizontal-stripes-right">
+        <div class="horizontal-stripe blue"></div>
+        <div class="horizontal-stripe red"></div>
+        <div class="horizontal-stripe black"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="main-nav">
+    <ul>
+      <li><button class="nav-btn active" onclick="showView('dashboard', this)">Dashboard</button></li>
+      <li><button class="nav-btn" onclick="showView('checklist', this)">Checklists</button></li>
+      <li><button class="nav-btn" onclick="showView('report', this)">Reports</button></li>
+      <li><button class="nav-btn logout" onclick="lockApp()">Lock</button></li>
+    </ul>
+  </nav>
+
+  <!-- ── DASHBOARD ─────────────────── -->
+  <div id="dashboard-view">
+    <div class="dash-hero">
+      <div class="container">
+        <h2>REDRAWING FREEDOM</h2>
+        <p>Spring 2025 · Modesto Junior College · Event Tracker</p>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value">6</span>
+        <span class="stat-label">Events</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="dash-done">—</span>
+        <span class="stat-label">Tasks Done</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="dash-left">—</span>
+        <span class="stat-label">Remaining</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="dash-pct">—</span>
+        <span class="stat-label">Complete</span>
+      </div>
+    </div>
+    <div class="events-grid" id="progress-cards"></div>
+  </div>
+
+  <!-- ── CHECKLIST ──────────────────── -->
+  <div id="checklist-view" style="display:none">
+    <div class="event-tabs-wrap">
+      <div class="event-tabs" id="event-tabs"></div>
+    </div>
+    <div id="checklist-content"></div>
+  </div>
+
+  <!-- ── REPORT ─────────────────────── -->
+  <div id="report-view" style="display:none">
+    <div class="report-hero">
+      <div class="container">
+        <h2>EVENT REPORTS</h2>
+        <p>Spring 2025 · Democracy in the Public Space</p>
+      </div>
+    </div>
+    <div class="report-controls">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All Events</button>
+      <button class="filter-btn" onclick="setFilter('incomplete',this)">Incomplete Only</button>
+      <button class="filter-btn" onclick="setFilter('complete',this)">Fully Complete</button>
+      <button class="print-btn" onclick="window.print()">⎙ Print</button>
+    </div>
+    <div class="report-content" id="report-content"></div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Modesto Junior College | School of Behavioral &amp; Social Sciences</p>
+    <p>Democracy in the Public Space: Redrawing Freedom</p>
+  </footer>
+</div>
+
+<script>
+// ══ CONFIG ═══════════════════════════════════════════════════
+// ⚠️  Change this password before deploying!
+const APP_PASSWORD = 'mjcbss2025';
+
+const EVENTS = [
+  { id:'e1', day:'3', month:'MAR', date:'March 3, 2025', dow:'Tuesday', time:'12:00 PM',
+    title:'Speaking Against Silence', speaker:'Emily P. Lawsin',
+    role:'Filipina Spoken-Word Poet, Asian American Historian',
+    location:'Mary Stuart Rogers (MSR)', campus:'MJC West', note:'' },
+  { id:'e2', day:'10', month:'MAR', date:'March 10, 2025', dow:'Tuesday', time:'2:30 PM',
+    title:'Free Speech & Power', speaker:'Speaker from FIRE',
+    role:'Foundation for Individual Rights and Expression',
+    location:'Forum 110', campus:'MJC East', note:'' },
+  { id:'e3', day:'18', month:'MAR', date:'March 18, 2025', dow:'Wednesday', time:'2:30 PM',
+    title:'Capitalism or Freedom?', speaker:'Trevor Jackson',
+    role:'Economic Historian, UC Berkeley',
+    location:'Forum 110', campus:'MJC East', note:'' },
+  { id:'e4', day:'26', month:'MAR', date:'March 26, 2025', dow:'Thursday', time:'11:30 AM',
+    title:'Due Process & Equality', speaker:'Rachel Van Cleave',
+    role:'Visiting Professor of Law, University of the Pacific',
+    location:'Forum 110', campus:'MJC East', note:'' },
+  { id:'e5', day:'1', month:'APR', date:'April 1, 2025', dow:'Wednesday', time:'11:30 AM',
+    title:'Academic Freedom', speaker:'Student, Faculty & Community Panel',
+    role:'Panel Discussion',
+    location:'Forum 110', campus:'MJC East', note:'' },
+  { id:'e6', day:'16', month:'APR', date:'April 16, 2025', dow:'Thursday', time:'12:00 PM',
+    title:'Exclusion & Belonging', speaker:'Dr. Scott Kurashige',
+    role:'Asian American Historian',
+    location:'Sierra Hall B137', campus:'MJC West', note:'Live-streamed in Forum 110' },
+];
+
+const TASKS = [
+  {id:'email_contact', label:'Email Contact'},
+  {id:'phone_number',  label:'Phone Number'},
+  {id:'w9',           label:'W-9'},
+  {id:'parking_pass', label:'Parking Pass'},
+  {id:'parking_cone', label:'Parking Cone'},
+  {id:'reception',    label:'Reception'},
+  {id:'attendance_poll', label:'Attendance Poll'},
+  {id:'posters',      label:'Posters'},
+  {id:'media',        label:'Media'},
+  {id:'livestream',   label:'Livestream'},
+  {id:'notes',        label:'Notes', isNotes:true},
+];
+const CHECKABLE = TASKS.filter(t => !t.isNotes);
+
+// ══ STATE ═════════════════════════════════════════════════════
+let sb = null;
+let data = {};
+let currentIdx = 0;
+let reportFilter = 'all';
+let saveTimer = null;
+
+// ══ PASSWORD ══════════════════════════════════════════════════
+const SB_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+
+function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  const err = document.getElementById('pw-error');
+  if (val === APP_PASSWORD) {
+    document.getElementById('password-screen').classList.remove('active');
+    launchApp(SB_URL, SB_KEY);
+  } else {
+    err.style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function lockApp() {
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('password-screen').classList.add('active');
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+}
+
+// ══ APP INIT ══════════════════════════════════════════════════
+async function launchApp(url, key) {
+  sb = window.supabase.createClient(url, key);
+  await loadData();
+  document.getElementById('app-screen').classList.add('active');
+  renderDashboard();
+  renderTabs();
+  renderChecklist();
+}
+
+async function loadData() {
+  data = {};
+  EVENTS.forEach(ev => {
+    data[ev.id] = {};
+    TASKS.forEach(t => { data[ev.id][t.id] = {checked:false, notes:''}; });
+  });
+  const { data: rows } = await sb.from('event_checklist').select('*');
+  (rows || []).forEach(r => {
+    if (!data[r.event_id]) data[r.event_id] = {};
+    data[r.event_id][r.task_id] = {checked: r.checked, notes: r.notes || ''};
+  });
+}
+
+async function saveItem(eid, tid, checked, notes) {
+  await sb.from('event_checklist').upsert(
+    {event_id:eid, task_id:tid, checked, notes},
+    {onConflict:'event_id,task_id'}
+  );
+}
+
+// ══ VIEWS ═════════════════════════════════════════════════════
+function showView(name, btn) {
+  ['dashboard','checklist','report'].forEach(v => {
+    document.getElementById(v+'-view').style.display = v===name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-btn:not(.logout)').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (name === 'report') renderReport();
+  if (name === 'dashboard') renderDashboard();
+}
+
+// ══ DASHBOARD ═════════════════════════════════════════════════
+function getProgress(eid) {
+  const d = data[eid] || {};
+  const done = CHECKABLE.filter(t => d[t.id] && d[t.id].checked).length;
+  return {done, total:CHECKABLE.length, pct: Math.round(done/CHECKABLE.length*100)};
+}
+
+function renderDashboard() {
+  const totals = EVENTS.reduce((a,ev) => {
+    const p = getProgress(ev.id); a.done += p.done; a.total += p.total; return a;
+  }, {done:0,total:0});
+  const pct = Math.round(totals.done/totals.total*100)||0;
+  document.getElementById('dash-done').textContent = totals.done;
+  document.getElementById('dash-left').textContent = totals.total - totals.done;
+  document.getElementById('dash-pct').textContent = pct + '%';
+
+  document.getElementById('progress-cards').innerHTML = EVENTS.map((ev,i) => {
+    const p = getProgress(ev.id);
+    return `<div class="progress-card" onclick="goChecklist(${i})">
+      <div class="pc-date"><span class="day">${ev.day}</span><span class="month">${ev.month}</span></div>
+      <div class="pc-info">
+        <div class="pc-title">${ev.title}</div>
+        <div class="pc-speaker">${ev.speaker}</div>
+        <div class="pc-meta">${ev.dow} · ${ev.time} · ${ev.location} · ${ev.campus}</div>
+      </div>
+      <div class="pc-progress">
+        <div class="pc-pct ${p.pct===100?'full':''}">${p.pct}%</div>
+        <div class="progress-track"><div class="progress-fill ${p.pct===100?'complete':''}" style="width:${p.pct}%"></div></div>
+        <div class="pc-sub">${p.done}/${p.total} done</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function goChecklist(idx) {
+  currentIdx = idx;
+  showView('checklist', document.querySelector('.nav-btn:nth-child(2)'));
+  document.querySelector('.nav-btn:nth-child(1)').classList.remove('active');
+  renderTabs(); renderChecklist();
+}
+
+// ══ CHECKLIST ═════════════════════════════════════════════════
+function renderTabs() {
+  document.getElementById('event-tabs').innerHTML = EVENTS.map((ev,i) =>
+    `<button class="event-tab ${i===currentIdx?'active':''}" onclick="switchEvent(${i})">${ev.month} ${ev.day} — ${ev.title}</button>`
+  ).join('');
+}
+
+function switchEvent(idx) {
+  currentIdx = idx; renderTabs(); renderChecklist();
+}
+
+function renderChecklist() {
+  const ev = EVENTS[currentIdx];
+  const d = data[ev.id] || {};
+  const p = getProgress(ev.id);
+
+  document.getElementById('checklist-content').innerHTML = `
+    <div class="event-banner">
+      <div class="event-banner-inner">
+        <div class="eb-left">
+          <div class="eb-series">Spring 2025 · ${ev.campus}</div>
+          <h3>${ev.title}</h3>
+          <div class="eb-speaker">${ev.speaker}${ev.role ? ' — ' + ev.role : ''}</div>
+          ${ev.note ? `<span class="eb-note">★ ${ev.note}</span>` : ''}
+        </div>
+        <div class="eb-right">
+          <div class="eb-meta">${ev.dow}, ${ev.date}<br>${ev.time}<br>${ev.location}</div>
+          <div class="eb-pct">${p.pct}%</div>
+          <div class="eb-count">${p.done} of ${p.total} tasks complete</div>
+        </div>
+      </div>
+    </div>
+    <div class="checklist-wrap">
+      <table class="checklist-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Done <span class="save-status" id="save-status"></span></th>
+            <th>Notes / Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${TASKS.map(task => {
+            const item = d[task.id] || {checked:false,notes:''};
+            if (task.isNotes) return `
+              <tr>
+                <td class="task-name" colspan="2" style="font-weight:700;color:var(--navy);font-family:var(--font-accent);letter-spacing:0.05em;text-transform:uppercase;font-size:0.8rem;">General Notes</td>
+                <td><textarea class="notes-input" rows="2" placeholder="General event notes..."
+                  oninput="scheduleSave('${ev.id}','${task.id}',false,this.value)"
+                  onchange="updateItem('${ev.id}','${task.id}',false,this.value)">${esc(item.notes)}</textarea></td>
+              </tr>`;
+            return `
+              <tr id="row-${ev.id}-${task.id}" class="${item.checked?'completed':''}">
+                <td class="task-name">${task.label}</td>
+                <td>
+                  <label class="check-wrap">
+                    <input type="checkbox" ${item.checked?'checked':''}
+                      onchange="updateItem('${ev.id}','${task.id}',this.checked,document.getElementById('note-${ev.id}-${task.id}').value)">
+                    <span class="check-box"></span>
+                  </label>
+                </td>
+                <td><textarea id="note-${ev.id}-${task.id}" class="notes-input" rows="1"
+                  placeholder="Add details..."
+                  oninput="scheduleSave('${ev.id}','${task.id}',document.querySelector('#row-${ev.id}-${task.id} input').checked,this.value)"
+                  onchange="updateItem('${ev.id}','${task.id}',document.querySelector('#row-${ev.id}-${task.id} input').checked,this.value)">${esc(item.notes)}</textarea></td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function updateItem(eid, tid, checked, notes) {
+  if (!data[eid]) data[eid] = {};
+  data[eid][tid] = {checked, notes};
+  const row = document.getElementById(`row-${eid}-${tid}`);
+  if (row) row.className = checked ? 'completed' : '';
+  showSave('saving');
+  await saveItem(eid, tid, checked, notes);
+  showSave('saved');
+  renderDashboard();
+}
+
+function scheduleSave(eid, tid, checked, notes) {
+  if (!data[eid]) data[eid] = {};
+  data[eid][tid] = {checked, notes};
+  clearTimeout(saveTimer);
+  showSave('saving');
+  saveTimer = setTimeout(async () => {
+    await saveItem(eid, tid, checked, notes);
+    showSave('saved');
+    renderDashboard();
+  }, 700);
+}
+
+function showSave(state) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  el.className = `save-status visible ${state}`;
+  el.textContent = state === 'saving' ? 'Saving...' : '✓ Saved';
+  if (state === 'saved') setTimeout(() => { el.className = 'save-status'; }, 2000);
+}
+
+// ══ REPORT ════════════════════════════════════════════════════
+function setFilter(f, btn) {
+  reportFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReport();
+}
+
+function renderReport() {
+  const filtered = EVENTS.filter(ev => {
+    const p = getProgress(ev.id);
+    if (reportFilter === 'complete') return p.pct === 100;
+    if (reportFilter === 'incomplete') return p.pct < 100;
+    return true;
+  });
+  if (!filtered.length) {
+    document.getElementById('report-content').innerHTML = '<div class="loading-msg">No events match this filter.</div>';
+    return;
+  }
+  document.getElementById('report-content').innerHTML = filtered.map(ev => {
+    const d = data[ev.id] || {};
+    const p = getProgress(ev.id);
+    const bCls = p.pct===100 ? 'done' : p.done>0 ? 'partial' : 'pending';
+    const bTxt = p.pct===100 ? 'Complete' : `${p.done}/${p.total} Done`;
+    const notesData = d['notes'];
+    return `<div class="report-card">
+      <div class="report-card-header">
+        <div class="rch-date"><span class="rday">${ev.day}</span><span class="rmonth">${ev.month}</span></div>
+        <div class="rch-info">
+          <div class="rch-title">${ev.title}</div>
+          <div class="rch-speaker">${ev.speaker}${ev.role?' — '+ev.role:''}</div>
+          <div class="rch-meta">${ev.dow}, ${ev.date} · ${ev.time} · ${ev.location} · ${ev.campus}${ev.note?' · '+ev.note:''}</div>
+        </div>
+        <div class="rch-badge"><span class="badge ${bCls}">${bTxt}</span></div>
+      </div>
+      <div class="report-tasks">
+        ${CHECKABLE.map(task => {
+          const item = d[task.id]||{checked:false,notes:''};
+          return `<div class="report-task ${item.checked?'done':'todo'}">
+            <span class="dot"></span>
+            <span>${task.label}${item.notes?` <span class="task-note">— ${item.notes}</span>`:''}</span>
+          </div>`;
+        }).join('')}
+        ${notesData && notesData.notes ? `<div class="report-notes-row">📝 ${notesData.notes}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+</script>
+
+</body>
+</html>
