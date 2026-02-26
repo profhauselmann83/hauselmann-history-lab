@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Leaderboard — Shays' Rebellion — HIST 101</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Courier+Prime:wght@400;700&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:      #0d0c08;
+            --paper:   #f2e8d0;
+            --aged:    #d9c99a;
+            --ink:     #160f04;
+            --faded:   #5a4a32;
+            --red:     #8b1a0a;
+            --blue:    #0f2744;
+            --teal:    #1a4040;
+            --gold:    #c8a030;
+            --gold2:   #e8c060;
+            --silver:  #9ab0b8;
+            --bronze:  #c07840;
+            --green:   #2a6040;
+            --light:   #faf5e8;
+            --dim:     rgba(255,255,255,0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Lora', Georgia, serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 20% 80%, rgba(139,26,10,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(15,39,68,0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(184,144,42,0.05) 0%, transparent 70%);
+            min-height: 100vh;
+            color: var(--paper);
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(180deg, #1a1208 0%, rgba(26,18,8,0.95) 100%);
+            border-bottom: 3px solid var(--gold);
+            padding: 20px 40px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+        }
+
+        .header-left {}
+
+        .header-eyebrow {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            font-weight: 900;
+            color: var(--paper);
+            line-height: 1;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(42,96,64,0.3);
+            border: 1px solid var(--green);
+            color: #60d090;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 3px;
+            padding: 5px 12px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .live-dot {
+            width: 8px; height: 8px;
+            background: #60d090;
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        .refresh-info {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 2px;
+            color: rgba(200,160,48,0.6);
+            text-transform: uppercase;
+        }
+
+        /* ===== STATS BAR ===== */
+        .stats-bar {
+            display: flex;
+            gap: 1px;
+            background: rgba(200,160,48,0.15);
+            border-bottom: 1px solid rgba(200,160,48,0.2);
+        }
+
+        .stat-cell {
+            flex: 1;
+            padding: 14px 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .stat-cell:hover { background: rgba(200,160,48,0.08); }
+
+        .stat-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.62em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(200,160,48,0.6);
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+
+        /* ===== LEADERBOARD TABLE ===== */
+        .board-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .board-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5em;
+            color: var(--gold);
+        }
+
+        .board-subtitle {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 2px;
+            color: rgba(200,160,48,0.5);
+            text-transform: uppercase;
+        }
+
+        .leaderboard { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+
+        .leaderboard thead tr {
+            background: rgba(200,160,48,0.1);
+            border-bottom: 2px solid rgba(200,160,48,0.3);
+        }
+
+        .leaderboard thead th {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(200,160,48,0.7);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 400;
+        }
+
+        .leaderboard thead th.center { text-align: center; }
+
+        .leaderboard tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s;
+        }
+
+        .leaderboard tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+        .leaderboard tbody tr.rank-1 { background: rgba(200,160,48,0.1); border-left: 4px solid var(--gold); }
+        .leaderboard tbody tr.rank-2 { background: rgba(154,176,184,0.08); border-left: 4px solid var(--silver); }
+        .leaderboard tbody tr.rank-3 { background: rgba(192,120,64,0.08); border-left: 4px solid var(--bronze); }
+        .leaderboard tbody tr.rank-1:hover { background: rgba(200,160,48,0.15); }
+        .leaderboard tbody tr.rank-2:hover { background: rgba(154,176,184,0.12); }
+        .leaderboard tbody tr.rank-3:hover { background: rgba(192,120,64,0.12); }
+
+        .leaderboard tbody td {
+            padding: 16px 16px;
+            vertical-align: middle;
+        }
+
+        .rank-col {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6em;
+            font-weight: 700;
+            width: 60px;
+            text-align: center;
+        }
+
+        .rank-1 .rank-col { color: var(--gold2); }
+        .rank-2 .rank-col { color: var(--silver); }
+        .rank-3 .rank-col { color: var(--bronze); }
+        .rank-other .rank-col { color: rgba(200,160,48,0.4); font-size: 1.1em; }
+
+        .group-col {}
+
+        .group-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25em;
+            font-weight: 700;
+            color: var(--paper);
+            margin-bottom: 3px;
+        }
+
+        .group-members {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 1px;
+            color: rgba(200,160,48,0.55);
+        }
+
+        .progress-col { width: 220px; }
+
+        .progress-track {
+            background: rgba(255,255,255,0.08);
+            height: 6px;
+            border-radius: 0;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal), #40c090);
+            transition: width 0.8s ease;
+        }
+
+        .progress-text {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 2px;
+            color: rgba(200,160,48,0.5);
+            text-transform: uppercase;
+        }
+
+        .member-col { width: 120px; text-align: center; }
+
+        .member-pips {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .pip {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .pip.submitted { background: #40c090; border-color: #40c090; }
+
+        .member-count {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65em;
+            letter-spacing: 1px;
+            color: rgba(200,160,48,0.5);
+            text-transform: uppercase;
+        }
+
+        .bonus-col { width: 110px; text-align: center; }
+
+        .bonus-display {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .bonus-label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.6em;
+            letter-spacing: 2px;
+            color: rgba(200,160,48,0.45);
+            text-transform: uppercase;
+        }
+
+        .score-col { width: 100px; text-align: center; }
+
+        .score-big {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .rank-1 .score-big { color: var(--gold2); }
+        .rank-2 .score-big { color: var(--silver); }
+        .rank-3 .score-big { color: var(--bronze); }
+        .rank-other .score-big { color: var(--paper); }
+
+        .score-label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.6em;
+            letter-spacing: 2px;
+            color: rgba(200,160,48,0.4);
+            text-transform: uppercase;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: rgba(200,160,48,0.4);
+        }
+
+        .empty-state .icon { font-size: 3em; margin-bottom: 16px; }
+        .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.5em; color: rgba(200,160,48,0.5); margin-bottom: 10px; }
+        .empty-state p { font-family: 'Courier Prime', monospace; font-size: 0.78em; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* ===== BONUS LEGEND ===== */
+        .legend {
+            background: rgba(200,160,48,0.06);
+            border: 1px solid rgba(200,160,48,0.2);
+            padding: 20px 24px;
+            margin-bottom: 32px;
+        }
+
+        .legend-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.68em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(200,160,48,0.6);
+            margin-bottom: 12px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .legend-icon { font-size: 1.2em; margin-top: 1px; }
+
+        .legend-text {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.72em;
+            letter-spacing: 1px;
+            color: rgba(200,160,48,0.7);
+            line-height: 1.5;
+        }
+
+        .legend-pts {
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        /* ===== INSTRUCTOR CONTROLS ===== */
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.75em;
+            letter-spacing: 2px;
+            padding: 10px 20px;
+            border: 1px solid rgba(200,160,48,0.3);
+            cursor: pointer;
+            transition: all 0.18s;
+            text-transform: uppercase;
+            background: rgba(200,160,48,0.08);
+            color: var(--gold);
+        }
+
+        .btn:hover { background: rgba(200,160,48,0.18); border-color: var(--gold); }
+        .btn.btn-refresh { background: rgba(42,96,64,0.2); border-color: rgba(96,208,144,0.4); color: #60d090; }
+        .btn.btn-refresh:hover { background: rgba(42,96,64,0.35); }
+
+        /* ===== WINNER OVERLAY ===== */
+        .winner-bar {
+            background: linear-gradient(90deg, rgba(200,160,48,0.2), rgba(200,160,48,0.05), rgba(200,160,48,0.2));
+            border-top: 2px solid var(--gold);
+            border-bottom: 2px solid var(--gold);
+            padding: 14px 40px;
+            text-align: center;
+            margin-bottom: 32px;
+            display: none;
+        }
+
+        .winner-bar.visible { display: block; }
+
+        .winner-bar p {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.8em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(200,160,48,0.7);
+            margin-bottom: 4px;
+        }
+
+        .winner-bar h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: var(--gold2);
+        }
+
+        /* ===== LOADING ===== */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.8em;
+            letter-spacing: 3px;
+            color: rgba(200,160,48,0.5);
+            text-transform: uppercase;
+            animation: blink 1.2s ease-in-out infinite;
+        }
+
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        @media (max-width: 900px) {
+            .header { padding: 14px 20px; }
+            .header h1 { font-size: 1.4em; }
+            .main { padding: 20px; }
+            .progress-col, .bonus-col { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-eyebrow">HIST 101 · Prof. Hauselmann · Live Dashboard</div>
+            <h1>Shays' Rebellion — Class Leaderboard</h1>
+        </div>
+        <div class="header-right">
+            <div class="live-badge"><div class="live-dot"></div> Live</div>
+            <div class="refresh-info" id="lastRefresh">Refreshing every 15s</div>
+        </div>
+    </div>
+
+    <!-- ===== STATS BAR ===== -->
+    <div class="stats-bar">
+        <div class="stat-cell">
+            <div class="stat-num" id="stat-groups">—</div>
+            <div class="stat-label">Groups</div>
+        </div>
+        <div class="stat-cell">
+            <div class="stat-num" id="stat-submissions">—</div>
+            <div class="stat-label">Submitted</div>
+        </div>
+        <div class="stat-cell">
+            <div class="stat-num" id="stat-complete">—</div>
+            <div class="stat-label">Groups Complete</div>
+        </div>
+        <div class="stat-cell">
+            <div class="stat-num" id="stat-leader">—</div>
+            <div class="stat-label">Leading Group</div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+
+        <!-- Winner bar (shown when at least one group is done) -->
+        <div class="winner-bar" id="winnerBar">
+            <p>🏆 Currently Leading</p>
+            <h2 id="winnerName">—</h2>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-refresh" onclick="loadData()">↻ Refresh Now</button>
+            <button class="btn" onclick="toggleSection()">Section: <span id="sectionLabel">All</span></button>
+        </div>
+
+        <!-- Scoring legend -->
+        <div class="legend">
+            <div class="legend-title">📊 Scoring System</div>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-icon">📤</span>
+                    <div class="legend-text"><span class="legend-pts">5 pts</span> per member who submits</div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-icon">✅</span>
+                    <div class="legend-text"><span class="legend-pts">+10 pts</span> bonus if ALL members submit</div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-icon">🎲</span>
+                    <div class="legend-text"><span class="legend-pts">1–3 pts</span> Historian's Luck bonus (random)</div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-icon">⚡</span>
+                    <div class="legend-text"><span class="legend-pts">+5 pts</span> first group to have all members submit</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Board header -->
+        <div class="board-header">
+            <div>
+                <div class="board-title">Group Rankings</div>
+            </div>
+            <div class="board-subtitle" id="boardSubtitle">Loading submissions…</div>
+        </div>
+
+        <!-- The leaderboard -->
+        <div id="boardContainer">
+            <div class="loading">Loading submissions…</div>
+        </div>
+
+    </div>
+
+<script>
+    const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+
+
+    // Persistent random bonus per group (seeded from group name so it doesn't change on refresh)
+    const bonusCache = {};
+    function getBonus(groupName) {
+        if (bonusCache[groupName] !== undefined) return bonusCache[groupName];
+        // Simple deterministic hash so same group always gets same bonus this session
+        let hash = 0;
+        for (let i = 0; i < groupName.length; i++) hash = (hash * 31 + groupName.charCodeAt(i)) & 0xffffffff;
+        bonusCache[groupName] = (Math.abs(hash) % 3) + 1; // 1, 2, or 3
+        return bonusCache[groupName];
+    }
+
+    let firstCompleteGroup = null; // tracks first group where all members submitted
+    let currentSection = 'All';
+    let allSections = [];
+    let refreshInterval = null;
+
+    async function loadData() {
+        try {
+            const url = `${SUPABASE_URL}/rest/v1/worksheet_submissions` +
+                `?select=student_name,section_number,group_name,submitted_at` +
+                `&worksheet_type=eq.shays-rebellion` +
+                `&order=submitted_at.asc`;
+
+            const res = await fetch(url, {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+
+            const submissions = await res.json();
+            renderBoard(submissions);
+            updateLastRefresh();
+        } catch(e) {
+            document.getElementById('boardContainer').innerHTML =
+                `<div class="loading">Error loading data: ${e.message}</div>`;
+        }
+    }
+
+    function renderBoard(submissions) {
+        // Filter by section if needed
+        const filtered = currentSection === 'All'
+            ? submissions
+            : submissions.filter(s => (s.section_number || '').toString() === currentSection);
+
+        // Collect all unique sections for toggle
+        allSections = [...new Set(submissions.map(s => s.section_number).filter(Boolean))].sort();
+
+        // Group submissions
+        const groups = {};
+        filtered.forEach(sub => {
+            const gkey = (sub.group_name || 'Ungrouped').trim();
+            if (!groups[gkey]) {
+                groups[gkey] = {
+                    name: gkey,
+                    members: [],
+                    firstSubmit: sub.submitted_at,
+                    lastSubmit: sub.submitted_at
+                };
+            }
+            groups[gkey].members.push({
+                name: sub.student_name,
+                submitted_at: sub.submitted_at
+            });
+            if (sub.submitted_at < groups[gkey].firstSubmit) groups[gkey].firstSubmit = sub.submitted_at;
+            if (sub.submitted_at > groups[gkey].lastSubmit)  groups[gkey].lastSubmit  = sub.submitted_at;
+        });
+
+        // Determine first-complete group (all members submitted — we use >= 2 as minimum group)
+        // In practice: first group where member count >= 2 in time order
+        const groupList = Object.values(groups);
+
+        // Find first group to have >=2 submissions (simple "first to complete" signal)
+        if (!firstCompleteGroup) {
+            const byFirstSubmit = [...groupList].sort((a,b) => a.firstSubmit.localeCompare(b.firstSubmit));
+            const candidate = byFirstSubmit.find(g => g.members.length >= 2);
+            if (candidate) firstCompleteGroup = candidate.name;
+        }
+
+        // Score each group
+        groupList.forEach(g => {
+            const memberPts = g.members.length * 5;
+            const allSubmitBonus = g.members.length >= 2 ? 10 : 0;   // reward full group submitting
+            const speedBonus = (firstCompleteGroup === g.name) ? 5 : 0;
+            const luck = getBonus(g.name);
+            g.score = memberPts + allSubmitBonus + speedBonus + luck;
+            g.breakdown = { memberPts, allSubmitBonus, speedBonus, luck };
+        });
+
+        // Sort by score desc
+        groupList.sort((a,b) => b.score - a.score || a.firstSubmit.localeCompare(b.firstSubmit));
+
+        // Update stats
+        document.getElementById('stat-groups').textContent = groupList.length || '—';
+        document.getElementById('stat-submissions').textContent = filtered.length || '—';
+        document.getElementById('stat-complete').textContent = groupList.filter(g => g.members.length >= 2).length || '—';
+        document.getElementById('stat-leader').textContent = groupList.length ? groupList[0].name : '—';
+
+        // Winner bar
+        if (groupList.length > 0) {
+            document.getElementById('winnerBar').classList.add('visible');
+            document.getElementById('winnerName').textContent = `${groupList[0].name}`;
+        }
+
+        document.getElementById('boardSubtitle').textContent =
+            `${filtered.length} submission${filtered.length !== 1 ? 's' : ''} · ${groupList.length} group${groupList.length !== 1 ? 's' : ''}`;
+
+        if (groupList.length === 0) {
+            document.getElementById('boardContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📜</div>
+                    <h3>No submissions yet</h3>
+                    <p>Waiting for students to submit…</p>
+                </div>`;
+            return;
+        }
+
+        // Build table
+        let html = `
+        <table class="leaderboard">
+            <thead>
+                <tr>
+                    <th class="center">#</th>
+                    <th>Group</th>
+                    <th>Members Submitted</th>
+                    <th class="center progress-col">Progress</th>
+                    <th class="center bonus-col">Historian's Luck</th>
+                    <th class="center">Score</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        groupList.forEach((g, i) => {
+            const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+            const rankEmoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1);
+            const memberCount = g.members.length;
+            const pct = Math.min(100, memberCount * 20); // visual fill — 5 members = full
+
+            // Build pip display (up to 6 pips shown)
+            const maxPips = Math.max(memberCount, 4);
+            let pips = '';
+            for (let p = 0; p < maxPips; p++) {
+                pips += `<div class="pip ${p < memberCount ? 'submitted' : ''}"></div>`;
+            }
+
+            // Member names
+            const memberNames = g.members.map(m => m.name.split(' ')[0]).join(', ');
+
+            // Bonus stars
+            const luckStars = '★'.repeat(g.breakdown.luck) + '☆'.repeat(3 - g.breakdown.luck);
+
+            // Bonus tooltip text
+            const bonusBreakdown = [
+                `${g.breakdown.memberPts}pts (${memberCount} submitted)`,
+                g.breakdown.allSubmitBonus ? `+${g.breakdown.allSubmitBonus} group complete` : '',
+                g.breakdown.speedBonus ? `+${g.breakdown.speedBonus} first to finish` : '',
+                `+${g.breakdown.luck} luck`
+            ].filter(Boolean).join(' · ');
+
+            html += `
+            <tr class="${rankClass}" title="${bonusBreakdown}">
+                <td class="rank-col">${rankEmoji}</td>
+                <td class="group-col">
+                    <div class="group-name">${escHtml(g.name)}</div>
+                    <div class="group-members">${escHtml(memberNames)}</div>
+                </td>
+                <td class="member-col">
+                    <div class="member-pips">${pips}</div>
+                    <div class="member-count">${memberCount} submitted</div>
+                </td>
+                <td class="progress-col">
+                    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+                    <div class="progress-text">${memberCount} / group</div>
+                </td>
+                <td class="bonus-col">
+                    <div class="bonus-display" style="color: ${g.breakdown.luck === 3 ? '#ffd060' : g.breakdown.luck === 2 ? 'var(--gold)' : 'var(--bronze)'}">
+                        ${luckStars}
+                    </div>
+                    <div class="bonus-label">+${g.breakdown.luck} pts</div>
+                </td>
+                <td class="score-col">
+                    <div class="score-big">${g.score}</div>
+                    <div class="score-label">pts</div>
+                </td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('boardContainer').innerHTML = html;
+    }
+
+    function toggleSection() {
+        const opts = ['All', ...allSections];
+        const cur = opts.indexOf(currentSection);
+        currentSection = opts[(cur + 1) % opts.length];
+        document.getElementById('sectionLabel').textContent = currentSection;
+        loadData();
+    }
+
+    function updateLastRefresh() {
+        const now = new Date();
+        document.getElementById('lastRefresh').textContent =
+            `Last updated: ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}`;
+    }
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;');
+    }
+
+    // Auto-refresh every 15 seconds
+    loadData();
+    refreshInterval = setInterval(loadData, 15000);
+</script>
+</body>
+</html>
