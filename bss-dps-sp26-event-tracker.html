@@ -1112,12 +1112,20 @@ function lockApp() {
 
 // ══ APP INIT ══════════════════════════════════════════════════
 async function launchApp(url, key) {
-  sb = window.supabase.createClient(url, key);
-  await loadData();
-  document.getElementById('app-screen').classList.add('active');
-  renderDashboard();
-  renderTabs();
-  renderChecklist();
+  try {
+    sb = window.supabase.createClient(url, key);
+    await loadData();
+    document.getElementById('app-screen').classList.add('active');
+    renderDashboard();
+    renderTabs();
+    renderChecklist();
+  } catch(e) {
+    const err = document.getElementById('pw-error');
+    err.textContent = 'Database error: ' + e.message + '. Check console for details.';
+    err.style.display = 'block';
+    document.getElementById('password-screen').classList.add('active');
+    console.error('Launch error:', e);
+  }
 }
 
 async function loadData() {
