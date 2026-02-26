@@ -210,6 +210,47 @@
         .lock-details { background: var(--aged); border: 2px solid var(--worn); padding: 16px 20px; font-family: 'Special Elite', monospace; font-size: 0.85em; line-height: 2; letter-spacing: 1px; margin: 18px 0; }
         .lock-contact { padding: 16px 18px; border-left: 4px solid var(--blue); background: rgba(26,44,74,0.07); font-size: 0.9em; }
 
+        /* ── TIME EXPIRED OVERLAY ────────────────────────── */
+        #timeExpiredOverlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(10, 4, 4, 0.93);
+            z-index: 9997;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+        #timeExpiredOverlay.visible { display: block; }
+        .time-expired-box {
+            max-width: 680px; margin: 0 auto;
+            background: var(--parchment);
+            border: 3px solid var(--ink);
+            border-top: 8px solid var(--red);
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.6);
+        }
+        .time-expired-meta {
+            background: var(--red); color: #f5edda;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.75em; letter-spacing: 3px;
+            text-transform: uppercase; padding: 10px 20px;
+        }
+        .time-expired-body { padding: 36px 36px 40px; }
+        .time-expired-body h2 { font-family: 'Special Elite', monospace; font-size: 1.5em; color: var(--red); border-bottom: 2px solid var(--worn); padding-bottom: 12px; margin-bottom: 18px; }
+        .time-expired-body p { line-height: 1.8; margin-bottom: 14px; }
+        .time-expired-stamp {
+            font-family: 'Special Elite', monospace; font-size: 2em;
+            color: var(--red); border: 4px solid var(--red);
+            display: inline-block; padding: 8px 22px;
+            transform: rotate(-2deg); letter-spacing: 4px;
+            opacity: 0.9; margin: 10px 0 24px;
+        }
+
+        /* ── COUNTDOWN TIMER (replaces elapsed display) ──── */
+        .timer-display.countdown-warn  { color: #e8a020; }
+        .timer-display.countdown-crit  { color: #ff4444; animation: pulse 1s ease-in-out infinite; }
+        .timer-display.countdown-done  { color: #ff2222; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .timer-remaining-label { font-family: 'Special Elite', monospace; font-size: 0.65em; color: #e08080; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
         /* ── PREFLIGHT LOADING OVERLAY ───────────────────── */
         #preflightOverlay {
             display: none;
@@ -434,6 +475,32 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════
+     TIME EXPIRED OVERLAY
+═══════════════════════════════════════════════════ -->
+<div id="timeExpiredOverlay">
+    <div class="time-expired-box">
+        <div class="time-expired-meta">⏰ &nbsp; Examination Time Limit Reached — HIST 101 Final Exam</div>
+        <div class="time-expired-body">
+            <div class="stamp-center">
+                <div class="time-expired-stamp">TIME EXPIRED</div>
+            </div>
+            <h2>Your 2-Hour Examination Period Has Ended</h2>
+            <p>The allotted time for this examination has elapsed. All answer fields have been locked. Your work up to this point has been preserved.</p>
+            <p>Please click <strong>"Submit Now"</strong> to submit your exam immediately. Your responses will be submitted exactly as they were when time expired.</p>
+            <div style="background: rgba(139,26,26,0.08); border: 2px solid var(--red); padding: 14px 18px; margin: 18px 0; font-family: 'Special Elite', monospace; font-size: 0.88em; letter-spacing: 1px; color: var(--red);">
+                Auto-submitting in <span id="graceCountdown">60</span> seconds if you do not act.
+            </div>
+            <div style="text-align:center; margin-top: 10px;">
+                <button class="btn btn-success" onclick="manualTimeExpiredSubmit()" style="font-size:1.05em; padding:16px 40px;">
+                    📤 &nbsp; Submit Now
+                </button>
+            </div>
+            <p style="margin-top:18px; font-size:0.85em; color:var(--faded); font-style:italic;">If you experienced a technical issue that prevented timely completion, contact Prof. Hauselmann immediately after submitting.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
      PRE-FLIGHT CHECKING OVERLAY
 ═══════════════════════════════════════════════════ -->
 <div id="preflightOverlay">
@@ -463,11 +530,16 @@
         </div>
         <div class="timer-bar" id="timerBar">
             <div>
-                <div class="timer-label">Elapsed Time</div>
-                <div class="timer-display" id="timerDisplay">00:00:00</div>
+                <div class="timer-label">Time Remaining</div>
+                <div class="timer-display" id="timerDisplay">2:00:00</div>
+                <div class="timer-remaining-label" id="timerRemainingLabel">of 2-hour limit</div>
             </div>
-            <div class="session-info" id="sessionInfo">
-                Started: —<br>Current: —
+            <div style="text-align:right;">
+                <div class="timer-label">Elapsed</div>
+                <div style="font-family:'Special Elite',monospace; font-size:1em; color:#8a9ab0; letter-spacing:2px;" id="elapsedDisplay">00:00:00</div>
+                <div class="session-info" id="sessionInfo" style="margin-top:4px;">
+                    Started: —<br>Current: —
+                </div>
             </div>
         </div>
     </div>
@@ -1012,8 +1084,10 @@ const CANVAS_URL = 'CANVAS_URL_PLACEHOLDER'; // Replace with your Canvas assignm
 const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
 
-const ASSIGNMENT_OPEN    = true;
-const SUBMISSION_CUTOFF  = null; // e.g. '2025-12-15T23:59:00' or null
+const ASSIGNMENT_OPEN       = true;
+const SUBMISSION_CUTOFF     = null;    // e.g. '2025-12-15T23:59:00' or null
+const EXAM_DURATION_MINUTES = 120;     // ← Change this to set the time limit (120 = 2 hours)
+const GRACE_PERIOD_SECONDS  = 60;      // Auto-submits this many seconds after time expires
 
 // ════════════════════════════════════════════════════════════
 //  SUPABASE CLIENT
@@ -1027,6 +1101,8 @@ let currentPhase    = 0;
 let examStartTime   = null;
 let examEndTime     = null;
 let timerInterval   = null;
+let graceInterval   = null;     // countdown after time expires
+let timeExpired     = false;    // flag to block further navigation
 let idPhaseLocked   = false;
 let attemptId       = null;   // Supabase row ID of the attempt record
 
@@ -1047,26 +1123,121 @@ function startTimer() {
     updateTimer();
     updateSessionInfo();
 }
+
 function updateTimer() {
     if (!examStartTime) return;
-    const elapsed  = Math.floor((new Date() - examStartTime) / 1000);
-    const h = String(Math.floor(elapsed / 3600)).padStart(2,'0');
-    const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2,'0');
-    const s = String(elapsed % 60).padStart(2,'0');
-    const display  = document.getElementById('timerDisplay');
-    display.textContent = `${h}:${m}:${s}`;
-    if (elapsed > 9000) display.classList.add('timer-warning');
+
+    const elapsed      = Math.floor((new Date() - examStartTime) / 1000);
+    const totalSeconds = EXAM_DURATION_MINUTES * 60;
+    const remaining    = totalSeconds - elapsed;
+
+    // ── Elapsed display (secondary, top-right) ──────────
+    const eh = String(Math.floor(elapsed / 3600)).padStart(2,'0');
+    const em = String(Math.floor((elapsed % 3600) / 60)).padStart(2,'0');
+    const es = String(elapsed % 60).padStart(2,'0');
+    const elapsedEl = document.getElementById('elapsedDisplay');
+    if (elapsedEl) elapsedEl.textContent = `${eh}:${em}:${es}`;
+
+    // ── Countdown display (primary, top-left) ────────────
+    const display = document.getElementById('timerDisplay');
+    if (!display) return;
+    display.classList.remove('countdown-warn','countdown-crit','countdown-done','timer-warning');
+
+    if (remaining <= 0) {
+        // Time is up
+        display.textContent = '0:00:00';
+        display.classList.add('countdown-done');
+        if (!timeExpired) triggerTimeExpired();
+        return;
+    }
+
+    const rh = Math.floor(remaining / 3600);
+    const rm = String(Math.floor((remaining % 3600) / 60)).padStart(2,'0');
+    const rs = String(remaining % 60).padStart(2,'0');
+    display.textContent = `${rh}:${rm}:${rs}`;
+
+    // Warning colours: yellow under 30 min, red under 10 min
+    if      (remaining <= 600)  display.classList.add('countdown-crit');
+    else if (remaining <= 1800) display.classList.add('countdown-warn');
+
     updateSessionInfo();
 }
+
 function updateSessionInfo() {
     const el = document.getElementById('sessionInfo');
-    if (!examStartTime) { el.textContent = ''; return; }
-    el.innerHTML = `Started: ${examStartTime.toLocaleTimeString()}<br>Current: ${new Date().toLocaleTimeString()}`;
+    if (!examStartTime) { if (el) el.innerHTML = ''; return; }
+    if (el) el.innerHTML = `Started: ${examStartTime.toLocaleTimeString()}<br>Current: ${new Date().toLocaleTimeString()}`;
 }
+
 function getElapsedString() {
     if (!examStartTime) return 'N/A';
     const elapsed = Math.floor((new Date() - examStartTime) / 1000);
     return `${Math.floor(elapsed/3600)}h ${Math.floor((elapsed%3600)/60)}m ${elapsed%60}s`;
+}
+
+// ── TIME EXPIRY ──────────────────────────────────────────
+function triggerTimeExpired() {
+    timeExpired = true;
+    clearInterval(timerInterval);
+
+    // Lock every input and textarea on the page
+    lockExamFields();
+
+    // Show the time-expired overlay with grace countdown
+    document.getElementById('timeExpiredOverlay').classList.add('visible');
+    let secondsLeft = GRACE_PERIOD_SECONDS;
+    document.getElementById('graceCountdown').textContent = secondsLeft;
+
+    graceInterval = setInterval(() => {
+        secondsLeft--;
+        const cd = document.getElementById('graceCountdown');
+        if (cd) cd.textContent = secondsLeft;
+        if (secondsLeft <= 0) {
+            clearInterval(graceInterval);
+            autoForceSubmit();
+        }
+    }, 1000);
+}
+
+function lockExamFields() {
+    // Disable all text inputs and textareas
+    document.querySelectorAll('input[type="text"], textarea').forEach(el => {
+        el.disabled = true;
+        el.style.background = '#f0e8d4';
+        el.style.color = '#7a6a52';
+        el.style.cursor = 'not-allowed';
+    });
+    // Disable navigation buttons (not the submit overlay button)
+    document.querySelectorAll('.btn:not(#timeExpiredOverlay .btn)').forEach(el => {
+        if (el.id !== 'submitBtn') el.disabled = true;
+    });
+}
+
+async function autoForceSubmit() {
+    // Hide the overlay and move to submit phase
+    document.getElementById('timeExpiredOverlay').classList.remove('visible');
+    examEndTime = new Date();
+    buildSummary();
+
+    // Jump straight to phase 7 without word-count checks
+    document.getElementById(`phase${currentPhase}`).classList.remove('active');
+    document.getElementById('phase7').classList.add('active');
+    currentPhase = 7;
+    updateProgress();
+    window.scrollTo(0,0);
+
+    // Re-enable just the submit button
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) submitBtn.disabled = false;
+
+    // Auto-fire the Supabase submission
+    await submitToSupabase();
+}
+
+function manualTimeExpiredSubmit() {
+    // Student clicked "Submit Now" before grace period expired
+    clearInterval(graceInterval);
+    autoForceSubmit();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1268,10 +1439,12 @@ function advanceToEssay() {
 // ════════════════════════════════════════════════════════════
 function advanceToSubmit() {
     const essay = document.getElementById('essay-response').value.trim();
-    if (!essay) { alert('Please write your essay before submitting.'); return; }
-    const wc = countWords(essay);
-    if (wc < 500) { alert(`Your essay is only ${wc} words. You need at least 500 words.`); return; }
-    if (wc > 1000) { alert(`Your essay is ${wc} words, which exceeds the 1,000-word maximum. Please trim your response.`); return; }
+    if (!essay && !timeExpired) { alert('Please write your essay before submitting.'); return; }
+    if (!timeExpired) {
+        const wc = countWords(essay);
+        if (wc < 500) { alert(`Your essay is only ${wc} words. You need at least 500 words.`); return; }
+        if (wc > 1000) { alert(`Your essay is ${wc} words, which exceeds the 1,000-word maximum. Please trim your response.`); return; }
+    }
     examEndTime = new Date();
     clearInterval(timerInterval);
     buildSummary();
@@ -1570,8 +1743,18 @@ window.onload = () => {
                     });
                     if (state.startTime) {
                         examStartTime  = new Date(state.startTime);
-                        timerInterval  = setInterval(updateTimer, 1000);
-                        updateTimer(); updateSessionInfo();
+
+                        // Check if time already expired during the outage
+                        const elapsed = Math.floor((new Date() - examStartTime) / 1000);
+                        if (elapsed >= EXAM_DURATION_MINUTES * 60) {
+                            // Time ran out while the page was closed — trigger expiry immediately
+                            timerInterval = setInterval(updateTimer, 1000);
+                            updateTimer();
+                            triggerTimeExpired();
+                        } else {
+                            timerInterval  = setInterval(updateTimer, 1000);
+                            updateTimer(); updateSessionInfo();
+                        }
                     }
                     const phase = parseInt(state.phase);
                     currentPhase = phase;
