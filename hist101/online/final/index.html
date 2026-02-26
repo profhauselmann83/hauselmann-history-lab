@@ -74,6 +74,7 @@
 
         /* Form fields */
         .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 4px; }
+        .student-info-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 4px; }
         .field-group { display: flex; flex-direction: column; gap: 6px; }
         .field-group label { font-family: 'Special Elite', monospace; font-size: 0.8em; letter-spacing: 2px; color: var(--faded); text-transform: uppercase; }
         input[type="text"], textarea, select {
@@ -179,11 +180,64 @@
         .breadcrumb a:hover { text-decoration: underline; }
         .breadcrumb .sep { margin: 0 8px; opacity: 0.4; }
 
-        @media (max-width: 650px) {
-            h1 { font-size: 1.8em; }
-            .student-info-grid { grid-template-columns: 1fr; }
-            .id-fields { grid-template-columns: 1fr; }
+        /* ── ATTEMPT LOCK SCREEN ─────────────────────────── */
+        #lockScreen {
+            display: none;
+            position: fixed; inset: 0;
+            background: #1a0e06;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 40px 20px;
         }
+        #lockScreen.visible { display: block; }
+        .lock-box {
+            max-width: 680px; margin: 0 auto;
+            background: var(--parchment);
+            border: 3px solid var(--ink);
+            border-top: 8px solid var(--red);
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.5);
+        }
+        .lock-meta {
+            background: var(--red); color: #f5edda;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.75em; letter-spacing: 3px;
+            text-transform: uppercase; padding: 10px 20px;
+        }
+        .lock-body { padding: 36px 36px 40px; }
+        .lock-body h2 { font-family: 'Special Elite', monospace; font-size: 1.7em; color: var(--red); border-bottom: 2px solid var(--worn); padding-bottom: 12px; margin-bottom: 18px; }
+        .lock-body p { line-height: 1.8; margin-bottom: 14px; }
+        .lock-stamp { font-family: 'Special Elite', monospace; font-size: 2em; color: var(--red); border: 4px solid var(--red); display: inline-block; padding: 8px 22px; transform: rotate(-2deg); letter-spacing: 4px; opacity: 0.9; margin: 10px 0 24px; }
+        .lock-details { background: var(--aged); border: 2px solid var(--worn); padding: 16px 20px; font-family: 'Special Elite', monospace; font-size: 0.85em; line-height: 2; letter-spacing: 1px; margin: 18px 0; }
+        .lock-contact { padding: 16px 18px; border-left: 4px solid var(--blue); background: rgba(26,44,74,0.07); font-size: 0.9em; }
+
+        /* ── PREFLIGHT LOADING OVERLAY ───────────────────── */
+        #preflightOverlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(10, 8, 4, 0.90);
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+        }
+        #preflightOverlay.visible { display: flex; }
+        .preflight-box {
+            background: var(--parchment);
+            border: 3px solid var(--ink);
+            border-top: 6px solid var(--gold);
+            padding: 40px 48px;
+            text-align: center;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
+            max-width: 420px;
+        }
+        .preflight-box p { font-family: 'Special Elite', monospace; font-size: 1em; letter-spacing: 2px; color: var(--ink); margin-bottom: 16px; }
+        .spinner {
+            width: 40px; height: 40px; margin: 0 auto 20px;
+            border: 4px solid var(--worn);
+            border-top-color: var(--red);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── TUTORIAL MODAL ──────────────────────────────── */
         .modal-overlay {
@@ -337,14 +391,59 @@
         .btn-tutorial:hover { background: var(--gold); }
 
         @media (max-width: 650px) {
+            h1 { font-size: 1.8em; }
+            .student-info-grid { grid-template-columns: 1fr; }
+            .student-info-grid-3 { grid-template-columns: 1fr; }
+            .id-fields { grid-template-columns: 1fr; }
             .five-w-grid { grid-template-columns: 1fr; }
             .five-w-card.why-card { grid-column: span 1; }
             .compare-grid { grid-template-columns: 1fr; }
             .modal-body { padding: 20px 18px 28px; }
+            .lock-body { padding: 24px 20px 28px; }
         }
     </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════════
+     ATTEMPT LOCK SCREEN (shown if prior attempt found)
+═══════════════════════════════════════════════════ -->
+<div id="lockScreen">
+    <div class="lock-box">
+        <div class="lock-meta">⚠️ &nbsp; Examination Access Restricted — HIST 101 Final Exam</div>
+        <div class="lock-body">
+            <div class="stamp-center">
+                <div class="lock-stamp">ACCESS DENIED</div>
+            </div>
+            <h2>Exam Attempt Already Recorded</h2>
+            <p>Our records show that an examination session has already been opened under your Student ID. For academic integrity purposes, this exam is limited to <strong>one attempt only</strong>.</p>
+            <p>If you believe this is an error — for example, if your browser crashed before you could begin writing — please contact Prof. Hauselmann <strong>before</strong> attempting to re-enter the exam.</p>
+            <div class="lock-details" id="lockDetails">
+                Loading attempt details...
+            </div>
+            <div class="lock-contact">
+                <strong>Contact Prof. Hauselmann:</strong><br>
+                <!-- UPDATE THESE WITH YOUR ACTUAL CONTACT DETAILS -->
+                Email: <strong>hauselmann@yosemite.edu</strong><br>
+                Office Hours: As posted on Canvas<br>
+                Canvas Inbox: Available 24/7
+            </div>
+            <p style="margin-top:18px; font-size:0.88em; color:var(--faded); font-style:italic;">Do not attempt to bypass this screen. All access attempts, including the timestamp of this blocked attempt, are logged automatically.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PRE-FLIGHT CHECKING OVERLAY
+═══════════════════════════════════════════════════ -->
+<div id="preflightOverlay">
+    <div class="preflight-box">
+        <div class="spinner"></div>
+        <p>VERIFYING ELIGIBILITY</p>
+        <p id="preflightStatus" style="font-size:0.8em; color:var(--faded); letter-spacing:1px;">Checking attempt records...</p>
+    </div>
+</div>
+
 <div class="page-wrap">
 
     <nav class="breadcrumb">
@@ -403,6 +502,7 @@
                     <li>The timer runs continuously and cannot be paused.</li>
                     <li>Your start time and end time are recorded automatically.</li>
                     <li>Do not close this window — your progress is saved locally every 30 seconds.</li>
+                    <li><strong>This exam may only be opened once.</strong> Your Student ID is recorded at the moment you click "Begin Examination."</li>
                 </ul>
             </div>
 
@@ -429,29 +529,38 @@
 
             <div style="margin-top: 28px; border-top: 2px solid var(--worn); padding-top: 24px;">
                 <h3>Enter Your Information to Begin</h3>
-                <div class="student-info-grid" style="margin-top: 16px;">
+                <p style="font-size:0.9em; color:var(--faded); margin-bottom:16px;">All three fields are required. Your Student ID is used to verify you have not previously opened this exam.</p>
+                <!-- THREE-COLUMN GRID: Name, Student ID, Section -->
+                <div class="student-info-grid-3" style="margin-top: 16px;">
                     <div class="field-group">
                         <label>Full Name</label>
                         <input type="text" id="student-name" placeholder="Enter your full name">
+                    </div>
+                    <div class="field-group">
+                        <label>Student ID</label>
+                        <input type="text" id="student-id" placeholder="e.g., 1234567" autocomplete="off">
                     </div>
                     <div class="field-group">
                         <label>Section Number</label>
                         <input type="text" id="section-number" placeholder="e.g., 101, 102">
                     </div>
                 </div>
-                <!-- Canvas link is set by the instructor in the CANVAS_URL variable in the script -->
             </div>
 
-            <div class="notice" style="margin-top: 20px;"><strong>Important:</strong> By clicking "Begin Examination" you confirm that all work will be your own and that you understand the exam rules above. The timer will start when you click the button.</div>
+            <div class="notice" style="margin-top: 20px;"><strong>Important:</strong> By clicking "Begin Examination" you confirm that all work will be your own and that you understand the exam rules above. <strong>The timer starts and your attempt is recorded the moment you click Begin.</strong> You will not be able to re-open this exam under the same Student ID.</div>
         </div>
         <div class="btn-row">
-            <button class="btn btn-primary" onclick="beginExam()">Begin Examination →</button>
+            <button class="btn btn-primary" id="beginBtn" onclick="beginExam()">Begin Examination →</button>
         </div>
+        <!-- Error display for preflight failures -->
+        <div id="beginError" style="margin-top:16px; display:none;"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════
-         PHASE 1: ID 1 — The Great Compromise
+         PHASE 1–5: ID QUESTIONS (unchanged from original)
     ═══════════════════════════════════════════════════ -->
+
+    <!-- PHASE 1: The Great Compromise -->
     <div class="panel" id="phase1">
         <div class="card">
             <div class="phase-banner part1">Part I — Historical Identifications · 1 of 5</div>
@@ -464,7 +573,6 @@
             <p>Write a paragraph of <strong>75–150 words</strong> addressing WHO, WHAT, WHERE, WHEN, and WHY this term is historically significant. Include a citation for your source.</p>
             <div class="notice">Accepted sources: course textbook or other class resources only. Format: (Author, Year) or (Title, Year).</div>
             <div style="margin: 12px 0 4px;"><button class="btn-tutorial" onclick="openTutorial()">📖 &nbsp; View Instructions &amp; Example</button></div>
-
             <div class="q-item" style="margin-top: 20px;">
                 <label><span class="q-num">WHO / WHAT / WHERE / WHEN / WHY</span> Your response paragraph:</label>
                 <textarea id="id1-response" rows="7" placeholder="Write your paragraph here... (75–150 words)" oninput="updateWordCount('id1-response','id1-wc',75,150)"></textarea>
@@ -484,9 +592,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════
-         PHASE 2: ID 2 — Manifest Destiny
-    ═══════════════════════════════════════════════════ -->
+    <!-- PHASE 2: Manifest Destiny -->
     <div class="panel" id="phase2">
         <div class="card">
             <div class="phase-banner part1">Part I — Historical Identifications · 2 of 5</div>
@@ -499,7 +605,6 @@
             <p>Write a paragraph of <strong>75–150 words</strong> addressing WHO, WHAT, WHERE, WHEN, and WHY this term is historically significant. Include a citation for your source.</p>
             <div class="notice">Accepted sources: course textbook or other class resources only.</div>
             <div style="margin: 12px 0 4px;"><button class="btn-tutorial" onclick="openTutorial()">📖 &nbsp; View Instructions &amp; Example</button></div>
-
             <div class="q-item" style="margin-top: 20px;">
                 <label><span class="q-num">WHO / WHAT / WHERE / WHEN / WHY</span> Your response paragraph:</label>
                 <textarea id="id2-response" rows="7" placeholder="Write your paragraph here... (75–150 words)" oninput="updateWordCount('id2-response','id2-wc',75,150)"></textarea>
@@ -519,9 +624,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════
-         PHASE 3: ID 3 — Dred Scott Decision
-    ═══════════════════════════════════════════════════ -->
+    <!-- PHASE 3: Dred Scott -->
     <div class="panel" id="phase3">
         <div class="card">
             <div class="phase-banner part1">Part I — Historical Identifications · 3 of 5</div>
@@ -534,7 +637,6 @@
             <p>Write a paragraph of <strong>75–150 words</strong> addressing WHO, WHAT, WHERE, WHEN, and WHY this term is historically significant. Include a citation for your source.</p>
             <div class="notice">Accepted sources: course textbook or other class resources only.</div>
             <div style="margin: 12px 0 4px;"><button class="btn-tutorial" onclick="openTutorial()">📖 &nbsp; View Instructions &amp; Example</button></div>
-
             <div class="q-item" style="margin-top: 20px;">
                 <label><span class="q-num">WHO / WHAT / WHERE / WHEN / WHY</span> Your response paragraph:</label>
                 <textarea id="id3-response" rows="7" placeholder="Write your paragraph here... (75–150 words)" oninput="updateWordCount('id3-response','id3-wc',75,150)"></textarea>
@@ -554,9 +656,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════
-         PHASE 4: ID 4 — Emancipation Proclamation
-    ═══════════════════════════════════════════════════ -->
+    <!-- PHASE 4: Emancipation Proclamation -->
     <div class="panel" id="phase4">
         <div class="card">
             <div class="phase-banner part1">Part I — Historical Identifications · 4 of 5</div>
@@ -569,7 +669,6 @@
             <p>Write a paragraph of <strong>75–150 words</strong> addressing WHO, WHAT, WHERE, WHEN, and WHY this term is historically significant. Include a citation for your source.</p>
             <div class="notice">Accepted sources: course textbook or other class resources only.</div>
             <div style="margin: 12px 0 4px;"><button class="btn-tutorial" onclick="openTutorial()">📖 &nbsp; View Instructions &amp; Example</button></div>
-
             <div class="q-item" style="margin-top: 20px;">
                 <label><span class="q-num">WHO / WHAT / WHERE / WHEN / WHY</span> Your response paragraph:</label>
                 <textarea id="id4-response" rows="7" placeholder="Write your paragraph here... (75–150 words)" oninput="updateWordCount('id4-response','id4-wc',75,150)"></textarea>
@@ -589,9 +688,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════
-         PHASE 5: ID 5 — Freedmen's Bureau
-    ═══════════════════════════════════════════════════ -->
+    <!-- PHASE 5: Freedmen's Bureau -->
     <div class="panel" id="phase5">
         <div class="card">
             <div class="phase-banner part1">Part I — Historical Identifications · 5 of 5</div>
@@ -604,7 +701,6 @@
             <p>Write a paragraph of <strong>75–150 words</strong> addressing WHO, WHAT, WHERE, WHEN, and WHY this term is historically significant. Include a citation for your source.</p>
             <div class="notice">Accepted sources: course textbook or other class resources only.</div>
             <div style="margin: 12px 0 4px;"><button class="btn-tutorial" onclick="openTutorial()">📖 &nbsp; View Instructions &amp; Example</button></div>
-
             <div class="q-item" style="margin-top: 20px;">
                 <label><span class="q-num">WHO / WHAT / WHERE / WHEN / WHY</span> Your response paragraph:</label>
                 <textarea id="id5-response" rows="7" placeholder="Write your paragraph here... (75–150 words)" oninput="updateWordCount('id5-response','id5-wc',75,150)"></textarea>
@@ -662,7 +758,6 @@
                 <button class="tab-btn" onclick="showTab('docE-tab', this)">Doc E: Education</button>
             </div>
 
-            <!-- Timeline Tab -->
             <div class="tab-content active" id="timeline-tab">
                 <h3>Reconstruction Timeline (1865–1877)</h3>
                 <div class="timeline">
@@ -679,22 +774,17 @@
                 </div>
             </div>
 
-            <!-- Doc A Tab -->
             <div class="tab-content" id="docA-tab">
                 <h3>Document A: The Reconstruction Amendments (Modified)</h3>
                 <p style="font-style: italic; color: var(--faded); margin-bottom: 10px;">The 13th, 14th, and 15th amendments to the U.S. Constitution are sometimes called the "Reconstruction Amendments." They were passed to abolish slavery and establish the rights of formerly enslaved people.</p>
                 <div class="document-block">
-                    <p><strong>13th Amendment: 1865</strong><br>
-                    Section 1. Neither slavery nor involuntary servitude, except as a punishment for crime whereof the party shall have been duly convicted, shall exist within the United States, or any place subject to their jurisdiction.</p>
-                    <p><strong>14th Amendment: 1868</strong><br>
-                    Section 1. All persons born or naturalized in the United States . . . are citizens of the United States and of the State wherein they reside. No State shall make or enforce any law which shall abridge the privileges or immunities of citizens of the United States; nor shall any State deprive any person of life, liberty, or property, without due process of law; nor deny to any person within its jurisdiction the equal protection of the laws.</p>
-                    <p><strong>15th Amendment: 1870</strong><br>
-                    Section 1. The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude.</p>
+                    <p><strong>13th Amendment: 1865</strong><br>Section 1. Neither slavery nor involuntary servitude, except as a punishment for crime whereof the party shall have been duly convicted, shall exist within the United States, or any place subject to their jurisdiction.</p>
+                    <p><strong>14th Amendment: 1868</strong><br>Section 1. All persons born or naturalized in the United States . . . are citizens of the United States and of the State wherein they reside. No State shall make or enforce any law which shall abridge the privileges or immunities of citizens of the United States; nor shall any State deprive any person of life, liberty, or property, without due process of law; nor deny to any person within its jurisdiction the equal protection of the laws.</p>
+                    <p><strong>15th Amendment: 1870</strong><br>Section 1. The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude.</p>
                     <div class="doc-source">Source: 13th, 14th, and 15th Amendments to the United States Constitution, 1865–1870. (Digital Inquiry Group)</div>
                 </div>
             </div>
 
-            <!-- Doc B Tab -->
             <div class="tab-content" id="docB-tab">
                 <h3>Document B: Black Codes (Modified)</h3>
                 <p style="font-style: italic; color: var(--faded); margin-bottom: 10px;">In the years following the Civil War, many Southern states and cities passed Black Codes. The document below, passed July 3, 1865, is a Black Code from Opelousas, Louisiana.</p>
@@ -709,7 +799,6 @@
                 </div>
             </div>
 
-            <!-- Doc C Tab -->
             <div class="tab-content" id="docC-tab">
                 <h3>Document C: Henry Adams Statement (Modified)</h3>
                 <p style="font-style: italic; color: var(--faded); margin-bottom: 10px;">Formerly enslaved person Henry Adams made this statement before the U.S. Senate in 1880 about the early days of his freedom after the Civil War.</p>
@@ -722,7 +811,6 @@
                 </div>
             </div>
 
-            <!-- Doc D Tab -->
             <div class="tab-content" id="docD-tab">
                 <h3>Document D: Elected Black Officials During Reconstruction</h3>
                 <div class="document-block">
@@ -732,7 +820,6 @@
                 </div>
             </div>
 
-            <!-- Doc E Tab -->
             <div class="tab-content" id="docE-tab">
                 <h3>Document E: Education (Modified)</h3>
                 <p style="font-style: italic; color: var(--faded); margin-bottom: 10px;">The document below is an excerpt from a report by a Northern white man to the United States government in 1866.</p>
@@ -763,7 +850,6 @@
             <div style="padding: 14px 18px; background: var(--blue); color: #f0e8d4; margin-bottom: 20px;">
                 <strong style="font-family: 'Special Elite', monospace; letter-spacing: 1px; color: var(--gold);">Essay Question:</strong> Were African Americans free during Reconstruction?
             </div>
-
             <div class="question-group" style="border-left-color: var(--blue); background: rgba(26,44,74,0.05);">
                 <h4>📝 Essay Requirements</h4>
                 <ul style="margin-left: 1.2em; line-height: 2; color: var(--ink); font-size: 0.95em;">
@@ -775,7 +861,6 @@
                     <li>Length: <strong>500–1,000 words</strong>. All work must be your own.</li>
                 </ul>
             </div>
-
             <div class="q-item" style="margin-top: 20px;">
                 <label><span class="q-num">Essay</span> Your response (500–1,000 words):</label>
                 <textarea id="essay-response" rows="28" placeholder="Begin your essay here. Remember to include a thesis, source analysis (use all 5 sources with citations), contextualization, and conclusion..." oninput="updateWordCount('essay-response','essay-wc',500,1000)"></textarea>
@@ -819,7 +904,6 @@
                 <div style="font-family: 'Special Elite', monospace; font-size: 0.8em; letter-spacing: 2px; color: var(--faded); text-transform: uppercase; margin-bottom: 10px;">Step 2 — Submit PDF to Canvas</div>
                 <a id="canvas-submit-btn" href="CANVAS_URL_PLACEHOLDER" target="_blank" class="btn btn-primary" style="display:inline-block; text-decoration:none;">📋 &nbsp; Go to Canvas Assignment →</a>
             </div>
-
         </div>
         <div class="btn-row">
             <button class="btn btn-primary" onclick="downloadPDF()">📄 Download PDF</button>
@@ -831,7 +915,7 @@
 </div><!-- end page-wrap -->
 
 <!-- ═══════════════════════════════════════════════════
-     TUTORIAL MODAL — How to Write a Historical ID
+     TUTORIAL MODAL
 ═══════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="tutorialModal" onclick="closeTutorialOnOverlay(event)">
   <div class="modal-box" role="dialog" aria-modal="true" aria-label="How to Write a Historical Identification">
@@ -840,515 +924,644 @@
         <button class="modal-close" onclick="closeTutorial()">✕ CLOSE</button>
     </div>
     <div class="modal-body">
-
         <h2>Writing a Strong Historical Identification</h2>
         <p>A historical identification is a short, focused paragraph that proves you understand a key term from the course — not just what it is, but <strong>why it mattered</strong>. You must address five questions, each of equal importance, in 75–150 words.</p>
 
-        <!-- ── THE FIVE W's ── -->
         <h3>The Five W's — What Each One Is Asking</h3>
         <div class="five-w-grid">
             <div class="five-w-card">
                 <div class="five-w-letter">WHO?</div>
                 <div class="five-w-question">Who are the key people or groups involved?</div>
-                <div class="five-w-hint">Name the specific individuals, groups, institutions, or parties at the center of this term. Don't just say "people" or "Americans" — be precise. Was it Congress? A president? Enslaved people? A specific political faction?</div>
+                <div class="five-w-hint">Name the specific individuals, groups, institutions, or parties at the center of this term. Don't just say "people" or "Americans" — be precise.</div>
             </div>
             <div class="five-w-card">
                 <div class="five-w-letter">WHAT?</div>
                 <div class="five-w-question">What exactly is this term referring to?</div>
-                <div class="five-w-hint">Describe the event, law, idea, decision, or institution in concrete terms. What actually happened, or what did it actually do? Avoid vague summaries — give the key details.</div>
+                <div class="five-w-hint">Describe the event, law, idea, decision, or institution in concrete terms. What actually happened, or what did it actually do?</div>
             </div>
             <div class="five-w-card">
                 <div class="five-w-letter">WHERE?</div>
                 <div class="five-w-question">Where did this take place?</div>
-                <div class="five-w-hint">Be as specific as the term allows. Some terms are national in scope; others happened in a specific city, region, or state. Where something happened can matter a great deal to its meaning.</div>
+                <div class="five-w-hint">Be as specific as the term allows. Some terms are national in scope; others happened in a specific city, region, or state.</div>
             </div>
             <div class="five-w-card">
                 <div class="five-w-letter">WHEN?</div>
                 <div class="five-w-question">When did this occur?</div>
-                <div class="five-w-hint">Give a specific date, year, or time period. If the term spans multiple years, indicate the range. Timing often reveals cause-and-effect relationships — showing you know when something happened demonstrates historical context.</div>
+                <div class="five-w-hint">Give a specific date, year, or time period. Timing often reveals cause-and-effect relationships.</div>
             </div>
             <div class="five-w-card why-card">
                 <div class="five-w-letter">WHY? ← This is the most important part</div>
                 <div class="five-w-question">Why is this term historically significant? What was its impact or consequence?</div>
-                <div class="five-w-hint">This is where you demonstrate real historical thinking. Don't just restate what it was — explain <strong>what it caused, changed, or revealed</strong> about American history. Why does this term matter in the larger story of the period? What were its short-term or long-term consequences? How did it affect different groups of people? A strong "WHY" is what separates a good identification from a great one.</div>
+                <div class="five-w-hint">Don't just restate what it was — explain <strong>what it caused, changed, or revealed</strong> about American history. A strong "WHY" separates a good identification from a great one.</div>
             </div>
         </div>
 
-        <!-- ── SCORING RUBRIC ── -->
         <h3>How Your Response Will Be Scored (8 Points)</h3>
         <table class="rubric-table">
-            <thead>
-                <tr>
-                    <th>Points</th>
-                    <th>What It Looks Like</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Points</th><th>What It Looks Like</th></tr></thead>
             <tbody>
-                <tr>
-                    <td class="rubric-pts">8 pts<br><em>Excellent</em></td>
-                    <td>All five W's are addressed accurately and specifically. The significance (WHY) is clearly explained with historical consequences. Within 75–150 words. Properly cited. Well-written and organized.</td>
-                </tr>
-                <tr>
-                    <td class="rubric-pts">6–7 pts<br><em>Good</em></td>
-                    <td>Most W's are addressed with reasonable accuracy. The WHY is present but could be more developed. Minor gaps or imprecision in one area. Citation included.</td>
-                </tr>
-                <tr>
-                    <td class="rubric-pts">4–5 pts<br><em>Adequate</em></td>
-                    <td>At least three W's are addressed. The response shows basic understanding but lacks depth, especially in explaining significance. Possible errors in detail or word count issues.</td>
-                </tr>
-                <tr>
-                    <td class="rubric-pts">1–3 pts<br><em>Weak</em></td>
-                    <td>Only one or two W's addressed. The response is too vague, too short, or largely inaccurate. Little evidence of understanding the term's significance.</td>
-                </tr>
-                <tr>
-                    <td class="rubric-pts">0 pts</td>
-                    <td>No response, off-topic, or response is plagiarized.</td>
-                </tr>
+                <tr><td class="rubric-pts">8 pts<br><em>Excellent</em></td><td>All five W's addressed accurately. Significance clearly explained. Within 75–150 words. Properly cited.</td></tr>
+                <tr><td class="rubric-pts">6–7 pts<br><em>Good</em></td><td>Most W's addressed. WHY present but could be more developed. Citation included.</td></tr>
+                <tr><td class="rubric-pts">4–5 pts<br><em>Adequate</em></td><td>At least three W's addressed. Basic understanding but lacks depth in significance.</td></tr>
+                <tr><td class="rubric-pts">1–3 pts<br><em>Weak</em></td><td>Only one or two W's addressed. Vague, too short, or largely inaccurate.</td></tr>
+                <tr><td class="rubric-pts">0 pts</td><td>No response, off-topic, or plagiarized.</td></tr>
             </tbody>
         </table>
 
-        <!-- ── WORKED EXAMPLE ── -->
-        <h3>Example: "The Missouri Compromise" <span style="font-size:0.75em; color:var(--faded); font-style:italic;">(This term is NOT on your exam — for illustration only)</span></h3>
-        <p>Read the example response below. Hover over the highlighted phrases to see which W each one addresses.</p>
-
+        <h3>Example: "The Missouri Compromise" <span style="font-size:0.75em; color:var(--faded); font-style:italic;">(Not on your exam — illustration only)</span></h3>
         <div class="example-block">
             <p>
                 <span class="example-annotation" data-w="WHO">Congress, led by Senator Henry Clay of Kentucky,</span>
                 negotiated the Missouri Compromise in
                 <span class="example-annotation" data-w="WHEN">1820</span>
                 to settle a crisis over the expansion of slavery.
-                <span class="example-annotation" data-w="WHAT">The agreement admitted Missouri as a slave state and Maine as a free state, maintaining the Senate balance between North and South, and drew a line across the Louisiana Territory at 36°30' — slavery was prohibited north of that line and permitted south of it.</span>
-                <span class="example-annotation" data-w="WHERE">The compromise applied to the entire Louisiana Territory west of the Mississippi River,</span>
-                affecting millions of acres of land the United States had acquired in 1803.
-                <span class="example-annotation" data-w="WHY">The Missouri Compromise was significant because it delayed the national crisis over slavery for three decades, revealing that the question of slavery's expansion — not just its existence — had become the defining political conflict of the era. When the Kansas-Nebraska Act repealed it in 1854, it reignited sectional tensions that led directly to the Civil War.</span>
+                <span class="example-annotation" data-w="WHAT">The agreement admitted Missouri as a slave state and Maine as a free state, maintaining the Senate balance, and drew a line across the Louisiana Territory at 36°30'.</span>
+                <span class="example-annotation" data-w="WHERE">The compromise applied to the entire Louisiana Territory west of the Mississippi River.</span>
+                <span class="example-annotation" data-w="WHY">It was significant because it delayed the national crisis over slavery for three decades — and when the Kansas-Nebraska Act repealed it in 1854, it reignited tensions that led directly to the Civil War.</span>
             </p>
             <div class="example-citation">Citation: (Foner, <em>Give Me Liberty!</em>, 2020, p. 315)</div>
         </div>
-        <p style="font-size:0.88em; color:var(--faded); font-style:italic; margin-top: -6px;">Word count: 128 words — within the 75–150 range. ✓</p>
 
-        <!-- ── POOR vs STRONG ── -->
-        <h3>What to Avoid — Poor vs. Strong Responses</h3>
+        <h3>Poor vs. Strong Responses</h3>
         <div class="compare-grid">
             <div class="compare-block poor">
                 <div class="compare-label">❌ Weak Response</div>
-                <p>The Missouri Compromise was a compromise about slavery. It was made in 1820. Henry Clay was involved. It helped keep the peace for a while between the North and South.</p>
-                <p style="margin-top:8px; font-size:0.85em; color:var(--red);">Problem: This is vague, underdeveloped, and too short (37 words). It identifies some facts but fails to explain WHAT specifically was agreed to, WHERE it applied, and most critically, WHY it was historically significant.</p>
+                <p>The Missouri Compromise was a compromise about slavery. It was made in 1820. Henry Clay was involved. It helped keep the peace for a while.</p>
+                <p style="margin-top:8px; font-size:0.85em; color:var(--red);">Too vague, too short (37 words), no specific WHAT or significant WHY.</p>
             </div>
             <div class="compare-block strong">
                 <div class="compare-label">✅ Strong Response</div>
-                <p>Congress, led by Senator Henry Clay, negotiated the Missouri Compromise in 1820 to resolve a crisis over slavery's expansion. The agreement admitted Missouri as a slave state and Maine as a free state, and drew a line at 36°30' across the Louisiana Territory. It was significant because it delayed the national crisis over slavery for decades — and when it was repealed in 1854, it helped trigger the sectional conflict that led to the Civil War.</p>
-                <p style="margin-top:8px; font-size:0.85em; color:var(--stamp-green);">All five W's addressed. Specific details. Clear explanation of significance. 75 words. ✓</p>
+                <p>Congress, led by Henry Clay, negotiated the Missouri Compromise in 1820 to resolve a crisis over slavery's expansion. It admitted Missouri as a slave state and Maine as a free state, and drew a line at 36°30'. Its repeal in 1854 helped trigger the sectional conflict leading to the Civil War.</p>
+                <p style="margin-top:8px; font-size:0.85em; color:var(--stamp-green);">All five W's. Specific. Clear significance. ✓</p>
             </div>
         </div>
-
-        <!-- ── TIPS ── -->
-        <h3>Tips for Success</h3>
-        <ul class="tip-list">
-            <li><strong>Lead with context, not a definition.</strong> Don't begin with "The Great Compromise was a compromise…" — open with who was involved and why it happened.</li>
-            <li><strong>Be specific with details.</strong> Dates, names, places, and numbers show mastery. "Congress passed a law" is weaker than "Congress passed the Missouri Compromise in 1820."</li>
-            <li><strong>Spend the most words on WHY.</strong> Any student can recite facts. Explaining significance is what demonstrates real historical understanding.</li>
-            <li><strong>Connect to the bigger picture.</strong> How does this term fit into the larger story of the period? What came before it, and what did it lead to?</li>
-            <li><strong>Watch your word count.</strong> Under 75 words is too thin to address all five W's well. Over 150 words means you're probably repeating yourself — tighten it up.</li>
-            <li><strong>Cite your source.</strong> Use the course textbook or another class resource. Format: (Author, Title, Year) or (Title, Year). A missing citation costs you points.</li>
-        </ul>
 
         <div style="text-align:center; margin-top:28px;">
             <button class="btn btn-gold" onclick="closeTutorial()" style="padding:12px 36px; font-size:1em;">I'm Ready — Close This Guide</button>
         </div>
-
-    </div><!-- end modal-body -->
-  </div><!-- end modal-box -->
-</div><!-- end modal-overlay -->
+    </div>
+  </div>
+</div>
 
 <script>
-    // ── CANVAS ASSIGNMENT URL ────────────────────────────
-    // 👇 REPLACE THIS with your Canvas assignment URL before publishing
-    const CANVAS_URL = 'CANVAS_URL_PLACEHOLDER';
+// ════════════════════════════════════════════════════════════
+//  CONFIGURATION — UPDATE BEFORE PUBLISHING
+// ════════════════════════════════════════════════════════════
+const CANVAS_URL = 'CANVAS_URL_PLACEHOLDER'; // Replace with your Canvas assignment URL
 
-    // Wire Canvas button on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        const btn = document.getElementById('canvas-submit-btn');
-        if (btn && CANVAS_URL !== 'CANVAS_URL_PLACEHOLDER') btn.href = CANVAS_URL;
+const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+
+const ASSIGNMENT_OPEN    = true;
+const SUBMISSION_CUTOFF  = null; // e.g. '2025-12-15T23:59:00' or null
+
+// ════════════════════════════════════════════════════════════
+//  SUPABASE CLIENT
+// ════════════════════════════════════════════════════════════
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════
+let currentPhase    = 0;
+let examStartTime   = null;
+let examEndTime     = null;
+let timerInterval   = null;
+let idPhaseLocked   = false;
+let attemptId       = null;   // Supabase row ID of the attempt record
+
+// ════════════════════════════════════════════════════════════
+//  CANVAS BUTTON WIRE-UP
+// ════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('canvas-submit-btn');
+    if (btn && CANVAS_URL !== 'CANVAS_URL_PLACEHOLDER') btn.href = CANVAS_URL;
+});
+
+// ════════════════════════════════════════════════════════════
+//  TIMER
+// ════════════════════════════════════════════════════════════
+function startTimer() {
+    examStartTime  = new Date();
+    timerInterval  = setInterval(updateTimer, 1000);
+    updateTimer();
+    updateSessionInfo();
+}
+function updateTimer() {
+    if (!examStartTime) return;
+    const elapsed  = Math.floor((new Date() - examStartTime) / 1000);
+    const h = String(Math.floor(elapsed / 3600)).padStart(2,'0');
+    const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2,'0');
+    const s = String(elapsed % 60).padStart(2,'0');
+    const display  = document.getElementById('timerDisplay');
+    display.textContent = `${h}:${m}:${s}`;
+    if (elapsed > 9000) display.classList.add('timer-warning');
+    updateSessionInfo();
+}
+function updateSessionInfo() {
+    const el = document.getElementById('sessionInfo');
+    if (!examStartTime) { el.textContent = ''; return; }
+    el.innerHTML = `Started: ${examStartTime.toLocaleTimeString()}<br>Current: ${new Date().toLocaleTimeString()}`;
+}
+function getElapsedString() {
+    if (!examStartTime) return 'N/A';
+    const elapsed = Math.floor((new Date() - examStartTime) / 1000);
+    return `${Math.floor(elapsed/3600)}h ${Math.floor((elapsed%3600)/60)}m ${elapsed%60}s`;
+}
+
+// ════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════════════════
+function goToPhase(n) {
+    document.getElementById(`phase${currentPhase}`).classList.remove('active');
+    document.getElementById(`phase${n}`).classList.add('active');
+    currentPhase = n;
+    updateProgress();
+    window.scrollTo(0,0);
+    autoSave();
+}
+function updateProgress() {
+    document.querySelectorAll('.prog-step').forEach((el,i) => {
+        el.classList.remove('active','done');
+        if (i < currentPhase) el.classList.add('done');
+        else if (i === currentPhase) el.classList.add('active');
     });
+}
 
-    // ── TUTORIAL MODAL ───────────────────────────────────
-    function openTutorial() {
-        document.getElementById('tutorialModal').classList.add('open');
-        document.body.style.overflow = 'hidden';
+// ════════════════════════════════════════════════════════════
+//  LOCK SCREEN HELPERS
+// ════════════════════════════════════════════════════════════
+function showLockScreen(attemptData) {
+    const details = document.getElementById('lockDetails');
+    const startedAt = attemptData.started_at
+        ? new Date(attemptData.started_at).toLocaleString()
+        : 'Unknown';
+    const status = attemptData.attempt_status === 'completed' ? 'COMPLETED' : 'IN PROGRESS (or abandoned)';
+    details.innerHTML =
+        `Student Name: ${attemptData.student_name || '—'}<br>` +
+        `Student ID: ${attemptData.student_id || '—'}<br>` +
+        `Attempt Started: ${startedAt}<br>` +
+        `Attempt Status: ${status}`;
+    document.getElementById('lockScreen').classList.add('visible');
+}
+
+function showPreflight(msg) {
+    document.getElementById('preflightStatus').textContent = msg || 'Checking attempt records...';
+    document.getElementById('preflightOverlay').classList.add('visible');
+}
+function hidePreflight() {
+    document.getElementById('preflightOverlay').classList.remove('visible');
+}
+
+// ════════════════════════════════════════════════════════════
+//  BEGIN EXAM — preflight check then register attempt
+// ════════════════════════════════════════════════════════════
+async function beginExam() {
+    const name      = document.getElementById('student-name').value.trim();
+    const studentId = document.getElementById('student-id').value.trim();
+    const section   = document.getElementById('section-number').value.trim();
+
+    // Client-side validation
+    if (!name) {
+        alert('Please enter your full name before beginning.');
+        document.getElementById('student-name').focus(); return;
     }
-    function closeTutorial() {
-        document.getElementById('tutorialModal').classList.remove('open');
-        document.body.style.overflow = '';
+    if (!studentId) {
+        alert('Please enter your Student ID before beginning.');
+        document.getElementById('student-id').focus(); return;
     }
-    function closeTutorialOnOverlay(e) {
-        if (e.target === document.getElementById('tutorialModal')) closeTutorial();
-    }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTutorial(); });
-
-    // ── SUPABASE CONFIG ──────────────────────────────────
-    const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const ASSIGNMENT_OPEN = true;
-    const SUBMISSION_CUTOFF = null; // e.g. '2025-12-15T23:59:00' or null
-
-    // ── STATE ─────────────────────────────────────────────
-    let currentPhase = 0;
-    let examStartTime = null;
-    let examEndTime = null;
-    let timerInterval = null;
-    let essayLocked = false;
-    let idPhaseLocked = false;
-
-    // ── TIMER ─────────────────────────────────────────────
-    function startTimer() {
-        examStartTime = new Date();
-        timerInterval = setInterval(updateTimer, 1000);
-        updateTimer();
-        updateSessionInfo();
-    }
-
-    function updateTimer() {
-        if (!examStartTime) return;
-        const elapsed = Math.floor((new Date() - examStartTime) / 1000);
-        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-        const s = String(elapsed % 60).padStart(2, '0');
-        const display = document.getElementById('timerDisplay');
-        display.textContent = `${h}:${m}:${s}`;
-        if (elapsed > 9000) display.classList.add('timer-warning'); // 2.5 hrs
-        updateSessionInfo();
-    }
-
-    function updateSessionInfo() {
-        const el = document.getElementById('sessionInfo');
-        if (!examStartTime) { el.textContent = ''; return; }
-        const now = new Date();
-        el.innerHTML = `Started: ${examStartTime.toLocaleTimeString()}<br>Current: ${now.toLocaleTimeString()}`;
+    if (!section) {
+        alert('Please enter your section number.');
+        document.getElementById('section-number').focus(); return;
     }
 
-    function getElapsedString() {
-        if (!examStartTime) return 'N/A';
-        const elapsed = Math.floor((new Date() - examStartTime) / 1000);
-        const h = Math.floor(elapsed / 3600);
-        const m = Math.floor((elapsed % 3600) / 60);
-        const s = elapsed % 60;
-        return `${h}h ${m}m ${s}s`;
-    }
+    const beginBtn = document.getElementById('beginBtn');
+    const errDiv   = document.getElementById('beginError');
+    beginBtn.disabled = true;
+    errDiv.style.display = 'none';
 
-    // ── NAVIGATION ───────────────────────────────────────
-    function goToPhase(n) {
-        document.getElementById(`phase${currentPhase}`).classList.remove('active');
-        document.getElementById(`phase${n}`).classList.add('active');
-        currentPhase = n;
-        updateProgress();
-        window.scrollTo(0, 0);
-        autoSave();
-    }
+    // ── STEP 1: Check for existing attempt ───────────────
+    showPreflight('Checking attempt records for Student ID ' + studentId + '…');
 
-    function updateProgress() {
-        document.querySelectorAll('.prog-step').forEach((el, i) => {
-            el.classList.remove('active', 'done');
-            if (i < currentPhase) el.classList.add('done');
-            else if (i === currentPhase) el.classList.add('active');
-        });
-    }
+    try {
+        const { data: existing, error: checkErr } = await supabaseClient
+            .from('exam_attempts')
+            .select('id, student_name, student_id, started_at, attempt_status')
+            .eq('student_id', studentId.toLowerCase().trim())
+            .eq('worksheet_type', 'hist101-final-exam')
+            .limit(1);
 
-    // ── BEGIN EXAM ───────────────────────────────────────
-    function beginExam() {
-        const name = document.getElementById('student-name').value.trim();
-        const section = document.getElementById('section-number').value.trim();
-        if (!name) { alert('Please enter your full name before beginning.'); document.getElementById('student-name').focus(); return; }
-        if (!section) { alert('Please enter your section number.'); document.getElementById('section-number').focus(); return; }
-        startTimer();
-        goToPhase(1);
-    }
-
-    // ── ID ADVANCE ───────────────────────────────────────
-    function advanceID(idNum) {
-        const response = document.getElementById(`id${idNum}-response`).value.trim();
-        const citation = document.getElementById(`id${idNum}-citation`).value.trim();
-        if (!response) { alert('Please write your response before continuing.'); return; }
-        const wc = countWords(response);
-        if (wc < 75) { alert(`Your response is only ${wc} words. You need at least 75 words.`); return; }
-        if (wc > 150) { alert(`Your response is ${wc} words, which exceeds the 150-word maximum. Please trim your response.`); return; }
-        if (!citation) { alert('Please include a citation before continuing.'); document.getElementById(`id${idNum}-citation`).focus(); return; }
-        goToPhase(idNum + 1);
-    }
-
-    // ── ADVANCE TO ESSAY ─────────────────────────────────
-    function advanceToEssay() {
-        const response = document.getElementById('id5-response').value.trim();
-        const citation = document.getElementById('id5-citation').value.trim();
-        if (!response) { alert('Please complete ID 5 before advancing.'); return; }
-        const wc = countWords(response);
-        if (wc < 75) { alert(`Your response for ID 5 is only ${wc} words. You need at least 75 words.`); return; }
-        if (wc > 150) { alert(`Your response for ID 5 exceeds 150 words. Please trim it.`); return; }
-        if (!citation) { alert('Please include a citation for ID 5.'); document.getElementById('id5-citation').focus(); return; }
-
-        const confirmed = confirm('⚠️ WARNING: Once you advance to Part II, you cannot return to Part I. Are you sure all five identifications are complete?');
-        if (!confirmed) return;
-
-        idPhaseLocked = true;
-        goToPhase(6);
-    }
-
-    // ── ADVANCE TO SUBMIT ────────────────────────────────
-    function advanceToSubmit() {
-        const essay = document.getElementById('essay-response').value.trim();
-        if (!essay) { alert('Please write your essay before submitting.'); return; }
-        const wc = countWords(essay);
-        if (wc < 500) { alert(`Your essay is only ${wc} words. You need at least 500 words.`); return; }
-        if (wc > 1000) { alert(`Your essay is ${wc} words, which exceeds the 1,000-word maximum. Please trim your response to 1,000 words or fewer.`); return; }
-
-        examEndTime = new Date();
-        clearInterval(timerInterval);
-
-        // Build summary
-        buildSummary();
-        goToPhase(7);
-    }
-
-    function buildSummary() {
-        const name = document.getElementById('student-name').value.trim();
-        const section = document.getElementById('section-number').value.trim();
-        const elapsed = getElapsedString();
-        const startStr = examStartTime ? examStartTime.toLocaleString() : 'N/A';
-        const endStr = examEndTime ? examEndTime.toLocaleString() : 'N/A';
-        const essayWC = countWords(document.getElementById('essay-response').value);
-
-        const idWords = [1,2,3,4,5].map(i => {
-            const wc = countWords(document.getElementById(`id${i}-response`).value);
-            const terms = ['—','The Great Compromise','Manifest Destiny','The Dred Scott Decision','The Emancipation Proclamation',"The Freedmen's Bureau"];
-            return `ID ${i} (${terms[i]}): ${wc} words`;
-        }).join('<br>');
-
-        document.getElementById('exam-summary').innerHTML = `
-            <strong>Student:</strong> ${name} &nbsp;|&nbsp; <strong>Section:</strong> ${section}<br>
-            <strong>Exam Started:</strong> ${startStr}<br>
-            <strong>Exam Completed:</strong> ${endStr}<br>
-            <strong>Total Time:</strong> ${elapsed}<br>
-            <br>
-            ${idWords}<br>
-            <strong>Essay:</strong> ${essayWC} words
-        `;
-    }
-
-    // ── WORD COUNT ───────────────────────────────────────
-    function countWords(text) {
-        if (!text || !text.trim()) return 0;
-        return text.trim().split(/\s+/).length;
-    }
-
-    function updateWordCount(textareaId, displayId, min, max) {
-        try {
-            const el = document.getElementById(textareaId);
-            const display = document.getElementById(displayId);
-            if (!el || !display) return;
-            const wc = countWords(el.value);
-            display.textContent = wc;
-            display.className = 'wc-number';
-            if (wc >= min && wc <= max) display.classList.add('wc-ok');
-            else if (wc > max) display.classList.add('wc-over');
-            else if (wc > 0) display.classList.add('wc-warn');
-        } catch(e) {
-            // Never let a word count error affect typing
-            console.warn('Word count error:', e);
-        }
-    }
-
-    // ── TAB SWITCHING ────────────────────────────────────
-    function showTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    // ── PASTE PREVENTION ─────────────────────────────────
-    document.addEventListener('paste', function(e) {
-        // Only block if there is actual clipboard data being pasted
-        // (this ensures regular typing is never affected)
-        const target = e.target;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
-        // Allow paste into notes field (ungraded)
-        if (target.id === 'essay-notes') return;
-        const text = (e.clipboardData || window.clipboardData) && e.clipboardData.getData('text');
-        if (text === undefined || text === null) return; // not a real paste event
-        e.preventDefault();
-        target.style.outline = '3px solid #8b1a1a';
-        // Remove any existing toast
-        const old = document.getElementById('paste-toast');
-        if (old) old.remove();
-        const msg = document.createElement('div');
-        msg.id = 'paste-toast';
-        msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#8b1a1a;color:#fff;padding:12px 24px;font-family:Georgia,serif;letter-spacing:1px;font-size:0.95em;z-index:9999;border:2px solid #f5edda;box-shadow:4px 4px 0 rgba(0,0,0,0.4);';
-        msg.textContent = '⚠️ Paste is not permitted on this exam.';
-        document.body.appendChild(msg);
-        setTimeout(() => { target.style.outline = ''; if (msg.parentNode) msg.remove(); }, 2000);
-    });
-
-    // ── BEFOREUNLOAD WARNING ─────────────────────────────
-    window.addEventListener('beforeunload', function(e) {
-        if (currentPhase > 0 && currentPhase < 7) {
-            e.preventDefault();
-            e.returnValue = 'You have an exam in progress. Are you sure you want to leave? Your work may be lost.';
-            return e.returnValue;
-        }
-    });
-
-    // ── AUTO SAVE ────────────────────────────────────────
-    function collectState() {
-        const state = { phase: currentPhase, startTime: examStartTime ? examStartTime.toISOString() : null };
-        document.querySelectorAll('input[type=text], textarea').forEach(el => { if (el.id) state[el.id] = el.value; });
-        return state;
-    }
-
-    function autoSave() {
-        localStorage.setItem('hist101FinalExam', JSON.stringify(collectState()));
-    }
-
-    setInterval(autoSave, 30000);
-
-    // ── PDF GENERATION ───────────────────────────────────
-    function buildPDFDoc() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        let y = 20;
-        const lh = 7, ph = doc.internal.pageSize.height, m = 20;
-        const name = document.getElementById('student-name').value.trim();
-        const section = document.getElementById('section-number').value.trim();
-        const startStr = examStartTime ? examStartTime.toLocaleString() : 'N/A';
-        const endStr = examEndTime ? examEndTime.toLocaleString() : new Date().toLocaleString();
-        const elapsed = getElapsedString();
-
-        function addText(text, size=11, bold=false) {
-            doc.setFontSize(size); doc.setFont(undefined, bold ? 'bold' : 'normal');
-            const lines = doc.splitTextToSize(String(text || '[Not answered]'), 170);
-            lines.forEach(l => {
-                if (y > ph - m) { doc.addPage(); y = 20; }
-                doc.text(l, 20, y); y += lh;
-            });
-            y += 3;
-        }
-
-        addText('HIST 101 — Final Examination', 16, true); y += 2;
-        addText('American History to 1877 · Prof. Hauselmann', 12);
-        addText(`Student: ${name}`, 12, true);
-        if (section) addText(`Section: ${section}`, 12, true);
-        addText(`Exam Started: ${startStr}`, 10);
-        addText(`Exam Completed: ${endStr}`, 10);
-        addText(`Total Time: ${elapsed}`, 10); y += 4;
-
-        addText('PART I — HISTORICAL IDENTIFICATIONS', 14, true);
-
-        const terms = ['The Great Compromise','Manifest Destiny','The Dred Scott Decision','The Emancipation Proclamation',"The Freedmen's Bureau"];
-        for (let i = 1; i <= 5; i++) {
-            addText(`Identification ${i}: ${terms[i-1]}`, 12, true);
-            const wc = countWords(document.getElementById(`id${i}-response`).value);
-            addText(`[Word count: ${wc}]`, 9);
-            addText(document.getElementById(`id${i}-response`).value);
-            addText(`Citation: ${document.getElementById(`id${i}-citation`).value}`, 10);
-            y += 4;
-        }
-
-        addText('PART II — SOURCE ANALYSIS ESSAY', 14, true);
-        addText('Essay Question: Were African Americans free during Reconstruction?', 11, true); y += 2;
-        const essayWC = countWords(document.getElementById('essay-response').value);
-        addText(`[Word count: ${essayWC}]`, 9);
-        if (document.getElementById('essay-notes').value.trim()) {
-            addText('Document Notes (not graded):', 10, true);
-            addText(document.getElementById('essay-notes').value, 10);
-            y += 2;
-        }
-        addText('Essay Response:', 11, true);
-        addText(document.getElementById('essay-response').value);
-
-        return doc;
-    }
-
-    function downloadPDF() {
-        const name = document.getElementById('student-name').value.trim();
-        if (!name) { alert('Please enter your name.'); return; }
-        try {
-            const doc = buildPDFDoc();
-            const dateStr = new Date().toISOString().split('T')[0];
-            doc.save(`HIST101_FinalExam_${name.replace(/\s+/g,'_')}_${dateStr}.pdf`);
-        } catch(e) { console.error(e); alert('Error generating PDF: ' + e.message); }
-    }
-
-    // ── SUPABASE SUBMIT ───────────────────────────────────
-    async function submitToSupabase() {
-        if (!ASSIGNMENT_OPEN) {
-            document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ This assignment is now closed. Please contact Prof. Hauselmann.</div>';
+        if (checkErr) {
+            // Network or DB error — fail OPEN (do not block the student)
+            // Log the error but allow them to proceed
+            console.error('Preflight check error:', checkErr);
+            hidePreflight();
+            showBeginError(`Warning: We could not verify your eligibility (network error). Your attempt will be recorded. If this is your first attempt, you may proceed.`, true);
+            beginBtn.disabled = false;
+            // Fall through to registration
+            await registerAttemptAndStart(name, studentId, section);
             return;
         }
-        if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
-            document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ Submission deadline has passed. Contact Prof. Hauselmann.</div>';
-            return;
-        }
-        const name = document.getElementById('student-name').value.trim();
-        const section = document.getElementById('section-number').value.trim();
-        if (!name) { alert('Please enter your name.'); return; }
-        if (!section) { alert('Please enter your section number.'); return; }
 
-        const btn = document.getElementById('submitBtn');
-        const msg = document.getElementById('submitMessage');
-        btn.disabled = true; btn.textContent = '⏳ Submitting...';
-        msg.innerHTML = '<div style="padding:14px;color:var(--faded);font-style:italic;">Generating and uploading your exam...</div>';
+        if (existing && existing.length > 0) {
+            // ── BLOCKED: prior attempt found ─────────────
+            hidePreflight();
+            showLockScreen(existing[0]);
 
-        try {
-            const doc = buildPDFDoc();
-            const blob = doc.output('blob');
-            const ts = new Date().toISOString().replace(/[:.]/g,'-');
-            const safeName = name.replace(/[^a-zA-Z0-9]/g,'_');
-            const filePath = `hist101-final/${section}/${safeName}_${ts}.pdf`;
-
-            const { error: upErr } = await supabaseClient.storage
-                .from('student-submissions')
-                .upload(filePath, blob, { contentType: 'application/pdf', upsert: false });
-            if (upErr) throw new Error(upErr.message);
-
-            const { data: urlData } = supabaseClient.storage
-                .from('student-submissions')
-                .getPublicUrl(filePath);
-
-            const allData = {};
-            document.querySelectorAll('input[type=text], textarea').forEach(el => {
-                if (el.id) allData[el.id] = el.value;
-            });
-
-            await supabaseClient.from('worksheet_submissions').insert({
-                student_name: name,
+            // Log the blocked attempt for your records
+            await supabaseClient.from('exam_attempts').insert({
+                student_name:   name,
+                student_id:     studentId.toLowerCase().trim(),
                 section_number: section,
                 worksheet_type: 'hist101-final-exam',
-                file_path: filePath,
-                file_url: urlData.publicUrl,
-                form_data: {
-                    ...allData,
-                    exam_start_time: examStartTime ? examStartTime.toISOString() : null,
-                    exam_end_time: examEndTime ? examEndTime.toISOString() : new Date().toISOString(),
-                    elapsed_time: getElapsedString()
-                },
-                submitted_at: new Date().toISOString()
+                attempt_status: 'blocked',
+                started_at:     new Date().toISOString(),
+                notes:          `Blocked: prior attempt ID ${existing[0].id} found`
             });
-
-            msg.innerHTML = '<div class="success-msg">✅ Successfully submitted to Prof. Hauselmann. Remember to also upload your PDF to Canvas.</div>';
-            btn.textContent = '✓ Submitted';
-        } catch(e) {
-            console.error(e);
-            msg.innerHTML = `<div class="error-msg">❌ Submission failed: ${e.message}. Download the PDF and submit it to Canvas as a backup.</div>`;
-            btn.disabled = false; btn.textContent = '📤 Submit to Prof. Hauselmann';
+            return;
         }
+
+        // ── STEP 2: No existing attempt — register and start
+        hidePreflight();
+        await registerAttemptAndStart(name, studentId, section);
+
+    } catch (e) {
+        // Unexpected JS error — fail open, log, proceed
+        console.error('Unexpected preflight error:', e);
+        hidePreflight();
+        beginBtn.disabled = false;
+        await registerAttemptAndStart(name, studentId, section);
+    }
+}
+
+async function registerAttemptAndStart(name, studentId, section) {
+    // Insert the attempt record BEFORE showing the exam
+    // This ensures even a tab-closed-immediately attempt is logged
+    try {
+        const { data, error } = await supabaseClient
+            .from('exam_attempts')
+            .insert({
+                student_name:   name,
+                student_id:     studentId.toLowerCase().trim(),
+                section_number: section,
+                worksheet_type: 'hist101-final-exam',
+                attempt_status: 'started',
+                started_at:     new Date().toISOString()
+            })
+            .select('id')
+            .single();
+
+        if (!error && data) {
+            attemptId = data.id;
+        } else {
+            console.error('Attempt registration error:', error);
+            // Still allow the exam — don't block a student due to a DB write error
+        }
+    } catch(e) {
+        console.error('Attempt registration exception:', e);
     }
 
-    // ── INIT ──────────────────────────────────────────────
-    window.onload = () => {
-        const saved = localStorage.getItem('hist101FinalExam');
-        if (saved) {
-            try {
-                const state = JSON.parse(saved);
-                const restore = confirm('A previous exam session was found. Would you like to restore your work?\n\nClick OK to restore, or Cancel to start fresh.');
+    // Start the exam regardless of whether the DB write succeeded
+    startTimer();
+    goToPhase(1);
+}
+
+function showBeginError(msg, isWarning = false) {
+    const errDiv = document.getElementById('beginError');
+    errDiv.innerHTML = `<div class="${isWarning ? 'notice' : 'error-msg'}">${msg}</div>`;
+    errDiv.style.display = 'block';
+}
+
+// ════════════════════════════════════════════════════════════
+//  ID ADVANCE
+// ════════════════════════════════════════════════════════════
+function advanceID(idNum) {
+    const response = document.getElementById(`id${idNum}-response`).value.trim();
+    const citation = document.getElementById(`id${idNum}-citation`).value.trim();
+    if (!response) { alert('Please write your response before continuing.'); return; }
+    const wc = countWords(response);
+    if (wc < 75) { alert(`Your response is only ${wc} words. You need at least 75 words.`); return; }
+    if (wc > 150) { alert(`Your response is ${wc} words, which exceeds the 150-word maximum. Please trim your response.`); return; }
+    if (!citation) { alert('Please include a citation before continuing.'); document.getElementById(`id${idNum}-citation`).focus(); return; }
+    goToPhase(idNum + 1);
+}
+
+// ════════════════════════════════════════════════════════════
+//  ADVANCE TO ESSAY
+// ════════════════════════════════════════════════════════════
+function advanceToEssay() {
+    const response = document.getElementById('id5-response').value.trim();
+    const citation = document.getElementById('id5-citation').value.trim();
+    if (!response) { alert('Please complete ID 5 before advancing.'); return; }
+    const wc = countWords(response);
+    if (wc < 75) { alert(`Your response for ID 5 is only ${wc} words. You need at least 75 words.`); return; }
+    if (wc > 150) { alert(`Your response for ID 5 exceeds 150 words. Please trim it.`); return; }
+    if (!citation) { alert('Please include a citation for ID 5.'); document.getElementById('id5-citation').focus(); return; }
+    const confirmed = confirm('⚠️ WARNING: Once you advance to Part II, you cannot return to Part I. Are you sure all five identifications are complete?');
+    if (!confirmed) return;
+    idPhaseLocked = true;
+    goToPhase(6);
+}
+
+// ════════════════════════════════════════════════════════════
+//  ADVANCE TO SUBMIT
+// ════════════════════════════════════════════════════════════
+function advanceToSubmit() {
+    const essay = document.getElementById('essay-response').value.trim();
+    if (!essay) { alert('Please write your essay before submitting.'); return; }
+    const wc = countWords(essay);
+    if (wc < 500) { alert(`Your essay is only ${wc} words. You need at least 500 words.`); return; }
+    if (wc > 1000) { alert(`Your essay is ${wc} words, which exceeds the 1,000-word maximum. Please trim your response.`); return; }
+    examEndTime = new Date();
+    clearInterval(timerInterval);
+    buildSummary();
+    goToPhase(7);
+}
+
+function buildSummary() {
+    const name      = document.getElementById('student-name').value.trim();
+    const studentId = document.getElementById('student-id').value.trim();
+    const section   = document.getElementById('section-number').value.trim();
+    const elapsed   = getElapsedString();
+    const startStr  = examStartTime ? examStartTime.toLocaleString() : 'N/A';
+    const endStr    = examEndTime   ? examEndTime.toLocaleString()   : 'N/A';
+    const essayWC   = countWords(document.getElementById('essay-response').value);
+    const terms = ['—','The Great Compromise','Manifest Destiny','The Dred Scott Decision','The Emancipation Proclamation',"The Freedmen's Bureau"];
+    const idWords = [1,2,3,4,5].map(i => {
+        const wc = countWords(document.getElementById(`id${i}-response`).value);
+        return `ID ${i} (${terms[i]}): ${wc} words`;
+    }).join('<br>');
+    document.getElementById('exam-summary').innerHTML =
+        `<strong>Student:</strong> ${name} &nbsp;|&nbsp; <strong>ID:</strong> ${studentId} &nbsp;|&nbsp; <strong>Section:</strong> ${section}<br>` +
+        `<strong>Exam Started:</strong> ${startStr}<br>` +
+        `<strong>Exam Completed:</strong> ${endStr}<br>` +
+        `<strong>Total Time:</strong> ${elapsed}<br><br>` +
+        idWords + `<br><strong>Essay:</strong> ${essayWC} words`;
+}
+
+// ════════════════════════════════════════════════════════════
+//  WORD COUNT
+// ════════════════════════════════════════════════════════════
+function countWords(text) {
+    if (!text || !text.trim()) return 0;
+    return text.trim().split(/\s+/).length;
+}
+function updateWordCount(textareaId, displayId, min, max) {
+    try {
+        const el = document.getElementById(textareaId);
+        const display = document.getElementById(displayId);
+        if (!el || !display) return;
+        const wc = countWords(el.value);
+        display.textContent = wc;
+        display.className = 'wc-number';
+        if (wc >= min && wc <= max) display.classList.add('wc-ok');
+        else if (wc > max) display.classList.add('wc-over');
+        else if (wc > 0) display.classList.add('wc-warn');
+    } catch(e) { console.warn('Word count error:', e); }
+}
+
+// ════════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ════════════════════════════════════════════════════════════
+function showTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════════
+//  TUTORIAL MODAL
+// ════════════════════════════════════════════════════════════
+function openTutorial() {
+    document.getElementById('tutorialModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeTutorial() {
+    document.getElementById('tutorialModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+function closeTutorialOnOverlay(e) {
+    if (e.target === document.getElementById('tutorialModal')) closeTutorial();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTutorial(); });
+
+// ════════════════════════════════════════════════════════════
+//  PASTE PREVENTION
+// ════════════════════════════════════════════════════════════
+document.addEventListener('paste', function(e) {
+    const target = e.target;
+    if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
+    if (target.id === 'essay-notes') return;
+    const text = (e.clipboardData || window.clipboardData) && e.clipboardData.getData('text');
+    if (text === undefined || text === null) return;
+    e.preventDefault();
+    target.style.outline = '3px solid #8b1a1a';
+    const old = document.getElementById('paste-toast');
+    if (old) old.remove();
+    const msg = document.createElement('div');
+    msg.id = 'paste-toast';
+    msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#8b1a1a;color:#fff;padding:12px 24px;font-family:Georgia,serif;letter-spacing:1px;font-size:0.95em;z-index:9999;border:2px solid #f5edda;box-shadow:4px 4px 0 rgba(0,0,0,0.4);';
+    msg.textContent = '⚠️ Paste is not permitted on this exam.';
+    document.body.appendChild(msg);
+    setTimeout(() => { target.style.outline = ''; if (msg.parentNode) msg.remove(); }, 2000);
+});
+
+// ════════════════════════════════════════════════════════════
+//  BEFOREUNLOAD WARNING
+// ════════════════════════════════════════════════════════════
+window.addEventListener('beforeunload', function(e) {
+    if (currentPhase > 0 && currentPhase < 7) {
+        e.preventDefault();
+        e.returnValue = 'You have an exam in progress. Are you sure you want to leave? Your work may be lost.';
+        return e.returnValue;
+    }
+});
+
+// ════════════════════════════════════════════════════════════
+//  AUTO SAVE (localStorage — recovery only, not bypass)
+// ════════════════════════════════════════════════════════════
+function collectState() {
+    const state = { phase: currentPhase, startTime: examStartTime ? examStartTime.toISOString() : null };
+    document.querySelectorAll('input[type=text], textarea').forEach(el => { if (el.id) state[el.id] = el.value; });
+    return state;
+}
+function autoSave() {
+    localStorage.setItem('hist101FinalExam', JSON.stringify(collectState()));
+}
+setInterval(autoSave, 30000);
+
+// ════════════════════════════════════════════════════════════
+//  PDF GENERATION
+// ════════════════════════════════════════════════════════════
+function buildPDFDoc() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    const lh = 7, ph = doc.internal.pageSize.height, m = 20;
+    const name      = document.getElementById('student-name').value.trim();
+    const studentId = document.getElementById('student-id').value.trim();
+    const section   = document.getElementById('section-number').value.trim();
+    const startStr  = examStartTime ? examStartTime.toLocaleString() : 'N/A';
+    const endStr    = examEndTime   ? examEndTime.toLocaleString()   : new Date().toLocaleString();
+    const elapsed   = getElapsedString();
+
+    function addText(text, size=11, bold=false) {
+        doc.setFontSize(size); doc.setFont(undefined, bold ? 'bold' : 'normal');
+        const lines = doc.splitTextToSize(String(text || '[Not answered]'), 170);
+        lines.forEach(l => {
+            if (y > ph - m) { doc.addPage(); y = 20; }
+            doc.text(l, 20, y); y += lh;
+        });
+        y += 3;
+    }
+
+    addText('HIST 101 — Final Examination', 16, true); y += 2;
+    addText('American History to 1877 · Prof. Hauselmann', 12);
+    addText(`Student: ${name}`, 12, true);
+    addText(`Student ID: ${studentId}`, 12, true);
+    if (section) addText(`Section: ${section}`, 12, true);
+    addText(`Exam Started: ${startStr}`, 10);
+    addText(`Exam Completed: ${endStr}`, 10);
+    addText(`Total Time: ${elapsed}`, 10); y += 4;
+
+    addText('PART I — HISTORICAL IDENTIFICATIONS', 14, true);
+    const terms = ['The Great Compromise','Manifest Destiny','The Dred Scott Decision','The Emancipation Proclamation',"The Freedmen's Bureau"];
+    for (let i = 1; i <= 5; i++) {
+        addText(`Identification ${i}: ${terms[i-1]}`, 12, true);
+        const wc = countWords(document.getElementById(`id${i}-response`).value);
+        addText(`[Word count: ${wc}]`, 9);
+        addText(document.getElementById(`id${i}-response`).value);
+        addText(`Citation: ${document.getElementById(`id${i}-citation`).value}`, 10);
+        y += 4;
+    }
+
+    addText('PART II — SOURCE ANALYSIS ESSAY', 14, true);
+    addText('Essay Question: Were African Americans free during Reconstruction?', 11, true); y += 2;
+    const essayWC = countWords(document.getElementById('essay-response').value);
+    addText(`[Word count: ${essayWC}]`, 9);
+    if (document.getElementById('essay-notes').value.trim()) {
+        addText('Document Notes (not graded):', 10, true);
+        addText(document.getElementById('essay-notes').value, 10);
+        y += 2;
+    }
+    addText('Essay Response:', 11, true);
+    addText(document.getElementById('essay-response').value);
+    return doc;
+}
+
+function downloadPDF() {
+    const name = document.getElementById('student-name').value.trim();
+    if (!name) { alert('Please enter your name.'); return; }
+    try {
+        const doc = buildPDFDoc();
+        const dateStr = new Date().toISOString().split('T')[0];
+        const studentId = document.getElementById('student-id').value.trim();
+        doc.save(`HIST101_FinalExam_${name.replace(/\s+/g,'_')}_${studentId}_${dateStr}.pdf`);
+    } catch(e) { console.error(e); alert('Error generating PDF: ' + e.message); }
+}
+
+// ════════════════════════════════════════════════════════════
+//  SUPABASE SUBMIT
+// ════════════════════════════════════════════════════════════
+async function submitToSupabase() {
+    if (!ASSIGNMENT_OPEN) {
+        document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ This assignment is now closed. Please contact Prof. Hauselmann.</div>'; return;
+    }
+    if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
+        document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ Submission deadline has passed. Contact Prof. Hauselmann.</div>'; return;
+    }
+
+    const name      = document.getElementById('student-name').value.trim();
+    const studentId = document.getElementById('student-id').value.trim();
+    const section   = document.getElementById('section-number').value.trim();
+    if (!name || !studentId) { alert('Student name and ID are required.'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    const msg = document.getElementById('submitMessage');
+    btn.disabled = true; btn.textContent = '⏳ Submitting...';
+    msg.innerHTML = '<div style="padding:14px;color:var(--faded);font-style:italic;">Generating and uploading your exam...</div>';
+
+    try {
+        const doc  = buildPDFDoc();
+        const blob = doc.output('blob');
+        const ts   = new Date().toISOString().replace(/[:.]/g,'-');
+        const safeName = name.replace(/[^a-zA-Z0-9]/g,'_');
+        const safeId   = studentId.replace(/[^a-zA-Z0-9]/g,'_');
+        const filePath = `hist101-final/${section}/${safeName}_${safeId}_${ts}.pdf`;
+
+        const { error: upErr } = await supabaseClient.storage
+            .from('student-submissions')
+            .upload(filePath, blob, { contentType: 'application/pdf', upsert: false });
+        if (upErr) throw new Error(upErr.message);
+
+        const { data: urlData } = supabaseClient.storage
+            .from('student-submissions')
+            .getPublicUrl(filePath);
+
+        // Collect all form data
+        const allData = {};
+        document.querySelectorAll('input[type=text], textarea').forEach(el => {
+            if (el.id) allData[el.id] = el.value;
+        });
+
+        // Insert into worksheet_submissions (main record)
+        await supabaseClient.from('worksheet_submissions').insert({
+            student_name:   name,
+            section_number: section,
+            worksheet_type: 'hist101-final-exam',
+            file_path:      filePath,
+            file_url:       urlData.publicUrl,
+            form_data: {
+                ...allData,
+                student_id:       studentId,
+                exam_start_time:  examStartTime ? examStartTime.toISOString() : null,
+                exam_end_time:    examEndTime   ? examEndTime.toISOString()   : new Date().toISOString(),
+                elapsed_time:     getElapsedString()
+            },
+            submitted_at: new Date().toISOString()
+        });
+
+        // Update the attempt record to 'completed'
+        if (attemptId) {
+            await supabaseClient
+                .from('exam_attempts')
+                .update({
+                    attempt_status: 'completed',
+                    completed_at:   new Date().toISOString(),
+                    file_url:       urlData.publicUrl
+                })
+                .eq('id', attemptId);
+        }
+
+        msg.innerHTML = '<div class="success-msg">✅ Successfully submitted to Prof. Hauselmann. Remember to also upload your PDF to Canvas.</div>';
+        btn.textContent = '✓ Submitted';
+
+    } catch(e) {
+        console.error(e);
+        msg.innerHTML = `<div class="error-msg">❌ Submission failed: ${e.message}. Download the PDF and submit it to Canvas as a backup.</div>`;
+        btn.disabled = false; btn.textContent = '📤 Submit to Prof. Hauselmann';
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  INIT / RESTORE
+//  Note: localStorage restore is kept for crash recovery,
+//  but ONLY kicks in after the student passes the preflight
+//  check on a new session. A returning student who already
+//  has a Supabase attempt will hit the lock screen first.
+// ════════════════════════════════════════════════════════════
+window.onload = () => {
+    const saved = localStorage.getItem('hist101FinalExam');
+    if (saved) {
+        try {
+            const state = JSON.parse(saved);
+            if (state.phase && parseInt(state.phase) > 0) {
+                const restore = confirm(
+                    'A previous exam session was found in this browser.\n\n' +
+                    'If this is your session and your browser crashed, click OK to restore your work.\n\n' +
+                    'IMPORTANT: If this is a shared computer and this is not your session, click Cancel and do not proceed.'
+                );
                 if (restore) {
                     Object.entries(state).forEach(([id, val]) => {
                         if (id === 'phase' || id === 'startTime') return;
@@ -1356,20 +1569,16 @@
                         if (el) el.value = val;
                     });
                     if (state.startTime) {
-                        examStartTime = new Date(state.startTime);
-                        timerInterval = setInterval(updateTimer, 1000);
-                        updateTimer();
-                        updateSessionInfo();
+                        examStartTime  = new Date(state.startTime);
+                        timerInterval  = setInterval(updateTimer, 1000);
+                        updateTimer(); updateSessionInfo();
                     }
-                    if (state.phase && state.phase > 0) {
-                        const phase = parseInt(state.phase);
-                        currentPhase = phase;
-                        document.getElementById('phase0').classList.remove('active');
-                        document.getElementById(`phase${phase}`).classList.add('active');
-                        updateProgress();
-                        if (phase >= 6) idPhaseLocked = true;
-                    }
-                    // Update word count displays
+                    const phase = parseInt(state.phase);
+                    currentPhase = phase;
+                    document.getElementById('phase0').classList.remove('active');
+                    document.getElementById(`phase${phase}`).classList.add('active');
+                    updateProgress();
+                    if (phase >= 6) idPhaseLocked = true;
                     [1,2,3,4,5].forEach(i => {
                         const el = document.getElementById(`id${i}-response`);
                         if (el && el.value) updateWordCount(`id${i}-response`,`id${i}-wc`,75,150);
@@ -1379,10 +1588,11 @@
                 } else {
                     localStorage.removeItem('hist101FinalExam');
                 }
-            } catch(e) { console.error('Restore error:', e); }
-        }
-        updateProgress();
-    };
+            }
+        } catch(e) { console.error('Restore error:', e); }
+    }
+    updateProgress();
+};
 </script>
 </body>
 </html>
