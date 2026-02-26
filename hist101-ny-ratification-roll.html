@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ratification 1788 · Roll Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #1a1208;
+    --ink-light: #3d2b0e;
+    --parchment: #f5ead6;
+    --parchment-dark: #e8d5b0;
+    --gold: #9a7b2f;
+    --gold-light: #c9a84c;
+    --fed: #1a3a5c;
+    --fed-bg: #dce8f5;
+    --fed-border: #3a6a9c;
+    --anti: #5c1a1a;
+    --anti-bg: #f5dcdc;
+    --anti-border: #9c3a3a;
+    --mod: #2d4a1e;
+    --mod-bg: #dff0d8;
+    --mod-border: #4a7a30;
+    --shadow: rgba(26,18,8,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #c8b89a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23c8b89a'/%3E%3Ccircle cx='1' cy='1' r='0.5' fill='%23b8a888' opacity='0.4'/%3E%3Ccircle cx='3' cy='3' r='0.5' fill='%23b8a888' opacity='0.4'/%3E%3C/svg%3E");
+    font-family: 'Libre Baskerville', Georgia, serif;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* LOADING */
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(200,184,154,0.9);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; gap: 12px;
+    font-family: 'IM Fell English', serif; font-size: 1.1rem; color: var(--ink);
+  }
+  .spinner {
+    width: 20px; height: 20px; border: 2px solid var(--parchment-dark);
+    border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* AUTH */
+  #authScreen { min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .auth-card {
+    background: var(--parchment); border: 1px solid var(--parchment-dark);
+    border-radius: 4px; box-shadow: 4px 8px 28px var(--shadow);
+    width: 100%; max-width: 400px; overflow: hidden;
+  }
+  .auth-header {
+    background: var(--ink); color: var(--parchment);
+    padding: 28px 32px; text-align: center; border-bottom: 3px solid var(--gold);
+  }
+  .auth-header .emblem { font-size: 1.8rem; margin-bottom: 8px; }
+  .auth-header h1 { font-family: 'IM Fell English', serif; font-size: 1.4rem; margin-bottom: 4px; }
+  .auth-header p { font-size: 0.78rem; opacity: 0.6; font-style: italic; }
+  .auth-body { padding: 28px 32px; }
+  .auth-tabs {
+    display: flex; border: 1px solid var(--parchment-dark);
+    border-radius: 3px; overflow: hidden; margin-bottom: 22px;
+  }
+  .auth-tab {
+    flex: 1; padding: 9px; text-align: center; font-size: 0.82rem;
+    cursor: pointer; background: var(--parchment-dark); color: var(--ink-light);
+    border: none; font-family: 'Libre Baskerville', serif; transition: all 0.15s;
+  }
+  .auth-tab.active { background: var(--ink); color: var(--parchment); }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block; font-size: 0.75rem; font-weight: 700; color: var(--ink-light);
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%; font-family: 'Libre Baskerville', serif; font-size: 0.88rem;
+    padding: 9px 12px; border: 1px solid var(--parchment-dark); border-radius: 3px;
+    background: #fff; color: var(--ink); outline: none; transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(154,123,47,0.12); }
+  .submit-btn {
+    width: 100%; padding: 11px; background: var(--ink); color: var(--parchment);
+    border: none; border-radius: 3px; font-family: 'IM Fell English', serif;
+    font-size: 1rem; cursor: pointer; transition: background 0.15s;
+    letter-spacing: 0.04em; margin-top: 4px;
+  }
+  .submit-btn:hover { background: var(--ink-light); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .auth-msg {
+    border-radius: 3px; padding: 10px 12px; font-size: 0.8rem;
+    margin-top: 14px; display: none;
+  }
+  .auth-error { background: #f8d7da; border: 1px solid #f5c6cb; color: #7a2a2a; }
+  .auth-success { background: #d4edda; border: 1px solid #c3e6cb; color: #2d6a3f; }
+
+  /* APP */
+  #appScreen { display: none; padding-bottom: 60px; }
+  .topbar {
+    background: var(--ink); color: var(--parchment); padding: 0 24px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 200;
+  }
+  .topbar-title { font-family: 'IM Fell English', serif; font-size: 1.1rem; letter-spacing: 0.04em; }
+  .topbar-title span { color: var(--gold-light); font-style: italic; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .save-indicator { font-size: 0.72rem; color: rgba(245,234,214,0.5); font-style: italic; transition: color 0.3s; }
+  .save-indicator.saved { color: #7ec87e; }
+  .user-email { font-size: 0.72rem; color: rgba(245,234,214,0.5); }
+  .logout-btn {
+    font-family: 'Libre Baskerville', serif; font-size: 0.72rem; padding: 5px 12px;
+    border: 1px solid rgba(154,123,47,0.4); border-radius: 3px;
+    background: transparent; color: rgba(245,234,214,0.6); cursor: pointer; transition: all 0.15s;
+  }
+  .logout-btn:hover { background: rgba(245,234,214,0.1); color: var(--parchment); }
+
+  .section-tabs {
+    display: flex; max-width: 980px; margin: 28px auto 0;
+    padding: 0 20px; gap: 8px; flex-wrap: wrap;
+  }
+  .section-tab {
+    font-family: 'IM Fell English', serif; font-size: 1rem; padding: 10px 24px;
+    border: 2px solid var(--ink-light); border-radius: 4px 4px 0 0;
+    background: var(--parchment-dark); color: var(--ink-light); cursor: pointer; transition: all 0.2s;
+  }
+  .section-tab.active { background: var(--ink); color: var(--parchment); border-color: var(--ink); }
+  .section-tab:hover:not(.active) { background: var(--parchment); }
+
+  .panel { max-width: 980px; margin: 0 auto; padding: 0 20px 40px; }
+  .panel-card {
+    background: var(--parchment); border: 1px solid var(--parchment-dark);
+    border-radius: 0 4px 4px 4px; box-shadow: 3px 6px 20px var(--shadow); overflow: hidden;
+  }
+  .panel-header {
+    background: var(--ink); color: var(--parchment); padding: 22px 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .panel-header h2 { font-family: 'IM Fell English', serif; font-size: 1.4rem; margin-bottom: 4px; }
+  .panel-header p { font-size: 0.8rem; opacity: 0.6; font-style: italic; }
+  .meta-row { display: flex; gap: 10px; align-items: center; }
+  .meta-label { font-size: 0.75rem; color: rgba(245,234,214,0.6); font-style: italic; }
+  .meta-input {
+    font-family: 'Libre Baskerville', serif; font-size: 0.85rem; padding: 6px 12px;
+    background: rgba(245,234,214,0.1); border: 1px solid rgba(154,123,47,0.4);
+    border-radius: 3px; color: var(--parchment); width: 150px; outline: none;
+  }
+  .meta-input:focus { border-color: var(--gold-light); }
+
+  .summary-row {
+    padding: 10px 28px; background: rgba(26,18,8,0.04);
+    border-top: 1px solid var(--parchment-dark); font-size: 0.78rem;
+    color: var(--ink-light); display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .summary-row strong { color: var(--ink); }
+
+  .faction-section { border-bottom: 1px solid var(--parchment-dark); }
+  .faction-section:last-of-type { border-bottom: none; }
+  .faction-heading {
+    padding: 14px 28px 12px; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none; border-bottom: 1px solid var(--parchment-dark);
+  }
+  .faction-heading.fed  { background: linear-gradient(to right, var(--fed-bg), var(--parchment) 70%); border-left: 5px solid var(--fed-border); }
+  .faction-heading.anti { background: linear-gradient(to right, var(--anti-bg), var(--parchment) 70%); border-left: 5px solid var(--anti-border); }
+  .faction-heading.mod  { background: linear-gradient(to right, var(--mod-bg), var(--parchment) 70%); border-left: 5px solid var(--mod-border); }
+  .faction-badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; }
+  .fed .faction-badge  { background: var(--fed);  color: #fff; }
+  .anti .faction-badge { background: var(--anti); color: #fff; }
+  .mod .faction-badge  { background: var(--mod);  color: #fff; }
+  .faction-heading h3 { font-family: 'IM Fell English', serif; font-size: 1.08rem; flex: 1; }
+  .faction-count { font-size: 0.75rem; color: var(--ink-light); font-style: italic; }
+  .faction-chevron { font-size: 0.8rem; color: var(--gold); transition: transform 0.2s; }
+  .faction-section.collapsed .faction-chevron { transform: rotate(-90deg); }
+  .faction-section.collapsed .delegate-table { display: none; }
+
+  .delegate-table { width: 100%; border-collapse: collapse; }
+  .delegate-row { border-bottom: 1px dotted var(--parchment-dark); transition: background 0.12s; }
+  .delegate-row:hover { background: rgba(154,123,47,0.05); }
+  .delegate-row:last-child { border-bottom: none; }
+  .col-num { width: 36px; padding: 10px 8px 10px 28px; font-size: 0.7rem; color: rgba(61,43,14,0.35); font-style: italic; vertical-align: middle; }
+  .col-delegate { padding: 10px 12px; font-size: 0.86rem; vertical-align: middle; }
+  .d-name { font-weight: 700; color: var(--ink); }
+  .d-required { color: var(--gold); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 6px; }
+  .d-county { font-size: 0.76rem; color: var(--ink-light); font-style: italic; }
+  .d-role { font-size: 0.72rem; color: var(--gold); font-style: italic; margin-left: 8px; }
+  .col-student { padding: 8px 12px; vertical-align: middle; width: 230px; }
+  .student-input {
+    font-family: 'Libre Baskerville', serif; font-size: 0.83rem; padding: 6px 10px;
+    border: 1px solid var(--parchment-dark); border-radius: 3px;
+    background: #fff; color: var(--ink); width: 100%; outline: none; transition: border-color 0.15s;
+  }
+  .student-input:focus { border-color: var(--gold); }
+  .student-input.filled { background: #fffaf0; border-color: var(--gold-light); }
+  .col-present { width: 72px; text-align: center; padding: 8px 4px; vertical-align: middle; }
+  .present-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--parchment-dark);
+    cursor: pointer; font-size: 1rem; transition: all 0.15s; background: #fff; color: transparent;
+  }
+  .present-toggle.present { background: #d4edda; border-color: #5a9a6a; color: #2d6a3f; }
+  .present-toggle.absent  { background: #f8d7da; border-color: #c07a7a; color: #7a2a2a; }
+
+  .votes-section { padding: 20px 28px; border-top: 1px solid var(--parchment-dark); background: rgba(154,123,47,0.03); }
+  .votes-title { font-family: 'IM Fell English', serif; font-size: 1rem; margin-bottom: 14px; color: var(--ink); }
+  .votes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .vote-card { background: var(--parchment); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 12px 14px; }
+  .vote-card-title { font-family: 'IM Fell English', serif; font-size: 0.88rem; margin-bottom: 8px; color: var(--ink); }
+  .vote-row { display: flex; gap: 6px; align-items: center; }
+  .vote-label { font-size: 0.72rem; color: var(--ink-light); width: 90px; }
+  .vote-btn {
+    font-size: 0.72rem; padding: 3px 10px; border-radius: 3px;
+    border: 1px solid var(--parchment-dark); background: #fff;
+    cursor: pointer; font-family: 'Libre Baskerville', serif; transition: all 0.15s;
+  }
+  .vote-btn:hover { background: var(--parchment-dark); }
+  .vote-btn.sel-fed  { background: var(--fed);  color: #fff; border-color: var(--fed); }
+  .vote-btn.sel-anti { background: var(--anti); color: #fff; border-color: var(--anti); }
+  .vote-result { margin-top: 8px; font-size: 0.72rem; font-style: italic; color: var(--gold); min-height: 1em; }
+
+  .notes-section { padding: 20px 28px; border-top: 1px solid var(--parchment-dark); }
+  .notes-title { font-family: 'IM Fell English', serif; font-size: 1rem; margin-bottom: 10px; color: var(--ink); }
+  .notes-textarea {
+    font-family: 'Libre Baskerville', serif; font-size: 0.84rem; padding: 12px 14px;
+    border: 1px solid var(--parchment-dark); border-radius: 3px; background: #fffaf0;
+    color: var(--ink); width: 100%; min-height: 120px; resize: vertical; outline: none;
+    line-height: 1.7; transition: border-color 0.15s;
+  }
+  .notes-textarea:focus { border-color: var(--gold); }
+
+  .actions-bar {
+    padding: 14px 28px; border-top: 2px solid var(--parchment-dark);
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  }
+  .action-btn {
+    font-family: 'Libre Baskerville', serif; font-size: 0.8rem; padding: 8px 18px;
+    border: 2px solid var(--ink-light); border-radius: 3px; background: var(--parchment);
+    color: var(--ink); cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em;
+  }
+  .action-btn:hover { background: var(--ink); color: var(--parchment); }
+  .action-btn.primary { background: var(--ink); color: var(--parchment); border-color: var(--ink); }
+  .action-btn.primary:hover { background: var(--ink-light); }
+  .action-btn.danger { border-color: var(--anti); color: var(--anti); }
+  .action-btn.danger:hover { background: var(--anti); color: #fff; }
+  .action-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  @media (max-width: 600px) {
+    .col-num { display: none; }
+    .col-student { width: 140px; }
+    .votes-grid { grid-template-columns: 1fr; }
+    .actions-bar { flex-direction: column; align-items: stretch; }
+  }
+  @media print {
+    body { background: white; }
+    .topbar, .section-tabs, .actions-bar, .votes-section { display: none; }
+    .panel-card { box-shadow: none; }
+    .panel { max-width: 100%; padding: 0; }
+    .student-input { border: none; border-bottom: 1px solid #ccc; background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <span>Loading…</span>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="emblem">⚖</div>
+      <h1>Raising the Eleventh Pillar</h1>
+      <p>Roll Sheet · Instructor Access</p>
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <div id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="submit-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+      </div>
+
+      <div id="signupForm" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input class="form-input" type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password">
+        </div>
+        <button class="submit-btn" id="signupBtn" onclick="doSignup()">Create Account</button>
+      </div>
+
+      <div class="auth-msg auth-error" id="authError"></div>
+      <div class="auth-msg auth-success" id="authSuccess"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="appScreen">
+  <div class="topbar">
+    <div class="topbar-title">⚖ Raising the Eleventh Pillar <span>· Roll Sheet</span></div>
+    <div class="topbar-right">
+      <span class="save-indicator" id="saveIndicator">All changes saved</span>
+      <span class="user-email" id="userEmail"></span>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="section-tabs">
+    <button class="section-tab active" data-section="3945">HIST 101 · 3945</button>
+    <button class="section-tab" data-section="3946">HIST 101 · 3946</button>
+    <button class="section-tab" data-section="3944">HIST 101 · 3944</button>
+  </div>
+
+  <div class="panel" id="mainPanel"></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentSection = '3945';
+let currentUser = null;
+let saveTimer = null;
+const cache = {};
+
+const DELEGATES = [
+  {faction:'fed', name:'Chancellor Robert R. Livingston', county:'New York City', role:'Party Leader', required:true},
+  {faction:'fed', name:'Alexander Hamilton', county:'New York City', role:'Party Lieutenant', required:true},
+  {faction:'fed', name:'John Jay', county:'New York City', role:null, required:false},
+  {faction:'fed', name:'James Duane', county:'New York City', role:null, required:false},
+  {faction:'fed', name:'John Sloss Hobart', county:'New York City', role:null, required:false},
+  {faction:'fed', name:'Isaac Roosevelt', county:'New York City', role:null, required:false},
+  {faction:'fed', name:'Richard Morris', county:'New York City', role:null, required:false},
+  {faction:'fed', name:'Lewis Morris', county:'Westchester', role:null, required:false},
+  {faction:'fed', name:'Philip Van Cortlandt', county:'Westchester', role:null, required:false},
+  {faction:'fed', name:'Peter Lefferts', county:'Kings', role:null, required:false},
+  {faction:'fed', name:'Abraham Bancker', county:'Richmond', role:null, required:false},
+  {faction:'anti', name:'Governor George Clinton', county:'Ulster', role:'Party Leader & Conv. President', required:true},
+  {faction:'anti', name:'Melancton Smith', county:'Dutchess', role:'Party Lieutenant', required:true},
+  {faction:'anti', name:'John Lansing Jr.', county:'Albany', role:null, required:false},
+  {faction:'anti', name:'Robert Yates', county:'Albany', role:null, required:false},
+  {faction:'anti', name:'General James Clinton', county:'Ulster', role:null, required:false},
+  {faction:'anti', name:'Gilbert Livingston', county:'Dutchess', role:null, required:false},
+  {faction:'anti', name:'John Haring', county:'Orange', role:null, required:false},
+  {faction:'anti', name:'Henry Wisner', county:'Orange', role:null, required:false},
+  {faction:'anti', name:'Thomas Tredwell', county:'Suffolk', role:null, required:false},
+  {faction:'anti', name:'Zephaniah Platt', county:'Dutchess', role:null, required:false},
+  {faction:'anti', name:'John Williams', county:'Washington', role:null, required:false},
+  {faction:'mod', name:'Henry Oothoudt', county:'Albany', role:'Convention Chair', required:true},
+  {faction:'mod', name:'Jonathan N. Havens', county:'Suffolk', role:'Federalist Liaison', required:true},
+  {faction:'mod', name:'Jacobus Swartwout', county:'Dutchess', role:'Antifederalist Liaison', required:true},
+  {faction:'mod', name:'David Hedges', county:'Suffolk', role:null, required:false},
+  {faction:'mod', name:'Jesse Woodhull', county:'Orange', role:null, required:false},
+  {faction:'mod', name:'John Cantine', county:'Ulster', role:null, required:false},
+  {faction:'mod', name:'Cornelius C. Schoonmaker', county:'Ulster', role:null, required:false},
+  {faction:'mod', name:'Dirck Swart', county:'Albany', role:null, required:false},
+  {faction:'mod', name:'Peter Vrooman', county:'Albany', role:null, required:false},
+  {faction:'mod', name:'Nicholas Low', county:'New York City', role:null, required:false},
+  {faction:'mod', name:'Samuel Jones', county:'Queens', role:null, required:false},
+  {faction:'mod', name:'Peter Van Ness', county:'Columbia', role:null, required:false},
+  {faction:'mod', name:'Thaddeus Crane', county:'Westchester', role:null, required:false},
+];
+
+const FACTION_INFO = {
+  fed:  {label:'Federalists',     count:'11 Delegates', icon:'⚑'},
+  anti: {label:'Antifederalists', count:'11 Delegates', icon:'⚐'},
+  mod:  {label:'Moderates',       count:'13 Delegates', icon:'⚖'},
+};
+
+const ISSUES = [
+  {id:'districts', title:'Issue I · Size of Electoral Districts'},
+  {id:'rotation',  title:'Issue II · Rotation / Term Limits'},
+  {id:'instruct',  title:'Issue III · Instructed Voting'},
+];
+
+function blankData() {
+  const students = {}, attendance = {};
+  DELEGATES.forEach(d => { students[d.name] = ''; attendance[d.name] = null; });
+  return {date:'', students, attendance, notes:'', votes:{districts:null,rotation:null,instruct:null}};
+}
+
+// ── Auth helpers ──
+function switchTab(tab) {
+  document.getElementById('loginForm').style.display  = tab==='login'  ? '' : 'none';
+  document.getElementById('signupForm').style.display = tab==='signup' ? '' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+function showErr(msg)  { const e=document.getElementById('authError');   e.textContent=msg; e.style.display='block'; document.getElementById('authSuccess').style.display='none'; }
+function showOk(msg)   { const e=document.getElementById('authSuccess'); e.textContent=msg; e.style.display='block'; document.getElementById('authError').style.display='none'; }
+
+async function doLogin() {
+  const email=document.getElementById('loginEmail').value.trim();
+  const pw=document.getElementById('loginPassword').value;
+  if (!email||!pw) { showErr('Please enter your email and password.'); return; }
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true; btn.textContent='Signing in…';
+  const {error}=await sb.auth.signInWithPassword({email, password:pw});
+  btn.disabled=false; btn.textContent='Sign In';
+  if (error) showErr(error.message);
+}
+
+async function doSignup() {
+  const email=document.getElementById('signupEmail').value.trim();
+  const pw=document.getElementById('signupPassword').value;
+  const pw2=document.getElementById('signupConfirm').value;
+  if (!email||!pw) { showErr('Please fill in all fields.'); return; }
+  if (pw!==pw2)    { showErr('Passwords do not match.'); return; }
+  if (pw.length<6) { showErr('Password must be at least 6 characters.'); return; }
+  const btn=document.getElementById('signupBtn');
+  btn.disabled=true; btn.textContent='Creating account…';
+  const {error}=await sb.auth.signUp({email, password:pw});
+  btn.disabled=false; btn.textContent='Create Account';
+  if (error) { showErr(error.message); return; }
+  showOk('Account created! You are now signed in.');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+}
+
+// ── Auth state ──
+sb.auth.onAuthStateChange(async (event, session) => {
+  document.getElementById('loadingOverlay').style.display='none';
+  if (session?.user) {
+    currentUser = session.user;
+    document.getElementById('userEmail').textContent = session.user.email;
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    await renderSection(currentSection);
+  } else {
+    currentUser = null;
+    Object.keys(cache).forEach(k=>delete cache[k]);
+    document.getElementById('appScreen').style.display='none';
+    document.getElementById('authScreen').style.display='flex';
+  }
+});
+
+// Enter key support
+['loginEmail','loginPassword'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+});
+['signupEmail','signupPassword','signupConfirm'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter') doSignup(); });
+});
+
+// ── Section tabs ──
+document.querySelectorAll('.section-tab').forEach(tab=>{
+  tab.addEventListener('click', async ()=>{
+    document.querySelectorAll('.section-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentSection = tab.dataset.section;
+    await renderSection(currentSection);
+  });
+});
+
+// ── Data ops ──
+async function loadSection(section) {
+  if (cache[section]) return cache[section];
+  const {data,error} = await sb
+    .from('ratification_roll')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .eq('section', section)
+    .maybeSingle();
+  if (error) console.error(error);
+  const d = blankData();
+  if (data) {
+    d.date = data.date || '';
+    d.notes = data.notes || '';
+    d.votes = Object.assign(d.votes, data.votes || {});
+    // Merge saved students/attendance, keeping blanks for new delegates
+    Object.assign(d.students, data.students || {});
+    Object.assign(d.attendance, data.attendance || {});
+  }
+  cache[section] = d;
+  return d;
+}
+
+function scheduleSave(section) {
+  clearTimeout(saveTimer);
+  const ind = document.getElementById('saveIndicator');
+  if (ind) { ind.textContent='Saving…'; ind.classList.remove('saved'); }
+  saveTimer = setTimeout(async ()=>{
+    const d = cache[section];
+    if (!d) return;
+    const {error} = await sb.from('ratification_roll').upsert({
+      user_id: currentUser.id,
+      section,
+      date: d.date,
+      students: d.students,
+      attendance: d.attendance,
+      notes: d.notes,
+      votes: d.votes,
+      updated_at: new Date().toISOString()
+    }, {onConflict:'user_id,section'});
+    if (error) console.error(error);
+    if (ind) { ind.textContent='Saved ✓'; ind.classList.add('saved'); }
+    setTimeout(()=>{ if(ind){ind.textContent='All changes saved'; ind.classList.remove('saved');} }, 2000);
+  }, 900);
+}
+
+// ── Render ──
+async function renderSection(section) {
+  document.getElementById('mainPanel').innerHTML =
+    `<div style="padding:40px;text-align:center;font-family:'IM Fell English',serif;font-size:1rem;color:var(--ink-light);font-style:italic;">Loading…</div>`;
+  const data = await loadSection(section);
+  buildPanel(section, data);
+}
+
+function buildPanel(section, data) {
+  const present  = Object.values(data.attendance).filter(v=>v===true).length;
+  const absent   = Object.values(data.attendance).filter(v=>v===false).length;
+  const assigned = Object.values(data.students).filter(v=>v&&v.trim()).length;
+
+  document.getElementById('mainPanel').innerHTML = `
+    <div class="panel-card">
+      <div class="panel-header">
+        <div>
+          <h2>HIST 101 · Section ${section}</h2>
+          <p>New York State Ratifying Convention, 1788 · 35 Delegates</p>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Date:</span>
+          <input class="meta-input" type="date" id="dateInput" value="${esc(data.date)}">
+        </div>
+      </div>
+      <div class="summary-row" id="summaryRow">${summaryHTML(assigned,present,absent)}</div>
+      ${factionBlock('fed',  DELEGATES.filter(d=>d.faction==='fed'),  data)}
+      ${factionBlock('anti', DELEGATES.filter(d=>d.faction==='anti'), data)}
+      ${factionBlock('mod',  DELEGATES.filter(d=>d.faction==='mod'),  data)}
+      <div class="votes-section">
+        <div class="votes-title">⚖ Issue Vote Tracker</div>
+        <div class="votes-grid">${ISSUES.map(i=>voteCard(i,data.votes[i.id])).join('')}</div>
+      </div>
+      <div class="notes-section">
+        <div class="notes-title">📝 Game Notes</div>
+        <textarea class="notes-textarea" id="notesArea" placeholder="Record key arguments, turning points, notable moments, final vote outcome…">${esc(data.notes)}</textarea>
+      </div>
+      <div class="actions-bar">
+        <div class="action-group">
+          <button class="action-btn" onclick="markAll(true)">✓ Mark All Present</button>
+          <button class="action-btn" onclick="markAll(false)">✗ Mark All Absent</button>
+          <button class="action-btn" onclick="clearAtt()">Clear Attendance</button>
+        </div>
+        <div class="action-group">
+          <button class="action-btn danger" onclick="confirmClear()">Clear Section Data</button>
+          <button class="action-btn primary" onclick="window.print()">🖨 Print</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('dateInput').addEventListener('change', e=>{
+    cache[section].date = e.target.value; scheduleSave(section);
+  });
+  document.getElementById('notesArea').addEventListener('input', e=>{
+    cache[section].notes = e.target.value; scheduleSave(section);
+  });
+  document.querySelectorAll('.student-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      cache[section].students[e.target.dataset.delegate] = e.target.value;
+      e.target.classList.toggle('filled', !!e.target.value.trim());
+      scheduleSave(section); updateSummary(section);
+    });
+  });
+  document.querySelectorAll('.present-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const name = btn.dataset.delegate;
+      const cur = cache[section].attendance[name];
+      cache[section].attendance[name] = cur===null ? true : cur===true ? false : null;
+      setAttBtn(btn, cache[section].attendance[name]);
+      scheduleSave(section); updateSummary(section);
+    });
+  });
+  document.querySelectorAll('.faction-heading').forEach(h=>{
+    h.addEventListener('click', ()=> h.closest('.faction-section').classList.toggle('collapsed'));
+  });
+  document.querySelectorAll('.vote-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const {issue,side} = btn.dataset;
+      cache[section].votes[issue] = cache[section].votes[issue]===side ? null : side;
+      scheduleSave(section); refreshVote(issue, cache[section].votes[issue]);
+    });
+  });
+}
+
+function summaryHTML(assigned, present, absent) {
+  return `<span><strong>${assigned}</strong> of 35 assigned</span>
+          <span><strong style="color:#2d6a3f">${present}</strong> present</span>
+          <span><strong style="color:#7a2a2a">${absent}</strong> absent</span>
+          <span><strong>${35-present-absent}</strong> unmarked</span>`;
+}
+
+function updateSummary(section) {
+  const d=cache[section];
+  const present  = Object.values(d.attendance).filter(v=>v===true).length;
+  const absent   = Object.values(d.attendance).filter(v=>v===false).length;
+  const assigned = Object.values(d.students).filter(v=>v&&v.trim()).length;
+  const row=document.getElementById('summaryRow');
+  if(row) row.innerHTML=summaryHTML(assigned,present,absent);
+}
+
+function factionBlock(faction, delegates, data) {
+  const info = FACTION_INFO[faction];
+  const rows = delegates.map((d,i)=>{
+    const student = data.students[d.name]||'';
+    const att = data.attendance[d.name];
+    const attClass = att===true?'present':att===false?'absent':'';
+    const attIcon  = att===true?'✓':att===false?'✗':'';
+    return `<tr class="delegate-row">
+      <td class="col-num">${i+1}</td>
+      <td class="col-delegate">
+        <span class="d-name">${esc(d.name)}</span>
+        ${d.required?'<span class="d-required">★ required</span>':''}
+        ${d.role?`<span class="d-role">· ${esc(d.role)}</span>`:''}
+        <br><span class="d-county">${esc(d.county)}</span>
+      </td>
+      <td class="col-student">
+        <input class="student-input ${student?'filled':''}" type="text"
+          placeholder="Student name…" value="${esc(student)}" data-delegate="${esc(d.name)}">
+      </td>
+      <td class="col-present">
+        <button class="present-toggle ${attClass}" data-delegate="${esc(d.name)}" title="Toggle attendance">${attIcon}</button>
+      </td>
+    </tr>`;
+  }).join('');
+  return `<div class="faction-section">
+    <div class="faction-heading ${faction}">
+      <span class="faction-badge">${info.icon} ${info.label}</span>
+      <h3>${info.label}</h3>
+      <span class="faction-count">${info.count}</span>
+      <span class="faction-chevron">▼</span>
+    </div>
+    <table class="delegate-table"><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+function voteCard(issue, v) {
+  return `<div class="vote-card" id="vote-${issue.id}">
+    <div class="vote-card-title">${issue.title}</div>
+    <div class="vote-row">
+      <span class="vote-label">Outcome:</span>
+      <button class="vote-btn ${v==='fed'?'sel-fed':''}" data-issue="${issue.id}" data-side="fed">Federalist</button>
+      <button class="vote-btn ${v==='anti'?'sel-anti':''}" data-issue="${issue.id}" data-side="anti">Antifederalist</button>
+    </div>
+    <div class="vote-result">${voteText(v)}</div>
+  </div>`;
+}
+
+function voteText(v) { return v==='fed'?'⚑ Federalist position prevails':v==='anti'?'⚐ Antifederalist position prevails':''; }
+
+function refreshVote(issueId, vote) {
+  const card=document.getElementById(`vote-${issueId}`);
+  if(!card) return;
+  card.querySelectorAll('.vote-btn').forEach(b=>{
+    b.className='vote-btn'+(vote===b.dataset.side?` sel-${b.dataset.side}`:'');
+  });
+  card.querySelector('.vote-result').textContent=voteText(vote);
+}
+
+function setAttBtn(btn, state) {
+  btn.className='present-toggle'+(state===true?' present':state===false?' absent':'');
+  btn.textContent=state===true?'✓':state===false?'✗':'';
+}
+
+function markAll(present) {
+  DELEGATES.forEach(d=>{ cache[currentSection].attendance[d.name]=present; });
+  document.querySelectorAll('.present-toggle').forEach(b=>setAttBtn(b,present));
+  scheduleSave(currentSection); updateSummary(currentSection);
+}
+
+function clearAtt() {
+  DELEGATES.forEach(d=>{ cache[currentSection].attendance[d.name]=null; });
+  document.querySelectorAll('.present-toggle').forEach(b=>setAttBtn(b,null));
+  scheduleSave(currentSection); updateSummary(currentSection);
+}
+
+async function confirmClear() {
+  if (confirm(`Clear ALL data for Section ${currentSection}? This cannot be undone.`)) {
+    cache[currentSection] = blankData();
+    await sb.from('ratification_roll').delete()
+      .eq('user_id', currentUser.id).eq('section', currentSection);
+    buildPanel(currentSection, cache[currentSection]);
+  }
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
