@@ -431,6 +431,29 @@
         }
         .btn-tutorial:hover { background: var(--gold); }
 
+        /* ── PREVIEW MODE JUMP NAV ───────────────────────── */
+        #previewNav {
+            display: none;
+            background: #1a2c4a;
+            border: 2px solid var(--gold);
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            font-family: 'Special Elite', monospace;
+        }
+        #previewNav .pn-label {
+            font-size: 0.72em; letter-spacing: 3px; color: var(--gold);
+            text-transform: uppercase; margin-bottom: 10px;
+        }
+        #previewNav .pn-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        #previewNav .pn-btn {
+            background: rgba(200,168,75,0.15); border: 1px solid var(--gold);
+            color: var(--gold); font-family: 'Special Elite', monospace;
+            font-size: 0.75em; letter-spacing: 1px; padding: 6px 14px;
+            cursor: pointer; text-transform: uppercase; transition: all 0.2s;
+        }
+        #previewNav .pn-btn:hover { background: var(--gold); color: var(--ink); }
+        #previewNav .pn-btn.current { background: var(--gold); color: var(--ink); }
+
         @media (max-width: 650px) {
             h1 { font-size: 1.8em; }
             .student-info-grid { grid-template-columns: 1fr; }
@@ -464,7 +487,6 @@
             </div>
             <div class="lock-contact">
                 <strong>Contact Prof. Hauselmann:</strong><br>
-                <!-- UPDATE THESE WITH YOUR ACTUAL CONTACT DETAILS -->
                 Email: <strong>hauselmann@yosemite.edu</strong><br>
                 Office Hours: As posted on Canvas<br>
                 Canvas Inbox: Available 24/7
@@ -511,7 +533,33 @@
     </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════
+     INSTRUCTOR PREVIEW BANNER (only shown in preview mode)
+═══════════════════════════════════════════════════ -->
+<div id="previewBanner" style="display:none; background:#1a2c4a; color:#c8a84b; font-family:'Special Elite',monospace; font-size:0.85em; letter-spacing:2px; padding:12px 20px; text-align:center; border-bottom:3px solid #c8a84b; position:sticky; top:0; z-index:500; line-height:1.8;">
+    🔍 &nbsp; <strong>INSTRUCTOR PREVIEW MODE</strong> &nbsp;—&nbsp; Attempt locks, timer, word count minimums, and Supabase writes are all disabled
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="?" style="color:#c8a84b; font-size:0.85em; text-decoration:underline;">Exit Preview</a>
+    &nbsp;&nbsp;
+    <button onclick="document.getElementById('previewBanner').style.display='none'; document.getElementById('previewNav').style.display='none';" style="background:transparent;border:1px solid #c8a84b;color:#c8a84b;font-family:'Special Elite',monospace;font-size:0.8em;padding:3px 12px;cursor:pointer;letter-spacing:1px;">✕ Dismiss</button>
+</div>
+
 <div class="page-wrap">
+
+    <!-- ── PREVIEW JUMP NAVIGATION (only shown in preview mode) ── -->
+    <div id="previewNav">
+        <div class="pn-label">🔍 Preview — Jump to any section:</div>
+        <div class="pn-buttons">
+            <button class="pn-btn current" onclick="previewJump(0)">📋 Start</button>
+            <button class="pn-btn" onclick="previewJump(1)">📖 ID 1: Great Compromise</button>
+            <button class="pn-btn" onclick="previewJump(2)">📖 ID 2: Manifest Destiny</button>
+            <button class="pn-btn" onclick="previewJump(3)">📖 ID 3: Dred Scott</button>
+            <button class="pn-btn" onclick="previewJump(4)">📖 ID 4: Emancipation</button>
+            <button class="pn-btn" onclick="previewJump(5)">📖 ID 5: Freedmen's Bureau</button>
+            <button class="pn-btn" onclick="previewJump(6)">✍️ Essay</button>
+            <button class="pn-btn" onclick="previewJump(7)">📤 Submit</button>
+        </div>
+    </div>
 
     <nav class="breadcrumb">
         <a href="index.html">Home</a><span class="sep">›</span>
@@ -602,7 +650,6 @@
             <div style="margin-top: 28px; border-top: 2px solid var(--worn); padding-top: 24px;">
                 <h3>Enter Your Information to Begin</h3>
                 <p style="font-size:0.9em; color:var(--faded); margin-bottom:16px;">All three fields are required. Your Student ID is used to verify you have not previously opened this exam.</p>
-                <!-- THREE-COLUMN GRID: Name, Student ID, Section -->
                 <div class="student-info-grid-3" style="margin-top: 16px;">
                     <div class="field-group">
                         <label>Full Name</label>
@@ -624,12 +671,11 @@
         <div class="btn-row">
             <button class="btn btn-primary" id="beginBtn" onclick="beginExam()">Begin Examination →</button>
         </div>
-        <!-- Error display for preflight failures -->
         <div id="beginError" style="margin-top:16px; display:none;"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════
-         PHASE 1–5: ID QUESTIONS (unchanged from original)
+         PHASE 1–5: ID QUESTIONS
     ═══════════════════════════════════════════════════ -->
 
     <!-- PHASE 1: The Great Compromise -->
@@ -1080,15 +1126,26 @@
 // ════════════════════════════════════════════════════════════
 //  CONFIGURATION — UPDATE BEFORE PUBLISHING
 // ════════════════════════════════════════════════════════════
-const CANVAS_URL = 'https://modesto.instructure.com/courses/69528/assignments/2259860?module_item_id=5918226'; // Replace with your Canvas assignment URL
+const CANVAS_URL = 'https://modesto.instructure.com/courses/69528/assignments/2259860?module_item_id=5918226';
 
 const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
 
 const ASSIGNMENT_OPEN       = true;
-const SUBMISSION_CUTOFF     = null;    // e.g. '2025-12-15T23:59:00' or null
-const EXAM_DURATION_MINUTES = 120;     // ← Change this to set the time limit (120 = 2 hours)
-const GRACE_PERIOD_SECONDS  = 60;      // Auto-submits this many seconds after time expires
+const SUBMISSION_CUTOFF     = null;
+const EXAM_DURATION_MINUTES = 120;
+const GRACE_PERIOD_SECONDS  = 60;
+
+// ════════════════════════════════════════════════════════════
+//  INSTRUCTOR PREVIEW MODE
+//  Access via: yourpage.html?preview=true
+//  - Bypasses Supabase preflight check and attempt logging
+//  - Disables timer countdown and expiry
+//  - Removes word count minimums on all navigation
+//  - Blocks all real Supabase writes
+//  - Shows jump navigation bar for instant section access
+// ════════════════════════════════════════════════════════════
+const PREVIEW_MODE = new URLSearchParams(window.location.search).get('preview') === 'true';
 
 // ════════════════════════════════════════════════════════════
 //  SUPABASE CLIENT
@@ -1102,10 +1159,10 @@ let currentPhase    = 0;
 let examStartTime   = null;
 let examEndTime     = null;
 let timerInterval   = null;
-let graceInterval   = null;     // countdown after time expires
-let timeExpired     = false;    // flag to block further navigation
+let graceInterval   = null;
+let timeExpired     = false;
 let idPhaseLocked   = false;
-let attemptId       = null;   // Supabase row ID of the attempt record
+let attemptId       = null;
 
 // ════════════════════════════════════════════════════════════
 //  CANVAS BUTTON WIRE-UP
@@ -1120,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ════════════════════════════════════════════════════════════
 function startTimer() {
     examStartTime  = new Date();
+    // In preview mode, still show the timer running but never trigger expiry
     timerInterval  = setInterval(updateTimer, 1000);
     updateTimer();
     updateSessionInfo();
@@ -1132,23 +1190,21 @@ function updateTimer() {
     const totalSeconds = EXAM_DURATION_MINUTES * 60;
     const remaining    = totalSeconds - elapsed;
 
-    // ── Elapsed display (secondary, top-right) ──────────
     const eh = String(Math.floor(elapsed / 3600)).padStart(2,'0');
     const em = String(Math.floor((elapsed % 3600) / 60)).padStart(2,'0');
     const es = String(elapsed % 60).padStart(2,'0');
     const elapsedEl = document.getElementById('elapsedDisplay');
     if (elapsedEl) elapsedEl.textContent = `${eh}:${em}:${es}`;
 
-    // ── Countdown display (primary, top-left) ────────────
     const display = document.getElementById('timerDisplay');
     if (!display) return;
     display.classList.remove('countdown-warn','countdown-crit','countdown-done','timer-warning');
 
     if (remaining <= 0) {
-        // Time is up
         display.textContent = '0:00:00';
         display.classList.add('countdown-done');
-        if (!timeExpired) triggerTimeExpired();
+        // Only trigger expiry if NOT in preview mode
+        if (!timeExpired && !PREVIEW_MODE) triggerTimeExpired();
         return;
     }
 
@@ -1157,7 +1213,6 @@ function updateTimer() {
     const rs = String(remaining % 60).padStart(2,'0');
     display.textContent = `${rh}:${rm}:${rs}`;
 
-    // Warning colours: yellow under 30 min, red under 10 min
     if      (remaining <= 600)  display.classList.add('countdown-crit');
     else if (remaining <= 1800) display.classList.add('countdown-warn');
 
@@ -1176,19 +1231,13 @@ function getElapsedString() {
     return `${Math.floor(elapsed/3600)}h ${Math.floor((elapsed%3600)/60)}m ${elapsed%60}s`;
 }
 
-// ── TIME EXPIRY ──────────────────────────────────────────
 function triggerTimeExpired() {
     timeExpired = true;
     clearInterval(timerInterval);
-
-    // Lock every input and textarea on the page
     lockExamFields();
-
-    // Show the time-expired overlay with grace countdown
     document.getElementById('timeExpiredOverlay').classList.add('visible');
     let secondsLeft = GRACE_PERIOD_SECONDS;
     document.getElementById('graceCountdown').textContent = secondsLeft;
-
     graceInterval = setInterval(() => {
         secondsLeft--;
         const cd = document.getElementById('graceCountdown');
@@ -1201,42 +1250,32 @@ function triggerTimeExpired() {
 }
 
 function lockExamFields() {
-    // Disable all text inputs and textareas
     document.querySelectorAll('input[type="text"], textarea').forEach(el => {
         el.disabled = true;
         el.style.background = '#f0e8d4';
         el.style.color = '#7a6a52';
         el.style.cursor = 'not-allowed';
     });
-    // Disable navigation buttons (not the submit overlay button)
     document.querySelectorAll('.btn:not(#timeExpiredOverlay .btn)').forEach(el => {
         if (el.id !== 'submitBtn') el.disabled = true;
     });
 }
 
 async function autoForceSubmit() {
-    // Hide the overlay and move to submit phase
     document.getElementById('timeExpiredOverlay').classList.remove('visible');
     examEndTime = new Date();
     buildSummary();
-
-    // Jump straight to phase 7 without word-count checks
     document.getElementById(`phase${currentPhase}`).classList.remove('active');
     document.getElementById('phase7').classList.add('active');
     currentPhase = 7;
     updateProgress();
     window.scrollTo(0,0);
-
-    // Re-enable just the submit button
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) submitBtn.disabled = false;
-
-    // Auto-fire the Supabase submission
     await submitToSupabase();
 }
 
 function manualTimeExpiredSubmit() {
-    // Student clicked "Submit Now" before grace period expired
     clearInterval(graceInterval);
     autoForceSubmit();
 }
@@ -1249,14 +1288,47 @@ function goToPhase(n) {
     document.getElementById(`phase${n}`).classList.add('active');
     currentPhase = n;
     updateProgress();
+    updatePreviewNav();
     window.scrollTo(0,0);
     autoSave();
 }
+
 function updateProgress() {
     document.querySelectorAll('.prog-step').forEach((el,i) => {
         el.classList.remove('active','done');
         if (i < currentPhase) el.classList.add('done');
         else if (i === currentPhase) el.classList.add('active');
+    });
+}
+
+// ════════════════════════════════════════════════════════════
+//  PREVIEW MODE — JUMP NAVIGATION
+// ════════════════════════════════════════════════════════════
+function previewJump(n) {
+    // Fill in dummy student info if jumping past phase 0
+    if (n > 0 && !examStartTime) {
+        const nameEl = document.getElementById('student-name');
+        const idEl   = document.getElementById('student-id');
+        const secEl  = document.getElementById('section-number');
+        if (!nameEl.value) nameEl.value = 'PREVIEW — Prof. Hauselmann';
+        if (!idEl.value)   idEl.value   = 'PREVIEW';
+        if (!secEl.value)  secEl.value  = '101';
+        startTimer();
+    }
+    if (n >= 6) idPhaseLocked = true;
+    if (n === 7) { examEndTime = new Date(); buildSummary(); }
+    document.getElementById(`phase${currentPhase}`).classList.remove('active');
+    document.getElementById(`phase${n}`).classList.add('active');
+    currentPhase = n;
+    updateProgress();
+    updatePreviewNav();
+    window.scrollTo(0, 0);
+}
+
+function updatePreviewNav() {
+    if (!PREVIEW_MODE) return;
+    document.querySelectorAll('#previewNav .pn-btn').forEach((btn, i) => {
+        btn.classList.toggle('current', i === currentPhase);
     });
 }
 
@@ -1293,7 +1365,6 @@ async function beginExam() {
     const studentId = document.getElementById('student-id').value.trim();
     const section   = document.getElementById('section-number').value.trim();
 
-    // Client-side validation
     if (!name) {
         alert('Please enter your full name before beginning.');
         document.getElementById('student-name').focus(); return;
@@ -1312,6 +1383,13 @@ async function beginExam() {
     beginBtn.disabled = true;
     errDiv.style.display = 'none';
 
+    // ── PREVIEW MODE: skip all DB checks and just start ──
+    if (PREVIEW_MODE) {
+        startTimer();
+        goToPhase(1);
+        return;
+    }
+
     // ── STEP 1: Check for existing attempt ───────────────
     showPreflight('Checking attempt records for Student ID ' + studentId + '…');
 
@@ -1324,23 +1402,17 @@ async function beginExam() {
             .limit(1);
 
         if (checkErr) {
-            // Network or DB error — fail OPEN (do not block the student)
-            // Log the error but allow them to proceed
             console.error('Preflight check error:', checkErr);
             hidePreflight();
             showBeginError(`Warning: We could not verify your eligibility (network error). Your attempt will be recorded. If this is your first attempt, you may proceed.`, true);
             beginBtn.disabled = false;
-            // Fall through to registration
             await registerAttemptAndStart(name, studentId, section);
             return;
         }
 
         if (existing && existing.length > 0) {
-            // ── BLOCKED: prior attempt found ─────────────
             hidePreflight();
             showLockScreen(existing[0]);
-
-            // Log the blocked attempt for your records
             await supabaseClient.from('exam_attempts').insert({
                 student_name:   name,
                 student_id:     studentId.toLowerCase().trim(),
@@ -1353,12 +1425,10 @@ async function beginExam() {
             return;
         }
 
-        // ── STEP 2: No existing attempt — register and start
         hidePreflight();
         await registerAttemptAndStart(name, studentId, section);
 
     } catch (e) {
-        // Unexpected JS error — fail open, log, proceed
         console.error('Unexpected preflight error:', e);
         hidePreflight();
         beginBtn.disabled = false;
@@ -1367,8 +1437,6 @@ async function beginExam() {
 }
 
 async function registerAttemptAndStart(name, studentId, section) {
-    // Insert the attempt record BEFORE showing the exam
-    // This ensures even a tab-closed-immediately attempt is logged
     try {
         const { data, error } = await supabaseClient
             .from('exam_attempts')
@@ -1387,13 +1455,11 @@ async function registerAttemptAndStart(name, studentId, section) {
             attemptId = data.id;
         } else {
             console.error('Attempt registration error:', error);
-            // Still allow the exam — don't block a student due to a DB write error
         }
     } catch(e) {
         console.error('Attempt registration exception:', e);
     }
 
-    // Start the exam regardless of whether the DB write succeeded
     startTimer();
     goToPhase(1);
 }
@@ -1408,6 +1474,9 @@ function showBeginError(msg, isWarning = false) {
 //  ID ADVANCE
 // ════════════════════════════════════════════════════════════
 function advanceID(idNum) {
+    // Preview mode: skip all validation
+    if (PREVIEW_MODE) { goToPhase(idNum + 1); return; }
+
     const response = document.getElementById(`id${idNum}-response`).value.trim();
     const citation = document.getElementById(`id${idNum}-citation`).value.trim();
     if (!response) { alert('Please write your response before continuing.'); return; }
@@ -1422,6 +1491,9 @@ function advanceID(idNum) {
 //  ADVANCE TO ESSAY
 // ════════════════════════════════════════════════════════════
 function advanceToEssay() {
+    // Preview mode: skip all validation and confirmation
+    if (PREVIEW_MODE) { idPhaseLocked = true; goToPhase(6); return; }
+
     const response = document.getElementById('id5-response').value.trim();
     const citation = document.getElementById('id5-citation').value.trim();
     if (!response) { alert('Please complete ID 5 before advancing.'); return; }
@@ -1439,6 +1511,9 @@ function advanceToEssay() {
 //  ADVANCE TO SUBMIT
 // ════════════════════════════════════════════════════════════
 function advanceToSubmit() {
+    // Preview mode: skip all validation
+    if (PREVIEW_MODE) { examEndTime = new Date(); buildSummary(); goToPhase(7); return; }
+
     const essay = document.getElementById('essay-response').value.trim();
     if (!essay && !timeExpired) { alert('Please write your essay before submitting.'); return; }
     if (!timeExpired) {
@@ -1521,9 +1596,10 @@ function closeTutorialOnOverlay(e) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTutorial(); });
 
 // ════════════════════════════════════════════════════════════
-//  PASTE PREVENTION
+//  PASTE PREVENTION (disabled in preview mode)
 // ════════════════════════════════════════════════════════════
 document.addEventListener('paste', function(e) {
+    if (PREVIEW_MODE) return; // Allow paste in preview
     const target = e.target;
     if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
     if (target.id === 'essay-notes') return;
@@ -1542,9 +1618,10 @@ document.addEventListener('paste', function(e) {
 });
 
 // ════════════════════════════════════════════════════════════
-//  BEFOREUNLOAD WARNING
+//  BEFOREUNLOAD WARNING (disabled in preview mode)
 // ════════════════════════════════════════════════════════════
 window.addEventListener('beforeunload', function(e) {
+    if (PREVIEW_MODE) return; // No warning in preview
     if (currentPhase > 0 && currentPhase < 7) {
         e.preventDefault();
         e.returnValue = 'You have an exam in progress. Are you sure you want to leave? Your work may be lost.';
@@ -1553,7 +1630,7 @@ window.addEventListener('beforeunload', function(e) {
 });
 
 // ════════════════════════════════════════════════════════════
-//  AUTO SAVE (localStorage — recovery only, not bypass)
+//  AUTO SAVE (disabled in preview mode)
 // ════════════════════════════════════════════════════════════
 function collectState() {
     const state = { phase: currentPhase, startTime: examStartTime ? examStartTime.toISOString() : null };
@@ -1561,6 +1638,7 @@ function collectState() {
     return state;
 }
 function autoSave() {
+    if (PREVIEW_MODE) return; // Don't save preview sessions to localStorage
     localStorage.setItem('hist101FinalExam', JSON.stringify(collectState()));
 }
 setInterval(autoSave, 30000);
@@ -1592,6 +1670,7 @@ function buildPDFDoc() {
 
     addText('HIST 101 — Final Examination', 16, true); y += 2;
     addText('American History to 1877 · Prof. Hauselmann', 12);
+    if (PREVIEW_MODE) addText('[INSTRUCTOR PREVIEW — NOT A STUDENT SUBMISSION]', 11, true);
     addText(`Student: ${name}`, 12, true);
     addText(`Student ID: ${studentId}`, 12, true);
     if (section) addText(`Section: ${section}`, 12, true);
@@ -1631,7 +1710,8 @@ function downloadPDF() {
         const doc = buildPDFDoc();
         const dateStr = new Date().toISOString().split('T')[0];
         const studentId = document.getElementById('student-id').value.trim();
-        doc.save(`HIST101_FinalExam_${name.replace(/\s+/g,'_')}_${studentId}_${dateStr}.pdf`);
+        const prefix = PREVIEW_MODE ? 'PREVIEW_' : '';
+        doc.save(`${prefix}HIST101_FinalExam_${name.replace(/\s+/g,'_')}_${studentId}_${dateStr}.pdf`);
     } catch(e) { console.error(e); alert('Error generating PDF: ' + e.message); }
 }
 
@@ -1639,6 +1719,13 @@ function downloadPDF() {
 //  SUPABASE SUBMIT
 // ════════════════════════════════════════════════════════════
 async function submitToSupabase() {
+    // Preview mode: block all real submissions
+    if (PREVIEW_MODE) {
+        document.getElementById('submitMessage').innerHTML =
+            '<div class="notice" style="font-family:\'Special Elite\',monospace; letter-spacing:1px;">🔍 <strong>Preview Mode</strong> — No data submitted to Supabase. PDF download still works normally.</div>';
+        return;
+    }
+
     if (!ASSIGNMENT_OPEN) {
         document.getElementById('submitMessage').innerHTML = '<div class="error-msg">❌ This assignment is now closed. Please contact Prof. Hauselmann.</div>'; return;
     }
@@ -1673,13 +1760,11 @@ async function submitToSupabase() {
             .from('student-submissions')
             .getPublicUrl(filePath);
 
-        // Collect all form data
         const allData = {};
         document.querySelectorAll('input[type=text], textarea').forEach(el => {
             if (el.id) allData[el.id] = el.value;
         });
 
-        // Insert into worksheet_submissions (main record)
         await supabaseClient.from('worksheet_submissions').insert({
             student_name:   name,
             section_number: section,
@@ -1696,7 +1781,6 @@ async function submitToSupabase() {
             submitted_at: new Date().toISOString()
         });
 
-        // Update the attempt record to 'completed'
         if (attemptId) {
             await supabaseClient
                 .from('exam_attempts')
@@ -1720,12 +1804,18 @@ async function submitToSupabase() {
 
 // ════════════════════════════════════════════════════════════
 //  INIT / RESTORE
-//  Note: localStorage restore is kept for crash recovery,
-//  but ONLY kicks in after the student passes the preflight
-//  check on a new session. A returning student who already
-//  has a Supabase attempt will hit the lock screen first.
 // ════════════════════════════════════════════════════════════
 window.onload = () => {
+    // ── PREVIEW MODE INIT ────────────────────────────────
+    if (PREVIEW_MODE) {
+        document.getElementById('previewBanner').style.display = 'block';
+        document.getElementById('previewNav').style.display = 'block';
+        updateProgress();
+        updatePreviewNav();
+        return; // Skip localStorage restore entirely in preview
+    }
+
+    // ── NORMAL STUDENT INIT ──────────────────────────────
     const saved = localStorage.getItem('hist101FinalExam');
     if (saved) {
         try {
@@ -1744,11 +1834,8 @@ window.onload = () => {
                     });
                     if (state.startTime) {
                         examStartTime  = new Date(state.startTime);
-
-                        // Check if time already expired during the outage
                         const elapsed = Math.floor((new Date() - examStartTime) / 1000);
                         if (elapsed >= EXAM_DURATION_MINUTES * 60) {
-                            // Time ran out while the page was closed — trigger expiry immediately
                             timerInterval = setInterval(updateTimer, 1000);
                             updateTimer();
                             triggerTimeExpired();
