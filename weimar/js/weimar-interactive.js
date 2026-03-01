@@ -5,6 +5,48 @@
 document.addEventListener('DOMContentLoaded', function() {
   
   // ==========================
+  // Mobile Navigation Toggle
+  // ==========================
+  const mainNav = document.querySelector('.main-nav');
+  if (mainNav && !document.querySelector('.nav-toggle')) {
+    const navToggle = document.createElement('button');
+    navToggle.className = 'nav-toggle';
+    navToggle.setAttribute('aria-label', 'Toggle navigation');
+    navToggle.innerHTML = '☰';
+    
+    mainNav.insertBefore(navToggle, mainNav.firstChild);
+    
+    const navList = mainNav.querySelector('ul');
+    
+    navToggle.addEventListener('click', function() {
+      navList.classList.toggle('active');
+      // Change icon
+      this.innerHTML = navList.classList.contains('active') ? '✕' : '☰';
+    });
+    
+    // Close menu when clicking a link
+    const navLinks = navList.querySelectorAll('a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          navList.classList.remove('active');
+          navToggle.innerHTML = '☰';
+        }
+      });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (window.innerWidth <= 768 && 
+          !mainNav.contains(e.target) && 
+          navList.classList.contains('active')) {
+        navList.classList.remove('active');
+        navToggle.innerHTML = '☰';
+      }
+    });
+  }
+  
+  // ==========================
   // Collapsible Sections
   // ==========================
   const collapsibles = document.querySelectorAll('.collapsible');
