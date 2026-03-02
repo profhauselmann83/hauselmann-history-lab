@@ -318,8 +318,11 @@
       <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
         <input type="file" id="fileInput" accept="image/*" multiple />
         <div class="upload-icon">&#128196;</div>
-        <div class="upload-text">Drop exam pages, click to browse, or paste (Cmd+V)</div>
-        <div class="upload-hint">JPG, PNG, HEIC - paste directly from Preview</div>
+        <div class="upload-text">Drop exam pages or click to browse</div>
+        <div class="upload-hint">JPG, PNG, HEIC</div>
+      </div>
+      <div class="btn-group mt-1">
+        <button class="btn btn-navy" onclick="pasteFromClipboard()" type="button">&#128203; Paste from Clipboard</button>
       </div>
       <div class="image-queue" id="imageQueue"></div>
       <div class="mt-1">
@@ -377,7 +380,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!--email_off-->
+
 <script>
   // SUPABASE CLIENT
   var SB_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
@@ -607,6 +610,39 @@
   }
 
   function removeImage(id) { images = images.filter(function(img) { return img.id !== id; }); renderQueue(); updateTranscribeButton(); }
+
+  function pasteFromClipboard() {
+    navigator.clipboard.read().then(function(clipboardItems) {
+      var found = 0;
+      for (var i = 0; i < clipboardItems.length; i++) {
+        var types = clipboardItems[i].types;
+        for (var j = 0; j < types.length; j++) {
+          if (types[j].indexOf('image/') === 0) {
+            (function(item, mimeType) {
+              item.getType(mimeType).then(function(blob) {
+                var file = new File([blob], 'pasted-page.png', { type: mimeType });
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                  images.push({ id: Date.now() + Math.random(), name: 'Pasted image', size: blob.size, dataUrl: e.target.result, base64: e.target.result.split(',')[1], mediaType: mimeType, status: 'pending' });
+                  renderQueue(); updateTranscribeButton();
+                  found++;
+                  showToast('Pasted ' + found + ' image' + (found > 1 ? 's' : ''), 'success');
+                };
+                reader.readAsDataURL(file);
+              });
+            })(clipboardItems[i], types[j]);
+          }
+        }
+      }
+      if (found === 0) {
+        setTimeout(function() {
+          if (found === 0) showToast('No image found in clipboard. Copy an image first.', 'error');
+        }, 300);
+      }
+    }).catch(function(err) {
+      showToast('Clipboard access denied. Try Cmd+V instead.', 'error');
+    });
+  }
   function updateTranscribeButton() { document.getElementById('transcribeBtn').disabled = !(apiKeyInput.value.trim().indexOf('sk-ant-') === 0 && images.length > 0); }
 
   // TRANSCRIPTION
@@ -807,7 +843,11 @@
   function showToast(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(function() { t.classList.remove('show'); }, 3500); }
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePreview(); });
 </script>
-<!--/email_off-->
+
+
+</body>
+</html>
+--/email_off-->
 
 </body>
 </html>
