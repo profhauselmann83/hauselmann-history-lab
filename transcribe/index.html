@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Transcriber | Hauselmann's History Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #2c3e50;
+    --navy-light: #34495e;
+    --blue: #3498db;
+    --blue-hover: #2980b9;
+    --bg: #f5f5f0;
+    --white: #ffffff;
+    --text: #333333;
+    --muted: #7f8c8d;
+    --border: #ddd;
+    --success: #27ae60;
+    --success-hover: #219a52;
+    --error: #c0392b;
+    --info: #2980b9;
+    --shadow: 0 2px 5px rgba(0,0,0,0.1);
+    --radius: 5px;
+    --sidebar-w: 280px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── LOGIN GATE ─── */
+  .login-gate {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg);
+    padding: 20px;
+  }
+
+  .login-header-bar {
+    background-color: var(--navy);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 0;
+  }
+
+  .login-header-bar h2 { font-size: 1.1rem; font-weight: 700; }
+  .login-header-bar p { font-size: 0.75rem; opacity: 0.6; }
+
+  .login-box {
+    background: var(--white);
+    padding: 35px 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .login-box h1 { font-size: 1.4rem; color: var(--navy); margin-bottom: 5px; }
+  .login-box .login-subtitle { font-size: 0.85rem; color: var(--muted); margin-bottom: 25px; }
+
+  .login-field {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .login-field:focus { outline: none; border-color: var(--blue); }
+
+  .login-error {
+    color: var(--error);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: none;
+  }
+
+  .login-box .btn { width: 100%; justify-content: center; margin-bottom: 8px; }
+
+  .login-spinner {
+    display: none;
+    margin: 10px auto;
+    width: 24px; height: 24px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .app-wrapper { display: none; }
+  .app-wrapper.visible { display: block; }
+
+  /* ─── HEADER ─── */
+  .header {
+    background-color: var(--navy);
+    color: white;
+    padding: 25px 30px;
+    text-align: center;
+  }
+
+  .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 2px; }
+  .header p { font-size: 0.85rem; opacity: 0.7; font-weight: 400; }
+
+  .nav-bar {
+    background-color: var(--navy-light);
+    padding: 15px 20px;
+    text-align: center;
+  }
+
+  .nav-bar a {
+    color: white; text-decoration: none; font-weight: bold; font-size: 0.85rem; margin: 0 15px;
+  }
+
+  .nav-bar a:hover { text-decoration: underline; }
+  .nav-bar a.active { text-decoration: underline; }
+
+  .config-bar {
+    background-color: var(--navy-light);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .config-group { display: flex; align-items: center; gap: 6px; }
+  .config-group label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.8); white-space: nowrap; }
+  .config-group input {
+    padding: 5px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius);
+    font-family: 'Open Sans', sans-serif; font-size: 0.75rem; background: rgba(255,255,255,0.1); color: white;
+  }
+  .config-group input::placeholder { color: rgba(255,255,255,0.4); }
+  .config-group input:focus { outline: none; border-color: var(--blue); background: rgba(255,255,255,0.15); }
+  .config-divider { width: 1px; height: 22px; background: rgba(255,255,255,0.2); margin: 0 6px; }
+
+  .status-dot { font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+  .status-dot.on { background: var(--success); color: white; }
+  .status-dot.off { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); }
+
+  .user-email { font-size: 0.72rem; color: rgba(255,255,255,0.6); }
+
+  /* ─── LAYOUT ─── */
+  .app-layout { display: flex; max-width: 1300px; margin: 0 auto; min-height: calc(100vh - 200px); }
+
+  .sidebar {
+    width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; flex-shrink: 0; box-shadow: var(--shadow); transition: margin-left 0.3s;
+  }
+
+  .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-w)); }
+
+  .sidebar-header { padding: 15px 12px 10px; border-bottom: 2px solid var(--blue); }
+  .sidebar-header h2 { color: var(--navy); font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+
+  .sidebar-tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 8px; }
+  .sidebar-tab { flex: 1; padding: 6px 8px; font-size: 0.72rem; font-weight: 600; text-align: center; cursor: pointer; background: white; border: none; border-right: 1px solid var(--border); color: var(--muted); transition: all 0.15s; font-family: 'Open Sans', sans-serif; }
+  .sidebar-tab:last-child { border-right: none; }
+  .sidebar-tab.active { background: var(--navy); color: white; }
+  .sidebar-tab:hover:not(.active) { background: var(--bg); }
+
+  .sidebar-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+  .sidebar-panel { display: none; flex: 1; overflow-y: auto; }
+  .sidebar-panel.active { display: flex; flex-direction: column; }
+  .sidebar-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .sidebar-empty { text-align: center; padding: 25px 12px; color: var(--muted); font-size: 0.8rem; }
+  .sidebar-empty-icon { font-size: 1.8rem; margin-bottom: 6px; opacity: 0.4; }
+
+  .student-card { padding: 10px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; border: 1px solid transparent; margin-bottom: 4px; }
+  .student-card:hover { background: var(--bg); border-color: var(--border); }
+  .student-card.active { background: #eaf2f8; border-color: var(--blue); }
+  .student-card-name { font-size: 0.82rem; font-weight: 700; color: var(--navy); }
+  .student-card-meta { font-size: 0.7rem; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .student-card-badge { font-size: 0.62rem; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+  .badge-done { background: #d5f5e3; color: var(--success); }
+  .badge-active { background: #d6eaf8; color: var(--blue); }
+  .student-card-actions { display: flex; gap: 3px; margin-top: 5px; }
+  .card-action-btn { background: none; border: 1px solid var(--border); border-radius: 3px; font-size: 0.65rem; padding: 2px 6px; cursor: pointer; color: var(--muted); font-family: 'Open Sans', sans-serif; transition: all 0.15s; }
+  .card-action-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .card-action-btn.delete:hover { border-color: var(--error); color: var(--error); }
+  .sidebar-toggle { position: fixed; left: 0; top: 50%; transform: translateY(-50%); background: var(--white); border: 1px solid var(--border); border-left: none; border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 5px; cursor: pointer; z-index: 50; font-size: 0.8rem; display: none; box-shadow: var(--shadow); }
+
+  .sb-browser { padding: 10px; }
+  .sb-search { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.8rem; font-family: 'Open Sans', sans-serif; margin-bottom: 8px; }
+  .sb-search:focus { outline: none; border-color: var(--blue); }
+  .sb-filters { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+  .sb-filter-btn { padding: 3px 10px; font-size: 0.7rem; border: 1px solid var(--border); font-weight: 600; border-radius: 12px; background: white; cursor: pointer; color: var(--muted); font-family: 'Open Sans', sans-serif; transition: all 0.15s; }
+  .sb-filter-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .sb-filter-btn:hover:not(.active) { border-color: var(--blue); }
+  .sb-record { padding: 8px 10px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 4px; cursor: pointer; transition: all 0.15s; }
+  .sb-record:hover { background: var(--bg); border-color: var(--blue); }
+  .sb-record-name { font-size: 0.8rem; font-weight: 700; color: var(--navy); }
+  .sb-record-meta { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+
+  .main-content { flex: 1; min-width: 0; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-content: start; }
+  @media (max-width: 1050px) { .main-content { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) {
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 200; box-shadow: 2px 0 10px rgba(0,0,0,0.2); }
+    .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-w)); }
+    .sidebar-toggle { display: block; }
+    .main-content { padding: 15px; }
+    .config-bar { padding: 8px 12px; }
+    .nav-bar a { margin: 0 8px; font-size: 0.78rem; }
+  }
+
+  .section { background-color: var(--white); padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+  .section h2 { color: var(--navy); border-bottom: 2px solid var(--blue); padding-bottom: 10px; margin-bottom: 15px; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+  .section h2 .step-num { background: var(--blue); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+  .section-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+  .section-header h2 { margin-bottom: 0; }
+
+  .student-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-group.full { grid-column: 1 / -1; }
+  .field-group label { font-size: 0.78rem; font-weight: 600; color: var(--navy); }
+  .field-group input, .field-group select, .field-group textarea { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-family: 'Open Sans', sans-serif; font-size: 0.85rem; background: white; color: var(--text); }
+  .field-group input:focus, .field-group select:focus, .field-group textarea:focus { outline: none; border-color: var(--blue); }
+  .field-group textarea { resize: vertical; min-height: 55px; }
+
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 25px 15px; text-align: center; cursor: pointer; transition: all 0.25s; background: var(--bg); }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--blue); background: #eaf2f8; }
+  .upload-zone input { display: none; }
+  .upload-icon { font-size: 2rem; margin-bottom: 6px; }
+  .upload-text { font-size: 0.9rem; color: var(--text); font-weight: 600; }
+  .upload-hint { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+
+  .image-queue { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+  .queue-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); }
+  .queue-thumb { width: 42px; height: 42px; border-radius: 3px; object-fit: cover; border: 1px solid var(--border); cursor: pointer; }
+  .queue-info { flex: 1; min-width: 0; }
+  .queue-name { font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .queue-size { font-size: 0.68rem; color: var(--muted); }
+  .queue-status { font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+  .queue-status.pending { background: #fef9e7; color: #b7950b; }
+  .queue-status.processing { background: #d6eaf8; color: var(--blue); }
+  .queue-status.done { background: #d5f5e3; color: var(--success); }
+  .queue-status.error { background: #fadbd8; color: var(--error); }
+  .queue-remove { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 2px; opacity: 0.5; transition: opacity 0.2s; }
+  .queue-remove:hover { opacity: 1; color: var(--error); }
+
+  .btn { padding: 8px 16px; border: none; border-radius: var(--radius); font-family: 'Open Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; text-decoration: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: var(--success-hover); }
+  .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #e8e8e3; }
+  .btn-navy { background: var(--navy); color: white; }
+  .btn-navy:hover { background: var(--navy-light); }
+  .btn-danger { background: var(--error); color: white; }
+  .btn-danger:hover { background: #a93226; }
+  .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+  .btn-xs { padding: 3px 8px; font-size: 0.7rem; }
+  .btn-group { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  .transcript-area { width: 100%; min-height: 260px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); font-family: 'Open Sans', sans-serif; font-size: 0.85rem; line-height: 1.7; resize: vertical; background: white; color: var(--text); }
+  .transcript-area:focus { outline: none; border-color: var(--blue); }
+
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid #d6eaf8; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.4s ease; }
+
+  .stats-bar { display: flex; gap: 15px; padding: 8px 0; border-top: 1px solid var(--border); margin-top: 10px; }
+  .stat { font-size: 0.72rem; color: var(--muted); }
+  .stat strong { color: var(--navy); font-weight: 700; }
+
+  .custom-prompt-toggle { font-size: 0.78rem; color: var(--blue); cursor: pointer; display: flex; align-items: center; gap: 4px; margin-bottom: 5px; font-weight: 600; }
+  .custom-prompt-toggle:hover { text-decoration: underline; }
+  .custom-prompt-area { display: none; margin-bottom: 10px; }
+  .custom-prompt-area.show { display: block; }
+
+  .next-student-banner { grid-column: 1 / -1; background: var(--navy); color: white; border-radius: var(--radius); padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: var(--shadow); }
+  .next-banner-text { font-size: 0.9rem; font-weight: 400; }
+  .next-banner-text strong { font-weight: 700; font-size: 1rem; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(44,62,80,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 2rem; }
+  .modal-overlay.show { display: flex; }
+  .modal-content { background: white; border-radius: var(--radius); max-width: 90vw; max-height: 90vh; overflow: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .modal-content img { display: block; max-width: 100%; max-height: 85vh; }
+  .modal-close { position: fixed; top: 15px; right: 20px; background: white; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; box-shadow: var(--shadow); z-index: 1001; }
+
+  .toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 16px; border-radius: var(--radius); font-size: 0.82rem; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s; max-width: 360px; font-family: 'Open Sans', sans-serif; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); color: white; }
+  .toast.error { background: var(--error); color: white; }
+  .toast.info { background: var(--info); color: white; }
+
+  .mt-1 { margin-top: 10px; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .text-muted { color: var(--muted); font-size: 0.78rem; }
+  .footer { text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem; }
+  .footer a { color: var(--blue); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN GATE ═══ -->
+<div class="login-gate" id="loginGate">
+  <div class="login-header-bar">
+    <h2>Hauselmann's History Lab</h2>
+    <p>Exam Transcriber — Instructor Access Only</p>
+  </div>
+  <div class="login-box">
+    <h1>🔒 Instructor Login</h1>
+    <p class="login-subtitle">Sign in with your Supabase account</p>
+    <div class="login-error" id="loginError"></div>
+    <input class="login-field" type="email" id="loginEmail" placeholder="Email" onkeydown="if(event.key==='Enter') document.getElementById('loginPass').focus()" />
+    <input class="login-field" type="password" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter') attemptLogin()" />
+    <div class="login-spinner" id="loginSpinner"></div>
+    <button class="btn btn-primary" onclick="attemptLogin()" id="loginBtn">Sign In</button>
+  </div>
+</div>
+
+<!-- ═══ APP (hidden until auth) ═══ -->
+<div class="app-wrapper" id="appWrapper">
+
+<header class="header">
+  <h1>Hauselmann's History Lab</h1>
+  <p>Exam Transcriber — Handwritten Exam → Text → AI Feedback</p>
+</header>
+
+<nav class="nav-bar">
+  <a href="index.html">Home</a>
+  <a href="activities.html">Interactive Activities</a>
+  <a href="research.html">Research Tools</a>
+  <a href="archives.html">Student Archives</a>
+  <a href="blog.html">Blog</a>
+  <a href="exam-transcriber.html" class="active">Exam Transcriber</a>
+  <a href="https://profhauselmann.org/bss-ai-types.html">AI & Learning</a>
+</nav>
+
+<div class="config-bar">
+  <div class="config-group">
+    <label>Anthropic API:</label>
+    <input type="password" id="apiKey" placeholder="sk-ant-api03-..." style="width: 240px;" />
+    <span id="apiStatus" class="status-dot off">No key</span>
+    <button class="btn btn-xs btn-secondary" onclick="toggleKeyVisibility()" style="color:white;border-color:rgba(255,255,255,0.3);">👁</button>
+  </div>
+  <div class="config-divider"></div>
+  <div class="config-group">
+    <label>Supabase:</label>
+    <span id="sbStatus" class="status-dot on">Connected</span>
+  </div>
+  <div class="config-divider"></div>
+  <div class="config-group">
+    <span class="user-email" id="userEmail"></span>
+    <button class="btn btn-xs btn-danger" onclick="signOut()">Sign Out</button>
+  </div>
+  <div style="margin-left: auto;">
+    <span class="status-dot on" id="sessionCount" style="background: var(--blue);">0 completed</span>
+  </div>
+</div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Session <button class="btn btn-xs btn-secondary" onclick="toggleSidebar()">◀</button></h2>
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" onclick="switchTab('session', this)">This Session</button>
+        <button class="sidebar-tab" onclick="switchTab('cloud', this)">Supabase</button>
+      </div>
+      <div class="sidebar-actions">
+        <button class="btn btn-xs btn-secondary" onclick="exportAllTxt()">💾 Export</button>
+        <button class="btn btn-xs btn-secondary" onclick="exportAllZip()">📦 ZIP</button>
+        <button class="btn btn-xs btn-secondary" onclick="saveSessionLocal()">💻 Save</button>
+        <button class="btn btn-xs btn-secondary" onclick="loadSessionLocal()">📂 Load</button>
+      </div>
+    </div>
+    <div class="sidebar-panel active" id="panelSession">
+      <div class="sidebar-list" id="sidebarList">
+        <div class="sidebar-empty" id="sidebarEmpty"><div class="sidebar-empty-icon">📋</div>Completed transcripts appear here.</div>
+      </div>
+    </div>
+    <div class="sidebar-panel" id="panelCloud">
+      <div class="sb-browser">
+        <input type="text" class="sb-search" id="sbSearch" placeholder="Search by student name..." oninput="searchSupabase()" />
+        <div class="sb-filters">
+          <button class="sb-filter-btn active" onclick="filterSB('all', this)">All</button>
+          <button class="sb-filter-btn" onclick="filterSB('HIST 101', this)">101</button>
+          <button class="sb-filter-btn" onclick="filterSB('HIST 102', this)">102</button>
+          <button class="sb-filter-btn" onclick="filterSB('HIST 105', this)">105</button>
+          <button class="sb-filter-btn" onclick="filterSB('HIST 107', this)">107</button>
+        </div>
+      </div>
+      <div class="sidebar-list" id="sbResults">
+        <div class="sidebar-empty" id="sbEmpty"><div class="sidebar-empty-icon">☁️</div>Loading transcripts...</div>
+      </div>
+    </div>
+  </aside>
+
+  <button class="sidebar-toggle" onclick="toggleSidebar()">▶</button>
+
+  <div class="main-content">
+    <div class="next-student-banner" id="nextBanner" style="display:none;">
+      <div class="next-banner-text"><strong id="bannerLastName">—</strong> saved. Ready for the next student.</div>
+      <button class="btn btn-success" onclick="startNextStudent()">Next Student →</button>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2><span class="step-num">1</span> Upload & Configure</h2>
+        <button class="btn btn-sm btn-secondary" onclick="clearCurrent()">Clear</button>
+      </div>
+      <div class="student-fields">
+        <div class="field-group"><label>Student Name</label><input type="text" id="studentName" placeholder="e.g. Jane Smith" /></div>
+        <div class="field-group"><label>Course</label>
+          <select id="examCourse"><option value="">Select course...</option><option value="HIST 101">HIST 101 — U.S. History to 1877</option><option value="HIST 102">HIST 102 — U.S. History since 1877</option><option value="HIST 105">HIST 105 — Western Civ since 1648</option><option value="HIST 107">HIST 107 — World Civ from 16th C.</option><option value="other">Other</option></select>
+        </div>
+        <div class="field-group full"><label>Exam / Assignment Title</label><input type="text" id="examTitle" placeholder="e.g. Final Exam, Unit 3 Essay" /></div>
+        <div class="field-group"><label>AI Model</label>
+          <select id="modelSelect"><option value="claude-haiku-4-5-20251001">Haiku 3.5 — fast & cheapest</option><option value="claude-sonnet-4-20250514" selected>Sonnet 4 — best accuracy</option><option value="claude-opus-4-20250514">Opus 4 — premium</option></select>
+        </div>
+        <div class="field-group"><label>Grading Status</label>
+          <select id="gradingStatus"><option value="transcribed">Transcribed</option><option value="graded">Graded</option><option value="returned">Returned</option></select>
+        </div>
+      </div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*" multiple />
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Drop exam pages, click to browse, or paste (⌘V)</div>
+        <div class="upload-hint">JPG, PNG, HEIC — paste directly from Preview</div>
+      </div>
+      <div class="image-queue" id="imageQueue"></div>
+      <div class="mt-1">
+        <div class="custom-prompt-toggle" onclick="toggleCustomPrompt()"><span id="promptArrow">▸</span> Custom transcription instructions</div>
+        <div class="custom-prompt-area" id="customPromptArea"><div class="field-group"><textarea id="customPrompt" rows="3" placeholder="e.g. 'Short-answer exam. Preserve question numbers.'"></textarea></div></div>
+      </div>
+      <div class="btn-group mt-1">
+        <button class="btn btn-primary" id="transcribeBtn" onclick="transcribeAll()" disabled>Transcribe All Pages</button>
+        <button class="btn btn-secondary" id="stopBtn" onclick="stopTranscription()" style="display:none">⏹ Stop</button>
+      </div>
+      <div id="progressSection" style="display:none" class="mt-1">
+        <div class="flex-between"><span class="text-muted"><span class="spinner"></span> <span id="progressText">Processing...</span></span><span class="text-muted" id="progressCount"></span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2><span class="step-num">2</span> Transcription</h2>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-secondary" onclick="copyTranscript()">📋 Copy</button>
+          <button class="btn btn-sm btn-secondary" onclick="downloadCurrentTxt()">💾 .txt</button>
+          <button class="btn btn-sm btn-primary" onclick="copyForGrading()">🤖 AI Grade</button>
+        </div>
+      </div>
+      <textarea class="transcript-area" id="transcriptOutput" placeholder="Transcribed text will appear here."></textarea>
+      <div class="stats-bar">
+        <div class="stat">Words: <strong id="wordCount">0</strong></div>
+        <div class="stat">Chars: <strong id="charCount">0</strong></div>
+        <div class="stat">Pages: <strong id="pageCount">0</strong></div>
+      </div>
+      <div class="mt-1" id="saveNextSection" style="display:none;">
+        <div class="btn-group" style="width:100%;">
+          <button class="btn btn-success" onclick="saveAndNext()" style="flex:1;">✓ Save & Next Student</button>
+          <button class="btn btn-navy" onclick="saveToSupabaseOnly()">☁️ Save to Supabase</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>Prof. Hauselmann | hauselmannh@yosemite.edu | FND 120K | <a href="https://profhauselmann.org">profhauselmann.org</a></p>
+  <p style="margin-top: 5px;"><a href="submissions-dashboard.html">Submissions Dashboard</a></p>
+</footer>
+
+</div><!-- end app-wrapper -->
+
+<div class="modal-overlay" id="previewModal" onclick="closePreview()">
+  <button class="modal-close" onclick="closePreview()">✕</button>
+  <div class="modal-content" onclick="event.stopPropagation()"><img id="previewImage" src="" alt="Preview" /></div>
+</div>
+<input type="file" id="sessionFileInput" accept=".json" style="display:none" />
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // ═══════════════════════════════════════
+  //  SUPABASE CLIENT
+  // ═══════════════════════════════════════
+  const SB_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+  const supabase = window.supabase.createClient(SB_URL, SB_KEY);
+
+  // ═══════════════════════════════════════
+  //  AUTH
+  // ═══════════════════════════════════════
+  let currentUser = null;
+
+  async function attemptLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginError');
+    const spinnerEl = document.getElementById('loginSpinner');
+    const btnEl = document.getElementById('loginBtn');
+
+    if (!email || !pass) { errEl.textContent = 'Please enter email and password.'; errEl.style.display = 'block'; return; }
+
+    errEl.style.display = 'none';
+    spinnerEl.style.display = 'block';
+    btnEl.disabled = true;
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+
+    spinnerEl.style.display = 'none';
+    btnEl.disabled = false;
+
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    currentUser = data.user;
+    showApp();
+  }
+
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      currentUser = session.user;
+      showApp();
+    }
+  }
+
+  function showApp() {
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('appWrapper').classList.add('visible');
+    document.getElementById('userEmail').textContent = currentUser.email;
+    initApp();
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    currentUser = null;
+    document.getElementById('appWrapper').classList.remove('visible');
+    document.getElementById('loginGate').style.display = 'flex';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPass').value = '';
+  }
+
+  // Check for existing session on load
+  checkSession();
+
+  // ═══════════════════════════════════════
+  //  STATE
+  // ═══════════════════════════════════════
+  let images = [];
+  let abortController = null;
+  let completedStudents = [];
+  let activeStudentIndex = null;
+  let supabaseRecords = [];
+  let sbFilterCourse = 'all';
+
+  const apiKeyInput = document.getElementById('apiKey');
+  const transcriptOutput = document.getElementById('transcriptOutput');
+  const fileInput = document.getElementById('fileInput');
+  const uploadZone = document.getElementById('uploadZone');
+  const imageQueue = document.getElementById('imageQueue');
+
+  // ═══════════════════════════════════════
+  //  INIT
+  // ═══════════════════════════════════════
+  async function initApp() {
+    const k = localStorage.getItem('et_apiKey');
+    if (k) { apiKeyInput.value = k; apiKeyInput.dispatchEvent(new Event('input')); }
+    loadSupabaseRecords();
+  }
+
+  // ═══════════════════════════════════════
+  //  API KEY
+  // ═══════════════════════════════════════
+  apiKeyInput.addEventListener('input', () => {
+    const key = apiKeyInput.value.trim();
+    const st = document.getElementById('apiStatus');
+    if (key.startsWith('sk-ant-')) { st.textContent = 'Key set'; st.className = 'status-dot on'; localStorage.setItem('et_apiKey', key); }
+    else if (key.length > 0) { st.textContent = 'Invalid'; st.className = 'status-dot off'; }
+    else { st.textContent = 'No key'; st.className = 'status-dot off'; localStorage.removeItem('et_apiKey'); }
+    updateTranscribeButton();
+  });
+
+  function toggleKeyVisibility() { apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password'; }
+
+  // ═══════════════════════════════════════
+  //  SUPABASE DATA
+  // ═══════════════════════════════════════
+  async function loadSupabaseRecords() {
+    try {
+      const { data, error } = await supabase.from('exam_transcripts').select('*').order('created_at', { ascending: false }).limit(200);
+      if (error) throw error;
+      supabaseRecords = data || [];
+      renderSupabaseRecords();
+      document.getElementById('sbStatus').textContent = 'Connected';
+      document.getElementById('sbStatus').className = 'status-dot on';
+    } catch (err) {
+      document.getElementById('sbStatus').textContent = 'Error';
+      document.getElementById('sbStatus').className = 'status-dot off';
+      console.error(err);
+    }
+  }
+
+  function renderSupabaseRecords() {
+    const container = document.getElementById('sbResults');
+    const empty = document.getElementById('sbEmpty');
+    const search = document.getElementById('sbSearch').value.toLowerCase();
+    let filtered = supabaseRecords;
+    if (sbFilterCourse !== 'all') filtered = filtered.filter(r => r.course === sbFilterCourse);
+    if (search) filtered = filtered.filter(r => r.student_name?.toLowerCase().includes(search));
+    if (filtered.length === 0) { empty.style.display = 'block'; container.querySelectorAll('.sb-record').forEach(r => r.remove()); return; }
+    empty.style.display = 'none';
+    container.innerHTML = filtered.map(r => {
+      const d = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `<div class="sb-record" onclick="loadFromSB('${r.id}')"><div class="sb-record-name">${r.student_name||'Unknown'}</div><div class="sb-record-meta">${r.course||'—'} · ${r.exam_title||'—'} · ${d} · ${r.pages_count||0}pg · <em>${r.grading_status||'—'}</em></div></div>`;
+    }).join('');
+    container.prepend(empty);
+  }
+
+  function searchSupabase() { renderSupabaseRecords(); }
+  function filterSB(c, btn) { sbFilterCourse = c; document.querySelectorAll('.sb-filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderSupabaseRecords(); }
+
+  async function loadFromSB(id) {
+    const r = supabaseRecords.find(x => x.id === id); if (!r) return;
+    activeStudentIndex = null;
+    document.getElementById('studentName').value = r.student_name || '';
+    document.getElementById('examCourse').value = r.course || '';
+    document.getElementById('examTitle').value = r.exam_title || '';
+    document.getElementById('gradingStatus').value = r.grading_status || 'transcribed';
+    transcriptOutput.value = r.transcript || '';
+    document.getElementById('pageCount').textContent = r.pages_count || 0;
+    images = []; renderQueue(); updateStats();
+    document.getElementById('saveNextSection').style.display = 'block';
+    showToast(`Loaded ${r.student_name}`, 'info');
+  }
+
+  async function saveToSupabaseOnly() {
+    const t = transcriptOutput.value;
+    if (!t.trim()) { showToast('Nothing to save', 'error'); return; }
+    try {
+      const { error } = await supabase.from('exam_transcripts').insert({
+        student_name: document.getElementById('studentName').value || 'Unknown',
+        course: document.getElementById('examCourse').value,
+        exam_title: document.getElementById('examTitle').value,
+        transcript: t,
+        pages_count: images.filter(i => i.status === 'done').length,
+        grading_status: document.getElementById('gradingStatus').value,
+        model_used: document.getElementById('modelSelect').value,
+        user_id: currentUser?.id
+      });
+      if (error) throw error;
+      showToast('☁️ Saved to Supabase', 'success');
+      loadSupabaseRecords();
+    } catch (err) { showToast(`Save failed: ${err.message}`, 'error'); }
+  }
+
+  async function autoSaveSB(name, course, exam, transcript, pages) {
+    try {
+      await supabase.from('exam_transcripts').insert({
+        student_name: name, course, exam_title: exam, transcript, pages_count: pages,
+        grading_status: document.getElementById('gradingStatus').value,
+        model_used: document.getElementById('modelSelect').value,
+        user_id: currentUser?.id
+      });
+      loadSupabaseRecords();
+    } catch (e) { console.error(e); }
+  }
+
+  // ═══════════════════════════════════════
+  //  LOCAL SESSION
+  // ═══════════════════════════════════════
+  function saveSessionLocal() {
+    if (completedStudents.length === 0) { showToast('No students', 'error'); return; }
+    const blob = new Blob([JSON.stringify({ version: 1, exported: new Date().toISOString(), students: completedStudents }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `exam_session_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+    showToast('Session saved', 'success');
+  }
+
+  function loadSessionLocal() { document.getElementById('sessionFileInput').click(); }
+  document.getElementById('sessionFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try { const d = JSON.parse(ev.target.result); completedStudents = d.students; renderSidebar(); updateSessionCount(); showToast(`Loaded ${d.students.length} students`, 'success'); }
+      catch (err) { showToast(`Load failed: ${err.message}`, 'error'); }
+    };
+    reader.readAsText(file); e.target.value = '';
+  });
+
+  function switchTab(tab, btn) { document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); document.getElementById('panelSession').classList.toggle('active', tab === 'session'); document.getElementById('panelCloud').classList.toggle('active', tab === 'cloud'); }
+
+  // ═══════════════════════════════════════
+  //  FILE INPUT
+  // ═══════════════════════════════════════
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+  uploadZone.addEventListener('drop', (e) => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+  fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+  document.addEventListener('paste', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const items = e.clipboardData?.items; if (!items) return;
+    const imgs = [];
+    for (const item of items) { if (item.type.startsWith('image/')) { const f = item.getAsFile(); if (f) imgs.push(f); } }
+    if (imgs.length > 0) { e.preventDefault(); handleFiles(imgs); showToast(`Pasted ${imgs.length} image${imgs.length>1?'s':''}`, 'success'); }
+  });
+
+  function handleFiles(fileList) {
+    for (const file of fileList) {
+      if (!file.type.startsWith('image/')) continue;
+      const reader = new FileReader();
+      reader.onload = (e) => { images.push({ id: Date.now()+Math.random(), name: file.name, size: file.size, dataUrl: e.target.result, base64: e.target.result.split(',')[1], mediaType: file.type, status: 'pending' }); renderQueue(); updateTranscribeButton(); };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function renderQueue() {
+    imageQueue.innerHTML = images.map((img, i) => `<div class="queue-item"><img class="queue-thumb" src="${img.dataUrl}" onclick="showPreview(this.src)" /><div class="queue-info"><div class="queue-name">Page ${i+1}: ${img.name}</div><div class="queue-size">${(img.size/1024).toFixed(0)} KB</div></div><span class="queue-status ${img.status}">${({pending:'Pending',processing:'Processing…',done:'Done',error:'Error'})[img.status]}</span><button class="queue-remove" onclick="removeImage(${img.id})">✕</button></div>`).join('');
+  }
+
+  function removeImage(id) { images = images.filter(img => img.id !== id); renderQueue(); updateTranscribeButton(); }
+  function updateTranscribeButton() { document.getElementById('transcribeBtn').disabled = !(apiKeyInput.value.trim().startsWith('sk-ant-') && images.length > 0); }
+
+  // ═══════════════════════════════════════
+  //  TRANSCRIPTION
+  // ═══════════════════════════════════════
+  async function transcribeAll() {
+    const apiKey = apiKeyInput.value.trim(); if (!apiKey || images.length === 0) return;
+    abortController = new AbortController();
+    document.getElementById('transcribeBtn').disabled = true;
+    document.getElementById('stopBtn').style.display = 'inline-flex';
+    document.getElementById('progressSection').style.display = 'block';
+    const sn = document.getElementById('studentName').value || 'Unknown Student';
+    const co = document.getElementById('examCourse').value || 'Unspecified';
+    const et = document.getElementById('examTitle').value || 'Exam';
+    const ci = document.getElementById('customPrompt').value;
+    let ft = `STUDENT: ${sn}\nCOURSE: ${co}\nEXAM: ${et}\n${'─'.repeat(50)}\n\n`;
+    let pp = 0;
+    for (let i = 0; i < images.length; i++) {
+      if (abortController.signal.aborted) break;
+      images[i].status = 'processing'; renderQueue();
+      document.getElementById('progressFill').style.width = (i/images.length*100).toFixed(0)+'%';
+      document.getElementById('progressText').textContent = `Page ${i+1} of ${images.length}...`;
+      document.getElementById('progressCount').textContent = (i/images.length*100).toFixed(0)+'%';
+      try {
+        const text = await transcribePage(images[i], i+1, images.length, apiKey, ci);
+        images[i].status = 'done'; ft += `--- PAGE ${i+1} ---\n\n${text}\n\n`; pp++;
+      } catch (err) {
+        images[i].status = 'error';
+        if (err.name !== 'AbortError') { ft += `--- PAGE ${i+1} --- [ERROR: ${err.message}]\n\n`; showToast(`Page ${i+1}: ${err.message}`, 'error'); }
+      }
+      renderQueue(); transcriptOutput.value = ft; updateStats();
+    }
+    document.getElementById('transcribeBtn').disabled = false;
+    document.getElementById('stopBtn').style.display = 'none';
+    document.getElementById('progressSection').style.display = 'none';
+    document.getElementById('pageCount').textContent = pp;
+    if (pp > 0) document.getElementById('saveNextSection').style.display = 'block';
+    if (!abortController.signal.aborted) showToast(`Done — ${pp} page(s)`, 'success');
+  }
+
+  async function transcribePage(img, pn, tp, apiKey, ci) {
+    let sys = `You are an expert at reading handwritten text. Transcribe handwritten student exam answers into clean, accurate text.\n\nRules:\n- Transcribe exactly what the student wrote, preserving paragraph breaks.\n- Crossed out text: [crossed out: text]. Illegible: [illegible].\n- Preserve numbered questions/answers. Drawings: describe in [brackets].\n- Do NOT add commentary or grading.\n- Preserve spelling, grammar, wording exactly. Blank pages: [blank page].`;
+    if (ci) sys += `\n\nInstructor notes:\n${ci}`;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: document.getElementById('modelSelect').value, max_tokens: 4096, system: sys,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.base64 } },
+          { type: 'text', text: `Transcribe all handwritten text on this exam page (page ${pn} of ${tp}).` }
+        ]}]
+      }), signal: abortController.signal
+    });
+    if (!response.ok) { const e = await response.json().catch(()=>({})); throw new Error(e.error?.message || `API error ${response.status}`); }
+    const data = await response.json();
+    return data.content.map(c => c.text || '').join('\n').trim();
+  }
+
+  function stopTranscription() { if (abortController) abortController.abort(); showToast('Stopped', 'error'); }
+
+  // ═══════════════════════════════════════
+  //  SESSION MANAGEMENT
+  // ═══════════════════════════════════════
+  function saveAndNext() { saveCurrent(); showBanner(); }
+
+  function saveCurrent() {
+    const name = document.getElementById('studentName').value || 'Unknown Student';
+    const course = document.getElementById('examCourse').value || '';
+    const exam = document.getElementById('examTitle').value || '';
+    const transcript = transcriptOutput.value;
+    const pages = images.filter(i => i.status === 'done').length;
+    if (!transcript.trim()) { showToast('Nothing to save', 'error'); return; }
+    if (activeStudentIndex !== null) { completedStudents[activeStudentIndex] = { ...completedStudents[activeStudentIndex], name, course, exam, transcript, pages }; }
+    else { completedStudents.push({ name, course, exam, transcript, pages, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }); }
+    autoSaveSB(name, course, exam, transcript, pages);
+    activeStudentIndex = null; renderSidebar(); updateSessionCount();
+    showToast(`${name} saved!`, 'success');
+  }
+
+  function startNextStudent() {
+    activeStudentIndex = null; document.getElementById('studentName').value = '';
+    images = []; renderQueue(); transcriptOutput.value = '';
+    document.getElementById('saveNextSection').style.display = 'none';
+    document.getElementById('nextBanner').style.display = 'none';
+    updateStats(); updateTranscribeButton(); renderSidebar();
+    document.getElementById('studentName').focus();
+  }
+
+  function showBanner() { const l = completedStudents[completedStudents.length-1]; document.getElementById('bannerLastName').textContent = l.name; document.getElementById('nextBanner').style.display = 'flex'; }
+
+  function loadStudent(i) {
+    const s = completedStudents[i]; activeStudentIndex = i;
+    document.getElementById('studentName').value = s.name;
+    document.getElementById('examCourse').value = s.course;
+    document.getElementById('examTitle').value = s.exam;
+    transcriptOutput.value = s.transcript;
+    images = []; renderQueue(); updateStats();
+    document.getElementById('pageCount').textContent = s.pages;
+    document.getElementById('saveNextSection').style.display = 'block';
+    document.getElementById('nextBanner').style.display = 'none';
+    renderSidebar(); showToast(`Loaded ${s.name}`, 'info');
+  }
+
+  function deleteStudent(i, e) {
+    e.stopPropagation(); if (!confirm(`Remove ${completedStudents[i].name}?`)) return;
+    const n = completedStudents[i].name; completedStudents.splice(i, 1);
+    if (activeStudentIndex === i) startNextStudent();
+    else if (activeStudentIndex !== null && activeStudentIndex > i) activeStudentIndex--;
+    renderSidebar(); updateSessionCount(); showToast(`${n} removed`, 'error');
+  }
+
+  function copySingleTranscript(i, e) { e.stopPropagation(); navigator.clipboard.writeText(completedStudents[i].transcript).then(() => showToast('Copied!', 'success')); }
+
+  function renderSidebar() {
+    const list = document.getElementById('sidebarList'); const empty = document.getElementById('sidebarEmpty');
+    if (completedStudents.length === 0) { empty.style.display = 'block'; list.querySelectorAll('.student-card').forEach(c => c.remove()); return; }
+    empty.style.display = 'none';
+    list.innerHTML = completedStudents.map((s, i) => `<div class="student-card ${i===activeStudentIndex?'active':''}" onclick="loadStudent(${i})"><div class="student-card-name">${s.name}</div><div class="student-card-meta">${s.course||'—'} · ${s.pages} pg · ${s.timestamp} <span class="student-card-badge ${i===activeStudentIndex?'badge-active':'badge-done'}">${i===activeStudentIndex?'Editing':'Done'}</span></div><div class="student-card-actions"><button class="card-action-btn" onclick="copySingleTranscript(${i},event)">📋</button><button class="card-action-btn delete" onclick="deleteStudent(${i},event)">✕</button></div></div>`).join('');
+  }
+
+  function updateSessionCount() { document.getElementById('sessionCount').textContent = `${completedStudents.length} completed`; }
+  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+  // ═══════════════════════════════════════
+  //  OUTPUT
+  // ═══════════════════════════════════════
+  function updateStats() { const t = transcriptOutput.value; document.getElementById('wordCount').textContent = t.split(/\s+/).filter(w=>w).length; document.getElementById('charCount').textContent = t.length; }
+  transcriptOutput.addEventListener('input', updateStats);
+  function copyTranscript() { navigator.clipboard.writeText(transcriptOutput.value).then(() => showToast('Copied!', 'success')); }
+  function downloadCurrentTxt() { downloadText(transcriptOutput.value, `${(document.getElementById('studentName').value||'exam').replace(/\s+/g,'_')}_transcript.txt`); }
+
+  function copyForGrading() {
+    const prompt = `I'm sharing a transcription of ${document.getElementById('studentName').value||'the student'}'s handwritten answers from ${document.getElementById('examTitle').value||'the exam'} in ${document.getElementById('examCourse').value||'the course'}. Please help me evaluate these responses.\n\nFor each answer, please:\n1. Assess historical accuracy and completeness\n2. Evaluate the quality of analysis (does the student go beyond summary to interpretation?)\n3. Note any significant factual errors\n4. Provide constructive feedback I can share with the student\n5. Suggest a grade range with justification\n\nHere is the transcribed exam:\n\n${transcriptOutput.value}`;
+    navigator.clipboard.writeText(prompt).then(() => showToast('AI grading prompt copied!', 'success'));
+  }
+
+  function exportAllTxt() {
+    if (!completedStudents.length) { showToast('No students', 'error'); return; }
+    let c = `EXAM TRANSCRIPTION SESSION\nExported: ${new Date().toLocaleString()}\nStudents: ${completedStudents.length}\n${'═'.repeat(60)}\n\n`;
+    completedStudents.forEach((s,i) => { c += `${'━'.repeat(60)}\nSTUDENT ${i+1}: ${s.name}\n${'━'.repeat(60)}\n\n${s.transcript}\n\n`; });
+    downloadText(c, `exam_transcriptions_${new Date().toISOString().slice(0,10)}.txt`);
+    showToast(`Exported ${completedStudents.length}`, 'success');
+  }
+
+  async function exportAllZip() {
+    if (!completedStudents.length) { showToast('No students', 'error'); return; }
+    const zip = new JSZip();
+    completedStudents.forEach((s,i) => { zip.file(`${String(i+1).padStart(2,'0')}_${s.name.replace(/[^a-zA-Z0-9_\- ]/g,'').replace(/\s+/g,'_')}.txt`, s.transcript); });
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `exam_transcriptions_${new Date().toISOString().slice(0,10)}.zip`; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  function downloadText(c, f) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([c], { type: 'text/plain' })); a.download = f; a.click(); URL.revokeObjectURL(a.href); }
+
+  function clearCurrent() { document.getElementById('studentName').value = ''; document.getElementById('examTitle').value = ''; images = []; renderQueue(); transcriptOutput.value = ''; document.getElementById('saveNextSection').style.display = 'none'; updateStats(); updateTranscribeButton(); }
+
+  function toggleCustomPrompt() { const a = document.getElementById('customPromptArea'); a.classList.toggle('show'); document.getElementById('promptArrow').textContent = a.classList.contains('show') ? '▾' : '▸'; }
+
+  function showPreview(src) { document.getElementById('previewImage').src = src; document.getElementById('previewModal').classList.add('show'); }
+  function closePreview() { document.getElementById('previewModal').classList.remove('show'); }
+  function showToast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast ${type} show`; setTimeout(() => t.classList.remove('show'), 3500); }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePreview(); });
+</script>
+</body>
+</html>
