@@ -482,7 +482,7 @@
 </div>
 
 <footer class="footer">
-  <p>Prof. Hauselmann | hauselmannh@yosemite.edu | FND 120K | <a href="https://profhauselmann.org">profhauselmann.org</a></p>
+  <p>Prof. Hauselmann | <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1078716563757c7d717e7e7850697f63757d7964753e757465">[email&#160;protected]</a> | FND 120K | <a href="https://profhauselmann.org">profhauselmann.org</a></p>
   <p style="margin-top: 5px;"><a href="submissions-dashboard.html">Submissions Dashboard</a></p>
 </footer>
 
@@ -495,7 +495,7 @@
 <input type="file" id="sessionFileInput" accept=".json" style="display:none" />
 <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -504,7 +504,7 @@
   // ═══════════════════════════════════════
   const SB_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-  const supabase = window.supabase.createClient(SB_URL, SB_KEY);
+  const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
   // ═══════════════════════════════════════
   //  AUTH
@@ -524,7 +524,7 @@
     spinnerEl.style.display = 'block';
     btnEl.disabled = true;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
 
     spinnerEl.style.display = 'none';
     btnEl.disabled = false;
@@ -540,7 +540,7 @@
   }
 
   async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     if (session?.user) {
       currentUser = session.user;
       showApp();
@@ -555,7 +555,7 @@
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     currentUser = null;
     document.getElementById('appWrapper').classList.remove('visible');
     document.getElementById('loginGate').style.display = 'flex';
@@ -610,7 +610,7 @@
   // ═══════════════════════════════════════
   async function loadSupabaseRecords() {
     try {
-      const { data, error } = await supabase.from('exam_transcripts').select('*').order('created_at', { ascending: false }).limit(200);
+      const { data, error } = await sb.from('exam_transcripts').select('*').order('created_at', { ascending: false }).limit(200);
       if (error) throw error;
       supabaseRecords = data || [];
       renderSupabaseRecords();
@@ -660,7 +660,7 @@
     const t = transcriptOutput.value;
     if (!t.trim()) { showToast('Nothing to save', 'error'); return; }
     try {
-      const { error } = await supabase.from('exam_transcripts').insert({
+      const { error } = await sb.from('exam_transcripts').insert({
         student_name: document.getElementById('studentName').value || 'Unknown',
         course: document.getElementById('examCourse').value,
         exam_title: document.getElementById('examTitle').value,
@@ -678,7 +678,7 @@
 
   async function autoSaveSB(name, course, exam, transcript, pages) {
     try {
-      await supabase.from('exam_transcripts').insert({
+      await sb.from('exam_transcripts').insert({
         student_name: name, course, exam_title: exam, transcript, pages_count: pages,
         grading_status: document.getElementById('gradingStatus').value,
         model_used: document.getElementById('modelSelect').value,
@@ -903,8 +903,4 @@
 
   function showPreview(src) { document.getElementById('previewImage').src = src; document.getElementById('previewModal').classList.add('show'); }
   function closePreview() { document.getElementById('previewModal').classList.remove('show'); }
-  function showToast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast ${type} show`; setTimeout(() => t.classList.remove('show'), 3500); }
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePreview(); });
-</script>
-</body>
-</html>
+  function showToast(msg, type) { const t = document.getElementById('toa
