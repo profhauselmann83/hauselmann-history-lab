@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Section 3: Audio Lecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background-color: #f5f5f0;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            font-style: italic;
+            opacity: 0.95;
+        }
+        
+        .progress-bar {
+            background: white;
+            height: 8px;
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #3498db;
+            height: 100%;
+            width: 75%;
+            transition: width 0.3s ease;
+        }
+        
+        section {
+            background: white;
+            padding: 40px;
+            margin: 30px 0;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3498db;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        
+        h3 {
+            color: #333;
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            color: #444;
+        }
+        
+        .intro-box {
+            background: #e8f8f5;
+            padding: 25px;
+            border-left: 5px solid #2c3e50;
+            border-radius: 5px;
+            margin: 25px 0;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+        
+        .audio-container {
+            background: linear-gradient(135deg, #d4f8d4 0%, #e8f8f5 100%);
+            padding: 40px;
+            margin: 30px 0;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px dashed #3498db;
+        }
+        
+        .audio-player {
+            margin: 25px 0;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+        
+        audio {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .audio-info {
+            color: #666;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95em;
+            margin-top: 20px;
+        }
+        
+        .placeholder-message {
+            color: #2c3e50;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .listening-guide {
+            background: #fff8f0;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 5px solid #ffa500;
+            margin: 25px 0;
+        }
+        
+        .listening-guide h4 {
+            color: #cc7700;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .listening-guide ul {
+            margin-left: 25px;
+            line-height: 1.8;
+        }
+        
+        .listening-guide li {
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .notes-area {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px dashed #bdc3c7;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin: 30px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Crimson Text', serif;
+            font-size: 1em;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            min-height: 100px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #2c3e50;
+            box-shadow: 0 0 10px rgba(0, 168, 120, 0.2);
+        }
+        
+        .reflection-prompt {
+            background: #e8f8f5;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #2c3e50;
+            margin: 20px 0;
+            font-style: italic;
+            color: #333;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #2c3e50;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #2c3e50;
+            border: 2px solid #2c3e50;
+        }
+        
+        .btn-secondary:hover {
+            background: #e8f8f5;
+        }
+        
+        hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 40px 0;
+        }
+        
+        .historical-image {
+            width: 100%;
+            height: 300px;
+            background: #2c3e50;
+            border-radius: 6px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            section {
+                padding: 25px;
+            }
+            
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Section 3: Audio Lecture</h1>
+            <p>State Constitutions & Articles of Confederation</p>
+        </header>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <!-- Introduction -->
+        <section>
+            <h2>Preparing to Listen</h2>
+            
+            <div class="intro-box">
+                <p>In this audio lecture, you'll hear about how the Founders designed state constitutions and the Articles of Confederation to prevent the abuses they listed in the Declaration.</p>
+                <p style="margin-top: 15px;">The lecture connects three important ideas:</p>
+                <ol style="margin-left: 25px; margin-top: 10px; line-height: 1.8;">
+                    <li><strong>Grievances:</strong> What the King did wrong (from the Declaration)</li>
+                    <li><strong>Fear:</strong> What Americans were most afraid of</li>
+                    <li><strong>Constitutional Design:</strong> How this fear shaped what kind of governments they created</li>
+                </ol>
+            </div>
+            
+            <div class="historical-image">🎧</div>
+        </section>
+        
+        <!-- Audio Section -->
+        <section class="audio-container">
+            <h2>Audio Lecture</h2>
+            <p style="color: #666; margin-bottom: 20px;">Listen to the lecture below. Approximate length: 15-20 minutes.</p>
+            
+            <div class="audio-player">
+                <div class="placeholder-message">
+                    🎙️ Audio player will be ready when you upload the file
+                </div>
+                <!-- Replace the placeholder above with your audio player:
+                <audio controls>
+                    <source src="your-audio-file.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                -->
+            </div>
+            
+            <div class="audio-info">
+                <p>💡 <strong>Pro tip:</strong> You can listen at 1.5x speed if you'd like to move faster.</p>
+            </div>
+        </section>
+        
+        <hr>
+        
+        <!-- Listening Guide -->
+        <section>
+            <h2>Listening Guide (Optional)</h2>
+            
+            <p>As you listen, here are key points to notice:</p>
+            
+            <div class="listening-guide">
+                <h4>Listen for these main ideas:</h4>
+                <ul>
+                    <li><strong>Why states created weak governors:</strong> Reaction to executive power of the King</li>
+                    <li><strong>Why states created bicameral (two-chamber) legislatures:</strong> To split power and prevent concentration</li>
+                    <li><strong>Why most states included Declarations or Bills of Rights:</strong> To explicitly protect individual liberties</li>
+                    <li><strong>Why the national government (Articles) was even weaker than state governments:</strong> Maximum fear of centralized power</li>
+                    <li><strong>The specific weakness:</strong> Congress couldn't tax, so it couldn't function</li>
+                </ul>
+            </div>
+            
+            <div class="notes-area">
+                <label class="form-group" style="margin: 0;">
+                    <strong>Take notes as you listen (optional, but recommended):</strong>
+                </label>
+                <textarea id="listening-notes" placeholder="Write your notes here as you listen to the audio..."></textarea>
+            </div>
+        </section>
+        
+        <hr>
+        
+        <!-- Post-Audio Questions -->
+        <section>
+            <h2>Post-Audio Reflection</h2>
+            
+            <div class="form-group">
+                <label>Question 1: According to the audio, what was the main problem with the Articles of Confederation? (150-200 words)</label>
+                <div class="reflection-prompt">
+                    The speaker will explain why a government that could ask for money but not require payment can't function.
+                </div>
+                <textarea id="audio-q1" placeholder="Write your answer here..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Question 2: Does the speaker frame the weakness of the Articles as a failure, a deliberate choice, or both? Explain: (100-150 words)</label>
+                <div class="reflection-prompt">
+                    Think about whether the Founders made a mistake or whether they were choosing liberty over capacity.
+                </div>
+                <textarea id="audio-q2" placeholder="Write your answer here..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Question 3: Based on what you learned, what were state constitutions designed to do? (100-150 words)</label>
+                <div class="reflection-prompt">
+                    Compare state-level design (stronger governors, bicameral legislatures, bills of rights) with the national design (no executive, no taxation).
+                </div>
+                <textarea id="audio-q3" placeholder="Write your answer here..."></textarea>
+            </div>
+        </section>
+        
+        <!-- Navigation -->
+        <section>
+            <div class="nav-buttons">
+                <a href="section-2-articles.html" class="btn btn-secondary">← Back to Articles</a>
+                <a href="section-4-comparison.html" class="btn btn-primary">Next: Document Comparison →</a>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        // Auto-save functionality
+        const inputs = document.querySelectorAll('textarea');
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                localStorage.setItem(this.id, this.value);
+            });
+        });
+        
+        // Restore saved data
+        window.addEventListener('load', function() {
+            inputs.forEach(input => {
+                const saved = localStorage.getItem(input.id);
+                if (saved) input.value = saved;
+            });
+        });
+    </script>
+</body>
+</html>
