@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <title>HIST 107 Week 8 — Revolutions in the World</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -96,6 +97,19 @@
       <p style="margin-top:12px; font-style:italic; color:#666;">
         Complete all four sections. Your final page generates a PDF and lets you submit to the instructor.
       </p>
+      <div style="margin-top:18px; text-align:center;">
+        <button onclick="downloadPrintableAssignment()" style="
+          display:inline-block;background:#2c3e50;color:#fff;padding:12px 24px;border-radius:6px;
+          border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;
+          font-size:.95em;letter-spacing:.5px;transition:all .25s ease;
+        " onmouseover="this.style.background='#1a252f';this.style.boxShadow='0 5px 15px rgba(0,0,0,0.2)'"
+           onmouseout="this.style.background='#2c3e50';this.style.boxShadow='none'">
+          Print Assignment (PDF)
+        </button>
+        <p style="margin-top:8px;font-size:.85em;color:#888;font-style:normal;">
+          Download a printable version of the full assignment with all questions and readings.
+        </p>
+      </div>
     </div>
 
     <div class="section-grid">
@@ -141,5 +155,137 @@
       <p>Complete before the next class meeting.</p>
     </footer>
   </div>
+
+  <script>
+    function downloadPrintableAssignment() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const yRef = { y: 20 };
+      const pageHeight = doc.internal.pageSize.height;
+
+      function checkPage(needed) {
+        if (yRef.y + needed > pageHeight - 20) { doc.addPage(); yRef.y = 20; }
+      }
+
+      function addWrapped(text, opts = {}) {
+        const { maxWidth = 170, x = 20, lineHeight = 6, marginBottom = 3, bold = false, size = 10 } = opts;
+        doc.setFontSize(size);
+        doc.setFont(undefined, bold ? 'bold' : 'normal');
+        const lines = doc.splitTextToSize(text, maxWidth);
+        for (const line of lines) {
+          checkPage(lineHeight);
+          doc.text(line, x, yRef.y);
+          yRef.y += lineHeight;
+        }
+        yRef.y += marginBottom;
+      }
+
+      function sectionTitle(title) {
+        checkPage(16);
+        doc.setDrawColor(52, 152, 219);
+        doc.setLineWidth(0.5);
+        doc.line(20, yRef.y, 190, yRef.y);
+        yRef.y += 8;
+        addWrapped(title, { bold: true, size: 14, lineHeight: 8, marginBottom: 6 });
+      }
+
+      function questionPrompt(label) {
+        addWrapped(label, { bold: true, size: 10, lineHeight: 6, marginBottom: 1 });
+        // blank answer lines
+        checkPage(22);
+        for (let i = 0; i < 3; i++) {
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.3);
+          doc.line(20, yRef.y, 190, yRef.y);
+          yRef.y += 7;
+        }
+        yRef.y += 4;
+      }
+
+      // ===== TITLE PAGE =====
+      doc.setFontSize(20);
+      doc.setFont(undefined, 'bold');
+      doc.text('HIST 107 - Week 8', 20, yRef.y);
+      yRef.y += 10;
+      doc.setFontSize(16);
+      doc.text('Revolutions in the World', 20, yRef.y);
+      yRef.y += 8;
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      doc.text('Ideas \u2192 Action \u2192 Consequences', 20, yRef.y);
+      yRef.y += 12;
+
+      addWrapped('This activity asks one big question: How do ideas become action? And when revolutionary language travels across the world, who gets included \u2014 and who gets excluded?', { size: 11, lineHeight: 6, marginBottom: 4 });
+      addWrapped('You will move from a "big frame" about ideas and transmission, to a focused case study: the Haitian Revolution.', { size: 11, lineHeight: 6, marginBottom: 8 });
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'italic');
+      doc.text('Name: _________________________________    Section: ______________    Date: ______________', 20, yRef.y);
+      yRef.y += 14;
+
+      // ===== SECTION 1 =====
+      sectionTitle('SECTION 1: Ideas Shape the World');
+
+      addWrapped('In the late 18th and 19th centuries, revolutions were also battles over meaning: What is a "right"? Who counts as "the people"? Your job is to track the chain: idea \u2192 action \u2192 consequence.', { size: 10, marginBottom: 6 });
+
+      addWrapped('Working definition: An idea is "any conception existing in the mind as a result of mental understanding, awareness, or activity." The real question is: How does an idea become real power?', { size: 10, marginBottom: 8 });
+
+      questionPrompt('Q1: Choose ONE powerful idea (examples: "rights," "equality," "popular sovereignty," "return to religious purity"). Define it historically (2\u20134 sentences).');
+      questionPrompt('Q2: Who carried that idea? (people, pamphlets, sermons, schools, clubs, trade networks, newspapers)');
+      questionPrompt('Q3: What action did it justify? (rebellion, constitution-writing, war, reform movement, state-building)');
+      questionPrompt('Q4: What changed when the idea hit reality? (who was excluded, what compromises appeared, what new conflicts emerged)');
+      questionPrompt('Q5: Finish this sentence: "Ideas change the world when\u2026"');
+
+      // ===== SECTION 2 =====
+      sectionTitle('SECTION 2: How Ideas Travel');
+
+      addWrapped('The Big Claim: The 18th and 19th centuries created the conditions for ideas to move faster and farther: trade networks, print culture, empires, and religious pilgrimage routes. But ideas don\'t arrive unchanged. They get translated through local realities: class, race, slavery, state power, and existing traditions.', { size: 10, marginBottom: 4 });
+
+      addWrapped('Enlightenment (reform through reason): Truth tested by reason/proof; critique of tradition and authority; political language of liberty, equality, rights.', { size: 10, marginBottom: 2 });
+      addWrapped('Islamic revitalization (reform through return): Renewal through scripture and correct practice; critique of "corruption" and syncretism; political language of unity of God, purification, reform.', { size: 10, marginBottom: 6 });
+
+      addWrapped('Guiding question: When ideas travel, what changes more \u2014 the idea, or the society receiving it?', { bold: true, size: 10, marginBottom: 6 });
+
+      addWrapped('[Reading: "How Ideas Change the World" \u2014 see online version for full text covering Benjamin Franklin, the Enlightenment in Saint-Domingue, Toussaint L\'Ouverture, Muhammad Ibn \'Abd al-Wahhab, and Usman Dan Fodio.]', { size: 9, marginBottom: 8 });
+
+      questionPrompt('T1: Explain how ONE specific carrier network (scientific journals, salon society, educational institutions, etc.) enabled Enlightenment thinkers to absorb and spread ideas. (150\u2013200 words)');
+      questionPrompt('T2: In Saint-Domingue, the same words\u2014"liberty," "equality," "rights"\u2014meant completely different things to plantation owners, free people of color, and enslaved people. Explain this translation problem. (150\u2013200 words)');
+      questionPrompt('T3: Using specific evidence from the reading, explain why Saint-Domingue in 1789 was the perfect collision point to test the claim that "ideas are always transformed in translation." (150\u2013200 words)');
+
+      // ===== SECTION 3 =====
+      sectionTitle('SECTION 3: Haitian Revolution');
+
+      addWrapped('The Haitian Revolution (1791\u20131804) was the most radical of all the Atlantic revolutions. It abolished slavery and, in practice, declared that all people are created equal.', { size: 10, marginBottom: 4 });
+      addWrapped('[Watch: "Age of Revolutions: The Haitian Revolution" \u2014 see online version for video]', { size: 9, marginBottom: 8 });
+
+      questionPrompt('H1: What were the main social classes in Saint-Domingue, and why was this social pyramid unstable?');
+      questionPrompt('H2: What was the goal of the revolutionaries in the revolution\'s early days?');
+      questionPrompt('H3: Who was Toussaint Louverture, and why did he fight first with the Spanish and then with the French?');
+
+      addWrapped('Document-Based Assessment', { bold: true, size: 12, marginBottom: 4 });
+      addWrapped('Directions: Use the sources below and your knowledge of history to answer each question.', { size: 10, marginBottom: 6 });
+
+      addWrapped('DOCUMENT A \u2014 Proclamation from French First Consul Napoleon Bonaparte, November 8, 1801:', { bold: true, size: 10, marginBottom: 2 });
+      addWrapped('"INHABITANTS OF ST. DOMINGO, Whatever your origin or your color, you are all French; you are all equal, and all free, before God, and before the Republic. [...] Whoever shall dare to separate himself from the Captain-General, will be a traitor to his country, and the indignation of the country will devour him as the fire devours your dried canes."', { size: 9, lineHeight: 5, marginBottom: 6 });
+
+      addWrapped('DOCUMENT B \u2014 Letter from Toussaint Louverture to a Haitian general, February 9, 1802:', { bold: true, size: 10, marginBottom: 2 });
+      addWrapped('"MY DEAR GENERAL, [...] The whites have resolved to destroy our liberty, and have therefore brought a force commensurate to their intentions. [...] Distrust the whites,\u2014they will betray you if they can; their desire, evidently manifested, is the restoration of slavery. [...] I rely entirely upon you, and leave you completely at liberty, to perform every thing which may be requisite to free us from the horrid yoke which we are threatened."', { size: 9, lineHeight: 5, marginBottom: 8 });
+
+      questionPrompt('DBA1: How does Document A provide evidence that many Haitians opposed French rule? (Hint: Pay attention to what Napoleon promises versus what he threatens.) (150\u2013200 words)');
+      questionPrompt('DBA2: How does Document B provide evidence that many Haitians opposed French rule? What does Louverture\'s warning reveal about his assessment of French intentions? (150\u2013200 words)');
+      questionPrompt('DBA3: Both documents were written just three months apart (Nov 1801 and Feb 1802). What changed between these two moments? How do these documents together support the historical argument that Haitians supported independence from France? (200\u2013250 words)');
+
+      // ===== SECTION 4 =====
+      sectionTitle('SECTION 4: Synthesis & Reflection');
+
+      questionPrompt('C1: How did Enlightenment rights language change when it reached Saint-Domingue (Haiti)? Name at least two groups and explain how each interpreted "rights" differently. (200\u2013300 words)');
+      questionPrompt('C2: Who was included in "the people" \u2014 and who was excluded? Explain how race, slavery, class, and gender shaped what revolution could mean in practice. (200\u2013300 words)');
+      questionPrompt('C3: What did Haiti make possible \u2014 and what did it make dangerous? Think: global abolition debates, imperial backlash, and the future of revolutionary movements. (200\u2013300 words)');
+      questionPrompt('Reflection: In 4\u20136 sentences, what is one thing you learned (or one way your thinking changed)?');
+
+      // Save
+      doc.save('HIST107_Week8_Printable_Assignment.pdf');
+    }
+  </script>
 </body>
 </html>
