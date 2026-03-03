@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Section 4: Document Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background-color: #f5f5f0;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            font-style: italic;
+            opacity: 0.95;
+        }
+        
+        .progress-bar {
+            background: white;
+            height: 8px;
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #3498db;
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        section {
+            background: white;
+            padding: 40px;
+            margin: 30px 0;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3498db;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        
+        h3 {
+            color: #333;
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            color: #444;
+        }
+        
+        .intro-box {
+            background: #f0f7ff;
+            padding: 25px;
+            border-left: 5px solid #3498db;
+            border-radius: 5px;
+            margin: 25px 0;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+        
+        .form-group {
+            margin: 30px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        textarea, input[type="text"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Crimson Text', serif;
+            font-size: 1em;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea {
+            min-height: 120px;
+        }
+        
+        textarea:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+        }
+        
+        .comparison-question {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+            color: #666;
+        }
+        
+        .comparison-question strong {
+            color: #2c3e50;
+        }
+        
+        .synthesis-highlight {
+            background: #f0f7ff;
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px solid #3498db;
+            margin: 30px 0;
+        }
+        
+        .synthesis-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.15em;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .student-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .student-info label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1em;
+            font-family: 'Poppins', sans-serif;
+            margin-top: 15px;
+        }
+        
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Crimson Text', serif;
+            font-size: 1em;
+            margin-top: 5px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #3498db;
+            border: 2px solid #3498db;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0f7ff;
+        }
+        
+        .btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .success-message, .error-message {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+            display: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border-left-color: #f5222d;
+        }
+        
+        hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 40px 0;
+        }
+        
+        @media (max-width: 768px) {
+            section {
+                padding: 25px;
+            }
+            
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Section 4: Document Comparison & Synthesis</h1>
+            <p>Bringing It All Together</p>
+        </header>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <!-- Introduction -->
+        <section>
+            <h2>Comparing Three Documents</h2>
+            
+            <div class="intro-box">
+                <p>You've now examined three critical documents:</p>
+                <ol style="margin-left: 25px; margin-top: 10px; line-height: 1.8;">
+                    <li><strong>The Declaration of Independence</strong> — Listed grievances about concentrated power</li>
+                    <li><strong>The Articles of Confederation</strong> — Created a weak national government</li>
+                    <li><strong>State Constitutions</strong> — Created frameworks for state governments</li>
+                </ol>
+                <p style="margin-top: 15px;">Now let's compare them to see what Americans actually feared and what they tried to create.</p>
+            </div>
+        </section>
+        
+        <!-- Analysis Questions -->
+        <section>
+            <h2>Deep Comparison Questions</h2>
+            
+            <div class="form-group">
+                <label>Question 1: Executive Power</label>
+                <div class="comparison-question">
+                    <strong>The Declaration complained about a king with unlimited power. But what did the Articles of Confederation and state constitutions actually say about executive power? What patterns do you notice? Why do you think the Founders made these choices?</strong>
+                </div>
+                <textarea id="comparison-q1" placeholder="Write your answer here... (200-300 words)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Question 2: Taxation Without Consent</label>
+                <div class="comparison-question">
+                    <strong>Grievance 17 said: "For imposing taxes on us without our consent." This was a major complaint. How did the Articles of Confederation and state constitutions handle taxation? Who had the power to tax? Who had to agree?</strong>
+                </div>
+                <textarea id="comparison-q2" placeholder="Write your answer here... (200-300 words)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Question 3: The Central Tension</label>
+                <div class="comparison-question">
+                    <strong>The Founders were terrified of concentrated power. But governments need some power to function. Based on what you've learned about the Articles and state constitutions, were the Founders more afraid of too much government power, or too little? What evidence supports your answer?</strong>
+                </div>
+                <textarea id="comparison-q3" placeholder="Write your answer here... (200-300 words)"></textarea>
+            </div>
+        </section>
+        
+        <hr>
+        
+        <!-- Synthesis -->
+        <section>
+            <h2>Final Synthesis: Revisiting the Historians</h2>
+            
+            <div class="synthesis-highlight">
+                <div class="synthesis-title">Question 4: Which historian was right?</div>
+                <p>At the beginning, you encountered two historians debating why the Founders wrote the Declaration:</p>
+                <ul style="margin-left: 25px; margin-top: 15px; line-height: 1.8;">
+                    <li><strong>Bailyn's interpretation:</strong> The Declaration was driven by <strong>ideology</strong>—belief in liberty and fear of tyranny</li>
+                    <li><strong>Zinn's interpretation:</strong> The Declaration was designed to <strong>unite different classes</strong> against England by using inspiring language</li>
+                </ul>
+                <p style="margin-top: 20px;"><strong>Now that you've seen what kind of governments the Founders actually created, which historian seems more right to you? What does their choice to create deliberately weak governments tell us about their real motivations?</strong></p>
+                <p style="margin-top: 15px; font-style: italic; color: #666;"><em>You can change your mind from your earlier answer—that's the whole point of this kind of historical thinking.</em></p>
+            </div>
+            
+            <div class="form-group">
+                <textarea id="synthesis-final" placeholder="Write your answer here... (250-350 words)" style="min-height: 150px;"></textarea>
+            </div>
+        </section>
+        
+        <hr>
+        
+        <!-- Submission -->
+        <section>
+            <h2>Submit Your Work</h2>
+            
+            <p>You've completed all four sections of this lesson. Now submit your work for grading.</p>
+            
+            <div class="student-info">
+                <h3>Student Information</h3>
+                
+                <label for="student-name">Name:</label>
+                <input type="text" id="student-name" placeholder="Enter your full name">
+                
+                <label for="section-select">Course Section:</label>
+                <select id="section-select">
+                    <option value="">-- Select Your Section --</option>
+                    <option value="101-in-person">HIST 101 In-Person</option>
+                    <option value="101-online">HIST 101 Online</option>
+                </select>
+            </div>
+            
+            <div id="success-message" class="success-message">
+                ✓ Successfully submitted! Your work has been recorded.
+            </div>
+            
+            <div id="error-message" class="error-message"></div>
+            
+            <div class="nav-buttons">
+                <a href="section-3-audio.html" class="btn btn-secondary">← Back to Audio</a>
+                <button class="btn btn-primary" onclick="downloadWorksheet()">📄 Download PDF</button>
+                <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn">✓ Submit</button>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // **ASSIGNMENT CONTROL** - Set to false to close submissions
+        const ASSIGNMENT_OPEN = true;
+
+        // Submission cutoff date - set to null for no deadline, or use format: 'YYYY-MM-DDTHH:MM:SS'
+        const SUBMISSION_CUTOFF = null;
+
+        function downloadWorksheet() {
+            const studentName = document.getElementById('student-name').value.trim();
+            
+            if (!studentName) {
+                alert('Please enter your name before downloading.');
+                document.getElementById('student-name').focus();
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                function addText(text, size = 12, isBold = false) {
+                    doc.setFontSize(size);
+                    if (isBold) {
+                        doc.setFont(undefined, 'bold');
+                    } else {
+                        doc.setFont(undefined, 'normal');
+                    }
+
+                    const lines = doc.splitTextToSize(text, 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3;
+                }
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Week 8 Day 1: We Won. Now What?', 20, y);
+                y += 10;
+                
+                doc.setFontSize(12);
+                doc.text('From Revolutionary Liberty to Constitutional Power', 20, y);
+                y += 15;
+
+                addText(`Student: ${studentName}`, 12, true);
+                const section = document.getElementById('section-select').value;
+                if (section) {
+                    addText(`Section: ${section}`, 12, true);
+                }
+                addText(`Completed: ${new Date().toLocaleString()}`, 10);
+                y += 5;
+
+                addText('COMPARISON QUESTIONS', 14, true);
+                y += 2;
+                addText('Question 1: Executive Power', 11, true);
+                addText(document.getElementById('comparison-q1').value || '[Not answered]', 10);
+                y += 3;
+                addText('Question 2: Taxation Without Consent', 11, true);
+                addText(document.getElementById('comparison-q2').value || '[Not answered]', 10);
+                y += 3;
+                addText('Question 3: The Central Tension', 11, true);
+                addText(document.getElementById('comparison-q3').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('SYNTHESIS: HISTORIANS REVISITED', 14, true);
+                y += 2;
+                addText('Which historian was right? Bailyn or Zinn?', 11, true);
+                addText(document.getElementById('synthesis-final').value || '[Not provided]', 10);
+
+                const fileName = `Week8_${studentName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+
+                alert('PDF downloaded successfully!');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('There was an error generating the PDF. Please make sure all fields are completed.');
+            }
+        }
+
+        async function submitToSupabase() {
+            // Check if assignment is open
+            if (!ASSIGNMENT_OPEN) {
+                showError('❌ This assignment is now closed. Submissions are no longer being accepted.');
+                return;
+            }
+
+            // Check if submission deadline has passed
+            if (SUBMISSION_CUTOFF) {
+                const cutoffDate = new Date(SUBMISSION_CUTOFF);
+                const now = new Date();
+                if (now > cutoffDate) {
+                    showError('❌ This assignment is now closed. Submissions are no longer being accepted.');
+                    return;
+                }
+            }
+
+            const studentName = document.getElementById('student-name').value.trim();
+            const section = document.getElementById('section-select').value;
+
+            if (!studentName) {
+                alert('Please enter your name.');
+                document.getElementById('student-name').focus();
+                return;
+            }
+
+            if (!section) {
+                alert('Please select your course section.');
+                document.getElementById('section-select').focus();
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Submitting...';
+
+            try {
+                const pdfBlob = await generatePDFBlob();
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+                const fileName = `week8-day1/${section}/${sanitizedName}_${timestamp}.pdf`;
+
+                // Upload PDF to Supabase Storage
+                const { error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, {
+                        contentType: 'application/pdf',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    throw new Error(`Upload failed: ${uploadError.message}`);
+                }
+
+                const { data: urlData } = supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .getPublicUrl(fileName);
+
+                // Prepare form data
+                const formData = {
+                    comparison_q1: document.getElementById('comparison-q1').value,
+                    comparison_q2: document.getElementById('comparison-q2').value,
+                    comparison_q3: document.getElementById('comparison-q3').value,
+                    synthesis_final: document.getElementById('synthesis-final').value
+                };
+
+                // Store in database
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: section,
+                        worksheet_type: 'week8-day1-comparison',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    });
+
+                if (dbError) {
+                    throw new Error(`Database error: ${dbError.message}`);
+                }
+
+                showSuccess('✓ Successfully submitted! Your work has been sent to Prof. Hauselmann.');
+                submitBtn.textContent = '✓ Submitted';
+                submitBtn.disabled = true;
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                showError(`❌ Submission failed: ${error.message}. Please try again or download the PDF and email it.`);
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✓ Submit';
+            }
+        }
+
+        function generatePDFBlob() {
+            return new Promise((resolve) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                function addText(text, size = 12, isBold = false) {
+                    doc.setFontSize(size);
+                    if (isBold) {
+                        doc.setFont(undefined, 'bold');
+                    } else {
+                        doc.setFont(undefined, 'normal');
+                    }
+
+                    const lines = doc.splitTextToSize(text, 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3;
+                }
+
+                const studentName = document.getElementById('student-name').value.trim();
+                const section = document.getElementById('section-select').value;
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Week 8 Day 1: We Won. Now What?', 20, y);
+                y += 10;
+                
+                doc.setFontSize(12);
+                doc.text('Section 4: Document Comparison & Synthesis', 20, y);
+                y += 15;
+
+                addText(`Student: ${studentName}`, 12, true);
+                if (section) {
+                    addText(`Section: ${section}`, 12, true);
+                }
+                addText(`Submitted: ${new Date().toLocaleString()}`, 10);
+                y += 5;
+
+                addText('COMPARISON QUESTIONS', 14, true);
+                y += 2;
+                addText('Question 1: Executive Power', 11, true);
+                addText(document.getElementById('comparison-q1').value || '[Not answered]', 10);
+                y += 3;
+                addText('Question 2: Taxation Without Consent', 11, true);
+                addText(document.getElementById('comparison-q2').value || '[Not answered]', 10);
+                y += 3;
+                addText('Question 3: The Central Tension', 11, true);
+                addText(document.getElementById('comparison-q3').value || '[Not answered]', 10);
+                y += 5;
+
+                addText('SYNTHESIS: HISTORIANS REVISITED', 14, true);
+                y += 2;
+                addText('Which historian was right?', 11, true);
+                addText(document.getElementById('synthesis-final').value || '[Not provided]', 10);
+
+                resolve(doc.output('blob'));
+            });
+        }
+
+        function showSuccess(message) {
+            document.getElementById('success-message').textContent = message;
+            document.getElementById('success-message').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+        }
+
+        // Auto-save to localStorage
+        setInterval(() => {
+            const state = {
+                studentName: document.getElementById('student-name').value,
+                section: document.getElementById('section-select').value,
+                comparison_q1: document.getElementById('comparison-q1').value,
+                comparison_q2: document.getElementById('comparison-q2').value,
+                comparison_q3: document.getElementById('comparison-q3').value,
+                synthesis_final: document.getElementById('synthesis-final').value
+            };
+            localStorage.setItem('week8Section4', JSON.stringify(state));
+        }, 30000);
+
+        // Load saved state on page load
+        window.onload = function() {
+            const saved = localStorage.getItem('week8Section4');
+            if (saved) {
+                const shouldRestore = confirm('Would you like to restore your previous session?');
+                if (shouldRestore) {
+                    const state = JSON.parse(saved);
+                    document.getElementById('student-name').value = state.studentName || '';
+                    document.getElementById('section-select').value = state.section || '';
+                    document.getElementById('comparison-q1').value = state.comparison_q1 || '';
+                    document.getElementById('comparison-q2').value = state.comparison_q2 || '';
+                    document.getElementById('comparison-q3').value = state.comparison_q3 || '';
+                    document.getElementById('synthesis-final').value = state.synthesis_final || '';
+                }
+            }
+        };
+    </script>
+</body>
+</html>
