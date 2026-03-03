@@ -422,9 +422,166 @@
         // Submission cutoff date - set to null for no deadline, or use format: 'YYYY-MM-DDTHH:MM:SS'
         const SUBMISSION_CUTOFF = null;
 
+        function getSavedSection4State() {
+            const saved = localStorage.getItem('week8Section4');
+            if (!saved) {
+                return {};
+            }
+
+            try {
+                return JSON.parse(saved);
+            } catch (error) {
+                console.warn('Could not parse saved Section 4 state:', error);
+                return {};
+            }
+        }
+
+        function getWeek8Responses() {
+            const section4State = getSavedSection4State();
+
+            const readField = (id, section4Key = null) => {
+                const el = document.getElementById(id);
+                if (el && typeof el.value === 'string' && el.value.trim()) {
+                    return el.value.trim();
+                }
+
+                if (section4Key && typeof section4State[section4Key] === 'string' && section4State[section4Key].trim()) {
+                    return section4State[section4Key].trim();
+                }
+
+                const saved = localStorage.getItem(id);
+                return typeof saved === 'string' && saved.trim() ? saved.trim() : '';
+            };
+
+            const grievanceSummary = Array.from({ length: 9 }, (_, index) => {
+                const grievanceNumber = index + 1;
+                const value = readField(`grievance-${grievanceNumber}`) || '[Not answered]';
+                return `Grievance ${grievanceNumber}: ${value.toUpperCase()}`;
+            }).join(', ');
+
+            return {
+                studentName: readField('student-name', 'studentName'),
+                section: readField('section-select', 'section'),
+                section1: {
+                    bailynClaim: readField('bailyn-claim'),
+                    zinnClaim: readField('zinn-claim'),
+                    evidenceQuestion: readField('evidence-question'),
+                    grievanceSummary,
+                    debrief1: readField('debrief-1'),
+                    debrief2: readField('debrief-2'),
+                    debrief3: readField('debrief-3'),
+                    synthesisQuestion: readField('synthesis-question')
+                },
+                section2: {
+                    articlesQ1: readField('articles-q1'),
+                    articlesQ2: readField('articles-q2'),
+                    articlesQ3: readField('articles-q3')
+                },
+                section3: {
+                    listeningNotes: readField('listening-notes'),
+                    audioQ1: readField('audio-q1'),
+                    audioQ2: readField('audio-q2'),
+                    audioQ3: readField('audio-q3')
+                },
+                section4: {
+                    comparisonQ1: readField('comparison-q1', 'comparison_q1'),
+                    comparisonQ2: readField('comparison-q2', 'comparison_q2'),
+                    comparisonQ3: readField('comparison-q3', 'comparison_q3'),
+                    synthesisFinal: readField('synthesis-final', 'synthesis_final')
+                }
+            };
+        }
+
+        function addWeek8ContentToPdf(doc, responses) {
+            let y = 20;
+            const lineHeight = 7;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 20;
+
+            function addText(text, size = 12, isBold = false) {
+                doc.setFontSize(size);
+                doc.setFont(undefined, isBold ? 'bold' : 'normal');
+
+                const lines = doc.splitTextToSize(String(text), 170);
+                for (let i = 0; i < lines.length; i++) {
+                    if (y > pageHeight - margin) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    doc.text(lines[i], 20, y);
+                    y += lineHeight;
+                }
+                y += 3;
+            }
+
+            const valueOrPlaceholder = (value) => value || '[Not answered]';
+
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('Week 8 Day 1: We Won. Now What?', 20, y);
+            y += 10;
+
+            doc.setFontSize(12);
+            doc.text('All Sections Summary (1-4)', 20, y);
+            y += 15;
+
+            addText(`Student: ${valueOrPlaceholder(responses.studentName)}`, 12, true);
+            if (responses.section) {
+                addText(`Section: ${responses.section}`, 12, true);
+            }
+            addText(`Generated: ${new Date().toLocaleString()}`, 10);
+            y += 5;
+
+            addText('SECTION 1: DECLARATION ACTIVITY', 14, true);
+            addText("Bailyn's claim", 11, true);
+            addText(valueOrPlaceholder(responses.section1.bailynClaim), 10);
+            addText("Zinn's claim", 11, true);
+            addText(valueOrPlaceholder(responses.section1.zinnClaim), 10);
+            addText('Evidence question', 11, true);
+            addText(valueOrPlaceholder(responses.section1.evidenceQuestion), 10);
+            addText('Grievance answers (O / A / ?)', 11, true);
+            addText(responses.section1.grievanceSummary, 10);
+            addText('Debrief question 1', 11, true);
+            addText(valueOrPlaceholder(responses.section1.debrief1), 10);
+            addText('Debrief question 2', 11, true);
+            addText(valueOrPlaceholder(responses.section1.debrief2), 10);
+            addText('Debrief question 3', 11, true);
+            addText(valueOrPlaceholder(responses.section1.debrief3), 10);
+            addText('Section 1 synthesis', 11, true);
+            addText(valueOrPlaceholder(responses.section1.synthesisQuestion), 10);
+
+            addText('SECTION 2: ARTICLES OF CONFEDERATION', 14, true);
+            addText('Question 1', 11, true);
+            addText(valueOrPlaceholder(responses.section2.articlesQ1), 10);
+            addText('Question 2', 11, true);
+            addText(valueOrPlaceholder(responses.section2.articlesQ2), 10);
+            addText('Question 3', 11, true);
+            addText(valueOrPlaceholder(responses.section2.articlesQ3), 10);
+
+            addText('SECTION 3: STATE CONSTITUTIONS AUDIO', 14, true);
+            addText('Listening notes', 11, true);
+            addText(valueOrPlaceholder(responses.section3.listeningNotes), 10);
+            addText('Question 1', 11, true);
+            addText(valueOrPlaceholder(responses.section3.audioQ1), 10);
+            addText('Question 2', 11, true);
+            addText(valueOrPlaceholder(responses.section3.audioQ2), 10);
+            addText('Question 3', 11, true);
+            addText(valueOrPlaceholder(responses.section3.audioQ3), 10);
+
+            addText('SECTION 4: COMPARISON & SYNTHESIS', 14, true);
+            addText('Question 1: Executive Power', 11, true);
+            addText(valueOrPlaceholder(responses.section4.comparisonQ1), 10);
+            addText('Question 2: Taxation Without Consent', 11, true);
+            addText(valueOrPlaceholder(responses.section4.comparisonQ2), 10);
+            addText('Question 3: The Central Tension', 11, true);
+            addText(valueOrPlaceholder(responses.section4.comparisonQ3), 10);
+            addText('Final synthesis: Which historian was right?', 11, true);
+            addText(valueOrPlaceholder(responses.section4.synthesisFinal), 10);
+        }
+
         function downloadWorksheet() {
             const studentName = document.getElementById('student-name').value.trim();
-            
+
             if (!studentName) {
                 alert('Please enter your name before downloading.');
                 document.getElementById('student-name').focus();
@@ -435,64 +592,7 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
-                let y = 20;
-                const lineHeight = 7;
-                const pageHeight = doc.internal.pageSize.height;
-                const margin = 20;
-
-                function addText(text, size = 12, isBold = false) {
-                    doc.setFontSize(size);
-                    if (isBold) {
-                        doc.setFont(undefined, 'bold');
-                    } else {
-                        doc.setFont(undefined, 'normal');
-                    }
-
-                    const lines = doc.splitTextToSize(text, 170);
-                    for (let i = 0; i < lines.length; i++) {
-                        if (y > pageHeight - margin) {
-                            doc.addPage();
-                            y = 20;
-                        }
-                        doc.text(lines[i], 20, y);
-                        y += lineHeight;
-                    }
-                    y += 3;
-                }
-
-                doc.setFontSize(18);
-                doc.setFont(undefined, 'bold');
-                doc.text('Week 8 Day 1: We Won. Now What?', 20, y);
-                y += 10;
-                
-                doc.setFontSize(12);
-                doc.text('From Revolutionary Liberty to Constitutional Power', 20, y);
-                y += 15;
-
-                addText(`Student: ${studentName}`, 12, true);
-                const section = document.getElementById('section-select').value;
-                if (section) {
-                    addText(`Section: ${section}`, 12, true);
-                }
-                addText(`Completed: ${new Date().toLocaleString()}`, 10);
-                y += 5;
-
-                addText('COMPARISON QUESTIONS', 14, true);
-                y += 2;
-                addText('Question 1: Executive Power', 11, true);
-                addText(document.getElementById('comparison-q1').value || '[Not answered]', 10);
-                y += 3;
-                addText('Question 2: Taxation Without Consent', 11, true);
-                addText(document.getElementById('comparison-q2').value || '[Not answered]', 10);
-                y += 3;
-                addText('Question 3: The Central Tension', 11, true);
-                addText(document.getElementById('comparison-q3').value || '[Not answered]', 10);
-                y += 5;
-
-                addText('SYNTHESIS: HISTORIANS REVISITED', 14, true);
-                y += 2;
-                addText('Which historian was right? Bailyn or Zinn?', 11, true);
-                addText(document.getElementById('synthesis-final').value || '[Not provided]', 10);
+                addWeek8ContentToPdf(doc, getWeek8Responses());
 
                 const fileName = `Week8_${studentName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
                 doc.save(fileName);
@@ -607,66 +707,7 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
-                let y = 20;
-                const lineHeight = 7;
-                const pageHeight = doc.internal.pageSize.height;
-                const margin = 20;
-
-                function addText(text, size = 12, isBold = false) {
-                    doc.setFontSize(size);
-                    if (isBold) {
-                        doc.setFont(undefined, 'bold');
-                    } else {
-                        doc.setFont(undefined, 'normal');
-                    }
-
-                    const lines = doc.splitTextToSize(text, 170);
-                    for (let i = 0; i < lines.length; i++) {
-                        if (y > pageHeight - margin) {
-                            doc.addPage();
-                            y = 20;
-                        }
-                        doc.text(lines[i], 20, y);
-                        y += lineHeight;
-                    }
-                    y += 3;
-                }
-
-                const studentName = document.getElementById('student-name').value.trim();
-                const section = document.getElementById('section-select').value;
-
-                doc.setFontSize(18);
-                doc.setFont(undefined, 'bold');
-                doc.text('Week 8 Day 1: We Won. Now What?', 20, y);
-                y += 10;
-                
-                doc.setFontSize(12);
-                doc.text('Section 4: Document Comparison & Synthesis', 20, y);
-                y += 15;
-
-                addText(`Student: ${studentName}`, 12, true);
-                if (section) {
-                    addText(`Section: ${section}`, 12, true);
-                }
-                addText(`Submitted: ${new Date().toLocaleString()}`, 10);
-                y += 5;
-
-                addText('COMPARISON QUESTIONS', 14, true);
-                y += 2;
-                addText('Question 1: Executive Power', 11, true);
-                addText(document.getElementById('comparison-q1').value || '[Not answered]', 10);
-                y += 3;
-                addText('Question 2: Taxation Without Consent', 11, true);
-                addText(document.getElementById('comparison-q2').value || '[Not answered]', 10);
-                y += 3;
-                addText('Question 3: The Central Tension', 11, true);
-                addText(document.getElementById('comparison-q3').value || '[Not answered]', 10);
-                y += 5;
-
-                addText('SYNTHESIS: HISTORIANS REVISITED', 14, true);
-                y += 2;
-                addText('Which historian was right?', 11, true);
-                addText(document.getElementById('synthesis-final').value || '[Not provided]', 10);
+                addWeek8ContentToPdf(doc, getWeek8Responses());
 
                 resolve(doc.output('blob'));
             });
