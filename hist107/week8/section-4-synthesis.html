@@ -116,8 +116,8 @@
         <label for="section-select" style="margin-top:12px;">Course Section:</label>
         <select id="section-select">
           <option value="">-- Select Your Section --</option>
-          <option value="107">HIST 107 (Section A)</option>
-          <option value="107">HIST 107 (Section B)</option>
+          <option value="107A">HIST 107 (Section A)</option>
+          <option value="107B">HIST 107 (Section B)</option>
         </select>
       </div>
 
@@ -133,126 +133,153 @@
   </div>
 
   <script>
-    // ===== Supabase configuration (copy your working values from HIST 101 Section 4) :contentReference[oaicite:5]{index=5}
+    // ===== Supabase configuration (copy your working values from HIST 101 Section 4)
     const SUPABASE_URL = 'https://YOURPROJECT.supabase.co';
     const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Assignment control
     const ASSIGNMENT_OPEN = true;
-    const SUBMISSION_CUTOFF = null; // e.g. '2026-03-05T10:00:00'
+    const SUBMISSION_CUTOFF = null; // e.g. '2026-03-05T22:00:00'
 
-    function downloadWorksheet() {
-      const studentName = document.getElementById('student-name').value.trim();
-      if (!studentName) { alert('Please enter your name before downloading.'); document.getElementById('student-name').focus(); return; }
+    // ===== Option A: Build ONE PDF containing Sections 1–4 =====
+    function getLS(id) {
+      return (localStorage.getItem(id) || '').trim();
+    }
 
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      let y = 20;
-      const lineHeight = 7;
+    function addWrappedText(doc, text, yRef, opts = {}) {
+      const { maxWidth = 170, x = 20, lineHeight = 7, marginBottom = 3, pageMargin = 20 } = opts;
       const pageHeight = doc.internal.pageSize.height;
-      const margin = 20;
 
-      function addText(text, size = 12, isBold = false) {
-        doc.setFontSize(size);
-        doc.setFont(undefined, isBold ? 'bold' : 'normal');
-        const lines = doc.splitTextToSize(text, 170);
-        for (let line of lines) {
-          if (y > pageHeight - margin) { doc.addPage(); y = 20; }
-          doc.text(line, 20, y);
-          y += lineHeight;
+      const lines = doc.splitTextToSize(text, maxWidth);
+      for (let line of lines) {
+        if (yRef.y > pageHeight - pageMargin) {
+          doc.addPage();
+          yRef.y = 20;
         }
-        y += 3;
+        doc.text(line, x, yRef.y);
+        yRef.y += lineHeight;
       }
+      yRef.y += marginBottom;
+    }
+
+    function buildFullPDF(doc, studentName, sectionValue) {
+      const yRef = { y: 20 };
 
       doc.setFontSize(18);
       doc.setFont(undefined, 'bold');
-      doc.text('HIST 107 • Week 8: Revolutions in the World', 20, y); y += 10;
+      doc.text('HIST 107 • Week 8: Revolutions in the World', 20, yRef.y);
+      yRef.y += 10;
+
       doc.setFontSize(12);
       doc.setFont(undefined, 'normal');
-      doc.text('Section 4: Synthesis & Reflection', 20, y); y += 15;
+      doc.text('Full Activity Submission (Sections 1–4)', 20, yRef.y);
+      yRef.y += 12;
 
-      addText(`Student: ${studentName}`, 12, true);
-      const section = document.getElementById('section-select').value;
-      if (section) addText(`Section: ${section}`, 12, true);
-      addText(`Completed: ${new Date().toLocaleString()}`, 10);
-      y += 5;
+      doc.setFont(undefined, 'bold');
+      doc.setFontSize(12);
+      doc.text(`Student: ${studentName}`, 20, yRef.y);
+      yRef.y += 7;
 
-      addText('SYNTHESIS QUESTIONS', 14, true);
-      addText('Q1: Traveling language of rights', 11, true);
-      addText(document.getElementById('c1').value || '[Not answered]', 10);
-      addText('Q2: Inclusion / exclusion', 11, true);
-      addText(document.getElementById('c2').value || '[Not answered]', 10);
-      addText('Q3: Consequences', 11, true);
-      addText(document.getElementById('c3').value || '[Not answered]', 10);
+      if (sectionValue) {
+        doc.text(`Section: ${sectionValue}`, 20, yRef.y);
+        yRef.y += 7;
+      }
 
-      addText('REFLECTION', 14, true);
-      addText(document.getElementById('reflection').value || '[Not provided]', 10);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 20, yRef.y);
+      yRef.y += 10;
 
-      const fileName = `HIST107_Week8_${studentName.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      function sectionTitle(title) {
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(14);
+        addWrappedText(doc, title, yRef, { lineHeight: 8, marginBottom: 6 });
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+      }
+
+      function questionBlock(label, value) {
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(11);
+        addWrappedText(doc, label, yRef, { lineHeight: 7, marginBottom: 1 });
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        addWrappedText(doc, value ? value : '[Not answered]', yRef, { lineHeight: 6, marginBottom: 6 });
+      }
+
+      // SECTION 1 — q1–q5
+      sectionTitle('SECTION 1 — Ideas Shape the World');
+      questionBlock('Q1', getLS('q1'));
+      questionBlock('Q2', getLS('q2'));
+      questionBlock('Q3', getLS('q3'));
+      questionBlock('Q4', getLS('q4'));
+      questionBlock('Q5', getLS('q5'));
+
+      // SECTION 2 — t1–t3
+      sectionTitle('SECTION 2 — How Ideas Travel');
+      questionBlock('T1', getLS('t1'));
+      questionBlock('T2', getLS('t2'));
+      questionBlock('T3', getLS('t3'));
+
+      // SECTION 3 — h1–h3
+      sectionTitle('SECTION 3 — Haitian Revolution');
+      questionBlock('H1', getLS('h1'));
+      questionBlock('H2', getLS('h2'));
+      questionBlock('H3', getLS('h3'));
+
+      // SECTION 4 — c1–c3 + reflection (from current page)
+      sectionTitle('SECTION 4 — Synthesis & Reflection');
+      questionBlock('C1', (document.getElementById('c1')?.value || '').trim());
+      questionBlock('C2', (document.getElementById('c2')?.value || '').trim());
+      questionBlock('C3', (document.getElementById('c3')?.value || '').trim());
+      questionBlock('Reflection', (document.getElementById('reflection')?.value || '').trim());
+
+      return doc;
+    }
+
+    function downloadWorksheet() {
+      const studentName = document.getElementById('student-name').value.trim();
+      if (!studentName) {
+        alert('Please enter your name before downloading.');
+        document.getElementById('student-name').focus();
+        return;
+      }
+
+      const sectionValue = document.getElementById('section-select').value;
+
+      const { jsPDF } = window.jspdf;
+      let doc = new jsPDF();
+      doc = buildFullPDF(doc, studentName, sectionValue);
+
+      const fileName =
+        `HIST107_Week8_FULL_${studentName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+
       doc.save(fileName);
       alert('PDF downloaded successfully!');
     }
 
-    function generatePDFBlob(){
+    function generatePDFBlob() {
       return new Promise((resolve) => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        let y = 20;
-        const lineHeight = 7;
-        const pageHeight = doc.internal.pageSize.height;
-        const margin = 20;
-
-        function addText(text, size = 12, isBold = false) {
-          doc.setFontSize(size);
-          doc.setFont(undefined, isBold ? 'bold' : 'normal');
-          const lines = doc.splitTextToSize(text, 170);
-          for (let line of lines) {
-            if (y > pageHeight - margin) { doc.addPage(); y = 20; }
-            doc.text(line, 20, y);
-            y += lineHeight;
-          }
-          y += 3;
-        }
-
         const studentName = document.getElementById('student-name').value.trim();
-        const section = document.getElementById('section-select').value;
+        const sectionValue = document.getElementById('section-select').value;
 
-        doc.setFontSize(18); doc.setFont(undefined, 'bold');
-        doc.text('HIST 107 • Week 8: Revolutions in the World', 20, y); y += 10;
-        doc.setFontSize(12); doc.setFont(undefined, 'normal');
-        doc.text('Section 4: Synthesis & Reflection', 20, y); y += 15;
-
-        addText(`Student: ${studentName}`, 12, true);
-        if (section) addText(`Section: ${section}`, 12, true);
-        addText(`Submitted: ${new Date().toLocaleString()}`, 10);
-        y += 5;
-
-        addText('SYNTHESIS QUESTIONS', 14, true);
-        addText('Q1: Traveling language of rights', 11, true);
-        addText(document.getElementById('c1').value || '[Not answered]', 10);
-        addText('Q2: Inclusion / exclusion', 11, true);
-        addText(document.getElementById('c2').value || '[Not answered]', 10);
-        addText('Q3: Consequences', 11, true);
-        addText(document.getElementById('c3').value || '[Not answered]', 10);
-
-        addText('REFLECTION', 14, true);
-        addText(document.getElementById('reflection').value || '[Not provided]', 10);
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF();
+        doc = buildFullPDF(doc, studentName, sectionValue);
 
         resolve(doc.output('blob'));
       });
     }
 
-    async function submitToSupabase(){
-      if (!ASSIGNMENT_OPEN){
+    async function submitToSupabase() {
+      if (!ASSIGNMENT_OPEN) {
         showError('❌ This assignment is closed.');
         return;
       }
-      if (SUBMISSION_CUTOFF){
+      if (SUBMISSION_CUTOFF) {
         const cutoff = new Date(SUBMISSION_CUTOFF);
-        if (new Date() > cutoff){
+        if (new Date() > cutoff) {
           showError('❌ This assignment is closed.');
           return;
         }
@@ -261,25 +288,33 @@
       const studentName = document.getElementById('student-name').value.trim();
       const section = document.getElementById('section-select').value;
 
-      if (!studentName){ alert('Please enter your name.'); document.getElementById('student-name').focus(); return; }
-      if (!section){ alert('Please select your course section.'); document.getElementById('section-select').focus(); return; }
+      if (!studentName) {
+        alert('Please enter your name.');
+        document.getElementById('student-name').focus();
+        return;
+      }
+      if (!section) {
+        alert('Please select your course section.');
+        document.getElementById('section-select').focus();
+        return;
+      }
 
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       submitBtn.textContent = '⏳ Submitting...';
 
-      try{
+      try {
         const pdfBlob = await generatePDFBlob();
 
-        const timestamp = new Date().toISOString().replace(/[:.]/g,'-');
-        const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g,'_');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const sanitizedName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
         const fileName = `hist107-week8/${section}/${sanitizedName}_${timestamp}.pdf`;
 
         // 1) upload file
         const { error: uploadError } = await supabaseClient
           .storage
           .from('student-submissions')
-          .upload(fileName, pdfBlob, { contentType:'application/pdf', upsert:false });
+          .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
 
         if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
@@ -289,8 +324,15 @@
           .from('student-submissions')
           .getPublicUrl(fileName);
 
-        // 3) store form data (match your existing table pattern) :contentReference[oaicite:6]{index=6}
+        // 3) store ALL sections in form_data (so you can read without opening PDFs)
         const formData = {
+          // Section 1
+          q1: getLS('q1'), q2: getLS('q2'), q3: getLS('q3'), q4: getLS('q4'), q5: getLS('q5'),
+          // Section 2
+          t1: getLS('t1'), t2: getLS('t2'), t3: getLS('t3'),
+          // Section 3
+          h1: getLS('h1'), h2: getLS('h2'), h3: getLS('h3'),
+          // Section 4
           c1: document.getElementById('c1').value,
           c2: document.getElementById('c2').value,
           c3: document.getElementById('c3').value,
@@ -315,26 +357,26 @@
         submitBtn.textContent = '✓ Submitted';
         submitBtn.disabled = true;
 
-      } catch (err){
+      } catch (err) {
         console.error(err);
         showError(`❌ Submission failed: ${err.message}. Please download the PDF and email it if needed.`);
         submitBtn.disabled = false;
-        submitBtn.textContent = '✓ Submit';
+        submitBtn.textContent = '✓ Submit to Instructor';
       }
     }
 
-    function showSuccess(msg){
+    function showSuccess(msg) {
       document.getElementById('success-message').textContent = msg;
       document.getElementById('success-message').style.display = 'block';
       document.getElementById('error-message').style.display = 'none';
     }
-    function showError(msg){
+    function showError(msg) {
       document.getElementById('error-message').textContent = msg;
       document.getElementById('error-message').style.display = 'block';
       document.getElementById('success-message').style.display = 'none';
     }
 
-    // Autosave / restore (mirrors your Section 4 pattern) :contentReference[oaicite:7]{index=7}
+    // Autosave / restore for Section 4 fields (this page only)
     setInterval(() => {
       const state = {
         studentName: document.getElementById('student-name').value,
@@ -347,11 +389,11 @@
       localStorage.setItem('hist107Week8Section4', JSON.stringify(state));
     }, 30000);
 
-    window.onload = function(){
+    window.onload = function () {
       const saved = localStorage.getItem('hist107Week8Section4');
-      if (saved){
-        const shouldRestore = confirm('Would you like to restore your previous session?');
-        if (shouldRestore){
+      if (saved) {
+        const shouldRestore = confirm('Would you like to restore your previous session on this final page?');
+        if (shouldRestore) {
           const s = JSON.parse(saved);
           document.getElementById('student-name').value = s.studentName || '';
           document.getElementById('section-select').value = s.section || '';
