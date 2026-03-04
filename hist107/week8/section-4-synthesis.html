@@ -6,7 +6,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <title>Section 4: Synthesis & Submission</title>
+  <title>Section 4: Synthesis & </title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Poppins',sans-serif;background-color:#f5f5f0;color:#333;padding:20px}
@@ -59,7 +59,7 @@
 <body>
   <div class="container">
     <header>
-      <h1>Section 4: Synthesis & Submission</h1>
+      <h1>Section 4: Synthesis & </h1>
       <p>What happens to “universal” rights when they travel?</p>
     </header>
 
@@ -139,7 +139,7 @@
 
     // Assignment control
     const ASSIGNMENT_OPEN = true;
-    const SUBMISSION_CUTOFF = null; // e.g. '2026-03-05T22:00:00'
+    const SUBMISSION_CUTOFF = '2026-03-04T06:00:00Z'; // e.g. '2026-03-05T22:00:00'
 
     // ===== Option A: Build ONE PDF containing Sections 1–4 =====
     function getLS(id) {
@@ -172,7 +172,7 @@
 
       doc.setFontSize(12);
       doc.setFont(undefined, 'normal');
-      doc.text('Full Activity Submission (Sections 1–4)', 20, yRef.y);
+      doc.text('Full Activity  (Sections 1–4)', 20, yRef.y);
       yRef.y += 12;
 
       doc.setFont(undefined, 'bold');
@@ -279,8 +279,8 @@
         showError('❌ This assignment is closed.');
         return;
       }
-      if (SUBMISSION_CUTOFF) {
-        const cutoff = new Date(SUBMISSION_CUTOFF);
+      if (_CUTOFF) {
+        const cutoff = new Date(_CUTOFF);
         if (new Date() > cutoff) {
           showError('❌ This assignment is closed.');
           return;
@@ -315,7 +315,7 @@
         // 1) upload file
         const { error: uploadError } = await supabaseClient
           .storage
-          .from('student-submissions')
+          .from('student-s')
           .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
 
         if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
@@ -323,7 +323,7 @@
         // 2) get public URL
         const { data: urlData } = supabaseClient
           .storage
-          .from('student-submissions')
+          .from('student-s')
           .getPublicUrl(fileName);
 
         // 3) store ALL sections in form_data (so you can read without opening PDFs)
@@ -343,7 +343,7 @@
         };
 
         const { error: dbError } = await supabaseClient
-          .from('worksheet_submissions')
+          .from('worksheet_s')
           .insert({
             student_name: studentName,
             section_number: section,
@@ -362,7 +362,7 @@
 
       } catch (err) {
         console.error(err);
-        showError(`❌ Submission failed: ${err.message}. Please download the PDF and email it if needed.`);
+        showError(`❌  failed: ${err.message}. Please download the PDF and email it if needed.`);
         submitBtn.disabled = false;
         submitBtn.textContent = '✓ Submit to Instructor';
       }
