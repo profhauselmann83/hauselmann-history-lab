@@ -89,8 +89,20 @@
         .fgroup { display: flex; flex-direction: column; gap: 5px; }
         .fgroup label { font-family: 'Courier Prime', monospace; font-size: 0.72em; letter-spacing: 2px; text-transform: uppercase; color: var(--faded); }
 
-        input[type="text"], textarea { width: 100%; padding: 9px 13px; background: var(--light); border: 1px solid var(--aged); border-bottom: 2px solid var(--ink); color: var(--ink); font-family: 'Lora', serif; font-size: 0.95em; transition: border-color 0.2s; border-radius: 0; }
-        input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--blue); background: #fff; }
+        input[type="text"], textarea, select.field-select {
+            width: 100%; padding: 9px 13px; background: var(--light); border: 1px solid var(--aged);
+            border-bottom: 2px solid var(--ink); color: var(--ink); font-family: 'Lora', serif;
+            font-size: 0.95em; transition: border-color 0.2s; border-radius: 0;
+        }
+        input[type="text"]:focus, textarea:focus, select.field-select:focus {
+            outline: none; border-color: var(--blue); background: #fff;
+        }
+        select.field-select { cursor: pointer; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a4a32' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 13px center;
+            background-color: var(--light); padding-right: 36px;
+        }
+        select.field-select option { font-family: 'Lora', serif; }
         textarea { min-height: 88px; resize: vertical; line-height: 1.65; }
 
         .timeline { margin: 18px 0; }
@@ -135,7 +147,6 @@
 
         .stamp { display: inline-block; font-family: 'Courier Prime', monospace; font-size: 1.4em; font-weight: 700; letter-spacing: 6px; border: 4px solid var(--red); color: var(--red); padding: 7px 18px; transform: rotate(-3deg); opacity: 0.85; margin: 14px 0; }
 
-        /* ===== DISCUSSION PAUSE SCREEN ===== */
         .discussion-screen {
             background: var(--blue);
             border: 4px double var(--gold);
@@ -253,7 +264,6 @@
 
         .drop-cap::first-letter { font-family: 'Playfair Display', Georgia, serif; font-size: 3.5em; float: left; line-height: 0.75; margin: 4px 6px 0 0; color: var(--rule); }
 
-        /* Group badge shown on every phase */
         .group-badge {
             display: inline-flex;
             align-items: center;
@@ -322,7 +332,12 @@
                     </div>
                     <div class="fgroup">
                         <label>Section Number</label>
-                        <input type="text" id="section-number" placeholder="e.g., 101, 102">
+                        <select id="section-number" class="field-select">
+                            <option value="">— Select your section —</option>
+                            <option value="3944">3944</option>
+                            <option value="3945">3945</option>
+                            <option value="3946">3946</option>
+                        </select>
                     </div>
                     <div class="fgroup">
                         <label>Group Name / Number</label>
@@ -384,8 +399,6 @@
             <div class="card-body">
                 <h2>The Standard Story</h2>
                 <p>Every history class begins somewhere. This is the account most American students encounter first — the textbook version of Shays' Rebellion. Read it carefully, then answer the sourcing questions below.</p>
-
-
             </div>
         </div>
 
@@ -431,7 +444,7 @@
             <div class="discussion-prompts">
                 <p><strong style="color: var(--gold);">①</strong> <strong>Share one thing from your answer</strong> to the close reading question. <em>Did your group describe the textbook's main claim the same way?</em></p>
                 <p><strong style="color: var(--gold);">②</strong> <strong>The textbook quotes Washington but not a single farmer.</strong> Why might that be — and does it matter?</p>
-                <p><strong style="color: var(--gold);">③</strong> <strong>Before we read the next document:</strong>strong> based only on the textbook, would you say Americans were <em>united</em> in their reaction to Shays' Rebellion? Keep that question in mind.</p>
+                <p><strong style="color: var(--gold);">③</strong> <strong>Before we read the next document:</strong> based only on the textbook, would you say Americans were <em>united</em> in their reaction to Shays' Rebellion? Keep that question in mind.</p>
             </div>
 
             <div class="timer-display" id="timer1">3:00</div>
@@ -516,7 +529,7 @@
             <div class="discussion-prompts">
                 <p><strong style="color: var(--gold);">①</strong> Compare your answers to Question 2. Did your group agree on what Jefferson actually thought about the rebellion — or did people read him differently?</p>
                 <p><strong style="color: var(--gold);">②</strong> Look back at Jefferson's phrase "the spirit of resistance to government is so valuable." Who does he seem to be imagining when he says that? Farmers like Shays? Or someone else?</p>
-                <p><strong style="color: var(--gold);">③</strong> Jefferson vs. Washington: both Founding Fathers, completely opposite reactions. What does that disagreement tell us — and which view won out by 1788?
+                <p><strong style="color: var(--gold);">③</strong> Jefferson vs. Washington: both Founding Fathers, completely opposite reactions. What does that disagreement tell us — and which view won out by 1788?</p>
             </div>
 
             <div class="timer-display" id="timer2">3:00</div>
@@ -685,10 +698,12 @@
     }
 
     function startInvestigation() {
-        const name = document.getElementById('student-name').value.trim();
-        const group = document.getElementById('group-name').value.trim();
-        if (!name) { alert('Please enter your name before continuing.'); document.getElementById('student-name').focus(); return; }
-        if (!group) { alert('Please enter your group name or number.'); document.getElementById('group-name').focus(); return; }
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value;
+        const group   = document.getElementById('group-name').value.trim();
+        if (!name)    { alert('Please enter your name before continuing.'); document.getElementById('student-name').focus(); return; }
+        if (!section) { alert('Please select your section number.'); document.getElementById('section-number').focus(); return; }
+        if (!group)   { alert('Please enter your group name or number.'); document.getElementById('group-name').focus(); return; }
         if (!document.getElementById('warmup-q1').value.trim()) {
             alert('Please complete the warm-up question before continuing.');
             return;
@@ -738,7 +753,7 @@
         let y = 20;
         const lh = 7, ph = doc.internal.pageSize.height, m = 20;
         const name    = document.getElementById('student-name').value.trim();
-        const section = document.getElementById('section-number').value.trim();
+        const section = document.getElementById('section-number').value;
         const group   = document.getElementById('group-name').value.trim();
 
         function add(text, size=11, bold=false) {
@@ -807,10 +822,10 @@
             return;
         }
         const name    = document.getElementById('student-name').value.trim();
-        const section = document.getElementById('section-number').value.trim();
+        const section = document.getElementById('section-number').value;
         const group   = document.getElementById('group-name').value.trim();
         if (!name)    { alert('Please enter your name.'); return; }
-        if (!section) { alert('Please enter your section number.'); return; }
+        if (!section) { alert('Please select your section number.'); return; }
         if (!group)   { alert('Please enter your group name.'); return; }
 
         const btn = document.getElementById('submitBtn');
@@ -832,7 +847,9 @@
             const { data: urlData } = supabaseClient.storage.from('student-submissions').getPublicUrl(path);
 
             const allData = {};
-            document.querySelectorAll('input[type=text], textarea').forEach(el => { if(el.id) allData[el.id] = el.value; });
+            document.querySelectorAll('input[type=text], textarea, select.field-select').forEach(el => {
+                if (el.id) allData[el.id] = el.value;
+            });
 
             await supabaseClient.from('worksheet_submissions').insert({
                 student_name: name,
@@ -867,7 +884,9 @@
     // ===== AUTOSAVE =====
     setInterval(() => {
         const s = {};
-        document.querySelectorAll('input[type=text], textarea').forEach(el => { if(el.id) s[el.id]=el.value; });
+        document.querySelectorAll('input[type=text], textarea, select.field-select').forEach(el => {
+            if (el.id) s[el.id] = el.value;
+        });
         localStorage.setItem('shaysRebellion', JSON.stringify(s));
     }, 30000);
 
@@ -877,7 +896,7 @@
             try {
                 if (confirm('Restore your previous session?')) {
                     const s = JSON.parse(saved);
-                    Object.entries(s).forEach(([id,val]) => {
+                    Object.entries(s).forEach(([id, val]) => {
                         const el = document.getElementById(id);
                         if (el) el.value = val;
                     });
