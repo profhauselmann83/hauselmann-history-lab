@@ -172,7 +172,7 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
 
-        /* ===== LEADERBOARD (existing styles preserved) ===== */
+        /* ===== LEADERBOARD ===== */
         .board-header {
             display: flex;
             align-items: baseline;
@@ -202,7 +202,8 @@
         .rank-3 .rank-col { color: var(--bronze); }
         .rank-other .rank-col { color: rgba(200,160,48,0.4); font-size: 1.1em; }
         .group-name { font-family: 'Playfair Display', serif; font-size: 1.25em; font-weight: 700; color: var(--paper); margin-bottom: 3px; }
-        .group-members { font-family: 'Courier Prime', monospace; font-size: 0.68em; letter-spacing: 1px; color: rgba(200,160,48,0.55); }
+        .group-section-tag { font-family: 'Courier Prime', monospace; font-size: 0.65em; letter-spacing: 2px; color: rgba(200,160,48,0.55); margin-bottom: 3px; }
+        .group-members { font-family: 'Courier Prime', monospace; font-size: 0.68em; letter-spacing: 1px; color: rgba(200,160,48,0.45); }
         .progress-col { width: 220px; }
         .progress-track { background: rgba(255,255,255,0.08); height: 6px; margin-bottom: 6px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), #40c090); transition: width 0.8s ease; }
@@ -222,6 +223,19 @@
         .rank-3 .score-big { color: var(--bronze); }
         .rank-other .score-big { color: var(--paper); }
         .score-label { font-family: 'Courier Prime', monospace; font-size: 0.6em; letter-spacing: 2px; color: rgba(200,160,48,0.4); text-transform: uppercase; }
+
+        /* Section divider rows */
+        .section-divider td {
+            background: rgba(200,160,48,0.12);
+            border-top: 2px solid rgba(200,160,48,0.3);
+            border-bottom: 1px solid rgba(200,160,48,0.2);
+            padding: 8px 16px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.7em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
 
         .winner-bar {
             background: linear-gradient(90deg, rgba(200,160,48,0.2), rgba(200,160,48,0.05), rgba(200,160,48,0.2));
@@ -244,7 +258,35 @@
         .legend-text { font-family: 'Courier Prime', monospace; font-size: 0.72em; letter-spacing: 1px; color: rgba(200,160,48,0.7); line-height: 1.5; }
         .legend-pts { font-weight: 700; color: var(--gold); }
 
-        .controls { display: flex; gap: 12px; justify-content: flex-end; margin-bottom: 24px; flex-wrap: wrap; }
+        /* ===== CONTROLS ROW ===== */
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .section-select {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(200,160,48,0.35);
+            color: var(--gold2);
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.75em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 10px 36px 10px 14px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c8a030' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            transition: border-color 0.2s;
+        }
+        .section-select:focus { outline: none; border-color: var(--gold); }
+        .section-select option { background: #1a1208; color: var(--paper); }
+
         .btn { font-family: 'Courier Prime', monospace; font-size: 0.75em; letter-spacing: 2px; padding: 10px 20px; border: 1px solid rgba(200,160,48,0.3); cursor: pointer; transition: all 0.18s; text-transform: uppercase; background: rgba(200,160,48,0.08); color: var(--gold); }
         .btn:hover { background: rgba(200,160,48,0.18); border-color: var(--gold); }
         .btn.btn-refresh { background: rgba(42,96,64,0.2); border-color: rgba(96,208,144,0.4); color: #60d090; }
@@ -351,7 +393,6 @@
             line-height: 1.6;
         }
 
-        /* Response cards grid */
         .response-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -438,7 +479,6 @@
             text-transform: uppercase;
         }
 
-        /* Sort/view controls for response tab */
         .view-controls {
             display: flex;
             gap: 10px;
@@ -460,7 +500,6 @@
 
         .view-btn.active, .view-btn:hover { background: rgba(200,160,48,0.12); color: var(--gold); border-color: rgba(200,160,48,0.5); }
 
-        /* List view */
         .response-list { display: flex; flex-direction: column; gap: 12px; }
 
         .response-list-item {
@@ -545,8 +584,16 @@
             </div>
 
             <div class="controls">
+                <label style="font-family:'Courier Prime',monospace;font-size:0.72em;letter-spacing:2px;text-transform:uppercase;color:rgba(200,160,48,0.6);">Section:</label>
+                <select class="section-select" id="boardSectionFilter" onchange="onBoardSectionChange()">
+                    <option value="All">All Sections</option>
+                </select>
+                <label style="font-family:'Courier Prime',monospace;font-size:0.72em;letter-spacing:2px;text-transform:uppercase;color:rgba(200,160,48,0.6);">Group by:</label>
+                <select class="section-select" id="groupBySelect" onchange="renderLeaderboard(allSubmissions)">
+                    <option value="combined">Combined (all sections)</option>
+                    <option value="section">By Section</option>
+                </select>
                 <button class="btn btn-refresh" onclick="loadData()">↻ Refresh Now</button>
-                <button class="btn" onclick="toggleSection()">Section: <span id="sectionLabel">All</span></button>
             </div>
 
             <div class="legend">
@@ -625,40 +672,40 @@
     const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
 
-    // Full question text for banner display
     const QUESTION_TEXT = {
-        'txt-q2':  'According to the textbook, what happened in Shays\' Rebellion, and how did American leaders respond?',
-        'jeff-q1': 'Jefferson was in Paris as ambassador when he wrote this. This is also a private letter to a friend. How might these two facts shape what he says and how he says it?',
-        'jeff-q3': 'In your own words, what is Jefferson\'s reaction to Shays\' Rebellion? Does he see it as a crisis?',
+        'txt-q2':  "According to the textbook, what happened in Shays' Rebellion, and how did American leaders respond?",
+        'jeff-q1': "Jefferson was in Paris as ambassador when he wrote this. This is also a private letter to a friend. How might these two facts shape what he says and how he says it?",
+        'jeff-q3': "In your own words, what is Jefferson's reaction to Shays' Rebellion? Does he see it as a crisis?",
         'jeff-q4': 'Jefferson writes: "The tree of liberty must be refreshed from time to time with the blood of patriots and tyrants." What does he mean — and what does this tell us about his view of rebellion?',
-        'cmp-q1':  'What is the most important difference between the textbook and Jefferson\'s letter? What does each source say about how Americans reacted to Shays\' Rebellion?',
-        'cmp-q2':  'The men at the Constitutional Convention were mostly wealthy landowners, lawyers, and merchants. The Shaysites were poor farmers in debt. Why would a rebellion by poor farmers be especially frightening to the Convention delegates?',
-        'cmp-q3':  'Why might many textbooks make it seem like everyone wanted a strong central government after Shays\' Rebellion? How does Jefferson\'s letter challenge that story?',
-        'cmp-q4':  'Based on both documents, write a more complete answer to the central question: How did Americans react to Shays\' Rebellion? Include multiple perspectives and cite evidence from both sources.'
+        'cmp-q1':  "What is the most important difference between the textbook and Jefferson's letter? What does each source say about how Americans reacted to Shays' Rebellion?",
+        'cmp-q2':  "The men at the Constitutional Convention were mostly wealthy landowners, lawyers, and merchants. The Shaysites were poor farmers in debt. Why would a rebellion by poor farmers be especially frightening to the Convention delegates?",
+        'cmp-q3':  "Why might many textbooks make it seem like everyone wanted a strong central government after Shays' Rebellion? How does Jefferson's letter challenge that story?",
+        'cmp-q4':  "Based on both documents, write a more complete answer to the central question: How did Americans react to Shays' Rebellion? Include multiple perspectives and cite evidence from both sources."
     };
 
-    // State
-    const bonusCache = {};
-    let allSubmissions = [];
-    let firstCompleteGroup = null;
-    let currentSection = 'All';
-    let allSections = [];
-    let currentView = 'grid';
-    let activeTab = 'leaderboard';
-    let refreshInterval = null;
+    // ── State ──────────────────────────────────────────────────────────────────
+    const bonusCache    = {};
+    let allSubmissions  = [];
+    // firstCompleteGroup is tracked PER SECTION so each section's speed bonus is independent
+    let firstCompleteBySection = {};
+    let allSections     = [];
+    let currentView     = 'grid';
+    let activeTab       = 'leaderboard';
+    let currentBoardSection = 'All'; // leaderboard section filter state
 
-    function getBonus(groupName) {
-        if (bonusCache[groupName] !== undefined) return bonusCache[groupName];
+    // ── Historian's Luck (deterministic per section+group key) ────────────────
+    function getBonus(key) {
+        if (bonusCache[key] !== undefined) return bonusCache[key];
         let hash = 0;
-        for (let i = 0; i < groupName.length; i++) hash = (hash * 31 + groupName.charCodeAt(i)) & 0xffffffff;
-        bonusCache[groupName] = (Math.abs(hash) % 3) + 1;
-        return bonusCache[groupName];
+        for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) & 0xffffffff;
+        bonusCache[key] = (Math.abs(hash) % 3) + 1;
+        return bonusCache[key];
     }
 
-    // ===== TAB SWITCHING =====
+    // ── Tab switching ──────────────────────────────────────────────────────────
     function switchTab(tab) {
         activeTab = tab;
-        document.querySelectorAll('.tab-btn').forEach((b,i) => {
+        document.querySelectorAll('.tab-btn').forEach((b, i) => {
             b.classList.toggle('active', (i === 0 && tab === 'leaderboard') || (i === 1 && tab === 'responses'));
         });
         document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
@@ -666,7 +713,7 @@
         if (tab === 'responses') renderResponses();
     }
 
-    // ===== VIEW MODE =====
+    // ── View mode ──────────────────────────────────────────────────────────────
     function setView(v) {
         currentView = v;
         document.getElementById('viewGrid').classList.toggle('active', v === 'grid');
@@ -674,7 +721,13 @@
         renderResponses();
     }
 
-    // ===== LOAD DATA =====
+    // ── Board section filter handler ───────────────────────────────────────────
+    function onBoardSectionChange() {
+        currentBoardSection = document.getElementById('boardSectionFilter').value;
+        renderLeaderboard(allSubmissions);
+    }
+
+    // ── Load data from Supabase ────────────────────────────────────────────────
     async function loadData() {
         try {
             const url = `${SUPABASE_URL}/rest/v1/worksheet_submissions` +
@@ -693,90 +746,164 @@
             if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
             allSubmissions = await res.json();
 
-            // Collect sections for filters
-            allSections = [...new Set(allSubmissions.map(s => s.section_number).filter(Boolean))].sort();
-            updateSectionFilter();
+            // Collect unique sections
+            allSections = [...new Set(allSubmissions.map(s => (s.section_number || '').toString().trim()).filter(Boolean))].sort();
+            updateSectionDropdowns();
+
+            // Compute first-complete per section (speed bonus)
+            // A group is "complete" when it has ≥2 members submitted.
+            firstCompleteBySection = {};
+            const tempGroups = {};
+            // submissions are already sorted asc by submitted_at
+            allSubmissions.forEach(sub => {
+                const sec  = (sub.section_number || '?').toString().trim();
+                const grp  = (sub.group_name    || 'Ungrouped').trim();
+                const gkey = `${sec}|||${grp}`;
+                if (!tempGroups[gkey]) tempGroups[gkey] = { sec, members: [], lastSubmit: sub.submitted_at };
+                tempGroups[gkey].members.push(sub.submitted_at);
+                tempGroups[gkey].lastSubmit = sub.submitted_at;
+
+                // When this group reaches 2 members, check if it's the first in its section
+                if (tempGroups[gkey].members.length === 2 && !firstCompleteBySection[sec]) {
+                    firstCompleteBySection[sec] = grp;
+                }
+            });
 
             renderLeaderboard(allSubmissions);
             updateLastRefresh();
-
             if (activeTab === 'responses') renderResponses();
+
         } catch(e) {
             document.getElementById('boardContainer').innerHTML =
                 `<div class="loading">Error loading data: ${e.message}</div>`;
         }
     }
 
-    // ===== UPDATE SECTION FILTER DROPDOWN =====
-    function updateSectionFilter() {
-        const sel = document.getElementById('sectionFilter');
-        const cur = sel.value;
-        // Rebuild options
-        sel.innerHTML = '<option value="All">All Sections</option>';
-        allSections.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s; opt.textContent = `Section ${s}`;
-            if (s === cur) opt.selected = true;
-            sel.appendChild(opt);
+    // ── Update both section dropdowns ──────────────────────────────────────────
+    function updateSectionDropdowns() {
+        ['boardSectionFilter', 'sectionFilter'].forEach(id => {
+            const sel = document.getElementById(id);
+            const cur = sel.value;
+            sel.innerHTML = '<option value="All">All Sections</option>';
+            allSections.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = `Section ${s}`;
+                if (s === cur) opt.selected = true;
+                sel.appendChild(opt);
+            });
         });
     }
 
-    // ===== RENDER LEADERBOARD =====
-    function renderLeaderboard(submissions) {
-        const filtered = currentSection === 'All'
-            ? submissions
-            : submissions.filter(s => (s.section_number || '').toString() === currentSection);
-
+    // ── Build groups from submissions ──────────────────────────────────────────
+    // KEY FIX: group key is "section|||groupName" so Group 3 in §101 ≠ Group 3 in §102
+    function buildGroups(submissions) {
         const groups = {};
-        filtered.forEach(sub => {
-            const gkey = (sub.group_name || 'Ungrouped').trim();
-            if (!groups[gkey]) groups[gkey] = { name: gkey, members: [], firstSubmit: sub.submitted_at, lastSubmit: sub.submitted_at };
+        submissions.forEach(sub => {
+            const sec  = (sub.section_number || '?').toString().trim();
+            const grp  = (sub.group_name    || 'Ungrouped').trim();
+            const gkey = `${sec}|||${grp}`;
+            if (!groups[gkey]) {
+                groups[gkey] = {
+                    key: gkey,
+                    section: sec,
+                    groupName: grp,
+                    members: [],
+                    firstSubmit: sub.submitted_at,
+                    lastSubmit:  sub.submitted_at
+                };
+            }
             groups[gkey].members.push({ name: sub.student_name, submitted_at: sub.submitted_at });
             if (sub.submitted_at < groups[gkey].firstSubmit) groups[gkey].firstSubmit = sub.submitted_at;
             if (sub.submitted_at > groups[gkey].lastSubmit)  groups[gkey].lastSubmit  = sub.submitted_at;
         });
 
-        const groupList = Object.values(groups);
-        if (!firstCompleteGroup) {
-            const byFirst = [...groupList].sort((a,b) => a.firstSubmit.localeCompare(b.firstSubmit));
-            const candidate = byFirst.find(g => g.members.length >= 2);
-            if (candidate) firstCompleteGroup = candidate.name;
-        }
-
-        groupList.forEach(g => {
+        return Object.values(groups).map(g => {
             const memberPts      = g.members.length * 5;
             const allSubmitBonus = g.members.length >= 2 ? 10 : 0;
-            const speedBonus     = (firstCompleteGroup === g.name) ? 5 : 0;
-            const luck           = getBonus(g.name);
-            g.score = memberPts + allSubmitBonus + speedBonus + luck;
-            g.breakdown = { memberPts, allSubmitBonus, speedBonus, luck };
+            const speedBonus     = (firstCompleteBySection[g.section] === g.groupName) ? 5 : 0;
+            const luck           = getBonus(g.key);
+            return {
+                ...g,
+                score: memberPts + allSubmitBonus + speedBonus + luck,
+                breakdown: { memberPts, allSubmitBonus, speedBonus, luck }
+            };
         });
+    }
 
-        groupList.sort((a,b) => b.score - a.score || a.firstSubmit.localeCompare(b.firstSubmit));
+    // ── Render leaderboard ─────────────────────────────────────────────────────
+    function renderLeaderboard(submissions) {
+        const groupBy = document.getElementById('groupBySelect').value; // 'combined' | 'section'
 
-        document.getElementById('stat-groups').textContent      = groupList.length || '—';
-        document.getElementById('stat-submissions').textContent = filtered.length || '—';
-        document.getElementById('stat-complete').textContent    = groupList.filter(g => g.members.length >= 2).length || '—';
-        document.getElementById('stat-leader').textContent      = groupList.length ? groupList[0].name : '—';
+        // Apply section filter
+        let filtered = currentBoardSection === 'All'
+            ? submissions
+            : submissions.filter(s => (s.section_number || '').toString().trim() === currentBoardSection);
 
-        if (groupList.length > 0) {
-            document.getElementById('winnerBar').classList.add('visible');
-            document.getElementById('winnerName').textContent = groupList[0].name;
-        }
+        const allGroups = buildGroups(filtered);
 
-        document.getElementById('boardSubtitle').textContent =
-            `${filtered.length} submission${filtered.length !== 1 ? 's' : ''} · ${groupList.length} group${groupList.length !== 1 ? 's' : ''}`;
+        // Stats (across all filtered groups)
+        document.getElementById('stat-groups').textContent      = allGroups.length || '—';
+        document.getElementById('stat-submissions').textContent  = filtered.length  || '—';
+        document.getElementById('stat-complete').textContent     = allGroups.filter(g => g.members.length >= 2).length || '—';
 
-        if (groupList.length === 0) {
+        if (allGroups.length === 0) {
+            document.getElementById('stat-leader').textContent = '—';
+            document.getElementById('winnerBar').classList.remove('visible');
+            document.getElementById('boardSubtitle').textContent = '0 submissions';
             document.getElementById('boardContainer').innerHTML = `
                 <div class="empty-state"><div class="icon">📜</div><h3>No submissions yet</h3><p>Waiting for students to submit…</p></div>`;
             return;
         }
 
+        document.getElementById('boardSubtitle').textContent =
+            `${filtered.length} submission${filtered.length !== 1 ? 's' : ''} · ${allGroups.length} group${allGroups.length !== 1 ? 's' : ''}` +
+            (currentBoardSection !== 'All' ? ` · Section ${currentBoardSection}` : ' · All Sections');
+
+        let html = '';
+
+        if (groupBy === 'combined') {
+            // Single ranked table across all sections
+            const sorted = [...allGroups].sort((a, b) => b.score - a.score || a.firstSubmit.localeCompare(b.firstSubmit));
+
+            // Overall leader
+            document.getElementById('stat-leader').textContent = sorted[0].groupName;
+            document.getElementById('winnerBar').classList.add('visible');
+            document.getElementById('winnerName').textContent =
+                `${sorted[0].groupName} (§${sorted[0].section})`;
+
+            html = buildTable(sorted, false);
+
+        } else {
+            // Separate ranked table per section
+            document.getElementById('winnerBar').classList.remove('visible');
+            document.getElementById('stat-leader').textContent = '—';
+
+            const sections = [...new Set(allGroups.map(g => g.section))].sort();
+            sections.forEach(sec => {
+                const secGroups = allGroups.filter(g => g.section === sec)
+                    .sort((a, b) => b.score - a.score || a.firstSubmit.localeCompare(b.firstSubmit));
+                html += `
+                    <div style="margin-bottom:36px;">
+                        <div style="font-family:'Courier Prime',monospace;font-size:0.8em;letter-spacing:4px;text-transform:uppercase;
+                                    color:var(--gold);border-bottom:2px solid rgba(200,160,48,0.3);
+                                    padding-bottom:10px;margin-bottom:16px;">
+                            § Section ${esc(sec)} — ${secGroups.length} group${secGroups.length !== 1 ? 's' : ''}
+                        </div>
+                        ${buildTable(secGroups, true)}
+                    </div>`;
+            });
+        }
+
+        document.getElementById('boardContainer').innerHTML = html;
+    }
+
+    // ── Build a leaderboard table from a sorted group list ────────────────────
+    function buildTable(groupList, hideSection) {
         let html = `<table class="leaderboard">
             <thead><tr>
                 <th class="center">#</th>
-                <th>Group</th>
+                <th>Group${hideSection ? '' : ' · Section'}</th>
                 <th>Members Submitted</th>
                 <th class="center progress-col">Progress</th>
                 <th class="center bonus-col">Historian's Luck</th>
@@ -784,26 +911,27 @@
             </tr></thead><tbody>`;
 
         groupList.forEach((g, i) => {
-            const rankClass  = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
-            const rankEmoji  = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1);
+            const rankClass   = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+            const rankEmoji   = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
             const memberCount = g.members.length;
-            const pct = Math.min(100, memberCount * 20);
-            const maxPips = Math.max(memberCount, 4);
+            const pct         = Math.min(100, memberCount * 20);
+            const maxPips     = Math.max(memberCount, 4);
             let pips = '';
             for (let p = 0; p < maxPips; p++) pips += `<div class="pip ${p < memberCount ? 'submitted' : ''}"></div>`;
-            const memberNames = g.members.map(m => m.name.split(' ')[0]).join(', ');
-            const luckStars = '★'.repeat(g.breakdown.luck) + '☆'.repeat(3 - g.breakdown.luck);
+            const memberNames    = g.members.map(m => (m.name || '').split(' ')[0]).join(', ');
+            const luckStars      = '★'.repeat(g.breakdown.luck) + '☆'.repeat(3 - g.breakdown.luck);
             const bonusBreakdown = [
                 `${g.breakdown.memberPts}pts (${memberCount} submitted)`,
                 g.breakdown.allSubmitBonus ? `+${g.breakdown.allSubmitBonus} group complete` : '',
-                g.breakdown.speedBonus ? `+${g.breakdown.speedBonus} first to finish` : '',
+                g.breakdown.speedBonus     ? `+${g.breakdown.speedBonus} first to finish`   : '',
                 `+${g.breakdown.luck} luck`
             ].filter(Boolean).join(' · ');
 
             html += `<tr class="${rankClass}" title="${bonusBreakdown}">
                 <td class="rank-col">${rankEmoji}</td>
-                <td class="group-col">
-                    <div class="group-name">${esc(g.name)}</div>
+                <td>
+                    <div class="group-name">${esc(g.groupName)}</div>
+                    ${hideSection ? '' : `<div class="group-section-tag">§ Section ${esc(g.section)}</div>`}
                     <div class="group-members">${esc(memberNames)}</div>
                 </td>
                 <td class="member-col">
@@ -815,7 +943,7 @@
                     <div class="progress-text">${memberCount} / group</div>
                 </td>
                 <td class="bonus-col">
-                    <div class="bonus-display" style="color:${g.breakdown.luck===3?'#ffd060':g.breakdown.luck===2?'var(--gold)':'var(--bronze)'}">
+                    <div class="bonus-display" style="color:${g.breakdown.luck === 3 ? '#ffd060' : g.breakdown.luck === 2 ? 'var(--gold)' : 'var(--bronze)'}">
                         ${luckStars}
                     </div>
                     <div class="bonus-label">+${g.breakdown.luck} pts</div>
@@ -828,26 +956,21 @@
         });
 
         html += '</tbody></table>';
-        document.getElementById('boardContainer').innerHTML = html;
+        return html;
     }
 
-    // ===== RENDER RESPONSES =====
+    // ── Render responses tab ───────────────────────────────────────────────────
     function renderResponses() {
-        const qKey     = document.getElementById('questionSelect').value;
-        const section  = document.getElementById('sectionFilter').value;
+        const qKey    = document.getElementById('questionSelect').value;
+        const section = document.getElementById('sectionFilter').value;
 
-        // Update question banner
         document.getElementById('questionBannerText').textContent = QUESTION_TEXT[qKey] || qKey;
 
-        // Filter submissions
         let filtered = allSubmissions;
-        if (section !== 'All') filtered = filtered.filter(s => (s.section_number||'').toString() === section);
-
-        // Sort alphabetically by student name
-        filtered = [...filtered].sort((a,b) => (a.student_name||'').localeCompare(b.student_name||''));
+        if (section !== 'All') filtered = filtered.filter(s => (s.section_number || '').toString().trim() === section);
+        filtered = [...filtered].sort((a, b) => (a.student_name || '').localeCompare(b.student_name || ''));
 
         const answered = filtered.filter(s => s.form_data && s.form_data[qKey] && s.form_data[qKey].trim());
-
         document.getElementById('responseMeta').textContent =
             `${answered.length} of ${filtered.length} student${filtered.length !== 1 ? 's' : ''} answered this question` +
             (section !== 'All' ? ` · Section ${section}` : '');
@@ -858,18 +981,14 @@
             return;
         }
 
-        if (currentView === 'grid') {
-            renderGrid(filtered, qKey);
-        } else {
-            renderList(filtered, qKey);
-        }
+        currentView === 'grid' ? renderGrid(filtered, qKey) : renderList(filtered, qKey);
     }
 
     function renderGrid(submissions, qKey) {
         let html = '<div class="response-grid">';
         submissions.forEach(sub => {
-            const answer   = sub.form_data?.[qKey]?.trim() || '';
-            const timeStr  = sub.submitted_at ? new Date(sub.submitted_at).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+            const answer  = sub.form_data?.[qKey]?.trim() || '';
+            const timeStr = sub.submitted_at ? new Date(sub.submitted_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
             html += `
             <div class="response-card">
                 <div class="response-card-header">
@@ -879,10 +998,7 @@
                     </div>
                     <div class="response-group-tag">${esc(sub.group_name || '—')}</div>
                 </div>
-                ${answer
-                    ? `<div class="response-text">${esc(answer)}</div>`
-                    : `<div class="response-empty">No answer recorded</div>`
-                }
+                ${answer ? `<div class="response-text">${esc(answer)}</div>` : `<div class="response-empty">No answer recorded</div>`}
                 ${timeStr ? `<div class="response-time">Submitted ${timeStr}</div>` : ''}
             </div>`;
         });
@@ -894,7 +1010,7 @@
         let html = '<div class="response-list">';
         submissions.forEach(sub => {
             const answer  = sub.form_data?.[qKey]?.trim() || '';
-            const timeStr = sub.submitted_at ? new Date(sub.submitted_at).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+            const timeStr = sub.submitted_at ? new Date(sub.submitted_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
             html += `
             <div class="response-list-item">
                 <div class="response-list-meta">
@@ -904,10 +1020,7 @@
                     ${timeStr ? `<div class="response-time" style="margin-top:10px;border:none;padding:0;">${timeStr}</div>` : ''}
                 </div>
                 <div>
-                    ${answer
-                        ? `<div class="response-text">${esc(answer)}</div>`
-                        : `<div class="response-empty">No answer recorded</div>`
-                    }
+                    ${answer ? `<div class="response-text">${esc(answer)}</div>` : `<div class="response-empty">No answer recorded</div>`}
                 </div>
             </div>`;
         });
@@ -915,29 +1028,21 @@
         document.getElementById('responseContainer').innerHTML = html;
     }
 
-    // ===== HELPERS =====
-    function toggleSection() {
-        const opts = ['All', ...allSections];
-        const cur = opts.indexOf(currentSection);
-        currentSection = opts[(cur + 1) % opts.length];
-        document.getElementById('sectionLabel').textContent = currentSection;
-        renderLeaderboard(allSubmissions);
-    }
-
+    // ── Helpers ────────────────────────────────────────────────────────────────
     function updateLastRefresh() {
         document.getElementById('lastRefresh').textContent =
-            `Last updated: ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+            `Last updated: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
     }
 
     function esc(str) {
-        return String(str||'')
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        return String(str || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // ===== INIT =====
+    // ── Init ───────────────────────────────────────────────────────────────────
     loadData();
-    refreshInterval = setInterval(loadData, 15000);
+    setInterval(loadData, 15000);
 </script>
 </body>
 </html>
