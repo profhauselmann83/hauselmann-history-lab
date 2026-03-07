@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w3" data-gate="gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Analysis 3.2 — Jacob Riis | HIST 102</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .sa-body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}
+    /* Source document display */
+    .source-doc{background:#fff;border:1px solid var(--rule-strong);border-radius:4px;margin:1.75rem 0;overflow:hidden;}
+    .source-doc-header{background:var(--ink);color:var(--cream);padding:0.85rem 1.25rem;display:flex;align-items:baseline;gap:1rem;}
+    .source-doc-tag{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-light);flex-shrink:0;}
+    .source-doc-title{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:600;color:var(--cream);line-height:1.3;}
+    .source-doc-meta{background:var(--cream-dark);border-bottom:1px solid var(--rule-strong);padding:0.6rem 1.25rem;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;color:var(--ink-light);display:flex;flex-wrap:wrap;gap:1.25rem;}
+    .source-doc-body{padding:1.25rem 1.5rem;font-family:'Source Serif 4',Georgia,serif;font-size:0.93rem;color:var(--ink-mid);line-height:1.85;-webkit-user-select:none;user-select:none;}
+    .source-doc-body p{margin-bottom:0.9rem;}
+    .source-doc-body p:last-child{margin-bottom:0;}
+    .source-doc-citation{background:var(--cream-deep);border-top:1px solid var(--rule-strong);padding:0.55rem 1.25rem;font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;color:var(--ink-light);}
+    /* Photo placeholder — real images added by instructor via src= */
+    .photo-frame{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:3px;margin:1rem 0 0.75rem;overflow:hidden;text-align:center;}
+    .photo-frame img{width:100%;max-width:520px;height:auto;display:block;margin:0 auto;}
+    .photo-caption{padding:0.6rem 1rem;font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;color:var(--ink-light);text-align:center;}
+    .photo-placeholder{padding:4rem 2rem;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);text-align:center;background:var(--cream-deep);}
+    /* Context box */
+    .context-box{background:var(--cream-dark);border:1px solid var(--rule-strong);border-left:4px solid var(--gold);border-radius:0 4px 4px 0;padding:1.1rem 1.5rem;margin-bottom:1.5rem;font-size:0.9rem;color:var(--ink-mid);line-height:1.7;}
+    .context-box strong{color:var(--ink);}
+    /* Question blocks */
+    .question-block{background:#fff;border:1px solid var(--rule-strong);border-top:3px solid var(--gold);border-radius:0 0 4px 4px;padding:1.5rem;margin:2rem 0;clear:both;}
+    .question-block-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+    .question-block-label::after{content:'';flex:1;height:1px;background:rgba(154,111,42,0.2);}
+    .question-item{margin-bottom:1.5rem;}
+    .question-item:last-child{margin-bottom:0;}
+    .question-text{font-family:'Playfair Display',serif;font-size:0.97rem;font-weight:600;color:var(--ink);margin-bottom:0.5rem;line-height:1.45;}
+    .answer-requirement{font-size:0.78rem;color:var(--ink-light);font-style:italic;margin-bottom:0.6rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+    .answer-area{width:100%;min-height:110px;padding:0.75rem 1rem;border:1px solid var(--rule-strong);border-radius:3px;background:var(--cream);font-family:'Source Serif 4',Georgia,serif;font-size:0.92rem;font-weight:300;color:var(--ink);line-height:1.7;resize:vertical;transition:border-color .2s,box-shadow .2s;-webkit-user-select:text;user-select:text;}
+    .answer-area.essay-area{min-height:200px;}
+    .answer-area:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(154,111,42,0.1);}
+    .answer-area::placeholder{color:var(--ink-light);opacity:0.6;font-style:italic;}
+    .answer-meta{display:flex;justify-content:space-between;align-items:center;margin-top:0.4rem;}
+    .word-count{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-light);}
+    .word-count.low{color:var(--rust);}
+    .word-count.good{color:var(--sage);}
+    .save-indicator{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;color:var(--sage);opacity:0;transition:opacity .3s;}
+    .save-indicator.visible{opacity:1;}
+    /* Progress */
+    .notes-progress{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:4px;padding:0.9rem 1.25rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;}
+    .notes-progress-bar-wrap{flex:1;height:6px;background:var(--cream-deep);border-radius:3px;overflow:hidden;}
+    .notes-progress-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease;width:0%;}
+    .notes-progress-label{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;white-space:nowrap;color:var(--ink-light);}
+    /* Essay requirement box */
+    .essay-requirement-box{background:rgba(61,96,83,0.06);border:1px solid rgba(61,96,83,0.25);border-left:4px solid var(--sage);border-radius:0 4px 4px 0;padding:1rem 1.25rem;margin-bottom:1.25rem;}
+    .essay-requirement-box h4{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);margin-bottom:0.6rem;}
+    .essay-requirement-box ul{padding-left:1.25rem;margin:0;font-size:0.88rem;color:var(--ink-mid);line-height:1.75;}
+    /* Historical question block */
+    .hq-block{background:#fff;border:1px solid rgba(61,96,83,0.3);border-top:4px solid var(--sage);border-radius:0 0 4px 4px;padding:1.75rem;margin:2.5rem 0;}
+    .hq-label{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--sage);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+    .hq-label::after{content:'';flex:1;height:1px;background:rgba(61,96,83,0.2);}
+    .hq-question{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:0.75rem;line-height:1.35;}
+    .hq-subtext{font-size:0.88rem;color:var(--ink-light);line-height:1.65;margin-bottom:1.25rem;}
+    .word-count-bar{height:4px;background:var(--cream-deep);border-radius:2px;overflow:hidden;margin-top:0.5rem;}
+    .word-count-bar-fill{height:100%;background:var(--rust);border-radius:2px;transition:width .3s,background .3s;width:0%;}
+    /* Historian framework */
+    .framework-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin:1rem 0;}
+    @media(max-width:560px){.framework-grid{grid-template-columns:1fr;}}
+    .framework-item{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:3px;padding:0.75rem 1rem;font-size:0.83rem;color:var(--ink-mid);line-height:1.6;}
+    .framework-item strong{display:block;font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem;}
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step done" href="index.html"><span class="step-num">&#10003;</span> Overview</a>
+    <a class="prog-step done" href="video.html"><span class="step-num">&#10003;</span> Video</a>
+    <a class="prog-step done" href="reading-1.html"><span class="step-num">&#10003;</span> Reading 4.1</a>
+    <a class="prog-step done" href="source-analysis-1.html"><span class="step-num">&#10003;</span> SA 3.1</a>
+    <a class="prog-step done" href="reading-2.html"><span class="step-num">&#10003;</span> Reading 4.2</a>
+    <a class="prog-step active" href="source-analysis-2.html"><span class="step-num">6</span> Source Analysis 3.2</a>
+    <a class="prog-step" href="#"><span class="step-num">7</span> Canvas</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 3 &nbsp;&middot;&nbsp; Step 6</div>
+    <h1>Source Analysis 3.2</h1>
+    <p class="page-subtitle">Jacob Riis &mdash; Photographs and Text, 1887&ndash;1890</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~75 min</span>
+      <span class="chip chip-due">Due Wednesday</span>
+      <span class="chip chip-pts">20 pts</span>
+    </div>
+  </div>
+</header>
+
+<div id="page-content"><main>
+
+  <div class="notes-progress">
+    <span class="notes-progress-label">SA 3.2 Progress</span>
+    <div class="notes-progress-bar-wrap"><div class="notes-progress-bar" id="progressBar"></div></div>
+    <span class="notes-progress-label" id="progressLabel">0 of 6 complete</span>
+  </div>
+
+  <div class="sa-body" id="saBody">
+
+    <div class="context-box">
+      <strong>Background &amp; Historical Context</strong><br>
+      In the late 19th century, Jacob Riis used a new photographic technology &mdash; the magnesium flash &mdash; to document life in New York City's tenements. He published his photographs and descriptions in <em>How the Other Half Lives</em> (1890), which shocked middle-class America and helped drive housing reform. But Riis also wrote about his subjects in ways that many historians now consider condescending, stereotyping, and even racist. As you work through these sources, ask: <em>what do they reveal about tenement conditions, and what do they reveal about Riis himself?</em>
+    </div>
+
+    <!-- Historian Framework -->
+    <h3 class="section-heading-sm" style="margin-bottom:0.75rem;">A Historian's Framework: Evaluating Photographs as Evidence</h3>
+    <p style="font-size:0.9rem;color:var(--ink-mid);margin-bottom:0.75rem;line-height:1.7;">When historians evaluate whether a photograph is useful as historical evidence, they ask these questions:</p>
+    <div class="framework-grid">
+      <div class="framework-item"><strong>When &amp; where?</strong>Date, location, and historical context of the image</div>
+      <div class="framework-item"><strong>Who took it?</strong>Photographer's perspective, purpose, and potential biases</div>
+      <div class="framework-item"><strong>Why was it taken?</strong>Intended audience and purpose &mdash; reform, journalism, art, commerce?</div>
+      <div class="framework-item"><strong>Circumstances?</strong>Did subjects know they were being photographed? Was the scene staged?</div>
+      <div class="framework-item"><strong>Technology?</strong>What equipment was used, and how did it shape what could be captured?</div>
+      <div class="framework-item"><strong>What's missing?</strong>What isn't shown? Who chose the frame?</div>
+    </div>
+
+    <!-- Document A: Photograph -->
+    <div class="source-doc">
+      <div class="source-doc-header">
+        <span class="source-doc-tag">Document A</span>
+        <span class="source-doc-title">Five Cents a Spot &mdash; Unauthorized Immigration Lodgings in a Bayard Street Tenement (1890)</span>
+      </div>
+      <div class="source-doc-meta">
+        <span><strong>Location:</strong> New York City</span>
+        <span><strong>Date:</strong> 1890</span>
+        <span><strong>Type:</strong> Photograph</span>
+        <span><strong>Photographer:</strong> Jacob Riis</span>
+      </div>
+      <div class="source-doc-body">
+        <p><em>Riis took this photograph in a dark, windowless tenement using his magnesium flash. The men and women in the photograph did not know they were going to be photographed and were surprised by the sudden burst of light. In his notes, Riis reported that this 13-foot room "slept twelve men and women, two or three in bunks set in a sort of alcove, the rest on the floor."</em></p>
+        <div class="photo-frame">
+          <img src="PASTE_RIIS_PHOTO_A_URL_HERE" alt="Five cents a spot — unauthorized lodgings in a Bayard Street tenement, 1890. Jacob Riis.">
+          <div class="photo-caption">Jacob Riis, <em>Five Cents a Spot &mdash; Unauthorized Immigration Lodgings in a Bayard Street Tenement</em>, 1890.</div>
+        </div>
+        <p style="font-size:0.85rem;color:var(--ink-light);font-style:italic;">If the image above does not display, your instructor will add it. The photograph shows a crowded, dimly lit room where multiple adults are sleeping on bunks and on the floor.</p>
+      </div>
+      <div class="source-doc-citation">Source: Jacob Riis. <em>How the Other Half Lives.</em> 1890. Museum of the City of New York.</div>
+    </div>
+
+    <!-- Document B: Photograph -->
+    <div class="source-doc">
+      <div class="source-doc-header">
+        <span class="source-doc-tag">Document B</span>
+        <span class="source-doc-title">Tramp in Mulberry Street Yard (1887&ndash;1888)</span>
+      </div>
+      <div class="source-doc-meta">
+        <span><strong>Location:</strong> Mulberry Bend, New York City</span>
+        <span><strong>Date:</strong> 1887&ndash;1888</span>
+        <span><strong>Type:</strong> Photograph</span>
+        <span><strong>Photographer:</strong> Jacob Riis</span>
+      </div>
+      <div class="source-doc-body">
+        <p><em>This photograph was taken in Mulberry Bend, one of the most dangerous areas of the notorious Five Points neighborhood in New York City. The image shows a man sitting in front of a dilapidated structure. Riis paid the man ten cents to sit for the portrait.</em></p>
+        <div class="photo-frame">
+          <img src="PASTE_RIIS_PHOTO_B_URL_HERE" alt="Tramp in Mulberry Street Yard, 1887-1888. Jacob Riis.">
+          <div class="photo-caption">Jacob Riis, <em>Tramp in Mulberry Street Yard</em>, 1887&ndash;1888.</div>
+        </div>
+        <p style="font-size:0.85rem;color:var(--ink-light);font-style:italic;">If the image above does not display, your instructor will add it. The photograph shows a man seated in front of a ramshackle wooden structure.</p>
+        <p>In his lecture notes, Riis later wrote about this image: <em>"On one of my visits to 'the Bend' I came across this fellow sitting . . . and he struck me as being such a typical tramp that I asked him to sit still for a minute and I would give him ten cents. That was probably the first and only ten cents that man had earned by honest labor in the course of his life and that was by sitting down at which he was an undoubted expert."</em></p>
+      </div>
+      <div class="source-doc-citation">Source: Jacob Riis, lecture notes. Cited in Bonnie Yochelson &amp; Daniel Czitrom, <em>Rediscovering Jacob Riis,</em> 2007.</div>
+    </div>
+
+    <!-- Document C: Photograph -->
+    <div class="source-doc">
+      <div class="source-doc-header">
+        <span class="source-doc-tag">Document C</span>
+        <span class="source-doc-title">Italian Mother and Her Baby in Jersey Street (1888&ndash;1889)</span>
+      </div>
+      <div class="source-doc-meta">
+        <span><strong>Location:</strong> New York City</span>
+        <span><strong>Date:</strong> 1888&ndash;1889</span>
+        <span><strong>Type:</strong> Photograph</span>
+        <span><strong>Photographer:</strong> Jacob Riis</span>
+      </div>
+      <div class="source-doc-body">
+        <p><em>This image shows an Italian immigrant woman and her baby sitting in their windowless one-room tenement. The room contains all their possessions, including a rolled-up mattress and a pallet that likely served as their bed.</em></p>
+        <div class="photo-frame">
+          <img src="PASTE_RIIS_PHOTO_C_URL_HERE" alt="Italian Mother and Her Baby in Jersey Street, 1888-1889. Jacob Riis.">
+          <div class="photo-caption">Jacob Riis, <em>Italian Mother and Her Baby in Jersey Street</em>, 1888&ndash;1889.</div>
+        </div>
+        <p style="font-size:0.85rem;color:var(--ink-light);font-style:italic;">If the image above does not display, your instructor will add it. The photograph shows a woman and infant in a sparse, dark single room.</p>
+      </div>
+      <div class="source-doc-citation">Source: Jacob Riis. <em>How the Other Half Lives.</em> 1890. Museum of the City of New York.</div>
+    </div>
+
+    <!-- Document D: Text -->
+    <div class="source-doc">
+      <div class="source-doc-header">
+        <span class="source-doc-tag">Document D</span>
+        <span class="source-doc-title">How the Other Half Lives &mdash; Chapter on Italian Immigrants (1890)</span>
+      </div>
+      <div class="source-doc-meta">
+        <span><strong>Author:</strong> Jacob Riis</span>
+        <span><strong>Date:</strong> 1890</span>
+        <span><strong>Type:</strong> Published book excerpt</span>
+        <span><strong>Audience:</strong> Middle-class American readers</span>
+      </div>
+      <div class="source-doc-body">
+        <p>The Italian comes in at the bottom, and in the generation that came over the sea he stays there. In the slums he is welcomed as a tenant who "makes less trouble" than the contentious Irishman or the order-loving German, that is to say: is content to live in a pig-sty and submits to robbery at the hands of the rent-collector without murmur. . . .</p>
+        <p>Ordinarily he is easily enough governed by authority &mdash; always excepting Sunday, when he settles down to a game of cards and lets loose all his bad passions. Like the Chinese, the Italian is a born gambler. His soul is in the game from the moment the cards are on the table, and very frequently his knife is in it too before the game is ended.</p>
+      </div>
+      <div class="source-doc-citation">Source: Jacob Riis. <em>How the Other Half Lives.</em> 1890. Charles Scribner's Sons.</div>
+    </div>
+
+    <!-- Close Reading Q1: Photographs as evidence -->
+    <div class="question-block">
+      <div class="question-block-label">Close Reading &mdash; Documents A, B, C (Photographs)</div>
+      <div class="question-item">
+        <div class="question-text">Looking at all three photographs together: what specific details do they show about the conditions of tenement life? List at least three concrete things these images document (consider: space, light, furnishings, expressions, clothing).</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa2_q1" data-key="hist102_w3_sa2_q1" placeholder="Describe specific, concrete details you observe in the photographs…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa2_q1">0 words</span><span class="save-indicator" id="si_sa2_q1">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Close Reading Q2: Flash technology -->
+    <div class="question-block">
+      <div class="question-block-label">Close Reading &mdash; Document A (Circumstances)</div>
+      <div class="question-item">
+        <div class="question-text">Document A was taken at night with a surprise magnesium flash &mdash; the subjects did not know they were being photographed. How does this affect its value as historical evidence? Does the element of surprise make it more or less reliable as a representation of tenement conditions? Explain.</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa2_q2" data-key="hist102_w3_sa2_q2" placeholder="Answer in your own words…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa2_q2">0 words</span><span class="save-indicator" id="si_sa2_q2">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Close Reading Q3: Document B and Riis's attitude -->
+    <div class="question-block">
+      <div class="question-block-label">Close Reading &mdash; Document B (Photographer's Perspective)</div>
+      <div class="question-item">
+        <div class="question-text">In his lecture notes about Document B, Riis described the man as a "typical tramp" and suggested he had never done "honest labor" in his life. What does this reveal about Riis's attitude toward the people he was photographing? Does knowing this affect how you evaluate Document B as evidence of tenement life? Why or why not?</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa2_q3" data-key="hist102_w3_sa2_q3" placeholder="Answer in your own words…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa2_q3">0 words</span><span class="save-indicator" id="si_sa2_q3">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Close Reading Q4: Document D -->
+    <div class="question-block">
+      <div class="question-block-label">Close Reading &mdash; Document D (Text)</div>
+      <div class="question-item">
+        <div class="question-text">Document D describes Italian immigrants using ethnic stereotypes &mdash; calling them gamblers with knives who "live in a pig-sty." How does this written text affect how you read the photographs in Documents A, B, and C? Does knowing Riis held these views make his photographic evidence more or less reliable? Explain the tension.</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa2_q4" data-key="hist102_w3_sa2_q4" placeholder="Answer in your own words…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa2_q4">0 words</span><span class="save-indicator" id="si_sa2_q4">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Close Reading Q5: Missing evidence -->
+    <div class="question-block">
+      <div class="question-block-label">Close Reading &mdash; Evaluating the Evidence</div>
+      <div class="question-item">
+        <div class="question-text">What kinds of sources might you want to see <em>alongside</em> Riis's photographs to get a fuller picture of tenement life? Name at least two specific types of additional evidence and explain what each could tell you that these photographs cannot.</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa2_q5" data-key="hist102_w3_sa2_q5" placeholder="Think about what the photographs can't show — voices, daily routines, residents' own perspectives…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa2_q5">0 words</span><span class="save-indicator" id="si_sa2_q5">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Historical Question -->
+    <div class="hq-block">
+      <div class="hq-label">Historical Question &mdash; Essay Response</div>
+      <div class="hq-question">What were conditions like in New York City tenements in the late 19th century?</div>
+      <div class="hq-subtext">Using evidence from Documents A through D, write a response of at least 250 words. Do not just describe what you see &mdash; analyze what these sources reveal <em>and</em> what their limitations are as evidence.</div>
+
+      <div class="essay-requirement-box">
+        <h4>Your response should address:</h4>
+        <ul>
+          <li><strong>What specific conditions</strong> the photographs and text document about tenement life</li>
+          <li><strong>Who Jacob Riis was</strong> and what perspective he brought to this subject</li>
+          <li><strong>How the circumstances</strong> of the photographs' creation (flash photography, staged vs. unstaged, payment) affect their reliability as evidence</li>
+          <li><strong>The tension</strong> between the photographic evidence (which shows real conditions) and the written text (Document D), which reveals Riis's biases</li>
+          <li><strong>What other sources</strong> would help you answer the question more fully &mdash; and what they could add</li>
+          <li><strong>Your own supported conclusion:</strong> what can these sources reliably tell us, and what can't they tell us?</li>
+        </ul>
+      </div>
+
+      <textarea class="answer-area essay-area" id="sa2_essay" data-key="hist102_w3_sa2_essay" placeholder="Type your essay response here. Aim for at least 250 words. Your work saves automatically as you type.&#10;&#10;Suggested structure: Open with a clear argument. Use specific evidence from at least three of the four documents. Address Riis's perspective and what it means for the reliability of his sources. Conclude with what other evidence you'd want."></textarea>
+      <div class="answer-meta">
+        <span class="word-count" id="wc_sa2_essay">0 words &mdash; minimum 250</span>
+        <span class="save-indicator" id="si_sa2_essay">&#10003; Saved</span>
+      </div>
+      <div class="word-count-bar"><div class="word-count-bar-fill" id="essay2_fill"></div></div>
+      <p style="font-size:0.8rem;color:var(--ink-light);margin-top:0.65rem;font-style:italic;">Word count bar turns green at 250 words. Your work is saved automatically and will be included in your PDF download.</p>
+    </div>
+
+  </div><!-- /sa-body -->
+
+  <div class="callout callout-task" style="margin-top:2rem;">
+    <span class="callout-label">You're Almost Done</span>
+    Your answers are saved. Download your complete Reading Notes PDF from the end of Reading 4.2 &mdash; it will include your reading notes, both source analysis close-reading answers, and both essays. Submit the PDF to Canvas by <strong>Sunday at 11:59 PM.</strong>
+  </div>
+  <div class="callout callout-note" style="margin-top:1rem;">
+    <strong>Remaining Canvas work:</strong> Source Analysis 3.3 (Washington vs. Du Bois) is due Thursday. Your Discussion initial post is also due Thursday. Replies and all PDFs are due Sunday 11:59 PM.<br>
+    <a href="https://yosemite.instructure.com" target="_blank" rel="noopener" class="chip chip-canvas" style="display:inline-block;margin-top:0.5rem;text-decoration:none;padding:0.4rem 0.9rem;">Go to Canvas &#8599;</a>
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="reading-2.html">&larr; Reading 4.2</a>
+    <span class="footer-label">Page 6 of 6 &nbsp;&middot;&nbsp; Source Analysis 3.2</span>
+    <a class="nav-btn nav-btn-next" href="../index.html">Course Home &rarr;</a>
+  </div>
+
+</main></div>
+
+<script>
+document.getElementById('saBody').addEventListener('contextmenu',e=>e.preventDefault());
+document.getElementById('saBody').addEventListener('selectstart',e=>{if(e.target.tagName==='TEXTAREA')return;e.preventDefault();});
+
+const TOTAL_SA=6; // 5 close-reading + 1 essay
+const ALL_IDS=['sa2_q1','sa2_q2','sa2_q3','sa2_q4','sa2_q5','sa2_essay'];
+
+function countWords(s){return s.trim()===''?0:s.trim().split(/\s+/).length;}
+
+function updateWordCount(ta){
+  const wc=countWords(ta.value);
+  const el=document.getElementById('wc_'+ta.id);
+  if(!el)return;
+  if(ta.id==='sa2_essay'){
+    const min=250;
+    el.textContent=wc+' words \u2014 minimum '+min;
+    el.className='word-count '+(wc===0?'':wc<min?'low':'good');
+    const pct=Math.min(100,Math.round(wc/min*100));
+    const fill=document.getElementById('essay2_fill');
+    if(fill){fill.style.width=pct+'%';fill.style.background=wc>=min?'var(--sage)':'var(--rust)';}
+  } else {
+    el.textContent=wc+' word'+(wc!==1?'s':'');
+    el.className='word-count '+(wc===0?'':wc<15?'low':'good');
+  }
+}
+
+function saveAnswer(ta){
+  try{localStorage.setItem(ta.dataset.key,ta.value);}catch(e){}
+  const si=document.getElementById('si_'+ta.id);
+  if(si){si.classList.add('visible');setTimeout(()=>si.classList.remove('visible'),1500);}
+  updateProgress();
+}
+
+function loadAnswers(){
+  document.querySelectorAll('.answer-area').forEach(ta=>{
+    try{const v=localStorage.getItem(ta.dataset.key);if(v){ta.value=v;updateWordCount(ta);}}catch(e){}
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  let n=0;
+  ['sa2_q1','sa2_q2','sa2_q3','sa2_q4','sa2_q5'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&countWords(el.value)>=8)n++;
+  });
+  const essay=document.getElementById('sa2_essay');
+  if(essay&&countWords(essay.value)>=250)n++;
+  const pct=Math.round(n/TOTAL_SA*100);
+  const bar=document.getElementById('progressBar');
+  const lbl=document.getElementById('progressLabel');
+  if(bar)bar.style.width=pct+'%';
+  if(lbl)lbl.textContent=n+' of '+TOTAL_SA+' complete';
+}
+
+document.querySelectorAll('.answer-area').forEach(ta=>{
+  let t;
+  ta.addEventListener('input',()=>{updateWordCount(ta);clearTimeout(t);t=setTimeout(()=>saveAnswer(ta),800);});
+});
+loadAnswers();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>

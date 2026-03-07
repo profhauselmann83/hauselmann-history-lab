@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w3" data-gate="gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Analysis 3.1 — Annexation of Hawaii | HIST 102</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .sa-body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}
+    /* Source document display */
+    .source-doc{background:#fff;border:1px solid var(--rule-strong);border-radius:4px;margin:1.75rem 0;overflow:hidden;}
+    .source-doc-header{background:var(--ink);color:var(--cream);padding:0.85rem 1.25rem;display:flex;align-items:baseline;gap:1rem;}
+    .source-doc-tag{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-light);flex-shrink:0;}
+    .source-doc-title{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:600;color:var(--cream);line-height:1.3;}
+    .source-doc-meta{background:var(--cream-dark);border-bottom:1px solid var(--rule-strong);padding:0.6rem 1.25rem;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;color:var(--ink-light);display:flex;flex-wrap:wrap;gap:1.25rem;}
+    .source-doc-body{padding:1.25rem 1.5rem;font-family:'Source Serif 4',Georgia,serif;font-size:0.93rem;color:var(--ink-mid);line-height:1.85;-webkit-user-select:none;user-select:none;}
+    .source-doc-body p{margin-bottom:0.9rem;}
+    .source-doc-body p:last-child{margin-bottom:0;}
+    .source-doc-body blockquote{border-left:3px solid var(--gold);margin:0.75rem 0;padding:0.5rem 1.25rem;font-style:italic;color:var(--ink-mid);}
+    .source-doc-body .poem{font-style:italic;text-align:center;margin:0.75rem 0;line-height:2.1;}
+    .source-doc-citation{background:var(--cream-deep);border-top:1px solid var(--rule-strong);padding:0.55rem 1.25rem;font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;color:var(--ink-light);}
+    /* Context box */
+    .context-box{background:var(--cream-dark);border:1px solid var(--rule-strong);border-left:4px solid var(--gold);border-radius:0 4px 4px 0;padding:1.1rem 1.5rem;margin-bottom:1.5rem;font-size:0.9rem;color:var(--ink-mid);line-height:1.7;}
+    .context-box strong{color:var(--ink);}
+    /* Timeline */
+    .timeline{list-style:none;padding:0;margin:1.25rem 0;}
+    .timeline li{display:flex;gap:1rem;margin-bottom:0.85rem;font-size:0.88rem;color:var(--ink-mid);line-height:1.6;}
+    .timeline-date{font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.08em;color:var(--gold);white-space:nowrap;padding-top:0.15rem;min-width:110px;}
+    /* Question blocks */
+    .question-block{background:#fff;border:1px solid var(--rule-strong);border-top:3px solid var(--gold);border-radius:0 0 4px 4px;padding:1.5rem;margin:2rem 0;clear:both;}
+    .question-block-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+    .question-block-label::after{content:'';flex:1;height:1px;background:rgba(154,111,42,0.2);}
+    .question-item{margin-bottom:1.5rem;}
+    .question-item:last-child{margin-bottom:0;}
+    .question-text{font-family:'Playfair Display',serif;font-size:0.97rem;font-weight:600;color:var(--ink);margin-bottom:0.5rem;line-height:1.45;}
+    .answer-requirement{font-size:0.78rem;color:var(--ink-light);font-style:italic;margin-bottom:0.6rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+    .req-tag{font-family:'DM Mono',monospace;font-size:0.6rem;font-style:normal;letter-spacing:0.08em;text-transform:uppercase;color:var(--rust);background:rgba(140,58,30,0.07);border:1px solid rgba(140,58,30,0.2);border-radius:2px;padding:0.1rem 0.4rem;}
+    .req-tag-green{font-family:'DM Mono',monospace;font-size:0.6rem;font-style:normal;letter-spacing:0.08em;text-transform:uppercase;color:var(--sage);background:rgba(61,96,83,0.07);border:1px solid rgba(61,96,83,0.25);border-radius:2px;padding:0.1rem 0.4rem;}
+    .answer-area{width:100%;min-height:110px;padding:0.75rem 1rem;border:1px solid var(--rule-strong);border-radius:3px;background:var(--cream);font-family:'Source Serif 4',Georgia,serif;font-size:0.92rem;font-weight:300;color:var(--ink);line-height:1.7;resize:vertical;transition:border-color .2s,box-shadow .2s;-webkit-user-select:text;user-select:text;}
+    .answer-area.essay-area{min-height:200px;}
+    .answer-area:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(154,111,42,0.1);}
+    .answer-area::placeholder{color:var(--ink-light);opacity:0.6;font-style:italic;}
+    .answer-meta{display:flex;justify-content:space-between;align-items:center;margin-top:0.4rem;}
+    .word-count{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-light);}
+    .word-count.low{color:var(--rust);}
+    .word-count.good{color:var(--sage);}
+    .word-count.req{color:var(--canvas-blue);}
+    .save-indicator{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;color:var(--sage);opacity:0;transition:opacity .3s;}
+    .save-indicator.visible{opacity:1;}
+    /* Essay requirement box */
+    .essay-requirement-box{background:rgba(61,96,83,0.06);border:1px solid rgba(61,96,83,0.25);border-left:4px solid var(--sage);border-radius:0 4px 4px 0;padding:1rem 1.25rem;margin-bottom:1.25rem;}
+    .essay-requirement-box h4{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);margin-bottom:0.6rem;}
+    .essay-requirement-box ul{padding-left:1.25rem;margin:0;font-size:0.88rem;color:var(--ink-mid);line-height:1.75;}
+    /* Progress */
+    .notes-progress{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:4px;padding:0.9rem 1.25rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;}
+    .notes-progress-bar-wrap{flex:1;height:6px;background:var(--cream-deep);border-radius:3px;overflow:hidden;}
+    .notes-progress-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease;width:0%;}
+    .notes-progress-label{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;white-space:nowrap;color:var(--ink-light);}
+    /* Historical question block — sage accent */
+    .hq-block{background:#fff;border:1px solid rgba(61,96,83,0.3);border-top:4px solid var(--sage);border-radius:0 0 4px 4px;padding:1.75rem;margin:2.5rem 0;}
+    .hq-label{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--sage);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+    .hq-label::after{content:'';flex:1;height:1px;background:rgba(61,96,83,0.2);}
+    .hq-question{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:0.75rem;line-height:1.35;}
+    .hq-subtext{font-size:0.88rem;color:var(--ink-light);line-height:1.65;margin-bottom:1.25rem;}
+    .word-count-bar{height:4px;background:var(--cream-deep);border-radius:2px;overflow:hidden;margin-top:0.5rem;}
+    .word-count-bar-fill{height:100%;background:var(--rust);border-radius:2px;transition:width .3s,background .3s;width:0%;}
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step done" href="index.html"><span class="step-num">&#10003;</span> Overview</a>
+    <a class="prog-step done" href="video.html"><span class="step-num">&#10003;</span> Video</a>
+    <a class="prog-step done" href="reading-1.html"><span class="step-num">&#10003;</span> Reading 4.1</a>
+    <a class="prog-step active" href="source-analysis-1.html"><span class="step-num">4</span> Source Analysis 3.1</a>
+    <a class="prog-step" href="reading-2.html"><span class="step-num">5</span> Reading 4.2</a>
+    <a class="prog-step" href="source-analysis-2.html"><span class="step-num">6</span> Source Analysis 3.2</a>
+    <a class="prog-step" href="#"><span class="step-num">7</span> Canvas</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 3 &nbsp;&middot;&nbsp; Step 4</div>
+    <h1>Source Analysis 3.1</h1>
+    <p class="page-subtitle">Annexation of Hawaii &mdash; Two Newspaper Accounts, 1897&ndash;1898</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~75 min</span>
+      <span class="chip chip-due">Due Tuesday</span>
+      <span class="chip chip-pts">20 pts</span>
+    </div>
+  </div>
+</header>
+
+<div id="page-content"><main>
+
+  <div class="notes-progress">
+    <span class="notes-progress-label">SA 3.1 Progress</span>
+    <div class="notes-progress-bar-wrap"><div class="notes-progress-bar" id="progressBar"></div></div>
+    <span class="notes-progress-label" id="progressLabel">0 of 5 complete</span>
+  </div>
+
+  <div class="sa-body" id="saBody">
+
+    <div class="context-box">
+      <strong>Background &amp; Historical Context</strong><br>
+      In 1898, the United States formally annexed Hawaii &mdash; but were Hawaiians in favor of this? The two newspaper articles below give very different answers. As you read, think carefully about <em>who</em> published each article, <em>who</em> their audience was, and <em>what</em> stake they had in the outcome of annexation. Your goal is not just to summarize what each source says, but to evaluate <em>why</em> they say it.
+    </div>
+
+    <h3 class="section-heading-sm" style="margin-bottom:0.5rem;">Annexation of Hawaii &mdash; Timeline</h3>
+    <ul class="timeline">
+      <li><span class="timeline-date">Jan. 1891</span><span>Lili&#699;uokalani became Queen of Hawaii after her brother King Kal&#257;kaua died.</span></li>
+      <li><span class="timeline-date">1892</span><span>Queen Lili&#699;uokalani worked to revise the constitution: she wanted to restore voting rights to native Hawaiians, remove voting rights from non-Hawaiians, and return legislative power to the monarch.</span></li>
+      <li><span class="timeline-date">Jan. 1893</span><span>The Hawaiian League led a coup d'état, overthrowing Queen Lili&#699;uokalani. American businessmen and a U.S. government official immediately recognized the new provisional government.</span></li>
+      <li><span class="timeline-date">Mar. 1893</span><span>President Grover Cleveland refused to recognize the provisional government, declared the coup illegal, but left any decision about restoring the Queen to Congress &mdash; which took no action.</span></li>
+      <li><span class="timeline-date">Mar. 1897</span><span>President William McKinley, who supported annexation, took office. He backed an annexation treaty, but it failed to win the required two-thirds Senate vote.</span></li>
+      <li><span class="timeline-date">Sep. 1897</span><span>The Hui Aloha '&#256;ina held a mass meeting to protest annexation and launched a petition drive against it.</span></li>
+      <li><span class="timeline-date">Nov. 1897&ndash;Feb. 1898</span><span>Hui Aloha '&#256;ina representatives and Queen Lili&#699;uokalani traveled to Washington, D.C. to present the anti-annexation petition to U.S. senators.</span></li>
+      <li><span class="timeline-date">Feb. 1898</span><span>The Spanish-American War began. Several senators changed their votes in favor of annexation, wanting to secure a Pacific naval base.</span></li>
+      <li><span class="timeline-date">Jul. 1898</span><span>A joint resolution annexing Hawaii passed Congress and was signed by McKinley. (A joint resolution required only a simple majority, unlike the two-thirds needed for a treaty.)</span></li>
+      <li><span class="timeline-date">Aug. 12, 1898</span><span>"Annexation Day": the Hawaiian flag was lowered and the American flag raised at the palace in Honolulu.</span></li>
+    </ul>
+
+    <!-- Document A -->
+    <div class="source-doc">
+      <div class="source-doc-header">
+        <span class="source-doc-tag">Document A</span>
+        <span class="source-doc-title">The Pacific Commercial Advertiser &mdash; "Annexation!" (1898)</span>
+      </div>
+      <div class="source-doc-meta">
+        <span><strong>Publication:</strong> The Pacific Commercial Advertiser</span>
+        <span><strong>Date:</strong> July 14, 1898</span>
+        <span><strong>Audience:</strong> English-language; primarily the white business community of Honolulu</span>
+        <span><strong>Stance:</strong> Pro-annexation</span>
+      </div>
+      <div class="source-doc-body">
+        <div class="poem">
+          And the star-spangled banner<br>
+          In triumph shall wave,<br>
+          O'er the Isles of Hawaii<br>
+          And the homes of the brave.<br>
+          <em style="font-size:0.82rem;">&mdash; H. M. Whitney</em>
+        </div>
+        <p><strong>Honolulu, H.I., U.S.A., July 13, 1898, 3:30 p.m.</strong> &mdash; The Pacific Mail S.S. Coptic signals from off Waikiki that these Islands have been annexed to the United States. Flags are being hoisted everywhere. Thousands flocked to the water front. There are great crowds on the streets evidencing the very delirium of joy.</p>
+        <p><strong>VOTE AT WASHINGTON.</strong> Washington, July 6 &mdash; The resolutions which make Hawaii a part of the United States were passed by the Senate this afternoon. [The] will of the people, expressed in the vote of their representatives by 42 to 21, declared that Hawaii must be a part of the Union of States. When the Vice-President announced the vote there was applause from floor and gallery.</p>
+      </div>
+      <div class="source-doc-citation">Source: "Annexation!" (1898, July 14). <em>The Pacific Commercial Advertiser.</em></div>
+    </div>
+
+    <!-- Close Reading Q1 -->
+    <div class="question-block">
+      <div class="question-block-label">Close Reading &mdash; Document A</div>
+      <div class="question-item">
+        <div class="question-text">Who published Document A, and who was its primary audience? Based on those facts alone, what reason do you have to question how accurately it represents the views of most Hawaiians?</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa1_q1" data-key="hist102_w3_sa1_q1" placeholder="Answer in your own words…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa1_q1">0 words</span><span class="save-indicator" id="si_sa1_q1">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Document B -->
+    <div class="source-doc">
+      <div class="source-doc-header">
+        <span class="source-doc-tag">Document B</span>
+        <span class="source-doc-title">The Independent &mdash; "The Memorial" (1897)</span>
+      </div>
+      <div class="source-doc-meta">
+        <span><strong>Publication:</strong> The Independent (English-language, Honolulu)</span>
+        <span><strong>Date:</strong> October 16, 1897</span>
+        <span><strong>Audience:</strong> English-language Hawaiian readership; opposed to annexation</span>
+        <span><strong>Document type:</strong> Reprint of a resolution adopted at a mass meeting of Hawaiian citizens</span>
+      </div>
+      <div class="source-doc-body">
+        <p><em>To the President, the Congress and the People of the United States of America. This Memorial respectfully represents as follows:</em></p>
+        <p><strong>1</strong> &mdash; That your memorialists are residents of the Hawaiian Islands; that the majority of them are aboriginal Hawaiians&hellip;</p>
+        <p><strong>3</strong> &mdash; That the Government of the Republic of Hawaii has no warrant for its existence in the support of the people of these Islands; that it was instituted without considering the rights and wishes of a great majority of the residents; and that it maintains itself solely by force of arms.</p>
+        <p><strong>4</strong> &mdash; That its Constitution was adopted by a convention, a majority of whose members were self-appointed, and the balance of whose members were elected by a numerically insignificant minority of the white and aboriginal male citizens of these Islands.</p>
+        <p><strong>7</strong> &mdash; That your memorialists have learned with grief and dismay that the President of the United States has submitted for ratification a treaty which proposes to annex our territory to the United States.</p>
+        <p><strong>9</strong> &mdash; That your memorialists humbly but fervently protest against this; and repeat that the consent of the people of the Hawaiian Islands has never been asked.</p>
+        <p><strong>10</strong> &mdash; That Annexation would subvert the rights of the Hawaiian people, and would negate the principles proclaimed in the Declaration of American Independence.</p>
+        <p><strong>12</strong> &mdash; Your memorialists humbly pray that no further steps be taken until the Hawaiian people have the opportunity to express at the ballot box, their wishes as to whether to accept or reject Annexation.</p>
+      </div>
+      <div class="source-doc-citation">Source: "The Memorial." (1897, October 16). <em>The Independent.</em></div>
+    </div>
+
+    <!-- Close Reading Q2 + Q3 -->
+    <div class="question-block">
+      <div class="question-block-label">Close Reading &mdash; Document B</div>
+      <div class="question-item">
+        <div class="question-text">Who wrote "The Memorial," and who did they claim to represent? What specific argument do they make about whether the provisional government had the consent of the Hawaiian people?</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa1_q2" data-key="hist102_w3_sa1_q2" placeholder="Answer in your own words…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa1_q2">0 words</span><span class="save-indicator" id="si_sa1_q2">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="question-text">Document B invokes the Declaration of Independence in its argument against annexation (paragraph 10). Why is this a particularly powerful rhetorical strategy when addressing "the Congress and the People of the United States"? What argument is it making?</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa1_q3" data-key="hist102_w3_sa1_q3" placeholder="Answer in your own words…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa1_q3">0 words</span><span class="save-indicator" id="si_sa1_q3">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Comparing the sources Q4 -->
+    <div class="question-block">
+      <div class="question-block-label">Comparing the Sources</div>
+      <div class="question-item">
+        <div class="question-text">Documents A and B make completely opposite claims about Hawaiian opinion on annexation. How do you explain this contradiction? Think carefully about each source: who created it, who they were trying to persuade, and what they stood to gain or lose from annexation.</div>
+        <div class="answer-requirement"><span>2&ndash;3 sentences</span></div>
+        <textarea class="answer-area" id="sa1_q4" data-key="hist102_w3_sa1_q4" placeholder="Answer in your own words…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_sa1_q4">0 words</span><span class="save-indicator" id="si_sa1_q4">&#10003; Saved</span></div>
+      </div>
+    </div>
+
+    <!-- Historical Question -->
+    <div class="hq-block">
+      <div class="hq-label">Historical Question &mdash; Essay Response</div>
+      <div class="hq-question">Did Hawaiians support annexation?</div>
+      <div class="hq-subtext">Using evidence from both documents above, write a response of at least 250 words. Your answer should be analytical, not just a summary &mdash; you are making an argument about what the sources reveal, not just describing what they say.</div>
+
+      <div class="essay-requirement-box">
+        <h4>Your response should address:</h4>
+        <ul>
+          <li><strong>Who wrote each document</strong> and what their perspective was</li>
+          <li><strong>How the circumstances</strong> in which each document was created might affect its content</li>
+          <li><strong>Whether the two sources agree</strong> &mdash; and if not, why they differ</li>
+          <li><strong>What other sources</strong> might help you answer the question more completely (e.g., a Kanaka &#699;&#332;iwi oral history, a census, voting records)</li>
+          <li><strong>Your own supported conclusion:</strong> based on these sources, what can you say &mdash; and what can't you say &mdash; about Hawaiian public opinion?</li>
+        </ul>
+      </div>
+
+      <textarea class="answer-area essay-area" id="sa1_essay" data-key="hist102_w3_sa1_essay" placeholder="Type your essay response here. Aim for at least 250 words. Your work saves automatically as you type.&#10;&#10;Start with a clear argument in your first sentence. Use specific evidence from both documents. Address the source's perspective and reliability. End with what other evidence you'd want to see."></textarea>
+      <div class="answer-meta">
+        <span class="word-count" id="wc_sa1_essay">0 words &mdash; minimum 250</span>
+        <span class="save-indicator" id="si_sa1_essay">&#10003; Saved</span>
+      </div>
+      <div class="word-count-bar"><div class="word-count-bar-fill" id="essay1_fill"></div></div>
+      <p style="font-size:0.8rem;color:var(--ink-light);margin-top:0.65rem;font-style:italic;">Word count bar turns green at 250 words. Your work is saved automatically and will be included in your PDF download at the end of Reading 4.2.</p>
+    </div>
+
+  </div><!-- /sa-body -->
+
+  <div class="callout callout-task" style="margin-top:2rem;">
+    <span class="callout-label">Continue to Reading 4.2</span>
+    Your responses have been saved. Continue to <strong>Reading 4.2 &mdash; Urban Poverty, Race, and Reform</strong> to complete the second half of your reading notes. Your second source analysis (Jacob Riis) follows Reading 4.2.
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="reading-1.html">&larr; Reading 4.1</a>
+    <span class="footer-label">Page 4 of 6 &nbsp;&middot;&nbsp; Source Analysis 3.1</span>
+    <a class="nav-btn nav-btn-next" href="reading-2.html">Reading 4.2 &rarr;</a>
+  </div>
+
+</main></div>
+
+<script>
+document.getElementById('saBody').addEventListener('contextmenu',e=>e.preventDefault());
+document.getElementById('saBody').addEventListener('selectstart',e=>{if(e.target.tagName==='TEXTAREA')return;e.preventDefault();});
+
+const TOTAL_SA=5; // 4 close-reading + 1 essay (essay counts if >=250 words)
+const ALL_IDS=['sa1_q1','sa1_q2','sa1_q3','sa1_q4','sa1_essay'];
+
+function countWords(s){return s.trim()===''?0:s.trim().split(/\s+/).length;}
+
+function updateWordCount(ta){
+  const wc=countWords(ta.value);
+  const el=document.getElementById('wc_'+ta.id);
+  if(!el)return;
+  if(ta.id==='sa1_essay'){
+    const min=250;
+    el.textContent=wc+' words \u2014 minimum '+min;
+    el.className='word-count '+(wc===0?'':wc<min?'low':'good');
+    const pct=Math.min(100,Math.round(wc/min*100));
+    const fill=document.getElementById('essay1_fill');
+    if(fill){fill.style.width=pct+'%';fill.style.background=wc>=min?'var(--sage)':'var(--rust)';}
+  } else {
+    el.textContent=wc+' word'+(wc!==1?'s':'');
+    el.className='word-count '+(wc===0?'':wc<15?'low':'good');
+  }
+}
+
+function saveAnswer(ta){
+  try{localStorage.setItem(ta.dataset.key,ta.value);}catch(e){}
+  const si=document.getElementById('si_'+ta.id);
+  if(si){si.classList.add('visible');setTimeout(()=>si.classList.remove('visible'),1500);}
+  updateProgress();
+}
+
+function loadAnswers(){
+  document.querySelectorAll('.answer-area').forEach(ta=>{
+    try{const v=localStorage.getItem(ta.dataset.key);if(v){ta.value=v;updateWordCount(ta);}}catch(e){}
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  let n=0;
+  ['sa1_q1','sa1_q2','sa1_q3','sa1_q4'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&countWords(el.value)>=8)n++;
+  });
+  const essay=document.getElementById('sa1_essay');
+  if(essay&&countWords(essay.value)>=250)n++;
+  const pct=Math.round(n/TOTAL_SA*100);
+  const bar=document.getElementById('progressBar');
+  const lbl=document.getElementById('progressLabel');
+  if(bar)bar.style.width=pct+'%';
+  if(lbl)lbl.textContent=n+' of '+TOTAL_SA+' complete';
+}
+
+document.querySelectorAll('.answer-area').forEach(ta=>{
+  let t;
+  ta.addEventListener('input',()=>{updateWordCount(ta);clearTimeout(t);t=setTimeout(()=>saveAnswer(ta),800);});
+});
+loadAnswers();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>
