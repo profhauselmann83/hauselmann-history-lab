@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <script src="../access-guard.js" data-week="w1" data-gate="gate.html"></script>
@@ -7,76 +6,131 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reading 2.2 — Sections 16.3 &amp; 16.4 | HIST 102</title>
 <link rel="stylesheet" href="../style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 .reading-body { -webkit-user-select:none; -moz-user-select:none; user-select:none; }
 
-.reading-nav { position:sticky; top:42px; background:var(–cream); border-bottom:1px solid var(–rule-strong); z-index:100; }
+.reading-nav { position:sticky; top:42px; background:var(--cream); border-bottom:1px solid var(--rule-strong); z-index:100; }
 .reading-nav-inner { max-width:860px; margin:0 auto; padding:0 1.5rem; display:flex; overflow-x:auto; scrollbar-width:none; }
 .reading-nav-inner::-webkit-scrollbar { display:none; }
-.rnav-item { font-family:‘DM Mono’,monospace; font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(–ink-light); padding:0.65rem 1rem; white-space:nowrap; text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .2s,border-color .2s; }
-.rnav-item:hover { color:var(–ink); border-bottom-color:var(–rule-strong); text-decoration:none; }
+.rnav-item { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-light); padding:0.65rem 1rem; white-space:nowrap; text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .2s,border-color .2s; }
+.rnav-item:hover { color:var(--ink); border-bottom-color:var(--rule-strong); text-decoration:none; }
 
 .reading-layout { display:grid; grid-template-columns:1fr 240px; gap:2.5rem; align-items:start; }
 @media(max-width:720px){ .reading-layout{grid-template-columns:1fr;} .reading-sidebar{order:-1;} }
 .reading-sidebar { position:sticky; top:90px; }
 
-.sidebar-card { background:var(–cream-dark); border:1px solid var(–rule-strong); border-radius:4px; padding:1.1rem 1.25rem; margin-bottom:1rem; }
-.sidebar-card h4 { font-family:‘DM Mono’,monospace; font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:var(–gold); margin-bottom:0.65rem; }
+.sidebar-card { background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:4px; padding:1.1rem 1.25rem; margin-bottom:1rem; }
+.sidebar-card h4 { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.65rem; }
 .sidebar-card ul { padding-left:1rem; margin:0; }
-.sidebar-card li { font-size:0.82rem; color:var(–ink-mid); margin-bottom:0.35rem; line-height:1.55; }
+.sidebar-card li { font-size:0.82rem; color:var(--ink-mid); margin-bottom:0.35rem; line-height:1.55; }
 
-.key-term { background:rgba(154,111,42,0.1); border-bottom:1px solid var(–gold); cursor:help; }
-.figure-aside { float:right; width:210px; margin:0 0 1.5rem 2rem; background:var(–cream-dark); border:1px solid var(–rule-strong); border-radius:3px; padding:1rem; font-size:0.8rem; color:var(–ink-light); clear:right; }
-.figure-aside .figure-name { font-family:‘Playfair Display’,serif; font-size:0.95rem; font-weight:600; color:var(–ink); margin-bottom:0.2rem; font-style:italic; }
-.figure-aside .figure-dates { font-family:‘DM Mono’,monospace; font-size:0.6rem; letter-spacing:0.1em; color:var(–ink-light); margin-bottom:0.5rem; }
+.key-term { background:rgba(154,111,42,0.1); border-bottom:1px solid var(--gold); cursor:help; }
+.figure-aside { float:right; width:210px; margin:0 0 1.5rem 2rem; background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:3px; padding:1rem; font-size:0.8rem; color:var(--ink-light); clear:right; }
+.figure-aside .figure-name { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:600; color:var(--ink); margin-bottom:0.2rem; font-style:italic; }
+.figure-aside .figure-dates { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.1em; color:var(--ink-light); margin-bottom:0.5rem; }
 @media(max-width:580px){ .figure-aside{float:none;width:100%;margin:0 0 1.5rem;} }
 
-.primary-source-box { background:var(–cream-dark); border:1px solid var(–rule-strong); border-left:3px solid var(–rust); border-radius:0 4px 4px 0; padding:1.25rem 1.5rem; margin:2rem 0; }
-.primary-source-box .ps-label { font-family:‘DM Mono’,monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(–rust); margin-bottom:0.5rem; display:block; }
-.primary-source-box blockquote { border:none; padding:0; margin:0.5rem 0; font-family:‘Playfair Display’,serif; font-style:italic; font-size:0.97rem; color:var(–ink); line-height:1.65; }
-.primary-source-box cite { display:block; font-family:‘DM Mono’,monospace; font-style:normal; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(–ink-light); margin-top:0.4rem; }
-
-/* ── QUESTION BLOCKS ── */
-.question-block { background:#fff; border:1px solid var(–rule-strong); border-top:3px solid var(–gold); border-radius:0 0 4px 4px; padding:1.5rem; margin:2rem 0; clear:both; }
-.question-block-label { font-family:‘DM Mono’,monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(–gold); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
-.question-block-label::after { content:’’; flex:1; height:1px; background:rgba(154,111,42,0.2); }
+.question-block { background:#fff; border:1px solid var(--rule-strong); border-top:3px solid var(--gold); border-radius:0 0 4px 4px; padding:1.5rem; margin:2rem 0; clear:both; }
+.question-block-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+.question-block-label::after { content:''; flex:1; height:1px; background:rgba(154,111,42,0.2); }
 .question-item { margin-bottom:1.5rem; }
 .question-item:last-child { margin-bottom:0; }
-.question-text { font-family:‘Playfair Display’,serif; font-size:0.97rem; font-weight:600; color:var(–ink); margin-bottom:0.5rem; line-height:1.45; }
-.answer-requirement { font-size:0.78rem; color:var(–ink-light); font-style:italic; margin-bottom:0.6rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
-.req-tag { font-family:‘DM Mono’,monospace; font-size:0.6rem; font-style:normal; letter-spacing:0.08em; text-transform:uppercase; color:var(–rust); background:rgba(140,58,30,0.07); border:1px solid rgba(140,58,30,0.2); border-radius:2px; padding:0.1rem 0.4rem; }
-.answer-area { width:100%; min-height:110px; padding:0.75rem 1rem; border:1px solid var(–rule-strong); border-radius:3px; background:var(–cream); font-family:‘Source Serif 4’,Georgia,serif; font-size:0.92rem; font-weight:300; color:var(–ink); line-height:1.7; resize:vertical; transition:border-color .2s,box-shadow .2s; -webkit-user-select:text; user-select:text; }
-.answer-area:focus { outline:none; border-color:var(–gold); box-shadow:0 0 0 3px rgba(154,111,42,0.1); }
-.answer-area::placeholder { color:var(–ink-light); opacity:0.6; font-style:italic; }
+.question-text { font-family:'Playfair Display',serif; font-size:0.97rem; font-weight:600; color:var(--ink); margin-bottom:0.5rem; line-height:1.45; }
+.answer-requirement { font-size:0.78rem; color:var(--ink-light); font-style:italic; margin-bottom:0.6rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
+.req-tag { font-family:'DM Mono',monospace; font-size:0.6rem; font-style:normal; letter-spacing:0.08em; text-transform:uppercase; color:var(--rust); background:rgba(140,58,30,0.07); border:1px solid rgba(140,58,30,0.2); border-radius:2px; padding:0.1rem 0.4rem; }
+.answer-area { width:100%; min-height:110px; padding:0.75rem 1rem; border:1px solid var(--rule-strong); border-radius:3px; background:var(--cream); font-family:'Source Serif 4',Georgia,serif; font-size:0.92rem; font-weight:300; color:var(--ink); line-height:1.7; resize:vertical; transition:border-color .2s,box-shadow .2s; -webkit-user-select:text; user-select:text; }
+.answer-area:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(154,111,42,0.1); }
+.answer-area::placeholder { color:var(--ink-light); opacity:0.6; font-style:italic; }
 .answer-meta { display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem; }
-.word-count { font-family:‘DM Mono’,monospace; font-size:0.62rem; letter-spacing:0.08em; color:var(–ink-light); }
-.word-count.low { color:var(–rust); }
-.word-count.good { color:var(–sage); }
-.save-indicator { font-family:‘DM Mono’,monospace; font-size:0.58rem; letter-spacing:0.08em; color:var(–sage); opacity:0; transition:opacity .3s; }
+.word-count { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.08em; color:var(--ink-light); }
+.word-count.low { color:var(--rust); }
+.word-count.good { color:var(--sage); }
+.save-indicator { font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; color:var(--sage); opacity:0; transition:opacity .3s; }
 .save-indicator.visible { opacity:1; }
 
-.notes-progress { background:var(–cream-dark); border:1px solid var(–rule-strong); border-radius:4px; padding:0.9rem 1.25rem; margin-bottom:2rem; display:flex; align-items:center; gap:1rem; }
-.notes-progress-bar-wrap { flex:1; height:6px; background:var(–cream-deep); border-radius:3px; overflow:hidden; }
-.notes-progress-bar { height:100%; background:var(–gold); border-radius:3px; transition:width .4s ease; width:0%; }
-.notes-progress-label { font-family:‘DM Mono’,monospace; font-size:0.62rem; letter-spacing:0.08em; white-space:nowrap; color:var(–ink-light); }
+.notes-progress { background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:4px; padding:0.9rem 1.25rem; margin-bottom:2rem; display:flex; align-items:center; gap:1rem; }
+.notes-progress-bar-wrap { flex:1; height:6px; background:var(--cream-deep); border-radius:3px; overflow:hidden; }
+.notes-progress-bar { height:100%; background:var(--gold); border-radius:3px; transition:width .4s ease; width:0%; }
+.notes-progress-label { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.08em; white-space:nowrap; color:var(--ink-light); }
 
-.copy-notice { font-family:‘DM Mono’,monospace; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(–ink-light); text-align:center; padding:0.5rem; border-top:1px solid var(–rule); margin-bottom:2rem; }
+.copy-notice { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-light); text-align:center; padding:0.5rem; border-top:1px solid var(--rule); margin-bottom:2rem; }
 
-/* ── PDF DOWNLOAD SECTION ── */
-.pdf-section { margin-top:3rem; padding:2rem; background:linear-gradient(135deg,var(–cream-dark) 0%,#fff 100%); border:1px solid var(–rule-strong); border-top:3px solid var(–ink); border-radius:0 0 6px 6px; }
-.pdf-section h3 { font-family:‘Playfair Display’,serif; font-size:1.25rem; font-weight:700; color:var(–ink); margin-bottom:0.5rem; font-style:normal; }
-.pdf-section p { font-size:0.9rem; color:var(–ink-mid); }
-.pdf-checklist { list-style:none; padding:0; margin:1rem 0 1.5rem; display:flex; flex-direction:column; gap:0.35rem; }
-.pdf-checklist li { font-size:0.85rem; color:var(–ink-mid); display:flex; align-items:center; gap:0.5rem; margin:0; }
-.pdf-checklist .check { color:var(–sage); font-size:0.8rem; }
-.pdf-checklist .miss  { color:var(–rust); font-size:0.8rem; }
-.pdf-btn { display:inline-flex; align-items:center; gap:0.75rem; background:var(–ink); color:var(–cream); padding:0.85rem 2rem; border-radius:3px; font-family:‘DM Mono’,monospace; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; border:none; cursor:pointer; transition:background .2s,transform .1s; }
-.pdf-btn:hover { background:var(–ink-mid); transform:translateY(-1px); }
-.pdf-btn:active { transform:translateY(0); }
-.pdf-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
-.pdf-warning { font-family:‘DM Mono’,monospace; font-size:0.65rem; letter-spacing:0.08em; color:var(–rust); margin-top:0.75rem; }
+.primary-source-box { background:var(--cream-dark); border:1px solid var(--rule-strong); border-left:3px solid var(--rust); border-radius:0 4px 4px 0; padding:1.25rem 1.5rem; margin:2rem 0; }
+.primary-source-box .ps-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--rust); margin-bottom:0.5rem; display:block; }
+.primary-source-box blockquote { border:none; padding:0; margin:0.5rem 0; font-family:'Playfair Display',serif; font-style:italic; font-size:0.97rem; color:var(--ink); line-height:1.65; }
+.primary-source-box cite { display:block; font-family:'DM Mono',monospace; font-style:normal; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-light); margin-top:0.4rem; }
+
+/* ── PDF / submission section ── */
+.submit-section {
+  background: var(--cream-dark);
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  padding: 1.75rem 2rem;
+  margin: 2.5rem 0;
+}
+.submit-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+.submit-section p {
+  font-size: 0.9rem;
+  color: var(--ink-mid);
+  margin-bottom: 1.25rem;
+  line-height: 1.65;
+}
+.pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.4rem;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+  margin-right: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.pdf-btn:hover { background: var(--ink-mid); }
+.pdf-btn-icon { font-size: 1rem; }
+.canvas-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--canvas-blue);
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.4rem;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background 0.2s;
+  margin-bottom: 0.75rem;
+}
+.canvas-submit-btn:hover { background: #163570; text-decoration: none; }
+.pdf-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--sage);
+  margin-top: 0.5rem;
+  min-height: 1.2em;
+}
 </style>
-
 </head>
 <body>
 
@@ -86,15 +140,14 @@
     <a class="prog-step done" href="video.html"><span class="step-num">✓</span> Video Lecture</a>
     <a class="prog-step done" href="reading-1.html"><span class="step-num">✓</span> Reading 2.1</a>
     <a class="prog-step active" href="reading-2.html"><span class="step-num">4</span> Reading 2.2</a>
-    <a class="prog-step" href="#"><span class="step-num">5</span> Canvas: Discussion</a>
+    <a class="prog-step" href="primary-sources.html"><span class="step-num">5</span> Primary Sources</a>
   </div>
 </nav>
 
 <nav class="reading-nav">
   <div class="reading-nav-inner">
     <a class="rnav-item" href="#s163">16.3 Radical Reconstruction</a>
-    <a class="rnav-item" href="#s164">16.4 Collapse of Reconstruction</a>
-    <a class="rnav-item" href="#download">Download Notes</a>
+    <a class="rnav-item" href="#s164">16.4 The Collapse</a>
   </div>
 </nav>
 
@@ -122,75 +175,78 @@
   <div class="reading-layout">
     <div class="reading-body" id="readingBody">
 
-```
   <!-- ══ 16.3 ══ -->
   <div id="s163">
     <div class="section-marker">Chapter 16 &nbsp;&middot;&nbsp; Section 3</div>
     <h2 class="section-title">16.3 Radical Reconstruction, 1867&ndash;1872</h2>
-    <p class="section-subtitle">Congressional Republicans seize control — and Black Americans enter political life</p>
+    <p class="section-subtitle">Military rule, Black political participation, and the Fifteenth Amendment</p>
 
     <div class="objectives-box">
       <h4>Learning Objectives</h4>
       <ul>
-        <li>Explain the purpose of the Military Reconstruction Acts and what they required of Southern states</li>
-        <li>Describe the impeachment of President Johnson and its significance</li>
-        <li>Analyze the gains and limitations of the Fifteenth Amendment</li>
-        <li>Describe the achievements of Black political participation during Reconstruction</li>
+        <li>Explain the main provisions of the Military Reconstruction Acts of 1867</li>
+        <li>Describe the role of African Americans in Southern politics during Radical Reconstruction</li>
+        <li>Analyze the significance and limits of the Fifteenth Amendment</li>
+        <li>Explain why Johnson was impeached and what the outcome revealed about the separation of powers</li>
       </ul>
     </div>
 
-    <p>During the Congressional elections of fall 1866, Republicans gained even larger majorities in both houses, due in large part to Northern voter anger at Johnson's inflexibility, his reckless speaking tour, and the clear evidence that Southern states were using his lenient Reconstruction to restore white supremacy through Black Codes and violence. Leading Radical Republicans included Massachusetts senator <strong>Charles Sumner</strong> &mdash; who had been beaten unconscious on the Senate floor by a pro-slavery congressman in 1856 &mdash; and Pennsylvania representative <strong>Thaddeus Stevens</strong>, one of the most uncompromising advocates for racial equality in American political history. Stevens believed the Southern states had forfeited their rights as states when they seceded and were now conquered territory subject to whatever terms Congress chose to impose. He envisioned the redistribution of plantation lands and sustained U.S. military control over the former Confederacy until genuine change had taken root.</p>
+    <p>The refusal of most former Confederate states to ratify the Fourteenth Amendment gave Radical Republicans in Congress the justification they needed to take direct control of Reconstruction. Beginning in March 1867, Congress passed a series of <strong>Military Reconstruction Acts</strong> that fundamentally remade the political landscape of the South. The legislation divided the former Confederacy into five military districts, each commanded by a Union general. To be readmitted to the Union, Southern states were required to draft new constitutions granting Black men the right to vote, ratify the Fourteenth Amendment, and submit their new constitutions for congressional approval.</p>
 
-    <h3>The Reconstruction Acts</h3>
+    <h3>The Military Districts and New State Constitutions</h3>
 
-    <p>The <strong>Military Reconstruction Act of 1867</strong> set an entirely new direction for Reconstruction, bypassing Johnson's approach entirely. The act divided the ten Southern states that had yet to ratify the Fourteenth Amendment into five military districts, each commanded by a Union general with roughly twenty thousand federal troops charged with maintaining order and protecting freed people. Martial law replaced civilian government. The act required Southern states to hold constitutional conventions with delegates elected by universal male suffrage &mdash; including Black men &mdash; draft new state constitutions guaranteeing Black voting rights, ratify the Fourteenth Amendment, and have their new governments approved by Congress before they could be readmitted to the Union.</p>
+    <p>Under military oversight, Southern states held constitutional conventions that for the first time included Black delegates alongside white Unionists and Northern migrants &mdash; derided by opponents as <em class="key-term" title="Northern Republicans who moved to the South during Reconstruction; so called by opponents who claimed they arrived with only a carpetbag of belongings">"carpetbaggers"</em> and <em class="key-term" title="White Southerners who cooperated with Republican Reconstruction governments; labeled traitors by fellow white Southerners">"scalawags."</em> The new state constitutions these conventions produced were among the most progressive documents in American history at the time. They established public school systems for the first time in many Southern states, expanded rights for women in property ownership, and abolished imprisonment for debt. The constitutions required ratification of the Fourteenth Amendment as a condition of readmission.</p>
 
-    <p>Supplementary Reconstruction Acts in 1867 further extended the right to vote to all freed men of voting age and gave military commanders power to remove disloyal state officials. The military oversaw voter registration throughout the South, and for the first time in American history, Black men in former Confederate states were registered to vote in large numbers. In several states, newly registered Black voters outnumbered white registered voters. Predictably, President Johnson vetoed the Reconstruction Acts &mdash; and just as predictably, Congress overrode his vetoes.</p>
+    <p>Johnson continued to obstruct Reconstruction at every turn. In August 1867 he attempted to remove Secretary of War Edwin Stanton, a Radical Republican ally, in violation of the <strong>Tenure of Office Act</strong> (which prohibited the president from removing Senate-confirmed officials without congressional approval). The House of Representatives responded in February 1868 by voting to impeach Johnson &mdash; the first presidential impeachment in American history. The trial in the Senate lasted eleven weeks. Johnson was acquitted by a single vote, falling one short of the two-thirds required for removal from office. His political power, however, was effectively destroyed. Republican Ulysses S. Grant won the presidency in November 1868, and Radical Reconstruction continued.</p>
 
     <div class="question-block">
-      <div class="question-block-label">Reading Notes &mdash; The Reconstruction Acts</div>
+      <div class="question-block-label">Reading Notes &mdash; Military Reconstruction &amp; Impeachment</div>
       <div class="question-item">
-        <div class="question-text">What did the Military Reconstruction Act require Southern states to do before they could be readmitted to the Union, and why did Radical Republicans consider these conditions necessary?</div>
+        <div class="question-text">What did the Military Reconstruction Acts require Southern states to do, and why did Congress move to impeach Andrew Johnson in 1868?</div>
         <div class="answer-requirement"><span>2–3 sentences</span><span class="req-tag">Include one direct quote</span></div>
         <textarea class="answer-area" id="q_1" data-key="hist102_w1_r2_q1" placeholder="Write in your own words. Include one quote from the reading in quotation marks."></textarea>
         <div class="answer-meta"><span class="word-count" id="wc_q_1">0 words</span><span class="save-indicator" id="si_q_1">&#10003; Saved</span></div>
       </div>
     </div>
 
-    <h3>The Impeachment of President Johnson</h3>
+    <h3>African American Political Participation</h3>
 
-    <p>To prevent Johnson from undercutting congressional Reconstruction through his power to appoint and remove officials, Radical Republicans passed the <strong>Tenure of Office Act</strong> in 1867. The act required the president to gain Senate approval before removing any official whose appointment had required Senate confirmation. It was explicitly designed to protect Secretary of War Edwin M. Stanton, a holdover from Lincoln's cabinet who was sympathetic to the Radical Republican agenda and gave Congress a critical voice inside the executive branch.</p>
+    <div class="figure-aside">
+      <div class="figure-name">Hiram Revels</div>
+      <div class="figure-dates">1827 &ndash; 1901</div>
+      In 1870, Revels became the first African American to serve in the United States Senate, representing Mississippi — the state that had produced Jefferson Davis, president of the Confederacy. His election symbolized the dramatic transformation wrought by Radical Reconstruction.
+    </div>
 
-    <p>In August 1867, Johnson defied the act by suspending Stanton and appointing General Ulysses Grant as an interim secretary of war. When the Senate refused to concur with Stanton's removal, Johnson formally fired him in February 1868. The House of Representatives responded within three days, drafting articles of impeachment &mdash; a first in American history. The charges centered on Johnson's violation of the Tenure of Office Act, but the underlying issue was his systematic obstruction of congressional Reconstruction. In the Senate trial, Johnson barely survived: the final vote was 35 to 19 in favor of conviction, one vote short of the required two-thirds majority. The acquittal was secured partly through deal-making with Republican moderates who worried about the precedent of removing a president over policy disagreements. Though Johnson survived, he was politically destroyed for the remainder of his term and played no further role in shaping Reconstruction policy.</p>
+    <p>With the protection of federal troops and the franchise now legally guaranteed, African American men in the South voted in large numbers and quickly became a powerful force in Southern politics. Between 1867 and 1877, more than 600 Black men served in Southern state legislatures. Fourteen Black congressmen were elected to the U.S. House of Representatives, and two &mdash; Hiram Revels and Blanche Bruce, both of Mississippi &mdash; served in the U.S. Senate. These officeholders pushed for public education, civil rights legislation, and economic development.</p>
+
+    <p>Black political power during Reconstruction was real but constrained. African Americans never controlled any Southern state government outright, and their officeholding was always dependent on the continued presence of federal troops and the political will to enforce Reconstruction policy. White conservatives organized systematic campaigns of fraud and violence to suppress Black votes wherever possible, even during the height of Radical Reconstruction.</p>
+
+    <h3>The Fifteenth Amendment</h3>
+
+    <p>To place Black male suffrage on a constitutional footing that could not be undone by future legislation, Congress passed the <strong>Fifteenth Amendment</strong> in February 1869; it was ratified in March 1870. The amendment prohibited the federal government and the states from denying the right to vote "on account of race, color, or previous condition of servitude." It was hailed by Frederick Douglass as "the culmination of our movement" and celebrated with parades and church services across the country.</p>
+
+    <p>Yet the amendment contained significant gaps that white supremacists would exploit within years. It said nothing about poll taxes, literacy tests, grandfather clauses, or intimidation &mdash; the tools that would be deployed after Reconstruction's collapse to systematically disenfranchise Black voters for nearly a century. Women's suffrage advocates, including Elizabeth Cady Stanton and Susan B. Anthony, bitterly opposed the amendment because it extended the vote to Black men while leaving women of all races still disenfranchised. The amendment's passage created a sharp rupture in the alliance between the abolitionist and women's rights movements.</p>
 
     <div class="question-block">
-      <div class="question-block-label">Reading Notes &mdash; The Impeachment of President Johnson</div>
+      <div class="question-block-label">Reading Notes &mdash; The Fifteenth Amendment</div>
       <div class="question-item">
-        <div class="question-text">What was the real purpose behind the Tenure of Office Act, and what does Johnson's impeachment reveal about the constitutional conflict at the heart of Reconstruction?</div>
+        <div class="question-text">What did the Fifteenth Amendment accomplish, and what did its gaps allow opponents to do in later years?</div>
         <div class="answer-requirement"><span>2–3 sentences</span><span class="req-tag">Include one direct quote</span></div>
         <textarea class="answer-area" id="q_2" data-key="hist102_w1_r2_q2" placeholder="Write in your own words. Include one quote from the reading in quotation marks."></textarea>
         <div class="answer-meta"><span class="word-count" id="wc_q_2">0 words</span><span class="save-indicator" id="si_q_2">&#10003; Saved</span></div>
       </div>
     </div>
 
-    <h3>The Fifteenth Amendment and Black Political Life</h3>
+    <h3>The KKK and the Limits of Federal Power</h3>
 
-    <div class="figure-aside">
-      <div class="figure-name">Hiram Revels</div>
-      <div class="figure-dates">1827 &ndash; 1901</div>
-      A freeborn man from North Carolina, Revels rose to prominence as a minister before becoming the first African American elected to the U.S. Senate, representing Mississippi in 1870. He filled the seat that had been vacated by Jefferson Davis when Davis left to lead the Confederacy.
-    </div>
+    <p>Even as Black men gained formal political rights, white supremacist organizations moved to terrorize them into submission. The <strong>Ku Klux Klan</strong>, founded in Pulaski, Tennessee in 1865 by former Confederate General Nathan Bedford Forrest, spread rapidly across the South. Klan members &mdash; operating in disguise, usually at night &mdash; attacked, beat, and murdered Black men and women, Republican officeholders, Black church and school leaders, and anyone else who challenged white supremacy. The Klan was not a fringe organization: it operated with the tacit support or active participation of many local law enforcement officials and Democratic politicians.</p>
 
-    <p>In the winter of 1869, Republicans introduced the <strong>Fifteenth Amendment</strong>, which directed that "[t]he right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude." The amendment was ratified in 1870. Republicans celebrated it as the completion of the work begun by the Thirteenth and Fourteenth Amendments, creating a constitutional trilogy that dismantled the legal architecture of slavery.</p>
-
-    <p>The amendment had significant weaknesses, however, that its drafters knew and accepted. It did not prohibit literacy tests, poll taxes, grandfather clauses, or other mechanisms that had nothing to do with race explicitly but were used almost exclusively against Black voters. Radical Republicans accepted these gaps as the political price of passing anything at all &mdash; several Northern states also used literacy tests to restrict immigrant voting and would not have ratified an amendment that prohibited them. Leading women's rights activists, including Susan B. Anthony and Elizabeth Cady Stanton, saw the amendment as a betrayal: it explicitly enfranchised Black men but said nothing about women of any race. The result was a bitter split in the reform coalition. In 1869, Stanton and Anthony organized the <strong>National Woman Suffrage Association (NWSA)</strong>, separating from the more moderate American Woman Suffrage Association, which supported the amendment. When Virginia Minor sued for her right to vote in Missouri in 1872, the Supreme Court ruled in 1874 that the Constitution did not confer suffrage on anyone &mdash; it merely prohibited specific discriminatory denials of a right that states themselves had to grant.</p>
-
-    <p>Despite its limitations, the Fifteenth Amendment produced remarkable and rapid political change. Black voter registration surged across the South, aided by Union Leagues that organized Republican political clubs in Black communities, distributed information, and provided mutual protection at the polls. In the 1870s, fifteen Black members served in the U.S. House of Representatives and two &mdash; Hiram Revels and Blanche K. Bruce of Mississippi &mdash; served in the Senate. Hundreds more Black men served as state legislators, judges, sheriffs, school board commissioners, and city council members throughout the former Confederacy. Reconstruction state governments, now racially integrated for the first time, funded public school systems, built hospitals and orphanages, and invested in railroad and infrastructure development.</p>
+    <p>Congress responded with the <strong>Enforcement Acts</strong> (1870–1871), also known as the Ku Klux Klan Acts, which made it a federal crime to use force, intimidation, or threats to prevent citizens from voting, holding office, or enjoying equal protection under law. President Grant used the acts aggressively: he suspended habeas corpus in nine South Carolina counties and sent federal troops to arrest hundreds of Klan members. The prosecutions, led by Attorney General Amos Akerman, were largely successful in suppressing organized Klan activity by 1872. But the underlying conditions &mdash; white supremacist determination to restore racial hierarchy, combined with limited federal capacity and declining Northern political will &mdash; remained.</p>
 
     <div class="question-block">
-      <div class="question-block-label">Reading Notes &mdash; The Fifteenth Amendment</div>
+      <div class="question-block-label">Reading Notes &mdash; The KKK and Federal Response</div>
       <div class="question-item">
-        <div class="question-text">What did the Fifteenth Amendment accomplish politically, and what deliberate gaps in its language left Black voting rights vulnerable to future suppression?</div>
+        <div class="question-text">How did Congress attempt to suppress Klan violence through the Enforcement Acts, and what does the need for such legislation reveal about the nature of Reconstruction?</div>
         <div class="answer-requirement"><span>2–3 sentences</span><span class="req-tag">Include one direct quote</span></div>
         <textarea class="answer-area" id="q_3" data-key="hist102_w1_r2_q3" placeholder="Write in your own words. Include one quote from the reading in quotation marks."></textarea>
         <div class="answer-meta"><span class="word-count" id="wc_q_3">0 words</span><span class="save-indicator" id="si_q_3">&#10003; Saved</span></div>
@@ -201,136 +257,110 @@
   <!-- ══ 16.4 ══ -->
   <div id="s164">
     <div class="section-marker">Chapter 16 &nbsp;&middot;&nbsp; Section 4</div>
-    <h2 class="section-title">16.4 The Collapse of Reconstruction</h2>
-    <p class="section-subtitle">Terror, economic crisis, and the political abandonment of freed people</p>
+    <h2 class="section-title">16.4 The Collapse of Reconstruction, 1873&ndash;1877</h2>
+    <p class="section-subtitle">Economic depression, Northern fatigue, and the end of federal protection</p>
 
     <div class="objectives-box">
       <h4>Learning Objectives</h4>
       <ul>
-        <li>Explain how sharecropping and the crop-lien system perpetuated economic dependency after emancipation</li>
-        <li>Describe the role of the Ku Klux Klan and other paramilitary groups in dismantling Reconstruction</li>
-        <li>Analyze the political, economic, and moral dimensions of Reconstruction's collapse</li>
+        <li>Explain the economic and political factors that weakened Northern support for Reconstruction</li>
+        <li>Describe how "Redeemer" Democrats used violence and fraud to reclaim Southern state governments</li>
+        <li>Analyze the Compromise of 1877 and its consequences for Black Southerners</li>
+        <li>Evaluate the long-term legacy of Reconstruction</li>
       </ul>
     </div>
 
-    <h3>Sharecropping and Economic Dependency</h3>
+    <p>By the early 1870s, the political will to sustain Reconstruction was fading in the North. The Liberal Republican movement of 1872 criticized the corruption scandals of the Grant administration &mdash; including the Crédit Mobilier railroad scandal &mdash; and called for an end to Reconstruction in the name of "reconciliation." The economic panic triggered by the collapse of Jay Cooke &amp; Company's bank in September 1873 sent the country into a severe depression lasting five years. Unemployment spread, and Northern voters turned their attention from Southern racial justice to economic survival.</p>
 
-    <p>The end of slavery created an immediate labor crisis throughout the South. Formerly enslaved people refused to work in the gang-labor system of the plantation, associating it directly with slavery. White landowners, stripped of their enslaved workforce but still holding their land, needed a new arrangement. The result was the sharecropping system, which gave freed people the appearance of independence while largely perpetuating their economic dependence.</p>
+    <h3>Redeemer Democrats and the Return of White Supremacy</h3>
 
-    <p>Under <strong>sharecropping</strong>, freed people rented land &mdash; often the same plantations where they had been enslaved &mdash; paying landlords with a share of their crops, often as much as half the harvest. In theory, sharecroppers could accumulate savings over time and eventually purchase their own land. In practice, the <strong><em class="key-term" title="System in which store owners extended credit to farmers at high interest rates, to be repaid with a portion of the future crop">crop-lien system</em></strong> made this nearly impossible. Store owners extended credit to sharecroppers for seeds, tools, food, and supplies at interest rates that could reach 50 to 70 percent annually, secured by a lien on the future crop. At harvest time, sharecroppers rarely earned enough to cover their debts, let alone save anything. They were legally bound to the same creditor &mdash; often the same landowner &mdash; for the following year's credit, and their options for leaving were severely restricted. Many sharecroppers found themselves deeper in debt each year, effectively immobilized on land they would never own.</p>
+    <p>Southern Democrats, calling themselves <em class="key-term" title="Conservative white Democrats who sought to 'redeem' Southern states from Reconstruction governments">"Redeemers,"</em> seized the opportunity. Using a combination of electoral fraud, economic coercion of Black workers and tenants, and outright paramilitary violence, they systematically dismantled Reconstruction state governments. White rifle clubs and paramilitary groups such as the <strong>White League</strong> in Louisiana and the <strong>Red Shirts</strong> in South Carolina openly campaigned through intimidation and murder. In the <strong>Colfax Massacre</strong> of April 1873, a white mob killed approximately 150 Black men &mdash; most of them after surrendering &mdash; in the bloodiest single act of political violence in Reconstruction history. In the <strong>Hamburg Massacre</strong> of 1876, Red Shirts murdered members of a Black militia company in South Carolina.</p>
 
-    <p>The consequences were generational. Without land ownership, Black families in the South could not build wealth, could not use land as collateral for loans, and could not invest in education or business. The sharecropping system ensured that the South remained a low-wage, agricultural economy long after other regions had industrialized &mdash; devastating not just for Black Southerners but for the entire regional economy for generations.</p>
+    <p>Federal courts began to narrow the scope of Reconstruction legislation. In <em>United States v. Cruikshank</em> (1876), the Supreme Court ruled that the Fourteenth Amendment protected citizens only from state action, not from violence by private individuals &mdash; effectively stripping the federal government of the power to prosecute the perpetrators of the Colfax Massacre. The ruling devastated the federal government's ability to protect Black Southerners from white supremacist terror.</p>
 
     <div class="question-block">
-      <div class="question-block-label">Reading Notes &mdash; Sharecropping</div>
+      <div class="question-block-label">Reading Notes &mdash; Redeemers and Violence</div>
       <div class="question-item">
-        <div class="question-text">How did the combination of sharecropping and the crop-lien system trap formerly enslaved people in economic conditions that preserved the dependency of slavery without its legal form?</div>
+        <div class="question-text">How did Redeemer Democrats use violence and legal rulings to dismantle Reconstruction, and what role did the Supreme Court play in limiting federal protection of Black Southerners?</div>
         <div class="answer-requirement"><span>2–3 sentences</span><span class="req-tag">Include one direct quote</span></div>
         <textarea class="answer-area" id="q_4" data-key="hist102_w1_r2_q4" placeholder="Write in your own words. Include one quote from the reading in quotation marks."></textarea>
         <div class="answer-meta"><span class="word-count" id="wc_q_4">0 words</span><span class="save-indicator" id="si_q_4">&#10003; Saved</span></div>
       </div>
     </div>
 
-    <h3>The Ku Klux Klan and the Counter-Revolution</h3>
+    <h3>The Compromise of 1877</h3>
 
-    <p>White resistance to Reconstruction was not limited to economic exploitation. From the beginning of Congressional Reconstruction, paramilitary violence was the primary instrument through which white Southerners sought to dismantle the new political order. The <strong>Ku Klux Klan</strong> was founded in Pulaski, Tennessee in 1866 as an oath-bound fraternal organization of Confederate veterans; former Confederate General Nathan Bedford Forrest served as its first national leader, or "Grand Wizard." Within two years it had transformed into a terrorist organization whose explicit purpose was the violent suppression of Black political participation and the destruction of Republican government throughout the South.</p>
+    <p>The presidential election of 1876 brought Reconstruction to its formal end. Republican Rutherford B. Hayes and Democrat Samuel Tilden both claimed victory in a disputed electoral count hinging on contested returns from Florida, Louisiana, and South Carolina &mdash; the three Southern states still under Republican Reconstruction governments. Congress established a special Electoral Commission, which awarded all disputed electoral votes to Hayes along strict party lines.</p>
 
-    <p>Klan members and allied groups &mdash; the Red Shirts in the Carolinas, the White League in Louisiana, the Knights of the White Camelia &mdash; operated largely as the military wing of the Democratic Party. Their tactics were systematic and calculated. They murdered Black Republican officials, burned schools built by the Freedmen's Bureau to prevent Black education, attacked Union League meetings, and threatened or killed Black voters and anyone who helped them register. The goal was not random racial terror but the specific dismantling of Reconstruction governments: by eliminating Black voters, driving off Republican officeholders, and intimidating white Republican "scalawags" and Northern "carpetbaggers," these groups could restore Democratic control and with it the racial hierarchy Reconstruction had challenged.</p>
+    <p>In the backroom negotiations known as the <strong>Compromise of 1877</strong>, Hayes agreed to withdraw the remaining federal troops from the South in exchange for Democratic acceptance of his election. The deal ended Reconstruction as a national policy. Within weeks, federal troops departed, and the last Republican Reconstruction governments in Florida, Louisiana, and South Carolina collapsed. "Redeemer" Democrats swept into power. Black political officeholders were removed, replaced with white Democrats. The Freedmen's Bureau had already been dissolved. The constitutional amendments remained on paper, but the machinery to enforce them was gone.</p>
+
+    <h3>The Legacy of Reconstruction</h3>
+
+    <p>The end of Reconstruction inaugurated a period of systematic racial oppression that would last nearly a century. Southern states enacted <em class="key-term" title="State and local laws that mandated racial segregation in public facilities throughout the South from the 1870s through the 1960s">Jim Crow laws</em> mandating racial segregation in every aspect of public life. Poll taxes, literacy tests, grandfather clauses, and outright violence stripped Black men of the vote they had exercised during Reconstruction. Sharecropping and tenant farming systems bound Black families to cycles of debt that replicated many of the conditions of slavery. Lynching became a systematic tool of racial terror: between 1877 and 1950, more than 4,000 Black people were lynched in the South.</p>
+
+    <p>Historians debate whether Reconstruction failed or was destroyed. The constitutional amendments it produced &mdash; the Thirteenth, Fourteenth, and Fifteenth &mdash; lay dormant but intact, waiting to be invoked by the Civil Rights Movement nearly a century later. The schools, churches, and institutions built during Reconstruction by African Americans survived as foundations for future struggles. "The slave went free," the historian W.E.B. Du Bois wrote, "stood a brief moment in the sun; then moved back again toward slavery." That "brief moment" transformed the Constitution and established the legal framework on which the unfinished work of American democracy would eventually rest.</p>
 
     <div class="primary-source-box">
-      <span class="ps-label">Primary Source &mdash; Abram Colby, 1871</span>
-      <blockquote>"On the 29th of October, they came to my house and broke my door open, took me out of my bed and took me to the woods and whipped me three hours or more and left me in the woods for dead. They said to me, 'Do you think you will ever vote another damned Radical ticket?' . . . If there was an election to-morrow, I would vote the Radical ticket."</blockquote>
-      <cite>&mdash; Testimony of Abram Colby, Georgia state legislator, before the Joint Select Committee, Atlanta, Georgia, October 27, 1871</cite>
+      <span class="ps-label">Primary Source &mdash; W.E.B. Du Bois on Reconstruction</span>
+      <blockquote>"The slave went free; stood a brief moment in the sun; then moved back again toward slavery."</blockquote>
+      <cite>&mdash; W.E.B. Du Bois, <em>Black Reconstruction in America</em>, 1935</cite>
     </div>
 
-    <p>Congress responded with the <strong>Enforcement Acts</strong> of 1870 and 1871, which made it a federal crime to interfere with voting rights and gave the president power to suspend habeas corpus in areas dominated by Klan terrorism. President Grant imposed martial law in nine counties of South Carolina and arrested hundreds of Klan members. Federal prosecutions broke up organized Klan activity in many areas. But by 1874, federal will was fading: the Justice Department cut funding for Reconstruction enforcement, Northern public opinion turned against prolonged military occupation, and paramilitary violence continued under different organizational names. The federal government had demonstrated it could suppress the Klan when it chose to &mdash; but it would not sustain that effort.</p>
-
     <div class="question-block">
-      <div class="question-block-label">Reading Notes &mdash; The Ku Klux Klan</div>
+      <div class="question-block-label">Reading Notes &mdash; The Compromise of 1877 &amp; Legacy</div>
       <div class="question-item">
-        <div class="question-text">How was Klan violence a deliberate political strategy rather than random racial terror, and what does the federal government's limited response reveal about the fragility of Reconstruction's enforcement?</div>
+        <div class="question-text">What was the Compromise of 1877, and how does Du Bois's description of Reconstruction as a "brief moment in the sun" capture its larger significance and tragic limits?</div>
         <div class="answer-requirement"><span>2–3 sentences</span><span class="req-tag">Include one direct quote</span></div>
         <textarea class="answer-area" id="q_5" data-key="hist102_w1_r2_q5" placeholder="Write in your own words. Include one quote from the reading in quotation marks."></textarea>
         <div class="answer-meta"><span class="word-count" id="wc_q_5">0 words</span><span class="save-indicator" id="si_q_5">&#10003; Saved</span></div>
       </div>
     </div>
 
-    <h3>The Compromise of 1877 and the End of Reconstruction</h3>
+    <h3>Why Reconstruction Ended: A Synthesis</h3>
 
-    <p>Three converging forces undermined Republican commitment to Reconstruction through the early 1870s. First, a severe economic depression beginning with the Panic of 1873 devastated Northern workers, shifting public focus away from Southern policy and toward economic recovery. Second, a growing faction of "Liberal Republicans" broke from the party mainstream, arguing that Reconstruction had gone on too long, that the South should be left to govern itself, and that the focus on Black rights was displacing attention to economic reform and anti-corruption efforts. Third, a cascade of scandals in the Grant administration &mdash; the Whiskey Ring, in which Treasury officials embezzled millions from whiskey tax revenues, and the Crédit Mobilier affair, linking top Republicans to railroad bribery &mdash; eroded public trust in the party that had championed Reconstruction.</p>
+    <p>The collapse of Reconstruction resulted from a convergence of forces: Northern economic depression and political fatigue; the systematic violence and fraud of Redeemer Democrats; Supreme Court rulings that gutted federal enforcement power; the death or retirement of key Radical Republican leaders; and the fundamental unwillingness of the Northern public to sustain an indefinite military occupation of the South in the name of Black civil rights. Reconstruction's failure was not inevitable &mdash; it required active effort by many people to destroy it. But neither was it surprising: it was attempting something without precedent in world history, transforming a slave society into a multiracial democracy within a generation, against fierce resistance, without the sustained political will to see it through.</p>
 
-    <p>By the 1876 presidential election, Reconstruction had already collapsed in most Southern states through a combination of terror and Democratic electoral victories. The presidential contest between Republican <strong>Rutherford B. Hayes</strong> and Democrat <strong>Samuel Tilden</strong> ended in disputed electoral returns from Florida, Louisiana, South Carolina, and Oregon. A special electoral commission created by Congress awarded all disputed electoral votes &mdash; and the presidency &mdash; to Hayes on a straight party-line vote of 8 to 7.</p>
-
-    <p>The resolution came through the <strong>Compromise of 1877</strong>: in exchange for Democratic acceptance of Hayes's election, Republican leaders agreed to withdraw all remaining federal troops from the South. The last Reconstruction governments in South Carolina and Louisiana fell within weeks. Democrats swept to power across the former Confederacy, creating the <em>Solid South</em> that would remain monolithically Democratic for nearly a century. Hayes believed in good faith that Southern Democratic leaders would honor the constitutional amendments and protect Black civil rights. Within years, systematic disenfranchisement, segregation laws, and racial terror had effectively nullified everything Reconstruction had achieved. The promises of the Thirteenth, Fourteenth, and Fifteenth Amendments would not be meaningfully enforced until the Civil Rights Movement of the 1950s and 1960s.</p>
-
-    <div class="pull-quote">
-      "Those who worked to change and modernize the South typically did so under threats of violence. Black Republican officials in the South were frequently terrorized, assaulted, and even murdered with impunity."
-      <cite>&mdash; OpenStax, <em>U.S. History</em>, Chapter 16</cite>
-    </div>
+    <p>What Reconstruction left behind, however, was not nothing. The Reconstruction amendments would eventually serve as the constitutional foundation for the Civil Rights Act of 1964 and the Voting Rights Act of 1965. The HBCUs founded during Reconstruction educated generations of Black leaders. The vision of a genuinely multiracial democracy, glimpsed during the brief years of Radical Reconstruction, survived as an aspiration. "If the Negro is to be a man, full and complete," Frederick Douglass wrote, "he must be allowed to take his chances with other men." That chance was not given during Reconstruction. But the demand did not disappear.</p>
 
     <div class="question-block">
-      <div class="question-block-label">Reading Notes &mdash; The Compromise of 1877</div>
+      <div class="question-block-label">Reading Notes &mdash; Why Reconstruction Ended</div>
       <div class="question-item">
-        <div class="question-text">What did the North trade away in the Compromise of 1877, and what does that trade reveal about the limits of Northern commitment to Reconstruction from the beginning?</div>
-        <div class="answer-requirement"><span>2–3 sentences</span><span class="req-tag">Include one direct quote</span></div>
+        <div class="question-text">Based on the reading as a whole, what do you see as the most important reason Reconstruction collapsed — and what is the most significant thing it left behind?</div>
+        <div class="answer-requirement"><span>3–4 sentences</span><span class="req-tag">Include one direct quote</span></div>
         <textarea class="answer-area" id="q_6" data-key="hist102_w1_r2_q6" placeholder="Write in your own words. Include one quote from the reading in quotation marks."></textarea>
         <div class="answer-meta"><span class="word-count" id="wc_q_6">0 words</span><span class="save-indicator" id="si_q_6">&#10003; Saved</span></div>
       </div>
     </div>
 
-  </div><!-- /s164 -->
-
-  <!-- ══ PDF DOWNLOAD ══ -->
-  <div id="download" class="pdf-section">
-    <h3>Download Your Reading Notes</h3>
-    <p>You've completed both readings. Click the button below to generate a single PDF of all your answers from <strong>Reading 2.1 and Reading 2.2</strong> to submit in Canvas as your weekly reading notes.</p>
-
-    <ul class="pdf-checklist" id="pdfChecklist"></ul>
-
-    <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">
-      &#x2913; &nbsp; Download Reading Notes PDF
-    </button>
-    <p class="pdf-warning" id="pdfWarning" style="display:none">
-      &#9888; Some questions have fewer than 30 words. You can still download, but consider expanding your answers before submitting.
-    </p>
-
-    <div class="callout callout-task" style="margin-top:1.5rem">
-      <span class="callout-label">Next Step</span>
-      After downloading your PDF, return to <strong>Canvas</strong> to submit it and complete the primary source discussion using Hypothesis. Your initial discussion post is due <strong>Friday</strong>.
-    </div>
   </div>
-
 </div><!-- /reading-body -->
 
 <aside class="reading-sidebar">
   <div class="sidebar-card">
     <h4>Key Figures</h4>
     <ul>
-      <li>Thaddeus Stevens</li>
-      <li>Charles Sumner</li>
-      <li>Hiram Revels</li>
-      <li>Blanche K. Bruce</li>
-      <li>Susan B. Anthony</li>
-      <li>Rutherford B. Hayes</li>
-      <li>Nathan Bedford Forrest</li>
       <li>Ulysses S. Grant</li>
+      <li>Rutherford B. Hayes</li>
+      <li>Hiram Revels</li>
+      <li>Blanche Bruce</li>
+      <li>Nathan Bedford Forrest</li>
+      <li>Frederick Douglass</li>
+      <li>W.E.B. Du Bois</li>
     </ul>
   </div>
   <div class="sidebar-card">
     <h4>Key Terms</h4>
     <ul>
-      <li>Military Reconstruction Act</li>
+      <li>Military Reconstruction Acts</li>
       <li>Tenure of Office Act</li>
       <li>Fifteenth Amendment</li>
-      <li>NWSA / AWSA</li>
-      <li>Sharecropping / crop-lien</li>
       <li>Ku Klux Klan</li>
       <li>Enforcement Acts</li>
-      <li>Carpetbaggers / scalawags</li>
-      <li>Liberal Republicans</li>
-      <li>Panic of 1873</li>
+      <li>Redeemers</li>
+      <li>Colfax Massacre</li>
+      <li><em>US v. Cruikshank</em></li>
       <li>Compromise of 1877</li>
-      <li>Solid South</li>
+      <li>Jim Crow laws</li>
     </ul>
   </div>
   <div class="sidebar-card" style="background:rgba(154,111,42,0.05);border-color:rgba(154,111,42,0.2)">
@@ -342,57 +372,37 @@
       <li>Answers save automatically</li>
     </ul>
   </div>
-  <div class="sidebar-card" style="background:rgba(61,96,83,0.06);border-color:rgba(61,96,83,0.2)">
-    <h4 style="color:var(--sage)">Almost Done!</h4>
-    <p style="font-size:0.8rem;color:var(--ink-mid);margin:0;line-height:1.6">After this reading, download your PDF notes and return to <strong>Canvas</strong> for the primary source discussion.</p>
-  </div>
 </aside>
-```
 
+  </div>
+
+  <!-- ══ DOWNLOAD NOTES PDF ══ -->
+  <div class="submit-section" style="margin-top:2.5rem">
+    <h3>&#x1F4C4; Download Your Reading Notes</h3>
+    <p>You've completed both readings. Download your notes as a PDF — this is what you'll submit to Canvas for the 20-point Notes &amp; Close Reading assignment.</p>
+    <button class="pdf-btn" onclick="generatePDF()">
+      <span class="pdf-btn-icon">&#x2B07;</span> Download Notes PDF
+    </button>
+    <div class="pdf-status" id="pdfStatus"></div>
+  </div>
+
+  <div class="callout callout-task" style="margin-top:2rem">
+    <span class="callout-label">Next: Primary Sources</span>
+    You've finished both readings and downloaded your notes. Continue to the <strong>Primary Sources</strong> page to read the Stevens and Johnson documents before the Canvas discussion.
   </div>
 
   <div class="page-footer">
     <a class="nav-btn nav-btn-prev" href="reading-1.html">&larr; Reading 2.1</a>
-    <span class="footer-label">Page 4 of 4 &nbsp;&middot;&nbsp; Reading 2.2</span>
-    <a class="nav-btn nav-btn-canvas" href="#">Return to Canvas &rarr;</a>
+    <span class="footer-label">Page 4 of 5 &nbsp;&middot;&nbsp; Reading 2.2</span>
+    <a class="nav-btn nav-btn-next" href="primary-sources.html">Primary Sources &rarr;</a>
   </div>
 </main></div>
 
-<!-- jsPDF for client-side PDF generation -->
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script src="../supabase-config.js"></script>
-
 <script>
-// ── COPY PROTECTION ──
 document.getElementById('readingBody').addEventListener('contextmenu', e => e.preventDefault());
 document.getElementById('readingBody').addEventListener('selectstart', e => { if(e.target.tagName==='TEXTAREA') return; e.preventDefault(); });
 
-// ── ALL QUESTION KEYS (both reading pages) ──
-const ALL_KEYS = {
-  'Reading 2.1 — 16.1 Restoring the Union': [
-    { key:'hist102_w1_r1_q1', label:'The President\'s Plan', q:'What was the core disagreement between Lincoln\'s ten percent plan and the Radical Republicans\' Wade-Davis Bill?' },
-    { key:'hist102_w1_r1_q2', label:'The Thirteenth Amendment', q:'How did the Thirteenth Amendment fall short of its promise, and what does the gap between its legal text and the lived reality for freed people in 1865 reveal?' },
-    { key:'hist102_w1_r1_q3', label:'Andrew Johnson', q:'Why did Radical Republicans in Congress refuse to accept Johnson\'s declaration that Reconstruction was complete by early 1866?' },
-  ],
-  'Reading 2.1 — 16.2 Congress and the Remaking of the South': [
-    { key:'hist102_w1_r1_q4', label:'The Freedmen\'s Bureau', q:'What does the conflict over the Freedmen\'s Bureau reveal about the deeper disagreement between Johnson and Radical Republicans over the role of the federal government in Reconstruction?' },
-    { key:'hist102_w1_r1_q5', label:'Black Codes', q:'How did the Black Codes attempt to preserve the labor conditions of slavery, and why did their passage force Congress to act with the Civil Rights Act of 1866?' },
-    { key:'hist102_w1_r1_q6', label:'The Fourteenth Amendment', q:'Why did Radical Republicans believe a constitutional amendment was necessary to secure the rights established in the Civil Rights Act of 1866, and what specific protections did the Fourteenth Amendment add?' },
-  ],
-  'Reading 2.2 — 16.3 Radical Reconstruction': [
-    { key:'hist102_w1_r2_q1', label:'The Reconstruction Acts', q:'What did the Military Reconstruction Act require Southern states to do before they could be readmitted to the Union, and why did Radical Republicans consider these conditions necessary?' },
-    { key:'hist102_w1_r2_q2', label:'The Impeachment of President Johnson', q:'What was the real purpose behind the Tenure of Office Act, and what does Johnson\'s impeachment reveal about the constitutional conflict at the heart of Reconstruction?' },
-    { key:'hist102_w1_r2_q3', label:'The Fifteenth Amendment', q:'What did the Fifteenth Amendment accomplish politically, and what deliberate gaps in its language left Black voting rights vulnerable to future suppression?' },
-  ],
-  'Reading 2.2 — 16.4 The Collapse of Reconstruction': [
-    { key:'hist102_w1_r2_q4', label:'Sharecropping', q:'How did the combination of sharecropping and the crop-lien system trap formerly enslaved people in economic conditions that preserved the dependency of slavery without its legal form?' },
-    { key:'hist102_w1_r2_q5', label:'The Ku Klux Klan', q:'How was Klan violence a deliberate political strategy rather than random racial terror, and what does the federal government\'s limited response reveal about the fragility of Reconstruction\'s enforcement?' },
-    { key:'hist102_w1_r2_q6', label:'The Compromise of 1877', q:'What did the North trade away in the Compromise of 1877, and what does that trade reveal about the limits of Northern commitment to Reconstruction from the beginning?' },
-  ],
-};
-
+const TOTAL = 6;
 function countWords(s){ return s.trim()==='' ? 0 : s.trim().split(/\s+/).length; }
 
 function updateWordCount(ta){
@@ -415,141 +425,175 @@ function loadAnswers(){
     try{ const v=localStorage.getItem(ta.dataset.key); if(v){ta.value=v; updateWordCount(ta);} }catch(e){}
   });
   updateProgress();
-  buildChecklist();
 }
 
 function updateProgress(){
   let n=0;
   document.querySelectorAll('.answer-area').forEach(ta=>{ if(countWords(ta.value)>=10) n++; });
-  const pct=Math.round(n/6*100);
+  const pct=Math.round(n/TOTAL*100);
   const bar=document.getElementById('progressBar');
   const lbl=document.getElementById('progressLabel');
   if(bar) bar.style.width=pct+'%';
-  if(lbl) lbl.textContent=n+' of 6 answered';
-}
-
-function buildChecklist(){
-  const cl = document.getElementById('pdfChecklist');
-  if(!cl) return;
-  cl.innerHTML='';
-  let shortCount=0;
-  Object.entries(ALL_KEYS).forEach(([section, qs])=>{
-    qs.forEach(({key,label})=>{
-      let val=''; try{val=localStorage.getItem(key)||'';}catch(e){}
-      const wc=countWords(val);
-      const ok=wc>=30;
-      if(!ok) shortCount++;
-      const li=document.createElement('li');
-      li.innerHTML=`<span class="${ok?'check':'miss'}">${ok?'✓':'○'}</span><span>${label} — ${wc} word${wc!==1?'s':''}</span>`;
-      cl.appendChild(li);
-    });
-  });
-  const warn=document.getElementById('pdfWarning');
-  if(warn) warn.style.display=shortCount>0?'block':'none';
+  if(lbl) lbl.textContent=n+' of '+TOTAL+' answered';
 }
 
 document.querySelectorAll('.answer-area').forEach(ta=>{
   let t;
-  ta.addEventListener('input',()=>{ updateWordCount(ta); clearTimeout(t); t=setTimeout(()=>{ saveAnswer(ta); buildChecklist(); },800); });
+  ta.addEventListener('input',()=>{ updateWordCount(ta); clearTimeout(t); t=setTimeout(()=>saveAnswer(ta),800); });
 });
 
-// ── PDF GENERATION ──
-function generatePDF(){
-  const btn=document.getElementById('pdfBtn');
-  btn.disabled=true; btn.textContent='Generating…';
+loadAnswers();
 
-  let storedName='Student'; let storedWnum='';
-  try{
-    const tok=JSON.parse(localStorage.getItem('hist102_access_w1')||'{}');
-    if(tok.name) storedName=tok.name;
-    if(tok.wnum) storedWnum=tok.wnum;
-  }catch(e){}
-
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
-
-  const marginL=56, marginR=56, pageW=612, pageH=792;
-  const contentW=pageW-marginL-marginR;
-  let y=56;
-
-  function checkPage(needed=40){
-    if(y+needed>pageH-56){ doc.addPage(); y=56; }
-  }
-
-  // Header
-  doc.setFillColor(26,21,16);
-  doc.rect(0,0,pageW,52,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(247,242,232);
-  doc.text('HIST 102 — Reading Notes: Week 1',marginL,22);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(180,165,140);
-  doc.text('Reconstruction and Its Aftermath',marginL,36);
-  doc.setTextColor(154,111,42);
-  doc.text(storedName+(storedWnum?' · '+storedWnum:''),pageW-marginR,36,{align:'right'});
-  y=72;
-
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(120,110,90);
-  doc.text(`Generated: ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`,marginL,y);
-  y+=24;
-
-  Object.entries(ALL_KEYS).forEach(([section, qs])=>{
-    checkPage(50);
-    // Section header
-    doc.setFillColor(237,229,212);
-    doc.rect(marginL,y,contentW,22,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(26,21,16);
-    doc.text(section,marginL+8,y+14);
-    y+=30;
-
-    qs.forEach(({key,label,q},i)=>{
-      let val=''; try{val=localStorage.getItem(key)||'';}catch(e){}
-      const wc=countWords(val);
-
-      checkPage(60);
-      // Q label
-      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(154,111,42);
-      doc.text(`Q${i+1} — ${label}`,marginL,y); y+=4;
-      // Question
-      doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(90,80,65);
-      const qLines=doc.splitTextToSize(q,contentW);
-      checkPage(qLines.length*11+4);
-      doc.text(qLines,marginL,y+10); y+=qLines.length*11+8;
-      // Answer box
-      const ansText=val.trim()||'[No answer provided]';
-      const ansLines=doc.splitTextToSize(ansText,contentW-16);
-      const boxH=ansLines.length*13+16;
-      checkPage(boxH+8);
-      doc.setDrawColor(200,190,170); doc.setFillColor(252,249,243);
-      doc.roundedRect(marginL,y,contentW,boxH,3,3,'FD');
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(26,21,16);
-      doc.text(ansLines,marginL+8,y+13);
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(140,125,100);
-      doc.text(`${wc} word${wc!==1?'s':''}`,pageW-marginR,y+boxH-5,{align:'right'});
-      y+=boxH+16;
-    });
-    y+=8;
-  });
-
-  // Footer on last page
-  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(160,145,120);
-  doc.text('HIST 102 · Prof. Hauselmann · Yosemite College · Submit via Canvas',pageW/2,pageH-28,{align:'center'});
-
-  const filename=`HIST102_W1_ReadingNotes_${storedName.replace(/\s+/g,'_')}.pdf`;
-  doc.save(filename);
-
-  // Log to Supabase (non-blocking)
-  try{
-    if(typeof sbInsert==='function'){
-      sbInsert('pdf_downloads',{
-        student_name:storedName, student_w_num:storedWnum,
-        week_id:'w1', answers_count:12, filename
-      });
-    }
-  }catch(e){}
-
-  btn.disabled=false; btn.textContent='⬇  Download Reading Notes PDF';
+// ── PDF Generation ──
+function getStoredName(){
+  try {
+    var token = localStorage.getItem('hist102_access_w1');
+    if(token){ var d=JSON.parse(token); return d.name||'Student'; }
+  } catch(e){}
+  return 'Student';
 }
 
-loadAnswers();
+function generatePDF(){
+  var status = document.getElementById('pdfStatus');
+  status.textContent = 'Generating PDF…';
+
+  try {
+    var { jsPDF } = window.jspdf;
+    var doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'letter' });
+
+    var margin = 20;
+    var pageW = 215.9;
+    var usableW = pageW - margin*2;
+    var y = margin;
+    var lineH = 6;
+
+    function checkPage(needed){
+      if(y + needed > 270){ doc.addPage(); y = margin; }
+    }
+
+    // Header
+    doc.setFillColor(26,21,16);
+    doc.rect(0,0,pageW,28,'F');
+    doc.setTextColor(247,242,232);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(14);
+    doc.text('HIST 102 — Reading Notes', margin, 13);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.text('Week 1: Reconstruction and Its Aftermath  ·  Sections 16.1–16.4', margin, 20);
+    doc.setTextColor(154,111,42);
+    doc.text(getStoredName(), pageW-margin, 20, {align:'right'});
+
+    y = 36;
+    doc.setTextColor(26,21,16);
+
+    var r1Labels = [
+      'Q1 — The President\'s Plan',
+      'Q2 — The Thirteenth Amendment',
+      'Q3 — Andrew Johnson',
+      'Q4 — The Freedmen\'s Bureau',
+      'Q5 — Black Codes',
+      'Q6 — The Fourteenth Amendment'
+    ];
+    var r2Labels = [
+      'Q7 — Military Reconstruction & Impeachment',
+      'Q8 — The Fifteenth Amendment',
+      'Q9 — The KKK and Federal Response',
+      'Q10 — Redeemers and Violence',
+      'Q11 — The Compromise of 1877 & Legacy',
+      'Q12 — Why Reconstruction Ended'
+    ];
+
+    // Reading 2.1 section
+    doc.setFillColor(237,229,212);
+    doc.rect(margin,y,usableW,8,'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10);
+    doc.setTextColor(26,21,16);
+    doc.text('Reading 2.1 — Sections 16.1 & 16.2', margin+3, y+5.5);
+    y += 12;
+
+    ['hist102_w1_r1_q1','hist102_w1_r1_q2','hist102_w1_r1_q3',
+     'hist102_w1_r1_q4','hist102_w1_r1_q5','hist102_w1_r1_q6'].forEach(function(key,i){
+      var ans = '';
+      try{ ans = localStorage.getItem(key)||''; }catch(e){}
+      var label = r1Labels[i];
+
+      checkPage(20);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(154,111,42);
+      doc.text(label, margin, y);
+      y += 5;
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(58,48,40);
+      var lines = doc.splitTextToSize(ans||'[No answer recorded]', usableW);
+      lines.forEach(function(ln){
+        checkPage(lineH);
+        doc.text(ln, margin, y);
+        y += lineH;
+      });
+      y += 4;
+    });
+
+    y += 4;
+
+    // Reading 2.2 section
+    checkPage(12);
+    doc.setFillColor(237,229,212);
+    doc.rect(margin,y,usableW,8,'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10);
+    doc.setTextColor(26,21,16);
+    doc.text('Reading 2.2 — Sections 16.3 & 16.4', margin+3, y+5.5);
+    y += 12;
+
+    ['hist102_w1_r2_q1','hist102_w1_r2_q2','hist102_w1_r2_q3',
+     'hist102_w1_r2_q4','hist102_w1_r2_q5','hist102_w1_r2_q6'].forEach(function(key,i){
+      var ans = '';
+      try{ ans = localStorage.getItem(key)||''; }catch(e){}
+      var label = r2Labels[i];
+
+      checkPage(20);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(154,111,42);
+      doc.text(label, margin, y);
+      y += 5;
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(58,48,40);
+      var lines = doc.splitTextToSize(ans||'[No answer recorded]', usableW);
+      lines.forEach(function(ln){
+        checkPage(lineH);
+        doc.text(ln, margin, y);
+        y += lineH;
+      });
+      y += 4;
+    });
+
+    // Footer
+    var pageCount = doc.internal.getNumberOfPages();
+    for(var p=1;p<=pageCount;p++){
+      doc.setPage(p);
+      doc.setFontSize(7.5);
+      doc.setTextColor(150,140,130);
+      doc.text('HIST 102 · Week 1 Reading Notes · profhauselmann.org', margin, 272);
+      doc.text('Page '+p+' of '+pageCount, pageW-margin, 272, {align:'right'});
+    }
+
+    var fname = 'HIST102-Week1-ReadingNotes.pdf';
+    doc.save(fname);
+    status.textContent = '✓ PDF saved — upload to Canvas to complete the assignment.';
+
+  } catch(err){
+    status.textContent = 'Error generating PDF. Please try again.';
+    console.error(err);
+  }
+}
 </script>
 
 <script src="../security.js"></script>
