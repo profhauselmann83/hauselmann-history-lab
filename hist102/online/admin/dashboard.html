@@ -553,6 +553,51 @@ tbody td.name-cell { font-weight: 600; color: var(--ink); }
   white-space: nowrap;
 }
 
+/* ─── ROW SELECTION ─── */
+.sel-checkbox {
+  width: 15px; height: 15px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+.selection-bar {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: rgba(154,111,42,0.08);
+  border: 1px solid rgba(154,111,42,0.25);
+  border-radius: 3px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+.selection-bar.visible { display: flex; }
+.selection-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  font-weight: 500;
+  flex: 1;
+}
+.sel-action-btn {
+  padding: 0.35rem 0.85rem;
+  border: none;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.sel-zip-btn       { background: var(--sage);    color: white; }
+.sel-zip-btn:hover { background: var(--sage-l); }
+.sel-pdf-btn       { background: var(--ink-mid); color: var(--cream); }
+.sel-pdf-btn:hover { background: var(--ink); }
+.sel-clear-btn     { background: none; color: var(--ink-light); border: 1px solid var(--cream-dd); }
+.sel-clear-btn:hover { color: var(--ink); border-color: var(--ink-light); }
+tbody tr.row-selected { background: rgba(154,111,42,0.06) !important; }
+
 /* ─── LOADING / EMPTY ─── */
 .loading-msg, .empty-msg {
   font-family: 'DM Mono', monospace;
@@ -966,6 +1011,14 @@ function submissionsTable(rows, weekId) {
   html +=   '<button class="export-btn" style="margin-left:auto;font-size:0.58rem" onclick="clearReview(\''+weekId+'\')">Reset Tracking</button>';
   html += '</div>';
 
+  // Selection action bar (hidden until rows are checked)
+  html += '<div class="selection-bar" id="sel-bar-'+weekId+'">';
+  html +=   '<span class="selection-count" id="sel-count-'+weekId+'">0 selected</span>';
+  html +=   '<button class="sel-action-btn sel-zip-btn" onclick="downloadZIPSelected(\''+weekId+'\','+rowsJson+')">&#x21E9; ZIP Selected</button>';
+  html +=   '<button class="sel-action-btn sel-pdf-btn" onclick="bulkPDFSelected(\''+weekId+'\','+rowsJson+')">&#x21E9; PDFs Selected</button>';
+  html +=   '<button class="sel-action-btn sel-clear-btn" onclick="clearSelection(\''+weekId+'\')">Clear</button>';
+  html += '</div>';
+
   // Filter + action bar
   html += '<div class="filter-bar">';
   html +=   '<label>Filter:</label>';
@@ -982,9 +1035,11 @@ function submissionsTable(rows, weekId) {
   html +=   '<button class="export-btn" onclick="exportWeekData('+rowsJson+',\''+weekId+'\')">&#x21E9; CSV</button>';
   html += '</div>';
 
-  // Table
+  // Table — added select checkbox column
   html += '<div class="table-wrap"><table id="tbl-'+weekId+'">';
-  html += '<thead><tr><th>Student</th><th>W Number</th><th>Submitted</th>';
+  html += '<thead><tr>';
+  html += '<th style="width:32px"><input type="checkbox" class="sel-checkbox" title="Select all" onchange="toggleSelectAll(this,\''+weekId+'\')"></th>';
+  html += '<th>Student</th><th>W Number</th><th>Submitted</th>';
   html += '<th>Answered</th><th>Status</th><th>Answers</th><th>PDF</th><th>Tracking</th></tr></thead><tbody>';
 
   rows.forEach(function(row, i) {
@@ -997,7 +1052,8 @@ function submissionsTable(rows, weekId) {
     var rowBg  = review.canvas ? 'background:rgba(30,68,136,0.04)' : review.dl ? 'background:rgba(61,96,83,0.04)' : '';
     var rowJson = JSON.stringify(row).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'\\u003c');
 
-    html += '<tr data-status="'+statusClass+'" data-wnum="'+esc(wnum)+'" style="'+rowBg+'">';
+    html += '<tr data-status="'+statusClass+'" data-wnum="'+esc(wnum)+'" data-idx="'+i+'" style="'+rowBg+'">';
+    html += '<td style="text-align:center"><input type="checkbox" class="sel-checkbox row-sel-cb" data-idx="'+i+'" onchange="onRowCheck(this,\''+weekId+'\')"></td>';
     html += '<td class="name-cell">'+esc(row.student_name)+'</td>';
     html += '<td class="mono">'+esc(wnum)+'</td>';
     html += '<td class="mono">'+fmtDate(row.created_at)+'</td>';
@@ -1015,7 +1071,7 @@ function submissionsTable(rows, weekId) {
 
     // Expandable detail row
     html += '<tr class="detail-row" id="'+rowId+'">';
-    html += '<td class="detail-cell" colspan="8"><div class="answers-grid">';
+    html += '<td class="detail-cell" colspan="9"><div class="answers-grid">';
     Q_LABELS.forEach(function(q) {
       var ans = row[q.col+'_answer'] || '';
       var wc  = row[q.col+'_words']  || 0;
@@ -1034,6 +1090,106 @@ function submissionsTable(rows, weekId) {
 }
 
 function toggleDetail(id) { document.getElementById(id).classList.toggle('open'); }
+
+// ── ROW SELECTION ─────────────────────────────────────────────────
+function onRowCheck(cb, weekId) {
+  var tr = cb.closest('tr');
+  if (tr) tr.classList.toggle('row-selected', cb.checked);
+  updateSelectionBar(weekId);
+}
+
+function toggleSelectAll(masterCb, weekId) {
+  var tbl = document.getElementById('tbl-'+weekId);
+  if (!tbl) return;
+  tbl.querySelectorAll('.row-sel-cb').forEach(function(cb) {
+    var tr = cb.closest('tr');
+    if (tr && tr.style.display !== 'none') {
+      cb.checked = masterCb.checked;
+      tr.classList.toggle('row-selected', masterCb.checked);
+    }
+  });
+  updateSelectionBar(weekId);
+}
+
+function updateSelectionBar(weekId) {
+  var tbl   = document.getElementById('tbl-'+weekId);
+  var bar   = document.getElementById('sel-bar-'+weekId);
+  var count = document.getElementById('sel-count-'+weekId);
+  if (!tbl || !bar) return;
+  var checked = tbl.querySelectorAll('.row-sel-cb:checked').length;
+  bar.classList.toggle('visible', checked > 0);
+  count.textContent = checked + ' student' + (checked===1?'':'s') + ' selected';
+}
+
+function clearSelection(weekId) {
+  var tbl = document.getElementById('tbl-'+weekId);
+  if (!tbl) return;
+  tbl.querySelectorAll('.row-sel-cb').forEach(function(cb) {
+    cb.checked = false;
+    var tr = cb.closest('tr');
+    if (tr) tr.classList.remove('row-selected');
+  });
+  // uncheck select-all header
+  var masterCb = tbl.querySelector('thead .sel-checkbox');
+  if (masterCb) masterCb.checked = false;
+  updateSelectionBar(weekId);
+}
+
+// Get selected row indices
+function getSelectedIndices(weekId) {
+  var tbl = document.getElementById('tbl-'+weekId);
+  if (!tbl) return [];
+  var indices = [];
+  tbl.querySelectorAll('.row-sel-cb:checked').forEach(function(cb) {
+    indices.push(parseInt(cb.getAttribute('data-idx'), 10));
+  });
+  return indices;
+}
+
+// ZIP only selected rows
+function downloadZIPSelected(weekId, allRows) {
+  var indices = getSelectedIndices(weekId);
+  if (!indices.length) return;
+  var selected = indices.map(function(i){ return allRows[i]; }).filter(Boolean);
+  var btn = document.querySelector('#sel-bar-'+weekId+' .sel-zip-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Building…'; }
+
+  var zip = new JSZip();
+  selected.forEach(function(row) {
+    zip.file(pdfFilename(row, weekId), buildPDFDoc(row, weekId).output('arraybuffer'));
+  });
+  zip.generateAsync({type:'blob'}).then(function(blob) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'HIST102_'+weekId+'_selected_'+indices.length+'.zip';
+    a.click();
+    if (btn) { btn.disabled=false; btn.textContent='⇩ ZIP Selected'; }
+    // Auto-mark selected as downloaded
+    var tbl = document.getElementById('tbl-'+weekId);
+    if (tbl) tbl.querySelectorAll('.row-sel-cb:checked').forEach(function(cb) {
+      var tr = cb.closest('tr');
+      var wnum = tr ? tr.getAttribute('data-wnum') : '';
+      var idx  = parseInt(cb.getAttribute('data-idx'), 10);
+      if (wnum && !getReview(weekId, wnum).dl) toggleReview(weekId, wnum, 'dl', idx);
+    });
+  });
+}
+
+// Staggered individual PDFs for selected rows
+function bulkPDFSelected(weekId, allRows) {
+  var indices = getSelectedIndices(weekId);
+  if (!indices.length) return;
+  var selected = indices.map(function(i){ return allRows[i]; }).filter(Boolean);
+  var btn = document.querySelector('#sel-bar-'+weekId+' .sel-pdf-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Generating…'; }
+  var i = 0;
+  function next() {
+    if (i >= selected.length) { if(btn){btn.disabled=false;btn.textContent='⇩ PDFs Selected';} return; }
+    pdfAndMark(selected[i], weekId); i++;
+    setTimeout(next, 700);
+  }
+  next();
+}
 
 function toggleReview(weekId, wnum, field, idx) {
   var r = getReview(weekId, wnum);
@@ -1078,6 +1234,8 @@ function filterTable(sel, tableId) {
     var next = tr.nextElementSibling;
     if (next && next.classList.contains('detail-row') && !show) next.style.display = 'none';
   });
+  // Clear selection state after filter — hidden rows shouldn't stay checked
+  clearSelection(weekId);
 }
 
 function exportWeekData(rows, weekId) {
