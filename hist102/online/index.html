@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIST 102 — US History After 1877</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400;1,700&family=DM+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+:root {
+  --ink:        #1a1510;
+  --ink-mid:    #3a3028;
+  --ink-light:  #6b5e50;
+  --cream:      #f7f2e8;
+  --cream-d:    #ede5d4;
+  --cream-dd:   #ddd0b8;
+  --gold:       #9a6f2a;
+  --gold-l:     #c8922a;
+  --rust:       #8c3a1e;
+  --sage:       #3d6053;
+  --canvas-blue:#1e4488;
+  --locked:     #a09080;
+}
+
+/* ── BASE ── */
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 300;
+  line-height: 1.75;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media print {
+  body * { display: none !important; }
+  body::after { display: block !important; content: "Not available for printing."; padding: 4rem; text-align: center; }
+}
+
+/* ── NAV ── */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--ink);
+  border-bottom: 1px solid rgba(154,111,42,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 52px;
+}
+.nav-brand {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-l);
+  text-decoration: none;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.nav-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(245,239,226,0.4);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-link:hover { color: rgba(245,239,226,0.8); }
+.nav-canvas {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--canvas-blue);
+  padding: 0.35rem 0.9rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.nav-canvas:hover { background: #2a5ab8; }
+
+/* ── HERO ── */
+.hero {
+  background: var(--ink);
+  padding: 5rem 2rem 4.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px,
+      transparent 1px, transparent 16px
+    );
+  pointer-events: none;
+}
+/* large decorative year */
+.hero::after {
+  content: '1877';
+  position: absolute;
+  right: -1rem;
+  bottom: -2rem;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(8rem, 18vw, 18rem);
+  font-weight: 900;
+  color: rgba(255,255,255,0.03);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  position: relative;
+}
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold-l);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--gold);
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 5.5vw, 4rem);
+  font-weight: 900;
+  color: var(--cream);
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+.hero h1 em {
+  font-style: italic;
+  color: #e8c97a;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.75rem;
+}
+.hero-meta-item {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: rgba(245,239,226,0.35);
+}
+.hero-meta-item strong {
+  display: block;
+  font-size: 0.85rem;
+  color: rgba(245,239,226,0.7);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.1rem;
+}
+
+/* ── TIMELINE STRIP ── */
+.timeline-strip {
+  background: var(--ink-mid);
+  border-top: 1px solid rgba(154,111,42,0.2);
+  border-bottom: 1px solid rgba(154,111,42,0.2);
+  padding: 0.9rem 2rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.timeline-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.tl-item {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+.tl-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+.tl-dot.locked { background: rgba(245,239,226,0.15); }
+.tl-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: rgba(245,239,226,0.45);
+  margin: 0 0.5rem;
+}
+.tl-label.active { color: var(--gold-l); }
+.tl-line {
+  width: 40px; height: 1px;
+  background: rgba(245,239,226,0.1);
+  flex-shrink: 0;
+}
+.tl-line.done { background: rgba(154,111,42,0.35); }
+
+/* ── MAIN LAYOUT ── */
+.page-body {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+}
+
+/* ── SECTION HEADING ── */
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.section-heading h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.section-heading::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: var(--cream-dd);
+}
+
+/* ── WEEK CARDS ── */
+.weeks-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.week-card {
+  border: 1px solid var(--cream-dd);
+  border-left: 4px solid var(--gold);
+  background: white;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+.week-card:hover {
+  box-shadow: 0 4px 20px rgba(26,21,16,0.1);
+  transform: translateY(-1px);
+}
+.week-card.locked {
+  border-left-color: var(--cream-dd);
+  opacity: 0.65;
+}
+.week-card.locked:hover {
+  transform: none;
+  box-shadow: none;
+  cursor: default;
+}
+
+/* Color accent per week */
+.week-card:nth-child(1) { border-left-color: var(--gold); }
+.week-card:nth-child(2) { border-left-color: #7a5c2a; }
+.week-card:nth-child(3) { border-left-color: var(--sage); }
+.week-card:nth-child(4) { border-left-color: var(--rust); }
+.week-card:nth-child(5) { border-left-color: #4a7a9b; }
+.week-card:nth-child(6) { border-left-color: #6b5a8a; }
+.week-card:nth-child(7) { border-left-color: #4a8a6b; }
+.week-card.locked { border-left-color: var(--cream-dd) !important; }
+
+.card-header {
+  padding: 1.25rem 1.5rem 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.card-week-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+}
+.week-card.locked .card-week-num { color: var(--locked); }
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.card-badge {
+  flex-shrink: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 2px;
+  white-space: nowrap;
+  margin-top: 0.1rem;
+}
+.badge-live {
+  background: rgba(61,96,83,0.12);
+  color: var(--sage);
+  border: 1px solid rgba(61,96,83,0.3);
+}
+.badge-locked {
+  background: rgba(160,144,128,0.1);
+  color: var(--locked);
+  border: 1px solid rgba(160,144,128,0.25);
+}
+.badge-date {
+  background: rgba(154,111,42,0.08);
+  color: var(--gold);
+  border: 1px solid rgba(154,111,42,0.2);
+}
+
+.card-body {
+  padding: 0.85rem 1.5rem;
+}
+.card-desc {
+  font-size: 0.88rem;
+  color: var(--ink-light);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+/* objectives toggle */
+.objectives-toggle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.15s;
+}
+.week-card.locked .objectives-toggle { color: var(--locked); cursor: default; }
+.objectives-toggle:hover { color: var(--gold-l); }
+.objectives-toggle .arrow {
+  transition: transform 0.25s;
+  display: inline-block;
+}
+.objectives-toggle.open .arrow { transform: rotate(90deg); }
+
+.objectives-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+.objectives-panel.open { max-height: 800px; }
+
+.objectives-inner {
+  padding: 1rem 0 0.25rem;
+  border-top: 1px solid var(--cream-d);
+  margin-top: 0.85rem;
+}
+.objectives-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-bottom: 0.65rem;
+}
+.objectives-list {
+  list-style: none;
+  padding: 0;
+}
+.objectives-list li {
+  font-size: 0.85rem;
+  color: var(--ink-mid);
+  line-height: 1.65;
+  padding: 0.3rem 0 0.3rem 1.1rem;
+  position: relative;
+  border-bottom: 1px solid rgba(26,21,16,0.05);
+}
+.objectives-list li:last-child { border-bottom: none; }
+.objectives-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 0.75rem;
+}
+
+/* card footer */
+.card-footer {
+  padding: 0.85rem 1.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.card-unlock-info {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--locked);
+}
+.enter-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--gold);
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.enter-btn:hover { background: var(--gold-l); transform: translateY(-1px); }
+.enter-btn:active { transform: none; }
+
+/* ── COURSE INFO SIDEBAR STRIP ── */
+.info-strip {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--cream-dd);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+.info-block {}
+.info-block-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-bottom: 0.4rem;
+}
+.info-block-value {
+  font-size: 0.9rem;
+  color: var(--ink-mid);
+  line-height: 1.6;
+}
+.info-block-value a {
+  color: var(--canvas-blue);
+  text-decoration: none;
+}
+.info-block-value a:hover { text-decoration: underline; }
+
+/* ── FOOTER ── */
+.site-footer {
+  background: var(--ink);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: rgba(245,239,226,0.2);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-inner { animation: fadeUp 0.5s ease both; }
+.weeks-grid .week-card:nth-child(1) { animation: fadeUp 0.4s ease 0.05s both; }
+.weeks-grid .week-card:nth-child(2) { animation: fadeUp 0.4s ease 0.10s both; }
+.weeks-grid .week-card:nth-child(3) { animation: fadeUp 0.4s ease 0.15s both; }
+.weeks-grid .week-card:nth-child(4) { animation: fadeUp 0.4s ease 0.20s both; }
+.weeks-grid .week-card:nth-child(5) { animation: fadeUp 0.4s ease 0.25s both; }
+.weeks-grid .week-card:nth-child(6) { animation: fadeUp 0.4s ease 0.30s both; }
+.weeks-grid .week-card:nth-child(7) { animation: fadeUp 0.4s ease 0.35s both; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .hero { padding: 3rem 1.25rem 3rem; }
+  .page-body { padding: 2.5rem 1.25rem 4rem; }
+  .card-header { flex-direction: column; gap: 0.5rem; }
+  .card-footer { flex-direction: column; align-items: flex-start; }
+  .nav-links .nav-link { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a class="nav-brand" href="index.html">HIST 102</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#weeks">Modules</a>
+    <a class="nav-canvas" href="https://canvas.instructure.com" target="_blank">Canvas →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Spring 2026 &nbsp;·&nbsp; Fully Online</div>
+    <h1>US History<br><em>After 1877</em></h1>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>HIST 102</strong>Course Number</div>
+      <div class="hero-meta-item"><strong>7 Weeks</strong>Duration</div>
+      <div class="hero-meta-item"><strong>March 9 – April 26, 2026</strong>Course Dates</div>
+      <div class="hero-meta-item"><strong>Fully Online</strong>Format</div>
+    </div>
+  </div>
+</header>
+
+<!-- TIMELINE STRIP -->
+<div class="timeline-strip">
+  <div class="timeline-inner">
+    <div class="tl-item"><div class="tl-dot"></div><span class="tl-label active">W1</span></div>
+    <div class="tl-line done"></div>
+    <div class="tl-item"><div class="tl-dot locked"></div><span class="tl-label">W2</span></div>
+    <div class="tl-line"></div>
+    <div class="tl-item"><div class="tl-dot locked"></div><span class="tl-label">W3</span></div>
+    <div class="tl-line"></div>
+    <div class="tl-item"><div class="tl-dot locked"></div><span class="tl-label">W4</span></div>
+    <div class="tl-line"></div>
+    <div class="tl-item"><div class="tl-dot locked"></div><span class="tl-label">W5</span></div>
+    <div class="tl-line"></div>
+    <div class="tl-item"><div class="tl-dot locked"></div><span class="tl-label">W6</span></div>
+    <div class="tl-line"></div>
+    <div class="tl-item"><div class="tl-dot locked"></div><span class="tl-label">W7</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="page-body">
+
+  <div class="section-heading" id="weeks">
+    <h2>Course Modules</h2>
+  </div>
+
+  <div class="weeks-grid">
+
+    <!-- ── WEEK 1 — LIVE ── -->
+    <div class="week-card" id="card-w1">
+      <div class="card-header">
+        <div>
+          <div class="card-week-num">Week 1 &nbsp;·&nbsp; March 9–15</div>
+          <div class="card-title">Reconstruction and Its Aftermath</div>
+        </div>
+        <span class="card-badge badge-live">&#x25CF; Live Now</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Reconstruction was a time of significant political and social change in the United States. We examine the controversial origins of Reconstruction, evaluate its successes and failures, and ask why it came to an abrupt end in 1877 — and what its political and social legacy means for America today.</p>
+        <button class="objectives-toggle" onclick="toggleObj(this)">
+          <span class="arrow">›</span> Learning Objectives
+        </button>
+        <div class="objectives-panel">
+          <div class="objectives-inner">
+            <div class="objectives-label">By the end of this week you will be able to</div>
+            <ul class="objectives-list">
+              <li>Identify the objectives of presidential and congressional Reconstruction following the Civil War and assess the impact of Reconstruction on Caucasian and African-American residents of the American South.</li>
+              <li>Analyze and interpret primary source documents from the nineteenth century using historical research methods.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span></span>
+        <a class="enter-btn" href="week1/gate.html">Enter Week 1 &nbsp;›</a>
+      </div>
+    </div>
+
+    <!-- ── WEEK 2 — LOCKED ── -->
+    <div class="week-card locked" id="card-w2">
+      <div class="card-header">
+        <div>
+          <div class="card-week-num">Week 2 &nbsp;·&nbsp; March 16–22</div>
+          <div class="card-title">The Gilded Age and Industrialization</div>
+        </div>
+        <span class="card-badge badge-date">Opens Mar 16</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">The Gilded Age was marked by tremendous change, growth, and inequality — the rise of industrialization, massive migrations, the clash of labor and capital, and technologies that forever altered the American landscape. A time of both incredible opportunity and stark inequality whose legacy endures today.</p>
+        <button class="objectives-toggle" onclick="return false;">
+          <span class="arrow">›</span> Learning Objectives
+        </button>
+        <div class="objectives-panel">
+          <div class="objectives-inner">
+            <div class="objectives-label">By the end of this week you will be able to</div>
+            <ul class="objectives-list">
+              <li>Understand the key economic and social developments of the Gilded Age and their impact on the United States.</li>
+              <li>Analyze the factors that led to industrialization and technological innovation during this period.</li>
+              <li>Examine the experiences of laborers, immigrants, and Native Americans and their role in shaping the era.</li>
+              <li>Evaluate the influence of the Populist Movement on American society and politics.</li>
+              <li>Explore westward migration, its motivations, and consequences for both settlers and indigenous peoples.</li>
+              <li>Discuss policies and conflicts involving Native Americans, including the Dawes Act and the Ghost Dance Movement.</li>
+              <li>Analyze Frederick Jackson Turner's "Frontier Thesis" and its implications for American identity.</li>
+              <li>Examine the impact of immigration and urbanization on American cities and society.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-unlock-info">&#x1F512; &nbsp;Unlocks March 16, 2026</span>
+      </div>
+    </div>
+
+    <!-- ── WEEK 3 — LOCKED ── -->
+    <div class="week-card locked" id="card-w3">
+      <div class="card-header">
+        <div>
+          <div class="card-week-num">Week 3 &nbsp;·&nbsp; March 23–29</div>
+          <div class="card-title">Progressive Era and Reform</div>
+        </div>
+        <span class="card-badge badge-date">Opens Mar 23</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">The Progressive Era was characterized by a drive for social, political, and economic progress — a series of momentous events as individuals and groups sought to address the challenges of industrialization, urbanization, and social inequality. Its influence continues to be felt in our nation today.</p>
+        <button class="objectives-toggle" onclick="return false;">
+          <span class="arrow">›</span> Learning Objectives
+        </button>
+        <div class="objectives-panel">
+          <div class="objectives-inner">
+            <div class="objectives-label">By the end of this week you will be able to</div>
+            <ul class="objectives-list">
+              <li>Understand key events and figures of the Progressive Era, including Theodore Roosevelt's role in American imperialism and the mobilization for reform.</li>
+              <li>Explore social and political movements that emerged during this period, including women's movements and efforts to target trusts.</li>
+              <li>Analyze the challenges faced by African Americans during the Progressive Era, including the impact of Jim Crow laws.</li>
+              <li>Evaluate the contributions of figures like Jacob Riis, Booker T. Washington, and W.E.B. Du Bois.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-unlock-info">&#x1F512; &nbsp;Unlocks March 23, 2026</span>
+      </div>
+    </div>
+
+    <!-- ── WEEK 4 — LOCKED ── -->
+    <div class="week-card locked" id="card-w4">
+      <div class="card-header">
+        <div>
+          <div class="card-week-num">Week 4 &nbsp;·&nbsp; March 30 – April 5</div>
+          <div class="card-title">World Wars and Their Impact</div>
+        </div>
+        <span class="card-badge badge-date">Opens Mar 30</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Spanning from the early 20th century through the mid-20th century, this week explores America's involvement in World War I, the League of Nations, the Great Depression, World War II, and the complex narratives of Japanese Internment — events that reshaped the United States and had far-reaching global impact.</p>
+        <button class="objectives-toggle" onclick="return false;">
+          <span class="arrow">›</span> Learning Objectives
+        </button>
+        <div class="objectives-panel">
+          <div class="objectives-inner">
+            <div class="objectives-label">By the end of this week you will be able to</div>
+            <ul class="objectives-list">
+              <li>Understand America's role in World War I, including reasons for U.S. entry and the aftermath that led to the League of Nations.</li>
+              <li>Examine the creation, objectives, and challenges of the League of Nations, and why the U.S. chose not to join.</li>
+              <li>Explore how American society, economy, and politics were transformed after World War II.</li>
+              <li>Analyze the causes, impacts, and recovery efforts of the Great Depression, including the New Deal.</li>
+              <li>Study the causes, major events, and outcomes of World War II and their global consequences.</li>
+              <li>Understand the internment of Japanese Americans during WWII and its lasting impact.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-unlock-info">&#x1F512; &nbsp;Unlocks March 30, 2026</span>
+      </div>
+    </div>
+
+    <!-- ── WEEK 5 — LOCKED ── -->
+    <div class="week-card locked" id="card-w5">
+      <div class="card-header">
+        <div>
+          <div class="card-week-num">Week 5 &nbsp;·&nbsp; April 6–12</div>
+          <div class="card-title">The Civil Rights Movement</div>
+        </div>
+        <span class="card-badge badge-date">Opens Apr 6</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">A transformative and tumultuous period in American history, marked by activism, courage, and determination in the pursuit of equality and justice. We explore the pivotal moments and figures that shaped the fight for civil rights — from its early roots to its enduring impact on American society today.</p>
+        <button class="objectives-toggle" onclick="return false;">
+          <span class="arrow">›</span> Learning Objectives
+        </button>
+        <div class="objectives-panel">
+          <div class="objectives-inner">
+            <div class="objectives-label">By the end of this week you will be able to</div>
+            <ul class="objectives-list">
+              <li>Understand the Civil Rights Movement — its origins, key events, and impact on American society.</li>
+              <li>Explore JFK's role in the Civil Rights Movement and how his administration influenced the fight for racial equality.</li>
+              <li>Study the Stonewall Riots and their significance in the LGBTQ+ rights movement.</li>
+              <li>Connect the Civil Rights Movement to broader struggles for social justice in American history.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-unlock-info">&#x1F512; &nbsp;Unlocks April 6, 2026</span>
+      </div>
+    </div>
+
+    <!-- ── WEEK 6 — LOCKED ── -->
+    <div class="week-card locked" id="card-w6">
+      <div class="card-header">
+        <div>
+          <div class="card-week-num">Week 6 &nbsp;·&nbsp; April 13–19</div>
+          <div class="card-title">The Cold War and Social Change</div>
+        </div>
+        <span class="card-badge badge-date">Opens Apr 13</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">We examine the political, economic, and social transformations of the Carter and Reagan presidencies — stagflation, the oil crisis, the rise of the New Right, and the Reagan Revolution. A defining period characterized by significant shifts in political ideology, economic policy, and social dynamics whose effects are still felt today.</p>
+        <button class="objectives-toggle" onclick="return false;">
+          <span class="arrow">›</span> Learning Objectives
+        </button>
+        <div class="objectives-panel">
+          <div class="objectives-inner">
+            <div class="objectives-label">By the end of this week you will be able to</div>
+            <ul class="objectives-list">
+              <li>Understand the economic and political context of the Carter and Reagan eras, including stagflation and oil shocks.</li>
+              <li>Examine the domestic and foreign policies of Carter and Reagan and their impact on the United States.</li>
+              <li>Explore the rise of the New Right and how Reagan's presidency marked a significant shift in American politics.</li>
+              <li>Analyze the social and cultural changes of the 1980s, particularly the impact on African American communities.</li>
+              <li>Assess the legacy of these transformative decades on contemporary American life.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-unlock-info">&#x1F512; &nbsp;Unlocks April 13, 2026</span>
+      </div>
+    </div>
+
+    <!-- ── WEEK 7 — LOCKED ── -->
+    <div class="week-card locked" id="card-w7">
+      <div class="card-header">
+        <div>
+          <div class="card-week-num">Week 7 &nbsp;·&nbsp; April 20–26</div>
+          <div class="card-title">Contemporary America and Beyond</div>
+        </div>
+        <span class="card-badge badge-date">Opens Apr 20</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">We explore the period leading up to September 11, 2001 — the continuation of the conservative movement, George H.W. Bush's presidency, the collapse of the Soviet Union, and the Gulf War. An era that left the United States as the sole global superpower and set the stage for the modern world.</p>
+        <button class="objectives-toggle" onclick="return false;">
+          <span class="arrow">›</span> Learning Objectives
+        </button>
+        <div class="objectives-panel">
+          <div class="objectives-inner">
+            <div class="objectives-label">By the end of this week you will be able to</div>
+            <ul class="objectives-list">
+              <li>Understand the Reagan Revolution's legacy and its influence on the 1988 presidential election.</li>
+              <li>Examine George H.W. Bush's presidency and the key domestic and international challenges of his tenure.</li>
+              <li>Assess the political strategies and campaigns of the 1988 presidential election.</li>
+              <li>Explore the factors leading to the collapse of the Soviet Union and its implications for global politics.</li>
+              <li>Analyze major global events under Bush's administration, including the Gulf War and U.S. foreign policy.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-unlock-info">&#x1F512; &nbsp;Unlocks April 20, 2026</span>
+      </div>
+    </div>
+
+  </div><!-- /weeks-grid -->
+
+  <!-- INFO STRIP -->
+  <div class="info-strip">
+    <div class="info-block">
+      <div class="info-block-label">Textbook</div>
+      <div class="info-block-value">OpenStax US History<br><a href="https://openstax.org/books/us-history/pages/1-introduction" target="_blank">Free online ↗</a></div>
+    </div>
+    <div class="info-block">
+      <div class="info-block-label">Course Closes</div>
+      <div class="info-block-value">April 26, 2026<br>All work due by end of day</div>
+    </div>
+    <div class="info-block">
+      <div class="info-block-label">Graded Work</div>
+      <div class="info-block-value">Reading Notes · Primary Source Discussions<br>Submitted via Canvas</div>
+    </div>
+    <div class="info-block">
+      <div class="info-block-label">Questions?</div>
+      <div class="info-block-value"><a href="https://canvas.instructure.com" target="_blank">Message via Canvas ↗</a></div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  HIST 102 &nbsp;·&nbsp; US History After 1877 &nbsp;·&nbsp; Spring 2026
+</footer>
+
+<script>
+// ── OBJECTIVES TOGGLE ──
+function toggleObj(btn) {
+  var card = btn.closest('.week-card');
+  if (card.classList.contains('locked')) return;
+  btn.classList.toggle('open');
+  var panel = btn.nextElementSibling;
+  panel.classList.toggle('open');
+}
+
+// ── AUTO-UNLOCK CARDS BASED ON DATE ──
+// Checks today's date against each week's unlock date.
+// Once the date passes, removes the 'locked' class and enables the Enter button.
+var unlockDates = {
+  'card-w2': new Date('2026-03-16T00:00:00'),
+  'card-w3': new Date('2026-03-23T00:00:00'),
+  'card-w4': new Date('2026-03-30T00:00:00'),
+  'card-w5': new Date('2026-04-06T00:00:00'),
+  'card-w6': new Date('2026-04-13T00:00:00'),
+  'card-w7': new Date('2026-04-20T00:00:00')
+};
+
+var weekLinks = {
+  'card-w2': 'week2/gate.html',
+  'card-w3': 'week3/gate.html',
+  'card-w4': 'week4/gate.html',
+  'card-w5': 'week5/gate.html',
+  'card-w6': 'week6/gate.html',
+  'card-w7': 'week7/gate.html'
+};
+
+(function checkUnlocks() {
+  var now = new Date();
+  Object.keys(unlockDates).forEach(function(cardId) {
+    if (now >= unlockDates[cardId]) {
+      var card = document.getElementById(cardId);
+      if (!card) return;
+      card.classList.remove('locked');
+
+      // Update badge
+      var badge = card.querySelector('.card-badge');
+      if (badge) {
+        badge.className = 'card-badge badge-live';
+        badge.textContent = '● Live Now';
+      }
+
+      // Enable objectives toggle
+      var toggle = card.querySelector('.objectives-toggle');
+      if (toggle) toggle.setAttribute('onclick', 'toggleObj(this)');
+
+      // Add Enter button
+      var footer = card.querySelector('.card-footer');
+      if (footer) {
+        footer.innerHTML =
+          '<span></span>' +
+          '<a class="enter-btn" href="' + weekLinks[cardId] + '">Enter ' +
+          cardId.replace('card-','').toUpperCase() + ' &nbsp;›</a>';
+      }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
