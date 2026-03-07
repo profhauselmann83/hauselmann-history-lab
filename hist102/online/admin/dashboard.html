@@ -26,6 +26,7 @@ html { font-size: 15px; }
   --ok:        #2e7a50;
   --bg:        #f2ece0;
   --sidebar-w: 220px;
+  --canvas-blue: #1e4488;
 }
 
 body {
@@ -339,6 +340,38 @@ body {
 }
 .export-btn:hover { background: var(--ink-mid); }
 
+.pdf-btn {
+  padding: 0.45rem 1rem;
+  background: var(--sage);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.pdf-btn:hover { background: var(--sage-l); }
+.pdf-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.pdf-row-btn {
+  background: none;
+  border: 1px solid rgba(61,96,83,0.4);
+  border-radius: 2px;
+  color: var(--sage);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.pdf-row-btn:hover { background: var(--sage); color: white; }
+
 /* ─── TABLE ─── */
 .table-wrap { overflow-x: auto; margin-bottom: 2rem; }
 table {
@@ -434,6 +467,92 @@ tbody td.name-cell { font-weight: 600; color: var(--ink); }
 /* ─── GATE ENTRIES TABLE ─── */
 .gate-table td { font-size: 0.8rem; }
 
+/* ─── REVIEW TRACKING ─── */
+.review-checks {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+}
+.review-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  color: var(--ink-light);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--cream-dd);
+  background: white;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+.review-check-label:hover { border-color: var(--gold); color: var(--ink); }
+.review-check-label input[type=checkbox] { display: none; }
+.review-check-label.checked-dl {
+  background: rgba(61,96,83,0.1);
+  border-color: rgba(61,96,83,0.4);
+  color: var(--sage);
+}
+.review-check-label.checked-canvas {
+  background: rgba(30,68,136,0.1);
+  border-color: rgba(30,68,136,0.35);
+  color: var(--canvas-blue);
+}
+.review-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  display: none;
+}
+.checked-dl .review-dot, .checked-canvas .review-dot { display: inline-block; }
+
+/* progress bar strip */
+.review-progress {
+  background: var(--cream-d);
+  border: 1px solid var(--cream-dd);
+  border-radius: 3px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.progress-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+.progress-track {
+  flex: 1;
+  min-width: 120px;
+  height: 6px;
+  background: var(--cream-dd);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.progress-fill.dl-fill     { background: var(--sage); }
+.progress-fill.canvas-fill { background: var(--canvas-blue); }
+.progress-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--ink-mid);
+  white-space: nowrap;
+}
+
 /* ─── LOADING / EMPTY ─── */
 .loading-msg, .empty-msg {
   font-family: 'DM Mono', monospace;
@@ -470,6 +589,8 @@ tbody td.name-cell { font-weight: 600; color: var(--ink); }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -791,57 +912,118 @@ function renderWeek(weekId) {
     }
 
     document.getElementById('mainContent').innerHTML = html;
+    if (rows.length > 0) updateProgress(weekId);
   });
 }
 
-// ── SUBMISSIONS TABLE ──
+// ── REVIEW STATE (persisted in localStorage) ──────────────────────
+function reviewKey(weekId, wnum) {
+  return 'hist102_review_' + weekId + '_' + (wnum||'').replace(/\W/g,'');
+}
+function getReview(weekId, wnum) {
+  try { var v = localStorage.getItem(reviewKey(weekId, wnum)); return v ? JSON.parse(v) : {dl:false,canvas:false}; }
+  catch(e) { return {dl:false,canvas:false}; }
+}
+function setReview(weekId, wnum, field, val) {
+  var r = getReview(weekId, wnum); r[field] = val;
+  try { localStorage.setItem(reviewKey(weekId, wnum), JSON.stringify(r)); } catch(e) {}
+  updateProgress(weekId);
+}
+function updateProgress(weekId) {
+  var dlBar   = document.getElementById('prog-dl-'+ weekId);
+  var cvBar   = document.getElementById('prog-canvas-'+ weekId);
+  var dlCount = document.getElementById('prog-dl-count-'+ weekId);
+  var cvCount = document.getElementById('prog-canvas-count-'+ weekId);
+  if (!dlBar) return;
+  var trs = document.querySelectorAll('#tbl-'+ weekId +' tbody tr:not(.detail-row)');
+  var total = trs.length, dlDone = 0, cvDone = 0;
+  trs.forEach(function(tr) {
+    var r = getReview(weekId, tr.getAttribute('data-wnum')||'');
+    if (r.dl)     dlDone++;
+    if (r.canvas) cvDone++;
+  });
+  var dlPct = total ? Math.round(dlDone/total*100) : 0;
+  var cvPct = total ? Math.round(cvDone/total*100) : 0;
+  dlBar.style.width   = dlPct+'%';
+  cvBar.style.width   = cvPct+'%';
+  dlCount.textContent = dlDone+'/'+total+' downloaded';
+  cvCount.textContent = cvDone+'/'+total+' in Canvas';
+}
+
+// ── SUBMISSIONS TABLE ──────────────────────────────────────────────
 function submissionsTable(rows, weekId) {
   var html = '';
+  var rowsJson = JSON.stringify(rows).replace(/</g,'\\u003c');
+
+  // Progress strip
+  html += '<div class="review-progress">';
+  html +=   '<span class="progress-label">Downloaded</span>';
+  html +=   '<div class="progress-track"><div class="progress-fill dl-fill" id="prog-dl-'+weekId+'" style="width:0%"></div></div>';
+  html +=   '<span class="progress-count" id="prog-dl-count-'+weekId+'">0/'+rows.length+' downloaded</span>';
+  html +=   '<span class="progress-label" style="margin-left:1rem">Canvas</span>';
+  html +=   '<div class="progress-track"><div class="progress-fill canvas-fill" id="prog-canvas-'+weekId+'" style="width:0%"></div></div>';
+  html +=   '<span class="progress-count" id="prog-canvas-count-'+weekId+'">0/'+rows.length+' in Canvas</span>';
+  html +=   '<button class="export-btn" style="margin-left:auto;font-size:0.58rem" onclick="clearReview(\''+weekId+'\')">Reset Tracking</button>';
+  html += '</div>';
+
+  // Filter + action bar
   html += '<div class="filter-bar">';
   html +=   '<label>Filter:</label>';
   html +=   '<select class="filter-select" onchange="filterTable(this,\'tbl-'+weekId+'\')">';
   html +=     '<option value="all">All submissions</option>';
+  html +=     '<option value="complete">Complete only</option>';
   html +=     '<option value="incomplete">Incomplete only</option>';
   html +=     '<option value="short">Short answers</option>';
-  html +=     '<option value="complete">Complete only</option>';
+  html +=     '<option value="not-dl">Not downloaded</option>';
+  html +=     '<option value="not-canvas">Not in Canvas</option>';
   html +=   '</select>';
-  html +=   '<button class="export-btn" onclick="exportWeekData(' + JSON.stringify(rows).replace(/</g,'\\u003c') + ',\'' + weekId + '\')">&#x21E9; Export CSV</button>';
+  html +=   '<button class="pdf-btn" id="zip-btn-'+weekId+'" onclick="downloadZIP('+rowsJson+',\''+weekId+'\')">&#x21E9; ZIP All</button>';
+  html +=   '<button class="pdf-btn" id="bulk-pdf-'+weekId+'" onclick="bulkPDF('+rowsJson+',\''+weekId+'\')" style="background:var(--ink-mid)">&#x21E9; All PDFs</button>';
+  html +=   '<button class="export-btn" onclick="exportWeekData('+rowsJson+',\''+weekId+'\')">&#x21E9; CSV</button>';
   html += '</div>';
 
-  html += '<div class="table-wrap"><table id="tbl-' + weekId + '">';
-  html += '<thead><tr>';
-  html += '<th>Student</th><th>W Number</th><th>Submitted</th>';
-  html += '<th>Answered</th><th>Short</th><th>Status</th><th>Answers</th>';
-  html += '</tr></thead><tbody>';
+  // Table
+  html += '<div class="table-wrap"><table id="tbl-'+weekId+'">';
+  html += '<thead><tr><th>Student</th><th>W Number</th><th>Submitted</th>';
+  html += '<th>Answered</th><th>Status</th><th>Answers</th><th>PDF</th><th>Tracking</th></tr></thead><tbody>';
 
   rows.forEach(function(row, i) {
-    var rowId = 'row-' + weekId + '-' + i;
-    var statusClass = row.all_complete
-      ? (row.questions_short > 0 ? 'incomplete' : 'complete')
-      : 'incomplete';
+    var rowId  = 'row-'+weekId+'-'+i;
+    var wnum   = row.student_w_num || '';
+    var review = getReview(weekId, wnum);
+    var statusClass = row.all_complete ? (row.questions_short > 0 ? 'incomplete' : 'complete') : 'incomplete';
+    var dlCls  = review.dl     ? 'checked-dl'     : '';
+    var cvCls  = review.canvas ? 'checked-canvas' : '';
+    var rowBg  = review.canvas ? 'background:rgba(30,68,136,0.04)' : review.dl ? 'background:rgba(61,96,83,0.04)' : '';
+    var rowJson = JSON.stringify(row).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'\\u003c');
 
-    html += '<tr data-status="' + statusClass + '">';
-    html += '<td class="name-cell">'  + esc(row.student_name)  + '</td>';
-    html += '<td class="mono">'       + esc(row.student_w_num) + '</td>';
-    html += '<td class="mono">'       + fmtDate(row.created_at)+ '</td>';
-    html += '<td class="mono">'       + (row.total_questions||0) + '/12</td>';
-    html += '<td class="mono">'       + (row.questions_short||0) + '</td>';
-    html += '<td>'                    + flagHtml(row)           + '</td>';
-    html += '<td><button class="expand-btn" onclick="toggleDetail(\'' + rowId + '\')">View →</button></td>';
+    html += '<tr data-status="'+statusClass+'" data-wnum="'+esc(wnum)+'" style="'+rowBg+'">';
+    html += '<td class="name-cell">'+esc(row.student_name)+'</td>';
+    html += '<td class="mono">'+esc(wnum)+'</td>';
+    html += '<td class="mono">'+fmtDate(row.created_at)+'</td>';
+    html += '<td class="mono">'+(row.total_questions||0)+'/12</td>';
+    html += '<td>'+flagHtml(row)+'</td>';
+    html += '<td><button class="expand-btn" onclick="toggleDetail(\''+rowId+'\')">View →</button></td>';
+    html += '<td><button class="pdf-row-btn" onclick=\'pdfAndMark('+rowJson+',\''+weekId+'\')\'>&#x21E9; PDF</button></td>';
+    html += '<td><div class="review-checks">';
+    html += '<label class="review-check-label '+dlCls+'" id="lbl-dl-'+weekId+'-'+i+'" onclick="toggleReview(\''+weekId+'\',\''+esc(wnum)+'\',\'dl\','+i+')">';
+    html +=   '<span class="review-dot"></span><input type="checkbox" '+(review.dl?'checked':'')+'>Downloaded</label>';
+    html += '<label class="review-check-label '+cvCls+'" id="lbl-canvas-'+weekId+'-'+i+'" onclick="toggleReview(\''+weekId+'\',\''+esc(wnum)+'\',\'canvas\','+i+')">';
+    html +=   '<span class="review-dot"></span><input type="checkbox" '+(review.canvas?'checked':'')+'>In Canvas</label>';
+    html += '</div></td>';
     html += '</tr>';
 
     // Expandable detail row
-    html += '<tr class="detail-row" id="' + rowId + '">';
-    html += '<td class="detail-cell" colspan="7">';
-    html += '<div class="answers-grid">';
+    html += '<tr class="detail-row" id="'+rowId+'">';
+    html += '<td class="detail-cell" colspan="8"><div class="answers-grid">';
     Q_LABELS.forEach(function(q) {
-      var ans = row[q.col + '_answer'] || '';
-      var wc  = row[q.col + '_words']  || 0;
-      var cls = ans.trim() === '' ? 'no-ans' : wc < 30 ? 'short-ans' : 'good-ans';
-      html += '<div class="answer-card ' + cls + '">';
-      html +=   '<div class="answer-q">' + esc(q.label) + '</div>';
-      html +=   '<div class="answer-text">' + (ans.trim() || '<em>No answer</em>') + '</div>';
-      if (ans.trim()) html += '<div class="answer-wc">' + wc + ' words</div>';
+      var ans = row[q.col+'_answer'] || '';
+      var wc  = row[q.col+'_words']  || 0;
+      var cls = ans.trim()==='' ? 'no-ans' : wc<30 ? 'short-ans' : 'good-ans';
+      html += '<div class="answer-card '+cls+'">';
+      html +=   '<div class="answer-q">'+esc(q.label)+'</div>';
+      html +=   '<div class="answer-text">'+(ans.trim()||'<em>No answer</em>')+'</div>';
+      if (ans.trim()) html += '<div class="answer-wc">'+wc+' words</div>';
       html += '</div>';
     });
     html += '</div></td></tr>';
@@ -851,68 +1033,76 @@ function submissionsTable(rows, weekId) {
   return html;
 }
 
-function toggleDetail(id) {
-  var row = document.getElementById(id);
-  row.classList.toggle('open');
+function toggleDetail(id) { document.getElementById(id).classList.toggle('open'); }
+
+function toggleReview(weekId, wnum, field, idx) {
+  var r = getReview(weekId, wnum);
+  r[field] = !r[field];
+  setReview(weekId, wnum, field, r[field]);
+  var cls = field==='dl' ? 'checked-dl' : 'checked-canvas';
+  var lbl = document.getElementById('lbl-'+field+'-'+weekId+'-'+idx);
+  if (lbl) {
+    lbl.classList.toggle(cls, r[field]);
+    var tr = lbl.closest('tr');
+    if (tr) {
+      var rev = getReview(weekId, wnum);
+      tr.style.background = rev.canvas ? 'rgba(30,68,136,0.04)' : rev.dl ? 'rgba(61,96,83,0.04)' : '';
+    }
+  }
+}
+
+function clearReview(weekId) {
+  if (!confirm('Reset all tracking for '+(WEEK_LABELS[weekId]||weekId)+'?')) return;
+  Object.keys(localStorage).forEach(function(k) {
+    if (k.startsWith('hist102_review_'+weekId+'_')) localStorage.removeItem(k);
+  });
+  showView('week', weekId);
 }
 
 function filterTable(sel, tableId) {
   var val = sel.value;
   var tbl = document.getElementById(tableId);
   if (!tbl) return;
+  var weekId = tableId.replace('tbl-','');
   tbl.querySelectorAll('tbody tr:not(.detail-row)').forEach(function(tr) {
-    var status = tr.getAttribute('data-status') || '';
-    var show = val === 'all'
-      || (val === 'incomplete' && status === 'incomplete')
-      || (val === 'short'      && status === 'incomplete')
-      || (val === 'complete'   && status === 'complete');
+    var status = tr.getAttribute('data-status')||'';
+    var wnum   = tr.getAttribute('data-wnum')||'';
+    var r = getReview(weekId, wnum);
+    var show = val==='all'
+      || (val==='complete'    && status==='complete')
+      || (val==='incomplete'  && status==='incomplete')
+      || (val==='short'       && status==='incomplete')
+      || (val==='not-dl'      && !r.dl)
+      || (val==='not-canvas'  && !r.canvas);
     tr.style.display = show ? '' : 'none';
-    // also hide its detail row if parent is hidden
     var next = tr.nextElementSibling;
-    if (next && next.classList.contains('detail-row')) {
-      next.style.display = show ? '' : 'none';
-    }
+    if (next && next.classList.contains('detail-row') && !show) next.style.display = 'none';
   });
 }
 
 function exportWeekData(rows, weekId) {
-  exportCSV(rows, 'HIST102_' + weekId + '_submissions.csv');
+  exportCSV(rows, 'HIST102_'+weekId+'_submissions.csv');
 }
 
 // ── VIEW: GATE ENTRIES ──
 function renderGates() {
   authFetch('gate_entries', '', 'created_at.desc').then(function(rows) {
     if (!Array.isArray(rows)) { showError('gate_entries'); return; }
-
     var html = '';
-    html += '<div class="page-header">';
-    html +=   '<div><h2>Gate Entries</h2><p>All student pledge + access code submissions.</p></div>';
-    html +=   '<button class="export-btn" onclick="exportCSV(' + JSON.stringify(rows).replace(/</g,'\\u003c') + ', \'HIST102_gate_entries.csv\')">&#x21E9; Export CSV</button>';
-    html += '</div>';
-
-    html += '<div class="stat-row">';
-    html += statCard(rows.length, 'Total Entries', '');
-    var weeks = {};
-    rows.forEach(function(r){ weeks[r.week_id] = true; });
-    html += statCard(Object.keys(weeks).length, 'Weeks Active', 'info');
-    html += '</div>';
-
-    if (rows.length === 0) {
-      html += '<div class="empty-msg">No gate entries yet.</div>';
-    } else {
-      html += '<div class="table-wrap"><table class="gate-table">';
-      html += '<thead><tr><th>Student</th><th>W Number</th><th>Week</th><th>Entered</th></tr></thead><tbody>';
+    html += '<div class="page-header"><div><h2>Gate Entries</h2><p>All student pledge + access code submissions.</p></div>';
+    html += '<button class="export-btn" onclick="exportCSV('+JSON.stringify(rows).replace(/</g,'\\u003c')+',\'HIST102_gate_entries.csv\')">&#x21E9; Export CSV</button></div>';
+    html += '<div class="stat-row">'+statCard(rows.length,'Total Entries','');
+    var weeks={}; rows.forEach(function(r){weeks[r.week_id]=true;});
+    html += statCard(Object.keys(weeks).length,'Weeks Active','info')+'</div>';
+    if (rows.length===0) { html += '<div class="empty-msg">No gate entries yet.</div>'; }
+    else {
+      html += '<div class="table-wrap"><table class="gate-table"><thead><tr><th>Student</th><th>W Number</th><th>Week</th><th>Entered</th></tr></thead><tbody>';
       rows.forEach(function(row) {
-        html += '<tr>';
-        html += '<td class="name-cell">' + esc(row.student_name)  + '</td>';
-        html += '<td class="mono">'      + esc(row.student_w_num) + '</td>';
-        html += '<td class="mono">'      + esc(row.week_label || row.week_id) + '</td>';
-        html += '<td class="mono">'      + fmtDate(row.created_at) + '</td>';
-        html += '</tr>';
+        html += '<tr><td class="name-cell">'+esc(row.student_name)+'</td><td class="mono">'+esc(row.student_w_num)+'</td>';
+        html += '<td class="mono">'+esc(row.week_label||row.week_id)+'</td><td class="mono">'+fmtDate(row.created_at)+'</td></tr>';
       });
       html += '</tbody></table></div>';
     }
-
     document.getElementById('mainContent').innerHTML = html;
   });
 }
@@ -921,52 +1111,152 @@ function renderGates() {
 function renderDownloads() {
   authFetch('pdf_downloads', '', 'created_at.desc').then(function(rows) {
     if (!Array.isArray(rows)) { showError('pdf_downloads'); return; }
-
     var html = '';
-    html += '<div class="page-header">';
-    html +=   '<div><h2>PDF Downloads</h2><p>Every time a student clicked "Download Notes PDF".</p></div>';
-    html +=   '<button class="export-btn" onclick="exportCSV(' + JSON.stringify(rows).replace(/</g,'\\u003c') + ', \'HIST102_pdf_downloads.csv\')">&#x21E9; Export CSV</button>';
-    html += '</div>';
-
-    html += '<div class="stat-row">';
-    html += statCard(rows.length, 'Total Downloads', '');
-    var full = rows.filter(function(r){ return r.answers_count === 12; }).length;
-    html += statCard(full, 'All 12 Answered', 'ok');
-    html += statCard(rows.length - full, 'Partial Downloads', 'warn');
-    html += '</div>';
-
-    if (rows.length === 0) {
-      html += '<div class="empty-msg">No PDF downloads yet.</div>';
-    } else {
-      html += '<div class="table-wrap"><table>';
-      html += '<thead><tr><th>Student</th><th>W Number</th><th>Week</th><th>Answers at Download</th><th>Downloaded</th></tr></thead><tbody>';
+    html += '<div class="page-header"><div><h2>PDF Downloads</h2><p>Every time a student clicked "Download Notes PDF".</p></div>';
+    html += '<button class="export-btn" onclick="exportCSV('+JSON.stringify(rows).replace(/</g,'\\u003c')+',\'HIST102_pdf_downloads.csv\')">&#x21E9; Export CSV</button></div>';
+    var full = rows.filter(function(r){return r.answers_count===12;}).length;
+    html += '<div class="stat-row">'+statCard(rows.length,'Total Downloads','')+statCard(full,'All 12 Answered','ok')+statCard(rows.length-full,'Partial Downloads','warn')+'</div>';
+    if (rows.length===0) { html += '<div class="empty-msg">No PDF downloads yet.</div>'; }
+    else {
+      html += '<div class="table-wrap"><table><thead><tr><th>Student</th><th>W Number</th><th>Week</th><th>Answers at Download</th><th>Downloaded</th></tr></thead><tbody>';
       rows.forEach(function(row) {
-        html += '<tr>';
-        html += '<td class="name-cell">' + esc(row.student_name)  + '</td>';
-        html += '<td class="mono">'      + esc(row.student_w_num) + '</td>';
-        html += '<td class="mono">'      + esc(row.week_id)       + '</td>';
-        html += '<td class="mono">'      + (row.answers_count||0) + '/12</td>';
-        html += '<td class="mono">'      + fmtDate(row.created_at) + '</td>';
-        html += '</tr>';
+        html += '<tr><td class="name-cell">'+esc(row.student_name)+'</td><td class="mono">'+esc(row.student_w_num)+'</td>';
+        html += '<td class="mono">'+esc(row.week_id)+'</td><td class="mono">'+(row.answers_count||0)+'/12</td><td class="mono">'+fmtDate(row.created_at)+'</td></tr>';
       });
       html += '</tbody></table></div>';
     }
-
     document.getElementById('mainContent').innerHTML = html;
+  });
+}
+
+// ── PDF CORE ──────────────────────────────────────────────────────
+function buildPDFDoc(row, weekId) {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF({ unit:'pt', format:'letter' });
+  var pageW = doc.internal.pageSize.getWidth();
+  var pageH = doc.internal.pageSize.getHeight();
+  var margin = 54, colW = pageW - margin*2, y = margin;
+
+  doc.setFillColor(26,21,16); doc.rect(0,0,pageW,72,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(247,242,232);
+  doc.text('HIST 102 — US History After 1877', margin, 30);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200,146,42);
+  doc.text('Reading Notes — '+(WEEK_LABELS[weekId]||weekId), margin, 48);
+
+  y = 96;
+  doc.setFontSize(9); doc.setTextColor(107,94,80);
+  var dt = row.created_at ? new Date(row.created_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '—';
+  doc.text('Student: '+(row.student_name||'—'), margin, y);
+  doc.text('W Number: '+(row.student_w_num||'—'), margin+240, y);
+  doc.text('Submitted: '+dt, margin+420, y);
+  y += 10;
+  doc.setDrawColor(221,208,184); doc.setLineWidth(0.75); doc.line(margin,y,pageW-margin,y); y += 20;
+
+  Q_LABELS.forEach(function(q, idx) {
+    var ans = (row[q.col+'_answer']||'').trim();
+    var wc  = row[q.col+'_words']||0;
+    var isEmpty = ans==='', isShort = !isEmpty && wc<30;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+    if (isEmpty) doc.setTextColor(140,58,30);
+    else if (isShort) doc.setTextColor(181,98,10);
+    else doc.setTextColor(26,21,16);
+    doc.text('Q'+(idx+1)+'. '+q.label, margin, y);
+
+    var chip = isEmpty ? 'No answer' : isShort ? wc+' words (short)' : wc+' words';
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(160,144,128);
+    doc.text(chip, pageW-margin-doc.getTextWidth(chip), y);
+    y += 14;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    var lines = doc.splitTextToSize(isEmpty ? 'No answer provided.' : ans, colW);
+    if (y + lines.length*13 + 24 > pageH-margin) { doc.addPage(); y = margin; }
+    doc.setTextColor(isEmpty?160:58, isEmpty?150:48, isEmpty?130:40);
+    doc.text(lines, margin, y);
+    y += lines.length*13 + 6;
+
+    if (idx < Q_LABELS.length-1) {
+      doc.setDrawColor(237,229,212); doc.setLineWidth(0.5); doc.line(margin,y,pageW-margin,y); y += 14;
+      if (y > pageH-margin-60) { doc.addPage(); y = margin; }
+    }
+  });
+
+  var totalPages = doc.internal.getNumberOfPages();
+  for (var p=1; p<=totalPages; p++) {
+    doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(160,144,128);
+    doc.text('HIST 102 · '+(WEEK_LABELS[weekId]||weekId)+' · '+(row.student_name||''), margin, pageH-28);
+    doc.text('Page '+p+' of '+totalPages, pageW-margin-40, pageH-28);
+  }
+  return doc;
+}
+
+function pdfFilename(row, weekId) {
+  return 'HIST102_'+weekId+'_'+(row.student_name||'student').replace(/[^a-zA-Z0-9]/g,'_')+'_'+(row.student_w_num||'').replace(/[^a-zA-Z0-9]/g,'')+'.pdf';
+}
+
+// Single PDF — auto-marks Downloaded
+function pdfAndMark(row, weekId) {
+  buildPDFDoc(row, weekId).save(pdfFilename(row, weekId));
+  var wnum = row.student_w_num||'';
+  var r = getReview(weekId, wnum);
+  if (!r.dl) {
+    var tbl = document.getElementById('tbl-'+weekId);
+    if (tbl) tbl.querySelectorAll('tbody tr:not(.detail-row)').forEach(function(tr, idx) {
+      if (tr.getAttribute('data-wnum')===wnum) toggleReview(weekId, wnum, 'dl', idx);
+    });
+  }
+}
+
+// Legacy alias
+function generatePDF(row, weekId) { pdfAndMark(row, weekId); }
+
+// Bulk individual PDFs staggered
+function bulkPDF(rows, weekId) {
+  if (!rows||!rows.length) return;
+  var btn = document.getElementById('bulk-pdf-'+weekId);
+  if (btn) { btn.disabled=true; btn.textContent='Generating…'; }
+  var i=0;
+  function next() {
+    if (i>=rows.length) { if(btn){btn.disabled=false;btn.textContent='⇩ All PDFs';} return; }
+    pdfAndMark(rows[i], weekId); i++;
+    setTimeout(next, 700);
+  }
+  next();
+}
+
+// ZIP — one file, all PDFs inside, auto-marks all Downloaded
+function downloadZIP(rows, weekId) {
+  if (!rows||!rows.length) return;
+  var btn = document.getElementById('zip-btn-'+weekId);
+  if (btn) { btn.disabled=true; btn.textContent='Building ZIP…'; }
+  var zip = new JSZip();
+  rows.forEach(function(row) {
+    var doc = buildPDFDoc(row, weekId);
+    zip.file(pdfFilename(row, weekId), doc.output('arraybuffer'));
+  });
+  zip.generateAsync({type:'blob'}).then(function(blob) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'HIST102_'+weekId+'_all_submissions.zip';
+    a.click();
+    if (btn) { btn.disabled=false; btn.textContent='⇩ ZIP All'; }
+    // Mark all as downloaded
+    var tbl = document.getElementById('tbl-'+weekId);
+    if (tbl) tbl.querySelectorAll('tbody tr:not(.detail-row)').forEach(function(tr,idx){
+      var wnum = tr.getAttribute('data-wnum')||'';
+      if (!getReview(weekId,wnum).dl) toggleReview(weekId,wnum,'dl',idx);
+    });
   });
 }
 
 // ── UTILS ──
 function esc(str) {
   if (!str) return '';
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function showError(table) {
   document.getElementById('mainContent').innerHTML =
-    '<div class="empty-msg">Could not load ' + table + '. Check your Supabase credentials in supabase-config.js.</div>';
+    '<div class="empty-msg">Could not load '+table+'. Check your Supabase credentials in supabase-config.js.</div>';
 }
 </script>
 </body>
