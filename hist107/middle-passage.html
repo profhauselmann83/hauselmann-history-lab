@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIST 107 — The Middle Passage: Primary Sources</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a0a00 0%, #3d1a00 100%);
+            color: #2c1810;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header {
+            background: linear-gradient(135deg, #1a0a00 0%, #3d1c00 100%);
+            color: #f4e4c1;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border: 3px solid #c0392b;
+        }
+
+        h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.7); color: #f4e4c1; }
+        .subtitle { font-size: 1.2em; font-style: italic; color: #e8a87c; }
+
+        .central-question {
+            background: #f5f0e6;
+            border-left: 5px solid #c0392b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 1.3em;
+            text-align: center;
+            font-weight: bold;
+            color: #2c1810;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f5f0e6;
+            border-radius: 8px;
+            border: 3px solid #c0392b;
+        }
+
+        .progress-step { text-align: center; flex: 1; padding: 10px; opacity: 0.5; transition: all 0.3s; color: #2c1810; }
+        .progress-step.completed { opacity: 1; color: #0f5c2e; font-weight: bold; }
+        .progress-step.active { opacity: 1; color: #c0392b; font-weight: bold; transform: scale(1.1); }
+
+        .phase-content { display: none; animation: fadeIn 0.5s; }
+        .phase-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-box {
+            background: #f5f0e6;
+            padding: 25px;
+            border-left: 5px solid #c0392b;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .info-box h4 { color: #8b1a1a; margin-bottom: 15px; font-size: 1.3em; }
+
+        .document-section {
+            background: #f5f0e6;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .document-header {
+            background: linear-gradient(135deg, #5d0000 0%, #1a0a00 100%);
+            color: #f4e4c1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 2px solid #c0392b;
+        }
+
+        .document-header h3 { color: #e8a87c; font-size: 1.6em; margin-bottom: 10px; }
+        .document-header p  { color: #f4e4c1; font-style: italic; }
+
+        .document-text {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px solid #8b1a1a;
+            margin: 20px 0;
+            font-size: 1.05em;
+            line-height: 1.8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .document-text p { margin-bottom: 20px; }
+
+        .document-source {
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+        }
+
+        .sourcing-note {
+            background: #f9f4ee;
+            border-left: 4px solid #c0392b;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border-radius: 0 5px 5px 0;
+            font-size: 0.95em;
+            color: #444;
+            font-style: italic;
+        }
+
+        .vocab-box {
+            background: #f0ece4;
+            border-radius: 4px;
+            padding: 10px 14px;
+            margin: 14px 0;
+            font-size: 0.88em;
+            color: #333;
+        }
+
+        .question-section {
+            background: #fff;
+            border: 2px solid #8b1a1a;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .question-section h4 { color: #8b1a1a; margin-bottom: 20px; font-size: 1.2em; }
+        .question { margin: 25px 0; }
+        .question label { display: block; margin-bottom: 10px; font-weight: bold; color: #2c1810; }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #fff;
+            border: 2px solid #8b1a1a;
+            border-radius: 5px;
+            color: #2c1810;
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+        }
+
+        textarea { min-height: 120px; resize: vertical; }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #e8a87c;
+            background: #fffef8;
+        }
+
+        .paste-warning {
+            display: none;
+            background: #fdecea;
+            border-left: 4px solid #c0392b;
+            padding: 8px 14px;
+            margin-top: 4px;
+            font-size: 0.85em;
+            color: #8b1a1a;
+            border-radius: 0 4px 4px 0;
+            font-style: italic;
+        }
+
+        .word-counter {
+            text-align: right;
+            font-size: 0.82em;
+            color: #888;
+            margin-top: 3px;
+            font-family: 'Georgia', serif;
+        }
+
+        .word-counter.near-limit { color: #c07000; font-weight: bold; }
+        .word-counter.at-limit   { color: #c0392b; font-weight: bold; }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+            font-family: 'Georgia', serif;
+        }
+
+        .btn-primary { background: #8b1a1a; color: #f4e4c1; border: 2px solid #e8a87c; }
+        .btn-primary:hover:not(:disabled) { background: #5d0000; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+        .btn:disabled { background: #999; cursor: not-allowed; opacity: 0.6; }
+
+        .navigation-buttons { text-align: center; margin: 30px 0; }
+        .navigation-buttons .btn { margin: 0 10px; }
+
+        h2 { color: #8b1a1a; font-size: 2em; margin-bottom: 20px; border-bottom: 3px solid #e8a87c; padding-bottom: 10px; }
+        h3 { color: #8b1a1a; font-size: 1.5em; margin-top: 25px; margin-bottom: 15px; }
+        ul { margin-left: 30px; margin-top: 15px; }
+        li { margin-bottom: 10px; }
+
+        .content-warning {
+            background: #fdecea;
+            border-left: 5px solid #c0392b;
+            padding: 16px 20px;
+            border-radius: 0 5px 5px 0;
+            margin: 20px 0;
+        }
+
+        .final-section {
+            background: #f5f0e6;
+            border: 3px solid #8b1a1a;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .reflection-box {
+            background: #fff8e1;
+            border: 2px solid #c9a227;
+            border-radius: 8px;
+            padding: 22px 24px;
+            margin: 20px 0;
+        }
+
+        .reflection-box h4 { color: #7f6000; margin-bottom: 12px; font-size: 1.15em; }
+
+        .project-box {
+            background: #eaf4fb;
+            border: 2px solid #1a5276;
+            border-radius: 8px;
+            padding: 22px 24px;
+            margin: 20px 0;
+        }
+
+        .project-box h4 { color: #1a5276; margin-bottom: 12px; font-size: 1.15em; }
+
+        .lens-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .lens-option {
+            background: #fff;
+            border: 2px solid #aac9e0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Georgia', serif;
+            font-size: 0.95em;
+            text-align: left;
+        }
+
+        .lens-option:hover { border-color: #1a5276; background: #d6eaf8; }
+        .lens-option.selected { border-color: #1a5276; background: #d6eaf8; font-weight: bold; color: #1a5276; }
+        .lens-option strong { display: block; margin-bottom: 3px; }
+        .lens-option span { font-size: 0.85em; color: #555; font-style: italic; }
+
+        @media (max-width: 600px) { .lens-grid { grid-template-columns: 1fr; } }
+
+
+        .breadcrumb {
+            max-width: 1200px;
+            margin: 0 auto 15px auto;
+            padding: 10px 15px;
+            font-family: 'Georgia', serif;
+            font-size: 0.95em;
+            color: #c0c0c0;
+        }
+
+        .breadcrumb a { color: #e8a87c; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; color: #f4e4c1; }
+        .breadcrumb .separator { margin: 0 8px; color: #888; }
+        .breadcrumb .current { color: #f4e4c1; }
+    </style>
+</head>
+<body>
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">Home</a>
+    <span class="separator">›</span>
+    <a href="activities.html">Interactive Activities</a>
+    <span class="separator">›</span>
+    <span class="current">Middle Passage Primary Sources</span>
+</nav>
+
+<div class="container">
+
+    <header>
+        <h1>⛓ The Middle Passage ⛓</h1>
+        <p class="subtitle">Primary Sources — Homework Assignment</p>
+    </header>
+
+    <div class="central-question">
+        Central Question: Which account of the Middle Passage is the most reliable historical source — and why?
+    </div>
+
+    <div class="progress-indicator" id="progressBar">
+        <div class="progress-step active" data-phase="0"><div>📋</div><div>Introduction</div></div>
+        <div class="progress-step" data-phase="1"><div>📜</div><div>Document A</div></div>
+        <div class="progress-step" data-phase="2"><div>📜</div><div>Document B</div></div>
+        <div class="progress-step" data-phase="3"><div>🖼</div><div>Document C</div></div>
+        <div class="progress-step" data-phase="4"><div>📜</div><div>Document D</div></div>
+        <div class="progress-step" data-phase="5"><div>✍️</div><div>Reflection</div></div>
+    </div>
+
+    <!-- ══ PHASE 0: INTRODUCTION ══════════════════════════════════════════ -->
+    <div class="phase-content active" id="phase0">
+
+        <div class="info-box">
+            <h2 style="color:#8b1a1a; border-bottom:3px solid #e8a87c; padding-bottom:10px; margin-bottom:20px; text-align:center;">Introduction &amp; Student Information</h2>
+        </div>
+
+        <div class="info-box">
+            <h4>Student Information</h4>
+            <label for="student-name" style="display:block; margin-top:10px;"><strong>Your Name:</strong></label>
+            <input type="text" id="student-name" placeholder="Enter your full name">
+
+            <label for="section-number" style="display:block; margin-top:16px;"><strong>Section Number:</strong></label>
+            <p style="font-size:0.9em; color:#555; margin:4px 0 6px;">Your section number is the <strong>last four digits</strong> of your full course number. Look at your schedule — it will say something like <strong>HIST 107-<span style="color:#8b1a1a;">1001</span></strong> or <strong>HIST 107-<span style="color:#8b1a1a;">2003</span></strong>. Enter only those four digits below.</p>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                <span style="font-weight:bold; font-size:1.05em; color:#555; white-space:nowrap;">HIST 107 –</span>
+                <input type="text" id="section-number" placeholder="e.g. 1001" maxlength="4" style="max-width:120px; font-size:1.1em; font-weight:bold; letter-spacing:0.1em;">
+            </div>
+            <p style="font-size:0.82em; color:#888; margin-top:6px; font-style:italic;">Not sure? Check your class schedule or the top of your syllabus.</p>
+        </div>
+
+        <div class="content-warning">
+            <strong>⚠ Content Note:</strong> The documents in this assignment contain descriptions of physical violence, disease, and dehumanizing conditions. These accounts are disturbing — and they are meant to be read carefully, not skimmed.
+        </div>
+
+        <div class="info-box">
+            <h4>Historical Context</h4>
+            <p>Between roughly 1500 and 1867, more than <strong>12.5 million Africans</strong> were forcibly transported across the Atlantic Ocean to European colonies in the Americas. Historians estimate that only about <strong>10.7 million survived the crossing</strong> — meaning nearly 2 million people died during the voyage itself.</p>
+            <p style="margin-top:10px;">The ocean crossing was known as the <strong>Middle Passage</strong> — the middle leg of the so-called Triangular Trade connecting Europe, Africa, and the Americas. Ships carried manufactured goods from Europe to West Africa, exchanged them for enslaved people, transported those people across the Atlantic, and returned to Europe loaded with the products of enslaved labor: sugar, tobacco, cotton, rice.</p>
+            <p style="margin-top:10px;">As you learned in class from <strong>Chapter 26</strong>, Britain formally abolished the slave trade in 1807 — yet an illegal trade continued for another sixty years. The database you explored in class documents over 36,000 individual voyages. Behind every data point is a human life.</p>
+        </div>
+
+        <div class="info-box" style="border-left:5px solid #e8a87c; background:#fdfbe8;">
+            <h4 style="color:#7f6000;">Your Task</h4>
+            <p>You will read <strong>three primary source accounts</strong> of the Middle Passage, written by people who were present on these ships from radically different positions.</p>
+            <p style="margin-top:10px;">After reading all three, you will answer a final reflection question asking you to evaluate which source is most reliable as historical evidence. There is no single correct answer — what matters is that your argument is grounded in evidence.</p>
+            <p style="margin-top:10px;"><strong>Note:</strong> You must type your own responses. Copying and pasting is disabled on all answer fields.</p>
+        </div>
+
+        <div class="info-box">
+            <div style="background:rgba(192,57,43,0.1); border-left:4px solid #c0392b; padding:15px; border-radius:5px;">
+                <strong style="color:#8b1a1a;">Reminder:</strong> Please enter your name and section number before continuing to Document A.
+            </div>
+        </div>
+
+        <div class="navigation-buttons">
+            <button class="btn btn-primary" onclick="startAssignment()">Continue to Document A →</button>
+        </div>
+    </div>
+
+    <!-- ══ PHASE 1: DOCUMENT B — CAPTAIN PHILLIPS ═══════════════════════ -->
+    <div class="phase-content" id="phase1">
+        <div class="document-section">
+            <div class="document-header">
+                <h3>Document A — Slave Ship Captain</h3>
+                <p>Thomas Phillips, Journal of the Voyage of the <em>Hannibal</em> (1694)</p>
+            </div>
+
+            <p class="sourcing-note">
+                <strong>Who was Phillips?</strong> Captain Thomas Phillips transported enslaved people from West Africa to Barbados aboard the ship <em>Hannibal</em> in 1694. The voyage was funded by the Royal African Company of London. This excerpt comes from his published journal. Phillips was a professional slave trader writing primarily for a business audience.
+            </p>
+
+            <div class="document-text">
+                <p>There happened such sickening and mortality among my poor men and Negroes. Of the first we buried 14, and of the last 320, which was a great detriment to our voyage, the Royal African Company losing ten pounds by every slave that died. . . .</p>
+                <p>The distemper which my men as well as the blacks mostly died of was the white flux. . . . The Negroes are so vulnerable to the small-pox that few ships that carry them escape without it, and sometimes it makes vast havoc and destruction among them. But though we had 100 at a time sick of it . . . we lost not above a dozen by it. . . .</p>
+                <p>But what the smallpox spared, the flux swept off, to our great regret, after all our pains and care to give [the slaves] their messes, . . . keeping their lodgings as clean and sweet as possible, and enduring so much misery and stench so long among creatures nastier than swine, only to be defeated by their mortality. . . .</p>
+                <p>No gold-finders can endure so much noisome slavery as they do who carry Negroes. . . . We endure twice the misery; and yet by their mortality our voyages are ruined.</p>
+                <p class="document-source">Source: Thomas Phillips, <em>A Collection of Voyages and Travels</em>, 1732 (originally written 1694).</p>
+            </div>
+
+            <div class="vocab-box">
+                <strong>Vocabulary:</strong> <em>distemper</em> — disease &nbsp;|&nbsp; <em>white flux</em> — a severe intestinal infection &nbsp;|&nbsp; <em>messes</em> — meals &nbsp;|&nbsp; <em>swine</em> — pigs &nbsp;|&nbsp; <em>noisome</em> — foul-smelling, unpleasant
+            </div>
+
+            <div class="question-section">
+                <h4>Document A — Reading Questions</h4>
+                <p style="font-size:0.9em; color:#666; margin-bottom:18px;">Answer in your own words. Copying and pasting is disabled. <strong>75-word limit per question.</strong></p>
+
+                <div class="question">
+                    <label>1. Who is Phillips most concerned about in this account — the enslaved people, or the crew and investors? What specific language tells you this?</label>
+                    <textarea id="docA-q1" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docA-q1">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docA-q1">0 / 75 words</div>
+                </div>
+
+                <div class="question">
+                    <label>2. Phillips describes the death of 320 enslaved people primarily as a financial loss. What does that reveal about how he understood the people he was transporting?</label>
+                    <textarea id="docA-q2" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docA-q2">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docA-q2">0 / 75 words</div>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn" onclick="previousPhase()">← Back</button>
+                <button class="btn btn-primary" onclick="advancePhase(1, ['docA-q1','docA-q2'], 'Document A')">Continue to Document B →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PHASE 2: DOCUMENT C — FALCONBRIDGE ═══════════════════════════ -->
+    <div class="phase-content" id="phase2">
+        <div class="document-section">
+            <div class="document-header">
+                <h3>Document B — Ship's Doctor</h3>
+                <p>Alexander Falconbridge, <em>An Account of the Slave Trade on the Coast of Africa</em> (1788)</p>
+            </div>
+
+            <p class="sourcing-note">
+                <strong>Who was Falconbridge?</strong> Alexander Falconbridge served as a surgeon on British slave ships during the 1780s. He later became an active member of the Anti-Slavery Society and published his account to support the abolitionist cause. Unlike Phillips, Falconbridge was writing to persuade readers that the slave trade was wrong.
+            </p>
+
+            <div class="document-text">
+                <p>The men negroes, on being brought aboard the ship, are immediately fastened together, two and two, by hand-cuffs on their wrists, and by irons riveted on their legs. They are then sent down between the decks. . . . They are frequently stowed so close, they can only lie on their sides. . . .</p>
+                <p>In each of the apartments are placed three or four large buckets [for human waste]. . . . It often happens, that those who are placed at a distance from the buckets . . . tumble over their companions because they are shackled. . . . In this distressed situation . . . they give up and relieve themselves as they lie. . . .</p>
+                <p>Their food is served up to them in tubs, about the size of a small water bucket. . . . If negroes refused to take sustenance, I have seen coals of fire, glowing hot, put on a shovel, and placed so near their lips, as to scorch and burn them. . . .</p>
+                <p>The floor of their rooms was so covered with blood and mucus because of the flux, that it resembled a slaughter-house. It is not in the power of the human imagination to picture to itself a situation more dreadful or disgusting.</p>
+                <p>The surgeons employed in the Guinea trade, are generally driven to engage in so disagreeable a job by their financial situations.</p>
+                <p class="document-source">Source: Alexander Falconbridge, <em>An Account of the Slave Trade on the Coast of Africa</em>, 1788.</p>
+            </div>
+
+            <div class="vocab-box">
+                <strong>Vocabulary:</strong> <em>riveted</em> — bolted with metal &nbsp;|&nbsp; <em>stowed</em> — packed tightly &nbsp;|&nbsp; <em>shackled</em> — chained &nbsp;|&nbsp; <em>take sustenance</em> — eat &nbsp;|&nbsp; <em>Guinea trade</em> — the slave trade
+            </div>
+
+            <div class="question-section">
+                <h4>Document B — Reading Questions</h4>
+                <p style="font-size:0.9em; color:#666; margin-bottom:18px;">Answer in your own words. Copying and pasting is disabled. <strong>75-word limit per question.</strong></p>
+
+                <div class="question">
+                    <label>1. Falconbridge later worked with the Anti-Slavery Society. How might that have shaped what he chose to include in this account? Does it make his account more or less reliable as a historical source — or both?</label>
+                    <textarea id="docB-q1" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docB-q1">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docB-q1">0 / 75 words</div>
+                </div>
+
+                <div class="question">
+                    <label>2. Compare Falconbridge's description of conditions to Phillips's. Both were on slave ships. What accounts for the dramatic difference in what they each chose to describe?</label>
+                    <textarea id="docB-q2" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docB-q2">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docB-q2">0 / 75 words</div>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn" onclick="previousPhase()">← Back</button>
+                <button class="btn btn-primary" onclick="advancePhase(2, ['docB-q1','docB-q2'], 'Document B')">Continue to Document D →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PHASE 3: DOCUMENT D — BROOKES DIAGRAM ════════════════════════ -->
+    <div class="phase-content" id="phase3">
+        <div class="document-section">
+            <div class="document-header">
+                <h3>Document C — Slave Ship Diagram</h3>
+                <p>Stowage of the British Slave Ship <em>Brookes</em> under the Regulated Slave Trade Act of 1788</p>
+            </div>
+
+            <p class="sourcing-note">
+                <strong>Who produced this?</strong> This diagram was created and published in 1788 by the Plymouth Chapter of the Society for Effecting the Abolition of the Slave Trade — a British abolitionist organization. It was designed specifically to shock the British public and Parliament by making the scale of suffering on slave ships visually undeniable. The image was distributed as a broadside (a large printed sheet) and quickly became one of the most reproduced images of the abolitionist movement. It is now held in the Library of Congress.
+            </p>
+
+            <div class="document-text">
+                <p>This is part of a diagram depicting the British slave ship <em>Brookes</em> after the passage of the Regulated Slave Trade Act of 1788. This law, which sought to improve conditions on slave ships, was passed in response to rising opposition to the slave trade in England.</p>
+                <p>This document depicts how many enslaved people could be placed on this ship under the new law. With <strong>6′ by 1′4″ allowed for each man</strong>, <strong>5′10″ by 1′4″ allowed for each woman</strong>, and <strong>5′ by 1′2″ allowed for each boy</strong>, the ship could legally hold <strong>454 enslaved people</strong>. Before Britain began regulating the slave trade, the ship reportedly carried as many as <strong>609 enslaved people</strong>.</p>
+                <p>The diagram shows the ship's deck plans from above, with human figures representing each enslaved person packed tightly into every available space — side by side, with no room to sit upright.</p>
+                <p class="document-source">Source: Plymouth Chapter of the Society for Effecting the Abolition of the Slave Trade. "Stowage of the slave ship '<em>Brookes</em>' under the Regulated Slave Trade Act of 1788." Library of Congress, Prints and Photographs Division, LC-USZ62-44000. Public domain.</p>
+            </div>
+
+            <!-- Brookes diagram image — Library of Congress, public domain -->
+            <div style="text-align:center; margin:24px 0;">
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/8/81/Slaveshipposter.jpg"
+                    alt="Diagram of the stowage of enslaved people on the British slave ship Brookes, 1788"
+                    style="max-width:100%; border:3px solid #8b1a1a; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.3);"
+                    onerror="this.style.display='none'; document.getElementById('img-fallback-D').style.display='block';"
+                >
+                <div id="img-fallback-D" style="display:none; background:#f5f0e6; border:2px dashed #8b1a1a; border-radius:8px; padding:30px; color:#666; font-style:italic;">
+                    [Image could not be loaded. Search "Brookes slave ship diagram 1788" to find this image online, or view it at the Library of Congress: loc.gov/item/98504459/]
+                </div>
+                <p style="font-size:0.82em; color:#666; margin-top:10px; font-style:italic;">
+                    Stowage of the British slave ship <em>Brookes</em>, 1788. Library of Congress / Wikimedia Commons. Public domain.
+                </p>
+            </div>
+
+            <div class="question-section">
+                <h4>Document C — Analysis Questions</h4>
+                <p style="font-size:0.9em; color:#666; margin-bottom:18px;">Answer in your own words. Copying and pasting is disabled. <strong>75-word limit per question.</strong></p>
+
+                <div class="question">
+                    <label>1. This diagram was produced by abolitionists, not by slave traders or government officials. How might the purpose of its creators have shaped what they chose to show — and what they left out?</label>
+                    <textarea id="docC-q1" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docC-q1">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docC-q1">0 / 75 words</div>
+                </div>
+
+                <div class="question">
+                    <label>2. The diagram shows the <em>legal</em> maximum after the 1788 Act — 454 people. But before the law, the ship reportedly held 609. What does that gap suggest about the limits of legal reform as a response to the slave trade?</label>
+                    <textarea id="docC-q2" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docC-q2">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docC-q2">0 / 75 words</div>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn" onclick="previousPhase()">← Back to Document B</button>
+                <button class="btn btn-primary" onclick="advancePhase(3, ['docC-q1','docC-q2'], 'Document C')">Continue to Document D →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PHASE 4: DOCUMENT E — EQUIANO ════════════════════════════════ -->
+    <div class="phase-content" id="phase4">
+        <div class="document-section">
+            <div class="document-header">
+                <h3>Document D — Autobiography of a Formerly Enslaved Person</h3>
+                <p>Olaudah Equiano, <em>The Interesting Narrative of the Life of Olaudah Equiano</em> (1789)</p>
+            </div>
+
+            <p class="sourcing-note">
+                <strong>Who was Equiano?</strong> Olaudah Equiano described himself as born in West Africa. As a child, he was kidnapped and sold to European slave traders, eventually transported to Virginia. He later purchased his freedom, moved to England, and became a prominent voice in the British abolitionist movement. His autobiography, published in 1789, is one of the only surviving first-person accounts of the Middle Passage from the perspective of an enslaved person. <em>Note: A historian has found evidence suggesting Equiano may have been born in South Carolina rather than West Africa — other historians dispute this. Even if his birthplace is uncertain, his account draws on the lived experiences of enslaved people and remains an essential historical document.</em>
+            </p>
+
+            <div class="document-text">
+                <p>I was soon put down under the decks, and there I received such a smell in my nostrils as I had never experienced in my life: so that, with the loathsomeness of the stench, and crying together, I became so sick and low that I was not able to eat, nor had I the least desire to taste any thing. I now wished for the last friend, death, to relieve me; but soon, to my grief, two of the white men offered me food; and, on my refusing to eat, one of them held me fast by the hands, and laid me across I think the windlass, and tied my feet, while the other flogged me severely. I had never experienced any thing of this kind before. . . .</p>
+                <p>The crew used to watch us very closely who were not chained down to the decks, in case we would leap into the water: and I have seen some of these poor African prisoners most severely cut for attempting to do so, and hourly whipped for not eating. This indeed was often the case with myself. . . .</p>
+                <p>I feared I should be put to death, the white people looked and acted, as I thought, in so savage a manner; for I had never seen among any people such instances of brutal cruelty; and this not only shown towards us blacks, but also to some of the whites themselves. One white man in particular I saw, when we were permitted to be on deck, flogged so unmercifully with a large rope near the foremast, that he died . . . and they tossed him over the side. . . . This made me fear these people the more.</p>
+                <p class="document-source">Source: Olaudah Equiano, <em>The Interesting Narrative of the Life of Olaudah Equiano</em>, 1789.</p>
+            </div>
+
+            <div class="vocab-box">
+                <strong>Vocabulary:</strong> <em>loathsomeness</em> — deep unpleasantness &nbsp;|&nbsp; <em>windlass</em> — a mechanical device used to raise the anchor &nbsp;|&nbsp; <em>flogged</em> — whipped
+            </div>
+
+            <div class="question-section">
+                <h4>Document D — Reading Questions</h4>
+                <p style="font-size:0.9em; color:#666; margin-bottom:18px;">Answer in your own words. Copying and pasting is disabled. <strong>75-word limit per question.</strong></p>
+
+                <div class="question">
+                    <label>1. Equiano describes witnessing cruelty directed not only at enslaved people but also at white crew members. Why might he have included that detail? What point does it support?</label>
+                    <textarea id="docD-q1" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docD-q1">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docD-q1">0 / 75 words</div>
+                </div>
+
+                <div class="question">
+                    <label>2. Some historians have questioned whether Equiano was born in West Africa. Does uncertainty about his birthplace affect the reliability of this account as historical evidence? Why or why not?</label>
+                    <textarea id="docD-q2" placeholder="Your answer..."></textarea>
+                    <div class="paste-warning" id="warn-docD-q2">⚠ Pasting is not allowed. Please type your own response.</div>
+                    <div class="word-counter" id="wc-docD-q2">0 / 75 words</div>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn" onclick="previousPhase()">← Back</button>
+                <button class="btn btn-primary" onclick="advancePhase(4, ['docD-q1','docD-q2'], 'Document D')">Continue to Final Reflection →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PHASE 5: FINAL REFLECTION ════════════════════════════════════ -->
+    <div class="phase-content" id="phase5">
+        <div class="final-section">
+            <h2>Final Reflection</h2>
+
+            <div class="reflection-box">
+                <h4>📝 Written Response</h4>
+                <p>Answer the following question in a <strong>well-developed paragraph of 8–12 sentences</strong>. Draw on <strong>at least two of the four documents</strong>, and connect your answer to the data you gathered in class today using the SlaveVoyages database.</p>
+                <p style="margin-top:12px; font-weight:bold;">Which of the four documents (A, B, C, or D) do you consider the most reliable source of information about the Middle Passage? Explain your reasoning. In your answer, consider: who the author or creator was, what they had to gain or lose by representing conditions honestly, what details they include or leave out, and how the document compares to the others. Use specific evidence from the texts.</p>
+                <p style="margin-top:10px; font-style:italic; font-size:0.93em;">There is no single correct answer — different students may reach different conclusions. What matters is that your argument is grounded in evidence.</p>
+            </div>
+
+            <div class="question-section">
+                <div class="question">
+                    <label>Your Response (8–12 sentences, citing at least two documents):</label>
+                    <textarea id="reflection" rows="12" placeholder="Type your response here. Copying and pasting is disabled — your response must be in your own words."></textarea>
+                    <div class="paste-warning" id="warn-reflection">⚠ Pasting is not allowed. Please type your own response.</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div style="background:rgba(192,57,43,0.1); border-left:4px solid #c0392b; padding:15px; border-radius:5px;">
+                    <strong style="color:#8b1a1a;">Before submitting:</strong> Review your response — it should be 8–12 sentences, cite at least two documents by letter (A, B, C, or D), and connect to the class database activity.
+                </div>
+            </div>
+
+            <!-- ── GROUP PROJECT CONNECTION ── -->
+            <div class="project-box">
+                <h4>🔬 Group Research Project Connection</h4>
+                <p style="margin-bottom:14px;">This assignment connects to your group research project. Complete the fields below to help you think about how today's primary sources relate to your lens and commodity.</p>
+
+                <label style="font-weight:bold; display:block; margin-bottom:6px;">Your Group's Commodity:</label>
+                <input type="text" id="proj-commodity" placeholder="e.g. Sugar, Cotton, Coffee, Indigo…" style="max-width:400px;">
+
+                <label style="font-weight:bold; display:block; margin-top:14px; margin-bottom:8px;">Your Analytical Lens:</label>
+                <div class="lens-grid">
+                    <button class="lens-option" onclick="selectLens(this, 'Production &amp; Environment')" type="button">
+                        <strong>Production &amp; Environment</strong>
+                        <span>Growing regions, ecological transformation, pre-imperial systems</span>
+                    </button>
+                    <button class="lens-option" onclick="selectLens(this, 'Labor &amp; Coercion')" type="button">
+                        <strong>Labor &amp; Coercion</strong>
+                        <span>Enslaved, indentured, or wage labor; violence, discipline, resistance</span>
+                    </button>
+                    <button class="lens-option" onclick="selectLens(this, 'Empire, State &amp; Corporations')" type="button">
+                        <strong>Empire, State &amp; Corporations</strong>
+                        <span>State policy, chartered companies, military or legal coercion</span>
+                    </button>
+                    <button class="lens-option" onclick="selectLens(this, 'Circulation &amp; Consumption')" type="button">
+                        <strong>Circulation &amp; Consumption</strong>
+                        <span>Trade routes, finance, global demand and cultural meaning</span>
+                    </button>
+                </div>
+                <input type="hidden" id="proj-lens" value="">
+
+                <label style="font-weight:bold; display:block; margin-top:16px; margin-bottom:6px;">Project Connection <span style="font-weight:normal; font-style:italic; font-size:0.9em;">(2–4 sentences)</span></label>
+                <p style="font-size:0.9em; color:#1a5276; margin-bottom:8px;">How does the Middle Passage — or the labor system it represents — connect to your commodity and your analytical lens? This can be a note to yourself; it will not be graded as part of this homework but will be useful when you build your archive.</p>
+                <textarea id="proj-connection" rows="4" placeholder="Type your response here. Copying and pasting is disabled." style="border-color:#1a5276;"></textarea>
+                <div class="paste-warning" id="warn-proj-connection">⚠ Pasting is not allowed. Please type your own response.</div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn btn-primary" onclick="downloadPDF()">📄 Download as PDF</button>
+                <button class="btn btn-primary" onclick="submitToSupabase()" id="submitBtn" style="background:#0f5c2e;">📤 Submit to Professor</button>
+                <button class="btn" onclick="previousPhase()">← Back to Document D</button>
+            </div>
+
+            <div id="submitMessage" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<script>
+    // ── Supabase ──────────────────────────────────────────────────────────
+    const SUPABASE_URL      = 'https://bqrluqymscucvbiaaeai.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── Assignment control ────────────────────────────────────────────────
+    const ASSIGNMENT_OPEN   = true;   // set to false to close submissions
+    const SUBMISSION_CUTOFF = null;   // e.g. '2026-04-20T23:59:59' or null for no deadline
+
+    // ── State ─────────────────────────────────────────────────────────────
+    let currentPhase = 0;
+
+    // ── Paste blocking ────────────────────────────────────────────────────
+    const PASTE_BLOCKED_IDS = ['docA-q1','docA-q2','docB-q1','docB-q2','docC-q1','docC-q2','docD-q1','docD-q2','reflection','proj-connection'];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        PASTE_BLOCKED_IDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('paste', e => {
+                e.preventDefault();
+                const warn = document.getElementById('warn-' + id);
+                if (warn) {
+                    warn.style.display = 'block';
+                    setTimeout(() => { warn.style.display = 'none'; }, 4000);
+                }
+            });
+        });
+    });
+
+    // ── Navigation ────────────────────────────────────────────────────────
+    function updateProgress(phase) {
+        document.querySelectorAll('.progress-step').forEach((step, i) => {
+            step.classList.remove('active', 'completed');
+            if (i < phase)       step.classList.add('completed');
+            else if (i === phase) step.classList.add('active');
+        });
+    }
+
+    function showPhase(phase) {
+        document.querySelectorAll('.phase-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('phase' + phase).classList.add('active');
+        updateProgress(phase);
+        currentPhase = phase;
+        window.scrollTo(0, 0);
+    }
+
+    function previousPhase() {
+        if (currentPhase > 0) showPhase(currentPhase - 1);
+    }
+
+    function startAssignment() {
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+        if (!name) {
+            alert('Please enter your name before continuing.');
+            document.getElementById('student-name').focus();
+            return;
+        }
+        if (!section) {
+            alert('Please enter your section number before continuing.');
+            document.getElementById('section-number').focus();
+            return;
+        }
+        showPhase(1);
+    }
+
+    function advancePhase(fromPhase, requiredIds, phaseName) {
+        for (const id of requiredIds) {
+            const el = document.getElementById(id);
+            if (!el || !el.value.trim()) {
+                alert('Please answer all questions in ' + phaseName + ' before continuing.');
+                if (el) el.focus();
+                return;
+            }
+        }
+        showPhase(fromPhase + 1);
+    }
+
+    // ── PDF builder ───────────────────────────────────────────────────────
+    function buildPDF(returnBlob) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+        const lh = 7, pageH = doc.internal.pageSize.height, margin = 20;
+
+        function add(text, size, bold) {
+            size = size || 12; bold = bold || false;
+            doc.setFontSize(size);
+            doc.setFont(undefined, bold ? 'bold' : 'normal');
+            const lines = doc.splitTextToSize(String(text || ''), 170);
+            lines.forEach(line => {
+                if (y > pageH - margin) { doc.addPage(); y = 20; }
+                doc.text(line, 20, y);
+                y += lh;
+            });
+            y += 3;
+        }
+
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+
+        add('HIST 107 — The Middle Passage: Primary Sources', 18, true);
+        y += 5;
+        add('Student: ' + name, 12, true);
+        if (section) add('Section: ' + section, 12, true);
+        add('Submitted: ' + new Date().toLocaleString(), 10);
+        y += 5;
+
+        add('DOCUMENT A — Thomas Phillips (Ship Captain)', 14, true);
+        add('1. Who is Phillips most concerned about?', 11, true);
+        add(document.getElementById('docA-q1').value || '[Not answered]', 10);
+        y += 3;
+        add('2. What does his framing of deaths as financial loss reveal?', 11, true);
+        add(document.getElementById('docA-q2').value || '[Not answered]', 10);
+        y += 5;
+
+        add("DOCUMENT B — Alexander Falconbridge (Ship's Doctor)", 14, true);
+        add('1. How did his abolitionist purpose shape this account?', 11, true);
+        add(document.getElementById('docB-q1').value || '[Not answered]', 10);
+        y += 3;
+        add('2. Compare Falconbridge to Phillips — what explains the difference?', 11, true);
+        add(document.getElementById('docB-q2').value || '[Not answered]', 10);
+        y += 5;
+
+        add('DOCUMENT C — Brookes Slave Ship Diagram (1788)', 14, true);
+        add('1. How might the abolitionists\' purpose shape what the diagram shows or omits?', 11, true);
+        add(document.getElementById('docC-q1').value || '[Not answered]', 10);
+        y += 3;
+        add('2. What does the gap between 454 (legal) and 609 (actual) suggest about legal reform?', 11, true);
+        add(document.getElementById('docC-q2').value || '[Not answered]', 10);
+        y += 5;
+
+        add('DOCUMENT D — Olaudah Equiano (Formerly Enslaved)', 14, true);
+        add('1. Why did Equiano include violence against white crew members?', 11, true);
+        add(document.getElementById('docD-q1').value || '[Not answered]', 10);
+        y += 3;
+        add('2. Does uncertainty about his birthplace affect reliability?', 11, true);
+        add(document.getElementById('docD-q2').value || '[Not answered]', 10);
+        y += 5;
+
+        add('FINAL REFLECTION', 14, true);
+        add('Which document is most reliable, and why?', 11, true);
+        add(document.getElementById('reflection').value || '[Not answered]', 10);
+
+        const commodity   = document.getElementById('proj-commodity').value.trim();
+        const lens        = document.getElementById('proj-lens').value;
+        const projConnect = document.getElementById('proj-connection').value.trim();
+        if (commodity || lens || projConnect) {
+            y += 5;
+            add('GROUP PROJECT CONNECTION', 14, true);
+            if (commodity) add('Commodity: ' + commodity, 11, true);
+            if (lens)      add('Analytical Lens: ' + lens, 11, true);
+            if (projConnect) {
+                add('Connection to project:', 11, true);
+                add(projConnect, 10);
+            }
+        }
+
+        if (returnBlob) return doc.output('blob');
+        const safeName = name.replace(/\s+/g, '_');
+        doc.save('MiddlePassage_' + safeName + '_' + new Date().toISOString().split('T')[0] + '.pdf');
+    }
+
+    function downloadPDF() {
+        const name       = document.getElementById('student-name').value.trim();
+        const reflection = document.getElementById('reflection').value.trim();
+        if (!name)       { alert('Please enter your name first.'); showPhase(0); return; }
+        if (!reflection) { alert('Please complete your reflection before downloading.'); return; }
+        buildPDF(false);
+    }
+
+    // ── Supabase submission ───────────────────────────────────────────────
+    async function submitToSupabase() {
+        const msgDiv = document.getElementById('submitMessage');
+
+        if (!ASSIGNMENT_OPEN) {
+            msgDiv.innerHTML = closedMsg();
+            return;
+        }
+
+        if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
+            msgDiv.innerHTML = closedMsg();
+            return;
+        }
+
+        const name    = document.getElementById('student-name').value.trim();
+        const section = document.getElementById('section-number').value.trim();
+        if (!name)    { alert('Please enter your name.');           showPhase(0); return; }
+        if (!section) { alert('Please enter your section number.'); showPhase(0); return; }
+
+        const allIds = ['docA-q1','docA-q2','docB-q1','docB-q2','docC-q1','docC-q2','docD-q1','docD-q2','reflection'];
+        for (const id of allIds) {
+            if (!document.getElementById(id).value.trim()) {
+                alert('Please complete all questions before submitting.');
+                return;
+            }
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Submitting...';
+        msgDiv.innerHTML = '<div style="background:#f5f0e6;border:2px solid #8b1a1a;padding:20px;border-radius:8px;">Generating and uploading your PDF...</div>';
+
+        try {
+            const pdfBlob  = buildPDF(true);
+            const ts       = new Date().toISOString().replace(/[:.]/g, '-');
+            const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+            const fileName = `middle-passage/${section}/${safeName}_${ts}.pdf`;
+
+            const { error: uploadError } = await supabaseClient
+                .storage.from('student-submissions')
+                .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
+
+            if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
+
+            const { data: urlData } = supabaseClient.storage
+                .from('student-submissions').getPublicUrl(fileName);
+
+            const formData = {
+                studentName: name, sectionNumber: section,
+                documentA: { q1: document.getElementById('docA-q1').value, q2: document.getElementById('docA-q2').value },
+                documentB: { q1: document.getElementById('docB-q1').value, q2: document.getElementById('docB-q2').value },
+                documentC: { q1: document.getElementById('docC-q1').value, q2: document.getElementById('docC-q2').value },
+                documentD: { q1: document.getElementById('docD-q1').value, q2: document.getElementById('docD-q2').value },
+                reflection: document.getElementById('reflection').value,
+                groupProject: {
+                    commodity:  document.getElementById('proj-commodity').value.trim(),
+                    lens:       document.getElementById('proj-lens').value,
+                    connection: document.getElementById('proj-connection').value.trim()
+                }
+            };
+
+            await supabaseClient.from('worksheet_submissions').insert({
+                student_name:   name,
+                section_number: section,
+                worksheet_type: 'middle-passage',
+                file_path:      fileName,
+                file_url:       urlData.publicUrl,
+                form_data:      formData,
+                submitted_at:   new Date().toISOString()
+            });
+
+            msgDiv.innerHTML = '<div style="background:#0f5c2e;color:#f4e4c1;padding:20px;border-radius:8px;border-left:5px solid #e8a87c;">✅ Successfully submitted! Your work has been sent to Prof. Hauselmann.</div>';
+            submitBtn.textContent = '✓ Submitted';
+
+        } catch (err) {
+            console.error(err);
+            msgDiv.innerHTML = `<div style="background:rgba(139,26,26,0.2);color:#2c1810;padding:20px;border-radius:8px;border-left:5px solid #8b1a1a;">❌ Submission failed: ${err.message}. Please try again or download the PDF and email it to your professor.</div>`;
+            submitBtn.disabled = false;
+            submitBtn.textContent = '📤 Submit to Professor';
+        }
+    }
+
+    function closedMsg() {
+        return '<div style="background:rgba(139,26,26,0.2);color:#2c1810;padding:20px;border-radius:8px;border-left:5px solid #8b1a1a;">❌ This assignment is now closed. Submissions are no longer being accepted for full credit. You may still submit a printed assignment late within one week with 5 tickets. 🎟️ Please contact your professor if you have questions.</div>';
+    }
+
+    // ── Word counters (100-word hard limit for document questions) ─────────
+    const WORD_LIMIT_IDS = ['docA-q1','docA-q2','docB-q1','docB-q2','docC-q1','docC-q2','docD-q1','docD-q2'];
+    const WORD_LIMIT = 75;
+
+    function countWords(str) {
+        return str.trim() === '' ? 0 : str.trim().split(/\s+/).length;
+    }
+
+    function updateCounter(id) {
+        const el  = document.getElementById(id);
+        const wc  = document.getElementById('wc-' + id);
+        if (!el || !wc) return;
+        const count = countWords(el.value);
+        wc.textContent = count + ' / ' + WORD_LIMIT + ' words';
+        wc.classList.remove('near-limit', 'at-limit');
+        if (count >= WORD_LIMIT) {
+            wc.classList.add('at-limit');
+        } else if (count >= WORD_LIMIT - 10) {
+            wc.classList.add('near-limit');
+        }
+    }
+
+    function enforceWordLimit(el) {
+        const words = el.value.trim().split(/\s+/);
+        if (countWords(el.value) > WORD_LIMIT) {
+            // Trim to limit: keep first WORD_LIMIT words, preserve trailing space behaviour
+            const trimmed = words.slice(0, WORD_LIMIT).join(' ');
+            // Only cut if the user is still typing (not mid-word at exactly limit)
+            el.value = trimmed;
+        }
+    }
+
+    function initWordCounters() {
+        WORD_LIMIT_IDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => {
+                enforceWordLimit(el);
+                updateCounter(id);
+            });
+            el.addEventListener('keydown', e => {
+                // Block further typing (not navigation keys) when at limit
+                const navKeys = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Tab'];
+                if (countWords(el.value) >= WORD_LIMIT && !navKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+                    // Allow if selection means they're replacing text
+                    const sel = el.selectionStart !== el.selectionEnd;
+                    if (!sel) e.preventDefault();
+                }
+            });
+            updateCounter(id); // initialise on load/restore
+        });
+    }
+
+
+    const SAVE_KEY = 'hist107_middlePassage';
+    const ALL_IDS  = ['student-name','section-number','docA-q1','docA-q2','docB-q1','docB-q2','docC-q1','docC-q2','docD-q1','docD-q2','reflection','proj-commodity','proj-connection'];
+
+    function selectLens(btn, value) {
+        document.querySelectorAll('.lens-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('proj-lens').value = value;
+    }
+
+    setInterval(() => {
+        const state = {};
+        ALL_IDS.forEach(id => { state[id] = document.getElementById(id)?.value || ''; });
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    }, 30000);
+
+    window.onload = function () {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (saved) {
+            const restore = confirm('Would you like to restore your previous session?');
+            if (restore) {
+                const state = JSON.parse(saved);
+                ALL_IDS.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && state[id]) el.value = state[id];
+                });
+            }
+        }
+        updateProgress(0);
+
+        // Attach paste blocking after DOM is ready
+        PASTE_BLOCKED_IDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('paste', e => {
+                e.preventDefault();
+                const warn = document.getElementById('warn-' + id);
+                if (warn) {
+                    warn.style.display = 'block';
+                    setTimeout(() => { warn.style.display = 'none'; }, 4000);
+                }
+            });
+        });
+
+        // Initialise word counters (also refreshes after restore)
+        initWordCounters();
+    };
+</script>
+</body>
+</html>
