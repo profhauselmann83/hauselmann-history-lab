@@ -692,6 +692,7 @@
         </footer>
     </div>
 
+    <script src="../hist102/online/supabase-config.js"></script>
     <script>
         const MIN_WORDS = 200;
         const MAX_WORDS = 300;
@@ -743,8 +744,7 @@
             // Auto-save to localStorage
             localStorage.setItem('reflection', text);
             localStorage.setItem('name', document.getElementById('name').value);
-            localStorage.setItem('email', document.getElementById('email').value);
-            localStorage.setItem('studentId', document.getElementById('studentId').value);
+            localStorage.setItem('section', document.getElementById('section').value);
         }
 
         function validateForm() {
@@ -804,40 +804,27 @@
             const reflection = document.getElementById('reflection').value;
             const option = localStorage.getItem('selectedOption') === '1' ? 'Option 1: Speech We Hate & the Marketplace of Ideas' : 'Option 2: Free Speech on Campus & Your Rights';
 
-            // Prepare the email data
-            const emailData = {
-                studentName: name,
-                section: section,
-                selectedOption: option,
-                reflection: reflection,
-                wordCount: reflection.trim().split(/\s+/).length
-            };
+            const wordCount = reflection.trim().split(/\s+/).length;
 
-            // Send to server (using FormSubmit.co for free form submission)
-            fetch('https://formsubmit.co/ajax/hanshouselmann@gmail.com', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: name,
-                    section: section,
-                    option: option,
-                    message: reflection,
-                    wordCount: emailData.wordCount,
-                    _subject: `Freedom of Speech Assignment Submission - ${name} (${section})`,
-                    _template: 'table'
-                })
+            // Submit to Supabase
+            sbInsert('ec_submissions', {
+                student_name: name,
+                section: section,
+                assignment: 'free-speech',
+                selected_option: option,
+                reflection: reflection,
+                word_count: wordCount
             })
             .then(response => {
                 if (response.ok) {
-                    showMessage('✓ Your reflection has been submitted successfully!', 'success');
+                    showMessage('Your reflection has been submitted successfully!', 'success');
                     // Clear form after successful submission
                     setTimeout(() => {
                         document.getElementById('reflection').value = '';
                         document.getElementById('name').value = '';
                         document.getElementById('section').value = '';
                         updateWordCount();
+                        localStorage.clear();
                     }, 2000);
                 } else {
                     showMessage('There was an error submitting your reflection. Please try downloading and emailing it instead.', 'error');
