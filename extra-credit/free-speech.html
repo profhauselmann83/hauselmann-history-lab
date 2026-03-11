@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freedom of Speech on Campus - Assignment</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -693,6 +694,46 @@
             return true;
         }
 
+        function generatePDFBlob(name, section, optionLabel, reflection, wordCount) {
+            return new Promise((resolve) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                function addText(text, size = 12, isBold = false) {
+                    doc.setFontSize(size);
+                    doc.setFont(undefined, isBold ? 'bold' : 'normal');
+                    const lines = doc.splitTextToSize(String(text || ''), 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) { doc.addPage(); y = 20; }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3;
+                }
+
+                addText('Freedom of Speech on Campus', 18, true);
+                addText('Extra Credit Reflection — Democracy in the Public Space Series', 12);
+                y += 5;
+                addText(`Student: ${name}`, 12, true);
+                addText(`Class and Section: ${section}`, 12, true);
+                addText(`Submitted: ${new Date().toLocaleString()}`, 10);
+                y += 5;
+                addText('ASSIGNMENT DETAILS', 13, true);
+                addText(`Selected Option: ${optionLabel}`, 11);
+                y += 5;
+                addText('REFLECTION', 13, true);
+                addText(reflection, 11);
+                y += 5;
+                addText(`Word Count: ${wordCount}`, 10);
+
+                resolve(doc.output('blob'));
+            });
+        }
+
         async function submitResponse() {
             if (!SUBMISSION_OPEN) {
                 showMessage('❌ This assignment is now closed. Submissions are no longer being accepted. Please contact your instructor if you have questions.', 'error');
@@ -723,14 +764,32 @@
                 : 'Option 2: Free Speech on Campus & Your Rights';
 
             try {
-                const { error } = await supabaseClient
+                // Generate and upload PDF
+                const pdfBlob = await generatePDFBlob(name, section, optionLabel, reflection, wordCount);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, '_');
+                const fileName = `ec-free-speech/${section}/${sanitizedName}_${timestamp}.pdf`;
+
+                const { error: uploadError } = await supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
+
+                if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+
+                const { data: urlData } = supabaseClient
+                    .storage
+                    .from('student-submissions')
+                    .getPublicUrl(fileName);
+
+                const { error: dbError } = await supabaseClient
                     .from('worksheet_submissions')
                     .insert({
                         student_name: name,
                         section_number: section,
                         worksheet_type: 'hist101-ec-free-speech',
-                        file_path: '',
-                        file_url: '',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
                         form_data: {
                             selected_option: optionLabel,
                             reflection: reflection,
@@ -739,7 +798,7 @@
                         submitted_at: new Date().toISOString()
                     });
 
-                if (error) throw error;
+                if (dbError) throw dbError;
 
                 showMessage('✅ Your reflection has been submitted successfully!', 'success');
                 setTimeout(() => {
@@ -754,7 +813,7 @@
                 showMessage(`❌ Submission failed: ${err.message}. Please try again or download your response and email it to your instructor.`, 'error');
             } finally {
                 submitBtn.innerHTML = originalHTML;
-                updateWordCount(); // re-evaluate enabled state based on word count
+                updateWordCount();
             }
         }
 
