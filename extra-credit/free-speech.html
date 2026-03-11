@@ -806,14 +806,17 @@
 
             const wordCount = reflection.trim().split(/\s+/).length;
 
-            // Submit to Supabase
-            sbInsert('ec_submissions', {
+            // Submit to Supabase (same table as other worksheets)
+            sbInsert('worksheet_submissions', {
                 student_name: name,
-                section: section,
-                assignment: 'free-speech',
-                selected_option: option,
-                reflection: reflection,
-                word_count: wordCount
+                section_number: section,
+                worksheet_type: 'ec-free-speech',
+                form_data: JSON.stringify({
+                    selected_option: option,
+                    reflection: reflection,
+                    word_count: wordCount
+                }),
+                submitted_at: new Date().toISOString()
             })
             .then(response => {
                 if (response.ok) {
