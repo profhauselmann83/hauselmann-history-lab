@@ -615,7 +615,7 @@
                 <div class="button-group">
                     <button class="btn btn-submit" id="submitBtn" onclick="submitResponse()" disabled>✉️ Submit Reflection</button>
                     <button class="btn btn-download" onclick="downloadResponse()">📥 Download Your Response</button>
-                    <button class="btn btn-print" onclick="window.print()">🖨️ Print Page</button>
+                    
                     <button class="btn btn-clear" onclick="clearForm()">🗑️ Clear Form</button>
                 </div>
             </section>
@@ -826,41 +826,26 @@
                 return;
             }
 
+            const section = document.getElementById('section').value;
+            const wordCount = parseInt(document.getElementById('wordCount').textContent) || 0;
             const optionLabel = selectedOption === 1
                 ? 'Option 1: Speech We Hate & the Marketplace of Ideas'
                 : 'Option 2: Free Speech on Campus & Your Rights';
 
-            const content = `Freedom of Speech on Campus - Extra Credit Reflection
-
-STUDENT INFORMATION
-Name: ${name}
-Class and Section: ${document.getElementById('section').value}
-Date Submitted: ${new Date().toLocaleDateString()}
-
-ASSIGNMENT DETAILS
-Selected Option: ${optionLabel}
-
----
-
-REFLECTION
-
-${reflection}
-
----
-Word Count: ${document.getElementById('wordCount').textContent}
-Character Count: ${document.getElementById('charCount').textContent}`;
-
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${name.replace(/\s+/g, '_')}_Freedom_of_Speech_Reflection.txt`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-
-            showMessage('✓ Your reflection has been downloaded.', 'success');
+            generatePDFBlob(name, section, optionLabel, reflection, wordCount).then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${name.replace(/\s+/g, '_')}_Freedom_of_Speech_Reflection.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showMessage('✓ Your reflection has been downloaded as a PDF.', 'success');
+            }).catch(err => {
+                console.error('PDF generation error:', err);
+                showMessage('Error generating PDF. Please try again.', 'error');
+            });
         }
 
         function showMessage(text, type) {
