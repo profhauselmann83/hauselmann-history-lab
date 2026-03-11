@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freedom of Speech on Campus - Assignment</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -105,10 +106,6 @@
             margin-bottom: 25px;
             border-radius: 4px;
             line-height: 1.8;
-        }
-
-        .overview-box p {
-            margin-bottom: 10px;
         }
 
         .guidelines {
@@ -269,16 +266,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .word-counter.warning {
-            color: #e74c3c;
-            font-weight: 600;
-        }
-
-        .word-counter.success {
-            color: #27ae60;
-            font-weight: 600;
         }
 
         .counter-status {
@@ -483,61 +470,21 @@
         }
 
         @media (max-width: 600px) {
-            header {
-                padding: 25px 20px;
-            }
-
-            header h1 {
-                font-size: 1.5em;
-            }
-
-            .content {
-                padding: 25px 20px;
-            }
-
-            h2 {
-                font-size: 1.3em;
-            }
-
-            .option-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
+            header { padding: 25px 20px; }
+            header h1 { font-size: 1.5em; }
+            .content { padding: 25px 20px; }
+            h2 { font-size: 1.3em; }
+            .option-buttons { grid-template-columns: 1fr; }
+            .button-group { flex-direction: column; }
+            .btn { width: 100%; }
         }
 
         @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-
-            .container {
-                box-shadow: none;
-                border-radius: 0;
-            }
-
-            .student-info,
-            .button-group,
-            .back-link,
-            .message {
-                display: none;
-            }
-
-            footer {
-                border-top: 1px solid #bdc3c7;
-            }
-
-            textarea {
-                border: 1px solid #ccc;
-                page-break-inside: avoid;
-            }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border-radius: 0; }
+            .student-info, .button-group, .back-link, .message { display: none; }
+            footer { border-top: 1px solid #bdc3c7; }
+            textarea { border: 1px solid #ccc; page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -552,17 +499,9 @@
         <div class="content">
             <a href="https://profhauselmann.org/" class="back-link">← Back to Hauselmann's History Lab</a>
 
-            <div id="successMessage" class="message success">
-                ✓ Your reflection has been submitted successfully!
-            </div>
-
-            <div id="errorMessage" class="message error">
-                ✗ There was an error submitting your reflection. Please try again or download your response.
-            </div>
-
-            <div id="infoMessage" class="message info">
-                ℹ️ Please check all required fields and ensure your response meets the word count requirements.
-            </div>
+            <div id="successMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+            <div id="infoMessage" class="message info"></div>
 
             <!-- Overview -->
             <section>
@@ -580,7 +519,7 @@
                     <p><strong>Word Count:</strong> Minimum 200 words, Maximum 300 words</p>
                     <p><strong>Format:</strong> Type your reflection directly into the form below</p>
                     <p><strong>Due:</strong> One week from the event date</p>
-                    <p><strong>Submission:</strong> Click "Submit Reflection" to email it directly to your instructor, or download and submit manually</p>
+                    <p><strong>Submission:</strong> Click "Submit Reflection" to send it directly to your instructor</p>
                 </div>
             </section>
 
@@ -611,15 +550,14 @@
                 <h2>Choose Your Option</h2>
                 <div class="option-selector">
                     <div class="option-buttons">
-                        <button class="option-btn active" onclick="selectOption(1)">
+                        <button class="option-btn active" onclick="selectOption(1, event)">
                             <strong>Option 1:</strong> Speech We Hate & the Marketplace of Ideas
                         </button>
-                        <button class="option-btn" onclick="selectOption(2)">
+                        <button class="option-btn" onclick="selectOption(2, event)">
                             <strong>Option 2:</strong> Free Speech on Campus & Your Rights
                         </button>
                     </div>
 
-                    <!-- Option 1 Content -->
                     <div id="option1" class="option-content active">
                         <h3>Option 1: Speech We Hate & the Marketplace of Ideas</h3>
                         <p>Marie emphasized that free speech protections sometimes mean defending "speech we hate." She explained the "marketplace of ideas" theory: the belief that truth will emerge when ideas compete freely, rather than when the government silences speech it dislikes. Reflect on this tension:</p>
@@ -630,7 +568,6 @@
                         </ul>
                     </div>
 
-                    <!-- Option 2 Content -->
                     <div id="option2" class="option-content">
                         <h3>Option 2: Free Speech on Campus & Your Rights</h3>
                         <p>Marie explained that the First Amendment applies with full force to public colleges and universities—and that campuses are places "where the vigilant protection of constitutional freedoms is nowhere more vital." She also noted that censorship on campus often takes forms like denying funding to groups, punishing students for social media posts, or creating "free speech zones." Reflect on free speech on your campus:</p>
@@ -646,14 +583,14 @@
             <!-- Response Section -->
             <section>
                 <div class="response-section">
-                    <h3>Your Reflection (200-300 words)</h3>
+                    <h3>Your Reflection (200–300 words)</h3>
                     <div class="word-counter">
                         <span>
                             <span id="wordCount">0</span> words | <span id="charCount">0</span> characters
                         </span>
-                        <span id="countStatus" class="counter-status">Minimum 200 words required</span>
+                        <span id="countStatus" class="counter-status too-short">Minimum 200 words required</span>
                     </div>
-                    <textarea id="reflection" placeholder="Type your reflection here..." onkeyup="updateWordCount()" required></textarea>
+                    <textarea id="reflection" placeholder="Type your reflection here..." oninput="updateWordCount()" required></textarea>
                 </div>
             </section>
 
@@ -676,12 +613,11 @@
             <section>
                 <div class="button-group">
                     <button class="btn btn-submit" id="submitBtn" onclick="submitResponse()" disabled>✉️ Submit Reflection</button>
-                    <button class="btn btn-download" id="downloadBtn" onclick="downloadResponse()">📥 Download Your Response</button>
+                    <button class="btn btn-download" onclick="downloadResponse()">📥 Download Your Response</button>
                     <button class="btn btn-print" onclick="window.print()">🖨️ Print Page</button>
                     <button class="btn btn-clear" onclick="clearForm()">🗑️ Clear Form</button>
                 </div>
             </section>
-
         </div>
 
         <footer>
@@ -692,27 +628,28 @@
         </footer>
     </div>
 
-    <script src="../hist102/online/supabase-config.js"></script>
     <script>
+        // Supabase — same credentials as Galileo page
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const MIN_WORDS = 200;
         const MAX_WORDS = 300;
-        
-        // SUBMISSION SETTINGS - Change these to control when submissions close
-        const SUBMISSION_OPEN = true;  // Set to false to close submissions
-        const SUBMISSION_DEADLINE = '2026-03-17T23:59:59';  // Format: 'YYYY-MM-DDTHH:MM:SS' (e.g., '2026-03-15T23:59:59' for March 15, 2026 at 11:59 PM)
 
-        function selectOption(optionNumber) {
+        // SUBMISSION SETTINGS
+        const SUBMISSION_OPEN = true;
+        const SUBMISSION_DEADLINE = '2026-03-17T23:59:59';
+
+        let selectedOption = 1;
+
+        function selectOption(optionNumber, event) {
+            selectedOption = optionNumber;
             document.getElementById('option1').classList.remove('active');
             document.getElementById('option2').classList.remove('active');
-
-            document.querySelectorAll('.option-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('option' + optionNumber).classList.add('active');
             event.target.closest('.option-btn').classList.add('active');
-
-            localStorage.setItem('selectedOption', optionNumber);
         }
 
         function updateWordCount() {
@@ -723,7 +660,6 @@
             document.getElementById('wordCount').textContent = words;
             document.getElementById('charCount').textContent = chars;
 
-            // Update status indicator
             const statusEl = document.getElementById('countStatus');
             const submitBtn = document.getElementById('submitBtn');
 
@@ -740,11 +676,6 @@
                 statusEl.textContent = `Perfect! ${words} words`;
                 submitBtn.disabled = false;
             }
-
-            // Auto-save to localStorage
-            localStorage.setItem('reflection', text);
-            localStorage.setItem('name', document.getElementById('name').value);
-            localStorage.setItem('section', document.getElementById('section').value);
         }
 
         function validateForm() {
@@ -753,94 +684,76 @@
             const reflection = document.getElementById('reflection').value.trim();
             const words = reflection.length > 0 ? reflection.split(/\s+/).length : 0;
 
-            if (!name) {
-                showMessage('Please enter your name.', 'error');
-                return false;
-            }
-
-            if (!section) {
-                showMessage('Please select your class and section.', 'error');
-                return false;
-            }
-
+            if (!name) { showMessage('Please enter your name.', 'error'); return false; }
+            if (!section) { showMessage('Please select your class and section.', 'error'); return false; }
             if (words < MIN_WORDS || words > MAX_WORDS) {
                 showMessage(`Your reflection must be between ${MIN_WORDS} and ${MAX_WORDS} words. Currently ${words} words.`, 'error');
                 return false;
             }
-
             return true;
         }
 
-        function submitResponse() {
-            // Check if submissions are open
+        async function submitResponse() {
             if (!SUBMISSION_OPEN) {
                 showMessage('❌ This assignment is now closed. Submissions are no longer being accepted. Please contact your instructor if you have questions.', 'error');
                 return;
             }
 
-            // Check if submission deadline has passed
             if (SUBMISSION_DEADLINE) {
                 const deadline = new Date(SUBMISSION_DEADLINE);
-                const now = new Date();
-                if (now > deadline) {
-                    showMessage(`❌ The submission deadline (${deadline.toLocaleString()}) has passed. Submissions are no longer being accepted for this assignment.`, 'error');
+                if (new Date() > deadline) {
+                    showMessage(`❌ The submission deadline (${deadline.toLocaleString()}) has passed.`, 'error');
                     return;
                 }
             }
 
-            if (!validateForm()) {
-                return;
-            }
+            if (!validateForm()) return;
 
             const submitBtn = document.getElementById('submitBtn');
-            const originalText = submitBtn.textContent;
-            
-            // Disable button and show loading state
+            const originalHTML = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
 
-            const name = document.getElementById('name').value;
-            const section = document.getElementById('section').value;
-            const reflection = document.getElementById('reflection').value;
-            const option = localStorage.getItem('selectedOption') === '1' ? 'Option 1: Speech We Hate & the Marketplace of Ideas' : 'Option 2: Free Speech on Campus & Your Rights';
+            const name = document.getElementById('name').value.trim();
+            const section = document.getElementById('section').value.trim();
+            const reflection = document.getElementById('reflection').value.trim();
+            const wordCount = reflection.split(/\s+/).length;
+            const optionLabel = selectedOption === 1
+                ? 'Option 1: Speech We Hate & the Marketplace of Ideas'
+                : 'Option 2: Free Speech on Campus & Your Rights';
 
-            const wordCount = reflection.trim().split(/\s+/).length;
+            try {
+                const { error } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: name,
+                        section_number: section,
+                        worksheet_type: 'ec-free-speech',
+                        form_data: {
+                            selected_option: optionLabel,
+                            reflection: reflection,
+                            word_count: wordCount
+                        },
+                        submitted_at: new Date().toISOString()
+                    });
 
-            // Submit to Supabase (same table as other worksheets)
-            sbInsert('worksheet_submissions', {
-                student_name: name,
-                section_number: section,
-                worksheet_type: 'ec-free-speech',
-                form_data: JSON.stringify({
-                    selected_option: option,
-                    reflection: reflection,
-                    word_count: wordCount
-                }),
-                submitted_at: new Date().toISOString()
-            })
-            .then(response => {
-                if (response.ok) {
-                    showMessage('Your reflection has been submitted successfully!', 'success');
-                    // Clear form after successful submission
-                    setTimeout(() => {
-                        document.getElementById('reflection').value = '';
-                        document.getElementById('name').value = '';
-                        document.getElementById('section').value = '';
-                        updateWordCount();
-                        localStorage.clear();
-                    }, 2000);
-                } else {
-                    showMessage('There was an error submitting your reflection. Please try downloading and emailing it instead.', 'error');
-                }
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showMessage('Network error. Please check your connection and try again, or download your response to submit manually.', 'error');
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            });
+                if (error) throw error;
+
+                showMessage('✅ Your reflection has been submitted successfully!', 'success');
+                setTimeout(() => {
+                    document.getElementById('reflection').value = '';
+                    document.getElementById('name').value = '';
+                    document.getElementById('section').value = '';
+                    updateWordCount();
+                }, 2000);
+
+            } catch (err) {
+                console.error('Submission error:', err);
+                showMessage(`❌ Submission failed: ${err.message}. Please try again or download your response and email it to your instructor.`, 'error');
+            } finally {
+                submitBtn.innerHTML = originalHTML;
+                updateWordCount(); // re-evaluate enabled state based on word count
+            }
         }
 
         function downloadResponse() {
@@ -852,6 +765,10 @@
                 return;
             }
 
+            const optionLabel = selectedOption === 1
+                ? 'Option 1: Speech We Hate & the Marketplace of Ideas'
+                : 'Option 2: Free Speech on Campus & Your Rights';
+
             const content = `Freedom of Speech on Campus - Extra Credit Reflection
 
 STUDENT INFORMATION
@@ -860,7 +777,7 @@ Class and Section: ${document.getElementById('section').value}
 Date Submitted: ${new Date().toLocaleDateString()}
 
 ASSIGNMENT DETAILS
-Selected Option: ${localStorage.getItem('selectedOption') === '1' ? 'Option 1: Speech We Hate & the Marketplace of Ideas' : 'Option 2: Free Speech on Campus & Your Rights'}
+Selected Option: ${optionLabel}
 
 ---
 
@@ -886,25 +803,19 @@ Character Count: ${document.getElementById('charCount').textContent}`;
         }
 
         function showMessage(text, type) {
-            const messages = {
-                success: document.getElementById('successMessage'),
-                error: document.getElementById('errorMessage'),
-                info: document.getElementById('infoMessage')
-            };
+            ['successMessage', 'errorMessage', 'infoMessage'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.display = 'none';
+                el.textContent = '';
+            });
 
-            // Hide all messages
-            Object.values(messages).forEach(msg => msg.style.display = 'none');
-
-            // Show the appropriate message
-            if (messages[type]) {
-                messages[type].textContent = text;
-                messages[type].style.display = 'block';
-
-                // Auto-hide after 5 seconds
+            const map = { success: 'successMessage', error: 'errorMessage', info: 'infoMessage' };
+            const el = document.getElementById(map[type]);
+            if (el) {
+                el.textContent = text;
+                el.style.display = 'block';
                 if (type === 'success') {
-                    setTimeout(() => {
-                        messages[type].style.display = 'none';
-                    }, 5000);
+                    setTimeout(() => { el.style.display = 'none'; }, 5000);
                 }
             }
         }
@@ -915,24 +826,13 @@ Character Count: ${document.getElementById('charCount').textContent}`;
                 document.getElementById('section').value = '';
                 document.getElementById('reflection').value = '';
                 updateWordCount();
-                localStorage.clear();
                 showMessage('Form cleared.', 'info');
             }
         }
 
-        // Restore saved data on page load
         window.addEventListener('load', () => {
-            document.getElementById('name').value = localStorage.getItem('name') || '';
-            document.getElementById('section').value = localStorage.getItem('section') || '';
-            document.getElementById('reflection').value = localStorage.getItem('reflection') || '';
             updateWordCount();
 
-            const savedOption = localStorage.getItem('selectedOption');
-            if (savedOption) {
-                selectOption(parseInt(savedOption));
-            }
-
-            // Check and display deadline status
             if (!SUBMISSION_OPEN) {
                 showMessage('❌ This assignment is now closed. Submissions are no longer being accepted. You can still download your response for your records.', 'error');
                 document.getElementById('submitBtn').disabled = true;
@@ -940,24 +840,15 @@ Character Count: ${document.getElementById('charCount').textContent}`;
                 const deadline = new Date(SUBMISSION_DEADLINE);
                 const now = new Date();
                 if (now > deadline) {
-                    showMessage(`❌ The submission deadline (${deadline.toLocaleString()}) has passed. Submissions are no longer being accepted for full credit.`, 'error');
+                    showMessage(`❌ The submission deadline (${deadline.toLocaleString()}) has passed.`, 'error');
                     document.getElementById('submitBtn').disabled = true;
                 } else {
-                    const timeRemaining = deadline - now;
-                    const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const ms = deadline - now;
+                    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     showMessage(`⏰ Deadline: ${deadline.toLocaleString()} (${days}d ${hours}h remaining)`, 'info');
                 }
             }
-        });
-
-        // Update word count on input
-        document.getElementById('name').addEventListener('change', () => {
-            localStorage.setItem('name', document.getElementById('name').value);
-        });
-        
-        document.getElementById('section').addEventListener('change', () => {
-            localStorage.setItem('section', document.getElementById('section').value);
         });
     </script>
 </body>
