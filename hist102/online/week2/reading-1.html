@@ -14,7 +14,7 @@
     .rnav-item { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-light); padding:0.65rem 1rem; white-space:nowrap; text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .2s,border-color .2s; }
     .rnav-item:hover { color:var(--ink); border-bottom-color:var(--rule-strong); text-decoration:none; }
     .reading-layout { display:grid; grid-template-columns:1fr 240px; gap:2.5rem; align-items:start; }
-    @media(max-width:720px){ .reading-layout{grid-template-columns:1fr;} .reading-sidebar{order:-1;} }
+    @media(max-width:720px){ .reading-layout{grid-template-columns:1fr;} .reading-sidebar{display:none;} }
     .reading-sidebar { position:sticky; top:90px; }
     .sidebar-card { background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:4px; padding:1.1rem 1.25rem; margin-bottom:1rem; }
     .sidebar-card h4 { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.65rem; }
@@ -24,7 +24,7 @@
     .figure-aside { float:right; width:210px; margin:0 0 1.5rem 2rem; background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:3px; padding:1rem; font-size:0.8rem; color:var(--ink-light); clear:right; }
     .figure-aside .figure-name { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:600; color:var(--ink); margin-bottom:0.2rem; font-style:italic; }
     .figure-aside .figure-dates { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.1em; color:var(--ink-light); margin-bottom:0.5rem; }
-    @media(max-width:580px){ .figure-aside{float:none;width:100%;margin:0 0 1.5rem;} }
+    @media(max-width:580px){ .figure-aside{display:none;} }
     .question-block { background:#fff; border:1px solid var(--rule-strong); border-top:3px solid var(--gold); border-radius:0 0 4px 4px; padding:1.5rem; margin:2rem 0; clear:both; }
     .question-block-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
     .question-block-label::after { content:''; flex:1; height:1px; background:rgba(154,111,42,0.2); }
@@ -41,6 +41,19 @@
     .word-count.low { color:var(--rust); }
     .word-count.good { color:var(--sage); }
     .save-indicator { font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; color:var(--sage); opacity:0; transition:opacity .3s; }
+    .save-indicator.visible { opacity:1; }
+    /* Notes block — distinct from question block */
+    .notes-block { background:var(--cream-dark); border:1px solid var(--rule-strong); border-top:3px solid var(--canvas-blue); border-radius:0 0 4px 4px; padding:1.25rem 1.5rem; margin:-1rem 0 2rem; }
+    .notes-block-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--canvas-blue); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem; }
+    .notes-block-label::after { content:''; flex:1; height:1px; background:rgba(30,68,136,0.2); }
+    .notes-area { width:100%; min-height:90px; padding:0.65rem 0.9rem; border:1px solid rgba(30,68,136,0.2); border-radius:3px; background:#fff; font-family:'Source Serif 4',Georgia,serif; font-size:0.9rem; font-weight:300; color:var(--ink); line-height:1.7; resize:vertical; transition:border-color .2s,box-shadow .2s; -webkit-user-select:text; user-select:text; }
+    .notes-area:focus { outline:none; border-color:var(--canvas-blue); box-shadow:0 0 0 3px rgba(30,68,136,0.08); }
+    .notes-area::placeholder { color:var(--ink-light); opacity:0.55; font-style:italic; }
+    /* Advice box */
+    .notetaking-advice { background:rgba(30,68,136,0.05); border:1px solid rgba(30,68,136,0.2); border-left:4px solid var(--canvas-blue); border-radius:0 4px 4px 0; padding:1.1rem 1.5rem; margin-bottom:1.75rem; }
+    .notetaking-advice h4 { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--canvas-blue); margin-bottom:0.65rem; }
+    .notetaking-advice ul { padding-left:1.25rem; margin:0; font-size:0.88rem; color:var(--ink-mid); line-height:1.8; }
+    .notetaking-advice ul li strong { color:var(--ink); }
     .save-indicator.visible { opacity:1; }
     .notes-progress { background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:4px; padding:0.9rem 1.25rem; margin-bottom:2rem; display:flex; align-items:center; gap:1rem; }
     .notes-progress-bar-wrap { flex:1; height:6px; background:var(--cream-deep); border-radius:3px; overflow:hidden; }
@@ -91,9 +104,20 @@
   <div class="copy-notice">&#x1F512; Reading text is protected &mdash; answer questions in your own words</div>
 
   <div class="notes-progress">
-    <span class="notes-progress-label">Reading 3.1 Notes</span>
+    <span class="notes-progress-label">Reading 3.1 Progress</span>
     <div class="notes-progress-bar-wrap"><div class="notes-progress-bar" id="progressBar"></div></div>
-    <span class="notes-progress-label" id="progressLabel">0 of 6 answered</span>
+    <span class="notes-progress-label" id="progressLabel">0 of 12 complete</span>
+  </div>
+
+  <div class="notetaking-advice">
+    <h4>&#128221; &nbsp; How to Take Reading Notes for This Course</h4>
+    <ul>
+      <li><strong>Use your own words.</strong> Don't copy sentences from the text — paraphrase what you read. This forces you to process the information rather than just transcribe it.</li>
+      <li><strong>Note what surprises you.</strong> If something contradicts what you expected, write it down. Surprises are often the most important things to remember.</li>
+      <li><strong>Connect to the big picture.</strong> Ask yourself: how does this section relate to the course themes? To what you've already read? To things happening today?</li>
+      <li><strong>Flag exam material.</strong> Key terms, turning points, and cause-effect relationships are what essay questions are built from. Note them explicitly.</li>
+      <li><strong>These notes are yours.</strong> There's no wrong format — write fragments, questions, reactions, observations. The goal is to make this material stick.</li>
+    </ul>
   </div>
 
   <div class="reading-layout">
@@ -139,6 +163,11 @@
             <div class="answer-meta"><span class="word-count" id="wc_q_1">0 words</span><span class="save-indicator" id="si_q_1">&#10003; Saved</span></div>
           </div>
         </div>
+      </div>
+      <div class="notes-block">
+        <div class="notes-block-label">My Notes &mdash; 18.1 Inventors of the Age</div>
+        <textarea class="notes-area" id="n_1" data-key="hist102_w2_r1_n1" placeholder="Jot down anything that stood out in this section — key terms, connections, surprises, questions, things to remember for the exam…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_n_1">0 words</span><span class="save-indicator" id="si_n_1">&#10003; Saved</span></div>
       </div>
 
       <!-- 18.2 -->
@@ -191,6 +220,11 @@
           </div>
         </div>
       </div>
+      <div class="notes-block">
+        <div class="notes-block-label">My Notes &mdash; 18.2 Rise of Big Business</div>
+        <textarea class="notes-area" id="n_2" data-key="hist102_w2_r1_n2" placeholder="Jot down anything that stood out — key terms, connections, surprises, questions, things to remember for the exam…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_n_2">0 words</span><span class="save-indicator" id="si_n_2">&#10003; Saved</span></div>
+      </div>
 
       <!-- 18.3 -->
       <div id="s183">
@@ -235,6 +269,11 @@
           </div>
         </div>
       </div>
+      <div class="notes-block">
+        <div class="notes-block-label">My Notes &mdash; 18.3 Labor</div>
+        <textarea class="notes-area" id="n_3" data-key="hist102_w2_r1_n3" placeholder="Jot down anything that stood out — key terms, connections, surprises, questions, things to remember for the exam…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_n_3">0 words</span><span class="save-indicator" id="si_n_3">&#10003; Saved</span></div>
+      </div>
 
       <!-- 18.4 -->
       <div id="s184">
@@ -253,6 +292,11 @@
             <div class="answer-meta"><span class="word-count" id="wc_q_4">0 words</span><span class="save-indicator" id="si_q_4">&#10003; Saved</span></div>
           </div>
         </div>
+      </div>
+      <div class="notes-block">
+        <div class="notes-block-label">My Notes &mdash; 18.4 Consumer Culture</div>
+        <textarea class="notes-area" id="n_4" data-key="hist102_w2_r1_n4" placeholder="Jot down anything that stood out — key terms, connections, surprises, questions, things to remember for the exam…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_n_4">0 words</span><span class="save-indicator" id="si_n_4">&#10003; Saved</span></div>
       </div>
 
       <!-- 20.2 -->
@@ -282,6 +326,11 @@
             <div class="answer-meta"><span class="word-count" id="wc_q_5">0 words</span><span class="save-indicator" id="si_q_5">&#10003; Saved</span></div>
           </div>
         </div>
+      </div>
+      <div class="notes-block">
+        <div class="notes-block-label">My Notes &mdash; 20.2 Gilded Age Politics</div>
+        <textarea class="notes-area" id="n_5" data-key="hist102_w2_r1_n5" placeholder="Jot down anything that stood out — key terms, connections, surprises, questions, things to remember for the exam…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_n_5">0 words</span><span class="save-indicator" id="si_n_5">&#10003; Saved</span></div>
       </div>
 
       <!-- 20.3 -->
@@ -315,6 +364,11 @@
             <div class="answer-meta"><span class="word-count" id="wc_q_6">0 words</span><span class="save-indicator" id="si_q_6">&#10003; Saved</span></div>
           </div>
         </div>
+      </div>
+      <div class="notes-block">
+        <div class="notes-block-label">My Notes &mdash; 20.3 The Populist Movement</div>
+        <textarea class="notes-area" id="n_6" data-key="hist102_w2_r1_n6" placeholder="Jot down anything that stood out — key terms, connections, surprises, questions, things to remember for the exam…"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_n_6">0 words</span><span class="save-indicator" id="si_n_6">&#10003; Saved</span></div>
       </div>
 
     </div><!-- /reading-body -->
@@ -398,39 +452,41 @@
 <script>
 document.getElementById('readingBody').addEventListener('contextmenu', e => e.preventDefault());
 document.getElementById('readingBody').addEventListener('selectstart', e => { if(e.target.tagName==='TEXTAREA') return; e.preventDefault(); });
-const TOTAL = 6;
+const TOTAL = 12; // 6 answers + 6 notes
 function countWords(s){ return s.trim()==='' ? 0 : s.trim().split(/\s+/).length; }
 function updateWordCount(ta){
   const wc = countWords(ta.value);
   const el = document.getElementById('wc_'+ta.id);
   if(!el) return;
   el.textContent = wc+' word'+(wc!==1?'s':'');
-  el.className = 'word-count '+(wc===0?'':wc<30?'low':'good');
+  el.className = 'word-count '+(wc===0?'':wc<20?'low':'good');
 }
-function saveAnswer(ta){
+function saveField(ta){
   try{ localStorage.setItem(ta.dataset.key, ta.value); } catch(e){}
   const si = document.getElementById('si_'+ta.id);
   if(si){ si.classList.add('visible'); setTimeout(()=>si.classList.remove('visible'),1500); }
   updateProgress();
 }
 function loadAnswers(){
-  document.querySelectorAll('.answer-area').forEach(ta=>{
+  document.querySelectorAll('.answer-area, .notes-area').forEach(ta=>{
     try{ const v=localStorage.getItem(ta.dataset.key); if(v){ta.value=v; updateWordCount(ta);} }catch(e){}
   });
   updateProgress();
 }
 function updateProgress(){
-  let n=0;
-  document.querySelectorAll('.answer-area').forEach(ta=>{ if(countWords(ta.value)>=10) n++; });
-  const pct=Math.round(n/TOTAL*100);
-  const bar=document.getElementById('progressBar');
-  const lbl=document.getElementById('progressLabel');
+  let answered=0, noted=0;
+  document.querySelectorAll('.answer-area').forEach(ta=>{ if(countWords(ta.value)>=10) answered++; });
+  document.querySelectorAll('.notes-area').forEach(ta=>{ if(countWords(ta.value)>=10) noted++; });
+  const n = answered + noted;
+  const pct = Math.round(n/TOTAL*100);
+  const bar = document.getElementById('progressBar');
+  const lbl = document.getElementById('progressLabel');
   if(bar) bar.style.width=pct+'%';
-  if(lbl) lbl.textContent=n+' of '+TOTAL+' answered';
+  if(lbl) lbl.textContent=answered+'/6 answered · '+noted+'/6 notes';
 }
-document.querySelectorAll('.answer-area').forEach(ta=>{
+document.querySelectorAll('.answer-area, .notes-area').forEach(ta=>{
   let t;
-  ta.addEventListener('input',()=>{ updateWordCount(ta); clearTimeout(t); t=setTimeout(()=>saveAnswer(ta),800); });
+  ta.addEventListener('input',()=>{ updateWordCount(ta); clearTimeout(t); t=setTimeout(()=>saveField(ta),800); });
 });
 loadAnswers();
 </script>
