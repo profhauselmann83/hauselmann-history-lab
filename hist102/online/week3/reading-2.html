@@ -499,8 +499,10 @@ function updateWordCount(ta){
   el.textContent=wc+' word'+(wc!==1?'s':'');
   el.className='word-count '+(wc===0?'':wc<30?'low':'good');
 }
-function saveAnswer(ta){
-  try{localStorage.setItem(LS_KEYS[ta.id],ta.value);}catch(e){}
+function saveField(ta){
+  // save via data-key (works for both answer-area and notes-area)
+  const key=ta.dataset.key||LS_KEYS[ta.id];
+  if(key) try{localStorage.setItem(key,ta.value);}catch(e){}
   const si=document.getElementById('si_'+ta.id);
   if(si){si.classList.add('visible');setTimeout(()=>si.classList.remove('visible'),1500);}
   updateProgress();
@@ -547,14 +549,14 @@ function generatePDF(){
   // R1 notes from localStorage
   var r1Notes={};
   ['n_1','n_2','n_3','n_4','n_5','n_6'].forEach(function(nId){
-    try{r1Notes[nId]=localStorage.getItem('hist102_w3_r1_'+nId)||'';}catch(e){r1Notes[nId]='';}
+    try{r1Notes[nId]=localStorage.getItem('hist102_w3_r1_'+nId.replace('_',''))||'';}catch(e){r1Notes[nId]='';}
   });
   // R2 notes from current page
   var r2Notes={};
   ['n_1','n_2','n_3','n_4','n_5','n_6'].forEach(function(nId){
     var el=document.getElementById(nId);
     r2Notes[nId]=el?el.value:'';
-    if(!r2Notes[nId]){try{r2Notes[nId]=localStorage.getItem('hist102_w3_r2_'+nId)||'';}catch(e){}}
+    if(!r2Notes[nId]){try{r2Notes[nId]=localStorage.getItem('hist102_w3_r2_'+nId.replace('_',''))||'';}catch(e){}}
   });
   var allReadingAnswers=[];
   ['q_1','q_2','q_3','q_4','q_5','q_6'].forEach(function(qId){allReadingAnswers.push(r1Answers[qId]);});
@@ -590,33 +592,31 @@ function generatePDF(){
     // Reading 4.1
     addText('Reading 4.1 — American Empire and Progressive Reform (OpenStax Ch. 19 & 21)',14,'bold',[154,111,42]);y+=6;
     var r1NoteLabels=['My Notes — 19.1 Roots of Empire','My Notes — 19.2 Spanish-American War','My Notes — 21.1 Roosevelt','My Notes — 21.2 Muckrakers','My Notes — 21.3 Women','My Notes — 21.4 Wilson'];
+        var w3R1NoteLabels=['My Notes — 19.1 Roots of American Empire','My Notes — 19.2 Spanish-American War','My Notes — 21.1 Roosevelt & Square Deal','My Notes — 21.2 The Muckrakers','My Notes — 21.3 Women & Progressivism','My Notes — 21.4 Wilson & Limits'];
     Q_LABELS_R1.forEach(function(label,i){
-      var qId='q_'+(i+1);var note=r1Notes['n_'+(i+1)]||'';
+      var qId='q_'+(i+1);
+      var nId='n_'+(i+1);
       var answer=r1Answers[qId]||'(no answer entered)';
+      var note=r1Notes[nId]||'';
+      var noteLbl=w3R1NoteLabels[i];
       checkPage(60);doc.setDrawColor(224,213,190);doc.line(margin,y,pageW-margin,y);y+=10;
       addText(label,10,'bold',[61,96,83]);y+=2;addText(answer,10,'normal',[30,21,16],14);y+=6;
-      var noteLabels=r1NoteLabels;
-      if(note){addText(noteLabels[i],9,'bold',[30,68,136]);y+=1;
-        var indent=margin+16;var nlines=doc.splitTextToSize(note,maxW-16);
-        checkPage(nlines.length*12);doc.setFontSize(9);doc.setFont('times','italic');doc.setTextColor(58,80,110);
-        doc.text(nlines,indent,y);y+=nlines.length*12+6;}
-      y+=6;
-    });
+            if(note){checkPage(30);addText(noteLbl,9,'bold',[30,68,136]);y+=1;var nln=doc.splitTextToSize(note,maxW-16);checkPage(nln.length*12);doc.setFontSize(9);doc.setFont('times','italic');doc.setTextColor(58,80,110);doc.text(nln,margin+16,y);y+=nln.length*12+4;}
+      y+=8;    });
     // Reading 4.2
     sectionDivider('Reading 4.2 — Urban Poverty, Race, and Reform (OpenStax Ch. 19 & 21)',[154,111,42]);
     var r2NoteLabels=['My Notes — Jacob Riis','My Notes — Urban Poverty','My Notes — Jim Crow','My Notes — Washington','My Notes — Du Bois','My Notes — NAACP'];
+        var w3R2NoteLabels=['My Notes — Jacob Riis','My Notes — Urban Poverty','My Notes — Jim Crow & the Nadir','My Notes — Booker T. Washington','My Notes — W.E.B. Du Bois','My Notes — NAACP & Limits of Reform'];
     Q_LABELS_R2.forEach(function(label,i){
-      var qId='q_'+(i+1);var note=r2Notes['n_'+(i+1)]||'';
+      var qId='q_'+(i+1);
+      var nId='n_'+(i+1);
       var answer=r2Answers[qId]||'(no answer entered)';
+      var note=r2Notes[nId]||'';
+      var noteLbl=w3R2NoteLabels[i];
       checkPage(60);doc.setDrawColor(224,213,190);doc.line(margin,y,pageW-margin,y);y+=10;
       addText(label,10,'bold',[61,96,83]);y+=2;addText(answer,10,'normal',[30,21,16],14);y+=6;
-      var noteLabels=r2NoteLabels;
-      if(note){addText(noteLabels[i],9,'bold',[30,68,136]);y+=1;
-        var indent=margin+16;var nlines=doc.splitTextToSize(note,maxW-16);
-        checkPage(nlines.length*12);doc.setFontSize(9);doc.setFont('times','italic');doc.setTextColor(58,80,110);
-        doc.text(nlines,indent,y);y+=nlines.length*12+6;}
-      y+=6;
-    });
+            if(note){checkPage(30);addText(noteLbl,9,'bold',[30,68,136]);y+=1;var nln=doc.splitTextToSize(note,maxW-16);checkPage(nln.length*12);doc.setFontSize(9);doc.setFont('times','italic');doc.setTextColor(58,80,110);doc.text(nln,margin+16,y);y+=nln.length*12+4;}
+      y+=8;    });
     // Source Analysis 3.1
     sectionDivider('Source Analysis 3.1 — Annexation of Hawaii',[61,96,83]);
     var sa1Labels=['Close Reading 1: Publisher and Audience (Document A)','Close Reading 2: The Memorial — Who and What (Document B)','Close Reading 3: The Declaration of Independence Argument (Document B)','Close Reading 4: Why the Sources Contradict Each Other','Historical Essay: Did Hawaiians Support Annexation?'];
