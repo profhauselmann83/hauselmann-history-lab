@@ -470,7 +470,7 @@
 
         #print-doc {
             display: block !important;
-            margin: 1in;
+            margin: 0;
             font-family: 'Times New Roman', Times, serif;
             font-size: 12pt;
             line-height: 2;
@@ -682,7 +682,8 @@
 
     <textarea
         id="essay-area"
-        placeholder="Begin typing your essay here…&#10;&#10;Use Turabian parenthetical citations as you write. See the Citation Guide tab for examples."
+        placeholder="Begin typing your essay here… Press Enter once to start a new paragraph.
+&#10;&#10;Use Turabian parenthetical citations as you write. See the Citation Guide tab for examples."
         oninput="onEssayInput()"
         onpaste="blockPaste(event)"
         ondrop="blockDrop(event)"
@@ -1137,6 +1138,19 @@ function onEssayInput() {
     scheduleSave();
 }
 
+document.getElementById('essay-area').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const el = this;
+        const start = el.selectionStart;
+        const end   = el.selectionEnd;
+        el.value = el.value.substring(0, start) + '\n\n' + el.value.substring(end);
+        el.selectionStart = el.selectionEnd = start + 2;
+        onEssayInput();
+    }
+});
+
+
 function updateWordCount() {
     wordCount = countWords(document.getElementById('essay-area').value);
 
@@ -1305,8 +1319,96 @@ function downloadPDF() {
     window.print();
 }
 
+// ── INSTRUCTOR MODE ───────────────────────────────────────────────────────────
+const INSTRUCTOR_MODE = new URLSearchParams(window.location.search).get('instructor') === 'true';
+
+if (INSTRUCTOR_MODE) {
+    // Pre-fill identity fields
+    document.getElementById('inp-name').value    = 'Instructor Preview';
+    document.getElementById('inp-id').value      = '00000000';
+    document.getElementById('inp-section').value = '3944';
+
+    // Pre-fill essay and bibliography with placeholder text
+    document.getElementById('inp-title').value  = 'Sample Paper Title';
+    document.getElementById('essay-area').value =
+        'This is a preview of the essay field. In instructor mode all steps are accessible without meeting word count or completion requirements.\n\nThis is a second paragraph to show paragraph spacing.\n\nThis is a third paragraph.';
+    document.getElementById('bib-area').value =
+        'Haass, Richard. 2023. The Bill of Obligations. New York: Penguin Press.\nWood, Gordon S. 1969. The Creation of the American Republic. Chapel Hill: UNC Press.';
+
+    // Check all pledge boxes and sign
+    ['pledge-1','pledge-2','pledge-3','pledge-4'].forEach(id => {
+        document.getElementById(id).checked = true;
+    });
+    document.getElementById('pledge-signature').value = 'Instructor Preview';
+
+    // Show a banner
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#2c3e50;color:white;text-align:center;padding:10px;font-family:Open Sans,sans-serif;font-size:0.9em;font-weight:600;position:sticky;top:0;z-index:1000;';
+    banner.innerHTML = '🔍 Instructor Preview Mode — <span style="font-weight:400">all steps unlocked, submission disabled</span>';
+    document.body.insertBefore(banner, document.body.firstChild);
+
+    // Add step jump buttons below the banner
+    const jumper = document.createElement('div');
+    jumper.style.cssText = 'background:#34495e;padding:10px;text-align:center;font-family:Open Sans,sans-serif;position:sticky;top:41px;z-index:999;';
+    jumper.innerHTML = `
+        <span style="color:white;font-size:0.82em;font-weight:600;margin-right:10px">Jump to step:</span>
+        <button onclick="instructorGoTo(1)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#3498db;color:white">1 · Login</button>
+        <button onclick="instructorGoTo(2)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#3498db;color:white">2 · Write</button>
+        <button onclick="instructorGoTo(3)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#3498db;color:white">3 · Pledge</button>
+        <button onclick="instructorGoTo(4)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#3498db;color:white">4 · Review</button>
+        <button onclick="instructorGoTo(5)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#27ae60;color:white">5 · Confirmation</button>
+    `;
+    document.body.insertBefore(jumper, document.body.children[1]);
+
+    // Set state so steps render correctly
+    studentName = 'Instructor Preview';
+    studentId   = '00000000';
+    section     = '3944';
+    updateWordCount();
+    checkPledge();
+}
+
+function instructorGoTo(n) {
+    if (!INSTRUCTOR_MODE) return;
+
+    // Populate review panel when jumping to step 4
+    if (n === 4) {
+        const bibLines = document.getElementById('bib-area').value
+            .split('\n').filter(l => l.trim().length > 0);
+        document.getElementById('rv-name').textContent    = studentName;
+        document.getElementById('rv-id').textContent      = studentId;
+        document.getElementById('rv-section').textContent = 'Section ' + section;
+        document.getElementById('rv-title').textContent   = document.getElementById('inp-title').value.trim();
+        document.getElementById('rv-wc').textContent      = wordCount.toLocaleString() + ' words';
+        document.getElementById('rv-bib').textContent     = bibLines.length + ' source(s)';
+        document.getElementById('rv-pledge').textContent  = '✓ Signed by Instructor Preview';
+    }
+
+    // Populate confirmation when jumping to step 5
+    if (n === 5) {
+        document.getElementById('confirm-details').innerHTML =
+            '<strong>Instructor Preview</strong> &nbsp;|&nbsp; ID: 00000000 &nbsp;|&nbsp; Section 3944<br>' +
+            '<em>"Sample Paper Title"</em> — preview<br>' +
+            'Submitted: ' + new Date().toLocaleString();
+    }
+
+    // Disable the final submit button in instructor mode
+    if (n === 4) {
+        setTimeout(() => {
+            const btn = document.getElementById('btn-final');
+            if (btn) {
+                btn.disabled = true;
+                btn.title    = 'Submission disabled in instructor preview mode';
+            }
+        }, 50);
+    }
+
+    showStep(n);
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateWordCount();
+
 </script>
 
 </body>
