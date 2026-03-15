@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w1" data-gate="../week1/gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 2 Unlock — Reconstruction Review | HIST 102</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css?v=4">
+  <style>
+    .puzzle-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+    /* Password letter boxes */
+    .pw-display { display: flex; gap: 12px; justify-content: center; margin: 2rem 0 0.5rem; }
+    .letter-box {
+      width: 58px; height: 70px;
+      border: 2px solid var(--rule-strong);
+      border-radius: 6px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: var(--cream-dark);
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .letter-box.revealed {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .letter-box .ltr {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.9rem;
+      font-weight: 500;
+      color: var(--cream);
+      opacity: 0;
+      transition: opacity 0.4s;
+      line-height: 1;
+    }
+    .letter-box.revealed .ltr { opacity: 1; }
+    .letter-box .ltr-qnum {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      color: var(--ink-light);
+      margin-top: 5px;
+      text-transform: uppercase;
+    }
+    .letter-box.revealed .ltr-qnum { color: var(--cream-deep); }
+
+    /* Progress bar */
+    .puzzle-prog-wrap {
+      background: var(--cream-deep);
+      border-radius: 3px;
+      height: 5px;
+      margin: 0.75rem 0 2.5rem;
+      overflow: hidden;
+    }
+    .puzzle-prog-fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* Question cards */
+    .q-card {
+      background: #fff;
+      border: 1px solid var(--rule-strong);
+      border-left: 4px solid var(--rule-strong);
+      border-radius: 0 4px 4px 0;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1rem;
+      transition: border-left-color 0.3s;
+    }
+    .q-card.state-correct { border-left-color: var(--gold); }
+    .q-card.state-wrong   { border-left-color: var(--rust); animation: shake 0.3s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-7px); }
+      75%      { transform: translateX(7px); }
+    }
+
+    .q-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 0.6rem;
+    }
+    .q-eyebrow .unlock-tag { color: var(--gold); font-weight: 500; }
+
+    .q-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    /* Answer options */
+    .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media(max-width: 560px) { .q-options { grid-template-columns: 1fr; } }
+
+    .opt-btn {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.88rem;
+      font-weight: 300;
+      color: var(--ink);
+      background: var(--cream);
+      border: 1px solid var(--rule-strong);
+      border-radius: 3px;
+      padding: 0.7rem 0.9rem;
+      text-align: left;
+      cursor: pointer;
+      line-height: 1.5;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .opt-btn:hover:not(:disabled) {
+      background: var(--cream-dark);
+      border-color: var(--gold);
+    }
+    .opt-btn:disabled { cursor: default; }
+    .opt-btn.opt-correct {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--cream);
+    }
+    .opt-btn.opt-wrong {
+      background: #fdf4f2;
+      border-color: var(--rust);
+      color: var(--rust);
+    }
+
+    /* Feedback text */
+    .q-feedback {
+      display: none;
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.86rem;
+      font-weight: 300;
+      line-height: 1.65;
+      margin-top: 0.9rem;
+      padding: 0.75rem 1rem;
+      border-radius: 3px;
+    }
+    .q-feedback.fb-correct {
+      display: block;
+      background: rgba(154,111,42,0.08);
+      border-left: 3px solid var(--gold);
+      color: var(--ink-mid);
+    }
+    .q-feedback.fb-wrong {
+      display: block;
+      background: #fdf4f2;
+      border-left: 3px solid var(--rust);
+      color: var(--ink-mid);
+    }
+
+    /* Victory banner */
+    .victory-banner {
+      display: none;
+      text-align: center;
+      border: 2px solid var(--gold);
+      border-radius: 6px;
+      padding: 2.5rem 2rem;
+      margin-top: 1.5rem;
+      background: var(--cream-dark);
+    }
+    .victory-banner.show { display: block; }
+    .victory-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .victory-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .victory-code {
+      font-family: 'DM Mono', monospace;
+      font-size: 2.4rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      margin: 0.75rem 0;
+    }
+    .victory-sub {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.92rem;
+      color: var(--ink-mid);
+      margin-bottom: 1.5rem;
+    }
+    .victory-cta {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cream);
+      background: var(--ink);
+      border: none;
+      border-radius: 3px;
+      padding: 0.75rem 1.75rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .victory-cta:hover { background: var(--gold); text-decoration: none; color: var(--cream); }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step active" href="puzzle.html"><span class="step-num">1</span> Unlock</a>
+    <a class="prog-step" href="gate.html"><span class="step-num">2</span> Gate</a>
+    <a class="prog-step" href="index.html"><span class="step-num">3</span> Overview</a>
+    <a class="prog-step" href="video.html"><span class="step-num">4</span> Video</a>
+    <a class="prog-step" href="reading-1.html"><span class="step-num">5</span> Reading 3.1</a>
+    <a class="prog-step" href="reading-2.html"><span class="step-num">6</span> Reading 3.2</a>
+    <a class="prog-step" href="#"><span class="step-num">7</span> Canvas</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 2 &nbsp;&middot;&nbsp; Before You Begin</div>
+    <h1>Crack the Code</h1>
+    <p class="page-subtitle">A Reconstruction Review &mdash; answer all six to unlock your Week 2 access code</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~10 min</span>
+      <span class="chip chip-site">Not graded</span>
+    </div>
+  </div>
+</header>
+
+<div class="puzzle-wrap">
+
+  <p style="font-family:'Source Serif 4',Georgia,serif; font-size:0.95rem; color:var(--ink-mid); line-height:1.75; margin-bottom:1.5rem;">
+    Before diving into the Gilded Age, let's make sure last week's Reconstruction history is still sharp. Each correct answer reveals one letter of your Week 2 access code. Wrong answers still reveal the letter &mdash; but read the feedback, because this material connects directly to what's coming.
+  </p>
+
+  <!-- Password display -->
+  <div class="pw-display">
+    <div class="letter-box" id="lb-0"><span class="ltr">G</span><span class="ltr-qnum">Q1</span></div>
+    <div class="letter-box" id="lb-1"><span class="ltr">I</span><span class="ltr-qnum">Q2</span></div>
+    <div class="letter-box" id="lb-2"><span class="ltr">L</span><span class="ltr-qnum">Q3</span></div>
+    <div class="letter-box" id="lb-3"><span class="ltr">D</span><span class="ltr-qnum">Q4</span></div>
+    <div class="letter-box" id="lb-4"><span class="ltr">E</span><span class="ltr-qnum">Q5</span></div>
+    <div class="letter-box" id="lb-5"><span class="ltr">D</span><span class="ltr-qnum">Q6</span></div>
+  </div>
+  <div class="puzzle-prog-wrap">
+    <div class="puzzle-prog-fill" id="prog-fill"></div>
+  </div>
+
+  <!-- Questions injected by JS -->
+  <div id="questions-mount"></div>
+
+  <!-- Victory -->
+  <div class="victory-banner" id="victory">
+    <div class="victory-eyebrow">All six letters unlocked</div>
+    <div class="victory-title">Your Week 2 Access Code</div>
+    <div class="victory-code">GILDED</div>
+    <p class="victory-sub">Enter this code on the next page when prompted. Keep it handy &mdash; you'll need it each time you start a new browser session this week.</p>
+    <a href="gate.html" class="victory-cta">Continue to Week 2 &rarr;</a>
+  </div>
+
+  <!-- Footer nav (always visible) -->
+  <div class="page-footer" style="margin-top:3rem;">
+    <a href="../index.html" class="nav-btn nav-btn-prev">&larr; Course Home</a>
+    <a href="gate.html" class="nav-btn nav-btn-next">Enter Week 2 &rarr;</a>
+  </div>
+
+</div><!-- /.puzzle-wrap -->
+
+<script src="../security.js"></script>
+<script>
+(function() {
+  var QUESTIONS = [
+    {
+      q: "The 13th, 14th, and 15th Amendments were ratified during Reconstruction. What did the 14th Amendment specifically guarantee?",
+      opts: [
+        "The abolition of slavery throughout the United States",
+        "Equal citizenship and due process rights for all persons born in the U.S.",
+        "The right to vote regardless of race, color, or previous condition of servitude",
+        "The right of formerly enslaved people to receive land and compensation"
+      ],
+      answer: 1,
+      feedback: "The 14th Amendment (1868) granted citizenship to all persons born or naturalized in the U.S. and guaranteed equal protection under the law — a direct response to the Black Codes that Southern states had used to strip freed people of civil rights."
+    },
+    {
+      q: "Southern states enacted \"Black Codes\" immediately after the Civil War. What was their primary purpose?",
+      opts: [
+        "To establish schools and hospitals for formerly enslaved people",
+        "To outline the path to full citizenship for freedmen",
+        "To restore a system of forced labor and restrict Black freedom despite emancipation",
+        "To regulate sharecropping contracts fairly between races"
+      ],
+      answer: 2,
+      feedback: "Black Codes used vagrancy laws, labor contracts, and criminal penalties to bind Black workers to plantations and strip them of basic rights — effectively re-creating slavery's conditions under a different legal form. They prompted Congress to take direct control of Reconstruction."
+    },
+    {
+      q: "The Freedmen's Bureau was established in 1865. Which best describes what it actually accomplished?",
+      opts: [
+        "It successfully redistributed land to freedmen, giving \"forty acres and a mule\" to most",
+        "It provided some education and legal assistance, but was underfunded and undermined by President Johnson",
+        "It governed the South for a decade and enforced civil rights effectively",
+        "It had no real impact because Congress blocked all of its programs"
+      ],
+      answer: 1,
+      feedback: "The Bureau helped establish schools, negotiate labor contracts, and provided some legal protection — but it was chronically underfunded and President Johnson actively worked against it. The promise of land redistribution was revoked almost immediately."
+    },
+    {
+      q: "What was the Compromise of 1877, and what did it mean for Reconstruction?",
+      opts: [
+        "A deal giving freedmen voting rights in exchange for accepting lower wages",
+        "A political bargain that resolved a disputed presidential election by withdrawing federal troops from the South — ending Reconstruction",
+        "A treaty dividing federal funding equally between Northern and Southern states",
+        "A Supreme Court ruling that struck down the 14th Amendment's citizenship clause"
+      ],
+      answer: 1,
+      feedback: "The disputed 1876 election between Hayes and Tilden was resolved by a political bargain: Republicans got the presidency; Democrats got the withdrawal of federal troops from the South. Without troops to enforce civil rights, Reconstruction collapsed and white supremacist governments resumed control."
+    },
+    {
+      q: "Richard Haass argues that \"norms\" — unwritten rules of behavior — are essential to democracy. How does Reconstruction illustrate what happens when norms break down?",
+      opts: [
+        "Southern whites accepted legal equality once the amendments were ratified, showing norms can change quickly",
+        "The amendments succeeded because constitutional law proved stronger than social norms",
+        "Norms of white supremacy overpowered constitutional law — the KKK and political violence destroyed rights the amendments had created",
+        "Haass's framework doesn't apply to Reconstruction because it only concerns modern politics"
+      ],
+      answer: 2,
+      feedback: "Haass argues laws cannot function without supporting norms. Reconstruction proved this: the 13th, 14th, and 15th Amendments existed on paper, but norms of white supremacy — enforced through terrorism, fraud, and political abandonment — rendered them hollow within a generation."
+    },
+    {
+      q: "By the 1890s, Southern states were using poll taxes, literacy tests, and grandfather clauses to disenfranchise Black voters. What does this reveal about Reconstruction's legacy?",
+      opts: [
+        "The legal gains of Reconstruction were largely reversed by legal and extralegal means once federal enforcement ended",
+        "Black voters chose not to participate because they distrusted the political system",
+        "The Supreme Court consistently protected Black voting rights after Reconstruction",
+        "Economic progress after Reconstruction made political rights less important to freedmen"
+      ],
+      answer: 0,
+      feedback: "The systematic rollback of Black political rights through technically \"race-neutral\" laws — combined with violence and economic coercion — showed that constitutional amendments without enforcement are vulnerable to dismantling. This \"Redemption\" period set the stage for Jim Crow, which lasted another 80 years."
+    }
+  ];
+
+  var answered = [false, false, false, false, false, false];
+
+  function revealLetter(i) {
+    var box = document.getElementById('lb-' + i);
+    box.classList.add('revealed');
+  }
+
+  function updateProgress() {
+    var count = answered.filter(Boolean).length;
+    document.getElementById('prog-fill').style.width = (count / 6 * 100) + '%';
+    if (count === 6) {
+      setTimeout(function() {
+        document.getElementById('victory').classList.add('show');
+        document.getElementById('victory').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 600);
+    }
+  }
+
+  function handleAnswer(qi, chosen) {
+    if (answered[qi]) return;
+    var q = QUESTIONS[qi];
+    var optsEl = document.getElementById('opts-' + qi);
+    var btns = optsEl.querySelectorAll('button');
+    var fbEl = document.getElementById('fb-' + qi);
+    var card = document.getElementById('qcard-' + qi);
+
+    btns.forEach(function(b) { b.disabled = true; });
+
+    if (chosen === q.answer) {
+      btns[chosen].classList.add('opt-correct');
+      card.classList.add('state-correct');
+      fbEl.className = 'q-feedback fb-correct';
+      fbEl.textContent = q.feedback;
+    } else {
+      btns[chosen].classList.add('opt-wrong');
+      btns[q.answer].classList.add('opt-correct');
+      card.classList.add('state-wrong');
+      fbEl.className = 'q-feedback fb-wrong';
+      fbEl.textContent = 'Not quite — the correct answer is highlighted above. ' + q.feedback;
+      setTimeout(function() { card.classList.remove('state-wrong'); }, 400);
+    }
+
+    answered[qi] = true;
+    revealLetter(qi);
+    updateProgress();
+  }
+
+  // Expose to onclick handlers
+  window.handleAnswer = handleAnswer;
+
+  function buildQuestions() {
+    var mount = document.getElementById('questions-mount');
+    QUESTIONS.forEach(function(q, i) {
+      var card = document.createElement('div');
+      card.className = 'q-card';
+      card.id = 'qcard-' + i;
+
+      var eyebrow = document.createElement('p');
+      eyebrow.className = 'q-eyebrow';
+      eyebrow.innerHTML = 'Question ' + (i + 1) + ' &nbsp;&middot;&nbsp; <span class="unlock-tag">unlocks letter ' + (i + 1) + '</span>';
+
+      var qtext = document.createElement('p');
+      qtext.className = 'q-text';
+      qtext.textContent = q.q;
+
+      var optsDiv = document.createElement('div');
+      optsDiv.className = 'q-options';
+      optsDiv.id = 'opts-' + i;
+
+      q.opts.forEach(function(opt, j) {
+        var btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt;
+        btn.setAttribute('onclick', 'handleAnswer(' + i + ',' + j + ')');
+        optsDiv.appendChild(btn);
+      });
+
+      var fb = document.createElement('div');
+      fb.className = 'q-feedback';
+      fb.id = 'fb-' + i;
+
+      card.appendChild(eyebrow);
+      card.appendChild(qtext);
+      card.appendChild(optsDiv);
+      card.appendChild(fb);
+      mount.appendChild(card);
+    });
+  }
+
+  buildQuestions();
+})();
+</script>
+</body>
+</html>
