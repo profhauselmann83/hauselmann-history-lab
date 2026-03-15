@@ -8,9 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
+
         body {
             font-family: 'Open Sans', sans-serif;
             margin: 0;
@@ -18,10 +17,9 @@
             background-color: #f5f5f0;
             color: #333;
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
         header {
             background-color: #2c3e50;
             color: white;
@@ -32,10 +30,8 @@
             justify-content: space-between;
             align-items: center;
         }
-        header h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
+        header h1 { margin: 0; font-size: 1.5em; }
+
         .logout-btn {
             background-color: #e74c3c;
             color: white;
@@ -44,10 +40,11 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
         }
-        .logout-btn:hover {
-            background-color: #c0392b;
-        }
+        .logout-btn:hover { background-color: #c0392b; }
+
+        /* LOGIN */
         .login-container {
             max-width: 400px;
             margin: 100px auto;
@@ -56,10 +53,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .login-container h2 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
+        .login-container h2 { margin-top: 0; color: #2c3e50; }
         .login-container input {
             width: 100%;
             padding: 12px;
@@ -67,6 +61,7 @@
             border: 2px solid #bdc3c7;
             border-radius: 5px;
             font-size: 1em;
+            font-family: 'Open Sans', sans-serif;
         }
         .login-container button {
             width: 100%;
@@ -78,92 +73,144 @@
             font-size: 1em;
             font-weight: 600;
             cursor: pointer;
+            font-family: 'Open Sans', sans-serif;
         }
-        .login-container button:hover {
-            background-color: #2980b9;
-        }
-        .filters {
+        .login-container button:hover { background-color: #2980b9; }
+
+        /* TABS */
+        .tab-nav {
+            display: flex;
+            gap: 0;
             background: white;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 2px solid #dde2e8;
+            margin-bottom: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+        }
+        .tab-nav-btn {
+            padding: 14px 28px;
+            border: none;
+            background: none;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-nav-btn:hover { color: #2c3e50; }
+        .tab-nav-btn.active { color: #3498db; border-bottom-color: #3498db; }
+        .tab-nav-btn .tab-count {
+            background: #e8ecf0;
+            color: #555;
+            font-size: 0.78em;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+        .tab-nav-btn.active .tab-count { background: #d5eaf7; color: #2980b9; }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* STATS */
+        .stats {
             display: flex;
             gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 6px;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .stat-card h3 {
+            margin: 0 0 4px;
+            color: #7f8c8d;
+            font-size: 0.78em;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .stat-card .number {
+            font-size: 1.9em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* FILTERS */
+        .filters {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: flex-end;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
         .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
         .filter-group label {
             font-weight: 600;
-            font-size: 0.9em;
+            font-size: 0.82em;
             color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
         .filter-group select,
         .filter-group input {
-            padding: 8px 12px;
-            border: 2px solid #bdc3c7;
+            padding: 7px 10px;
+            border: 1.5px solid #ccd3da;
             border-radius: 4px;
-            font-size: 0.95em;
-            min-width: 150px;
+            font-size: 0.92em;
+            min-width: 140px;
+            font-family: 'Open Sans', sans-serif;
         }
         .filter-group select:focus,
         .filter-group input:focus {
             outline: none;
             border-color: #3498db;
         }
+
         .refresh-btn {
             background-color: #27ae60;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 9px 18px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
         }
-        .refresh-btn:hover {
-            background-color: #229954;
-        }
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            flex: 1;
-            text-align: center;
-        }
-        .stat-card h3 {
-            margin: 0 0 5px 0;
-            color: #7f8c8d;
-            font-size: 0.9em;
-            text-transform: uppercase;
-        }
-        .stat-card .number {
-            font-size: 2em;
-            font-weight: 700;
-            color: #2c3e50;
-        }
+        .refresh-btn:hover { background-color: #229954; }
+
+        /* TABLE */
         .table-container {
             background: white;
-            border-radius: 5px;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        table { width: 100%; border-collapse: collapse; }
         th, td {
-            padding: 12px 15px;
+            padding: 11px 14px;
             text-align: left;
             border-bottom: 1px solid #ecf0f1;
+            font-size: 0.92em;
         }
         th {
             background-color: #34495e;
@@ -172,135 +219,55 @@
             position: sticky;
             top: 0;
         }
-        tr:hover {
-            background-color: #f8f9fa;
-        }
+        tr:hover { background-color: #f8f9fa; }
+
         .worksheet-type {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.85em;
+            font-size: 0.82em;
             font-weight: 600;
         }
-        .type-hist101 {
-            background-color: #e8f4f8;
-            color: #2980b9;
-        }
-        .type-hist107 {
-            background-color: #fef3e2;
-            color: #e67e22;
-        }
-        .download-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .download-btn:hover {
-            background-color: #2980b9;
-        }
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #7f8c8d;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #7f8c8d;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .hidden {
-            display: none !important;
-        }
-        /* Review checkbox styles */
-        .review-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: #27ae60;
-        }
-        .review-checkbox:checked {
-            background-color: #27ae60;
-        }
-        .reviewed-cell {
-            text-align: center;
-        }
-        .reviewed-label {
+        .type-hist101 { background-color: #e8f4f8; color: #2980b9; }
+        .type-hist107 { background-color: #fef3e2; color: #e67e22; }
+        .type-paper   { background-color: #eafaf1; color: #1e8449; }
+        .type-interview { background-color: #f5eef8; color: #8e44ad; }
+
+        /* REVIEWED / DOWNLOADED CHECKBOXES */
+        .review-checkbox  { width: 18px; height: 18px; cursor: pointer; accent-color: #27ae60; }
+        .download-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #9b59b6; }
+        .select-checkbox  { width: 18px; height: 18px; cursor: pointer; accent-color: #3498db; }
+
+        .reviewed-cell, .downloaded-cell { text-align: center; }
+
+        .reviewed-label, .downloaded-label {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
             cursor: pointer;
-            font-size: 0.85em;
+            font-size: 0.83em;
             color: #7f8c8d;
         }
-        .reviewed-label.checked {
-            color: #27ae60;
-            font-weight: 600;
-        }
-        /* Downloaded checkbox styles */
-        .downloaded-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            cursor: pointer;
-            font-size: 0.85em;
-            color: #7f8c8d;
-        }
-        .downloaded-label.checked {
-            color: #9b59b6;
-            font-weight: 600;
-        }
-        .download-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: #9b59b6;
-        }
-        .downloaded-cell {
-            text-align: center;
-        }
-        /* Selection checkbox styles */
-        .select-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: #3498db;
-        }
-        .select-cell {
-            text-align: center;
-            width: 50px;
-        }
-        /* Download selected button */
+        .reviewed-label.checked  { color: #27ae60; font-weight: 600; }
+        .downloaded-label.checked { color: #9b59b6; font-weight: 600; }
+
+        .select-cell { text-align: center; width: 46px; }
+
+        /* DOWNLOAD SELECTED */
         .download-selected-btn {
             background-color: #9b59b6;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 9px 18px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
         }
-        .download-selected-btn:hover {
-            background-color: #8e44ad;
-        }
-        .download-selected-btn:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
+        .download-selected-btn:hover { background-color: #8e44ad; }
+        .download-selected-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+
         .selection-info {
             display: flex;
             align-items: center;
@@ -308,101 +275,214 @@
             font-size: 0.9em;
             color: #7f8c8d;
         }
+
+        /* ACTION BUTTONS */
+        .download-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.82em;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+        }
+        .download-btn:hover { background-color: #2980b9; }
+
+        .view-btn {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 5px 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.82em;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        .view-btn:hover { background-color: #1a252f; }
+
+        .audio-link-btn {
+            background-color: #8e44ad;
+            color: white;
+            border: none;
+            padding: 5px 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.82em;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .audio-link-btn:hover { background-color: #7d3c98; }
+
+        /* MODAL for viewing paper/transcript text */
+        #text-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+        #text-modal.show { display: flex; }
+        .modal-inner {
+            background: white;
+            border-radius: 10px;
+            padding: 36px 40px;
+            max-width: 780px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            position: relative;
+        }
+        .modal-inner h3 { margin: 0 0 4px; color: #2c3e50; font-size: 1.15em; }
+        .modal-inner .modal-meta { color: #888; font-size: 0.85em; margin-bottom: 18px; }
+        .modal-close {
+            position: absolute;
+            top: 16px; right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.4em;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        .modal-close:hover { color: #333; }
+        .modal-section-label {
+            font-weight: 700;
+            font-size: 0.82em;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #2c3e50;
+            margin: 18px 0 6px;
+        }
+        .modal-text {
+            background: #f7f9fb;
+            border: 1px solid #dde2e8;
+            border-radius: 5px;
+            padding: 14px 16px;
+            font-size: 0.93em;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        /* MISC */
+        .no-data  { text-align: center; padding: 40px; color: #7f8c8d; }
+        .loading  { text-align: center; padding: 40px; color: #7f8c8d; }
+        .error    { background: #f8d7da; color: #721c24; padding: 14px; border-radius: 5px; margin-bottom: 16px; }
+        .hidden   { display: none !important; }
+
+        .wc-pill {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: 700;
+        }
+        .wc-ok  { background: #eafaf1; color: #1e8449; }
+        .wc-low { background: #fde8e8; color: #c0392b; }
+
         @media (max-width: 768px) {
-            .filters {
-                flex-direction: column;
-            }
-            .filter-group {
-                width: 100%;
-            }
-            .filter-group select,
-            .filter-group input {
-                width: 100%;
-            }
-            .stats {
-                flex-direction: column;
-            }
-            .table-container {
-                overflow-x: auto;
-            }
+            .filters { flex-direction: column; }
+            .filter-group, .filter-group select, .filter-group input { width: 100%; }
+            .stats { flex-direction: column; }
+            .table-container { overflow-x: auto; }
         }
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="login-container">
-        <h2>Submissions Dashboard</h2>
-        <p>Enter the dashboard password to view student submissions.</p>
-        <input type="password" id="passwordInput" placeholder="Enter password" onkeypress="if(event.key==='Enter') checkPassword()">
-        <button onclick="checkPassword()">Access Dashboard</button>
-        <p id="loginError" class="hidden" style="color: #e74c3c; margin-top: 10px;"></p>
+
+<!-- TEXT VIEW MODAL -->
+<div id="text-modal" role="dialog" aria-modal="true">
+    <div class="modal-inner">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <h3 id="modal-title"></h3>
+        <div class="modal-meta" id="modal-meta"></div>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-container">
+    <h2>Submissions Dashboard</h2>
+    <p>Enter the dashboard password to view student submissions.</p>
+    <input type="password" id="passwordInput" placeholder="Enter password"
+        onkeypress="if(event.key==='Enter') checkPassword()">
+    <button onclick="checkPassword()">Access Dashboard</button>
+    <p id="loginError" class="hidden" style="color:#e74c3c;margin-top:10px"></p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="container hidden">
+    <header>
+        <h1>📋 Student Submissions Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div id="errorMessage" class="error hidden"></div>
+
+    <!-- TAB NAV -->
+    <div class="tab-nav">
+        <button class="tab-nav-btn active" onclick="switchTab('worksheets', this)">
+            📄 Worksheets <span class="tab-count" id="count-worksheets">0</span>
+        </button>
+        <button class="tab-nav-btn" onclick="switchTab('papers', this)">
+            ✍️ Research Papers <span class="tab-count" id="count-papers">0</span>
+        </button>
+        <button class="tab-nav-btn" onclick="switchTab('interviews', this)">
+            🎙 Interviews <span class="tab-count" id="count-interviews">0</span>
+        </button>
     </div>
 
-    <!-- Dashboard -->
-    <div id="dashboard" class="container hidden">
-        <header>
-            <h1>Student Submissions Dashboard</h1>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </header>
-
-        <div id="errorMessage" class="error hidden"></div>
-
+    <!-- ══════════════════════════════════════════ -->
+    <!-- TAB: WORKSHEETS                           -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-pane active" id="pane-worksheets">
         <div class="stats">
-            <div class="stat-card">
-                <h3>Total Submissions</h3>
-                <div class="number" id="totalCount">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>HIST 101</h3>
-                <div class="number" id="hist101Count">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>HIST 107</h3>
-                <div class="number" id="hist107Count">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Today</h3>
-                <div class="number" id="todayCount">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Reviewed</h3>
-                <div class="number" id="reviewedCount">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Downloaded</h3>
-                <div class="number" id="downloadedCount">-</div>
-            </div>
+            <div class="stat-card"><h3>Total</h3><div class="number" id="ws-total">-</div></div>
+            <div class="stat-card"><h3>HIST 101</h3><div class="number" id="ws-hist101">-</div></div>
+            <div class="stat-card"><h3>HIST 107</h3><div class="number" id="ws-hist107">-</div></div>
+            <div class="stat-card"><h3>Today</h3><div class="number" id="ws-today">-</div></div>
+            <div class="stat-card"><h3>Reviewed</h3><div class="number" id="ws-reviewed">-</div></div>
+            <div class="stat-card"><h3>Downloaded</h3><div class="number" id="ws-downloaded">-</div></div>
         </div>
 
         <div class="filters">
             <div class="filter-group">
                 <label>Course</label>
-                <select id="filterCourse" onchange="applyFilters()">
+                <select id="ws-filterCourse" onchange="applyWorksheetFilters()">
                     <option value="">All Courses</option>
                     <option value="hist101">HIST 101</option>
                     <option value="hist107">HIST 107</option>
                 </select>
             </div>
-          <div class="filter-group">
-    <label>Worksheet Type</label>
-    <select id="filterType" onchange="applyFilters()">
-        <option value="">All Types</option>
-    </select>
-</div>
-
+            <div class="filter-group">
+                <label>Worksheet Type</label>
+                <select id="ws-filterType" onchange="applyWorksheetFilters()">
+                    <option value="">All Types</option>
+                </select>
+            </div>
             <div class="filter-group">
                 <label>Section</label>
-                <select id="filterSection" onchange="applyFilters()">
+                <select id="ws-filterSection" onchange="applyWorksheetFilters()">
                     <option value="">All Sections</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Search Student</label>
-                <input type="text" id="searchStudent" placeholder="Student name..." oninput="applyFilters()">
+                <input type="text" id="ws-search" placeholder="Student name..." oninput="applyWorksheetFilters()">
             </div>
             <div class="filter-group">
                 <label>Review Status</label>
-                <select id="filterReviewed" onchange="applyFilters()">
+                <select id="ws-filterReviewed" onchange="applyWorksheetFilters()">
                     <option value="">All</option>
                     <option value="unreviewed">Not Reviewed</option>
                     <option value="reviewed">Reviewed</option>
@@ -410,16 +490,17 @@
             </div>
             <div class="filter-group">
                 <label>Download Status</label>
-                <select id="filterDownloaded" onchange="applyFilters()">
+                <select id="ws-filterDownloaded" onchange="applyWorksheetFilters()">
                     <option value="">All</option>
                     <option value="not-downloaded">Not Downloaded</option>
                     <option value="downloaded">Downloaded</option>
                 </select>
             </div>
-            <button class="refresh-btn" onclick="loadSubmissions()">Refresh</button>
+            <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
             <div class="selection-info">
-                <span id="selectedCount">0 selected</span>
-                <button class="download-selected-btn" id="downloadSelectedBtn" onclick="downloadSelected()" disabled>Download Selected</button>
+                <span id="ws-selectedCount">0 selected</span>
+                <button class="download-selected-btn" id="ws-downloadSelectedBtn"
+                    onclick="downloadSelectedWorksheets()" disabled>Download Selected</button>
             </div>
         </div>
 
@@ -427,7 +508,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th class="select-cell"><input type="checkbox" class="select-checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                        <th class="select-cell">
+                            <input type="checkbox" class="select-checkbox" id="ws-selectAll"
+                                onchange="toggleSelectAllWorksheets()">
+                        </th>
                         <th>Student Name</th>
                         <th>Section</th>
                         <th>Worksheet</th>
@@ -437,543 +521,735 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="submissionsTable">
-                    <tr>
-                        <td colspan="8" class="loading">Loading submissions...</td>
-                    </tr>
+                <tbody id="ws-table">
+                    <tr><td colspan="8" class="loading">Loading…</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- ══════════════════════════════════════════ -->
+    <!-- TAB: RESEARCH PAPERS                      -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-pane" id="pane-papers">
+        <div class="stats">
+            <div class="stat-card"><h3>Total</h3><div class="number" id="pp-total">-</div></div>
+            <div class="stat-card"><h3>Today</h3><div class="number" id="pp-today">-</div></div>
+            <div class="stat-card"><h3>Avg Words</h3><div class="number" id="pp-avgwords">-</div></div>
+            <div class="stat-card"><h3>Reviewed</h3><div class="number" id="pp-reviewed">-</div></div>
+        </div>
 
-        // Simple password - change this to your preferred password
-        const DASHBOARD_PASSWORD = 'hauselmann2026';
+        <div class="filters">
+            <div class="filter-group">
+                <label>Section</label>
+                <select id="pp-filterSection" onchange="applyPaperFilters()">
+                    <option value="">All Sections</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Search Student</label>
+                <input type="text" id="pp-search" placeholder="Student name..." oninput="applyPaperFilters()">
+            </div>
+            <div class="filter-group">
+                <label>Review Status</label>
+                <select id="pp-filterReviewed" onchange="applyPaperFilters()">
+                    <option value="">All</option>
+                    <option value="unreviewed">Not Reviewed</option>
+                    <option value="reviewed">Reviewed</option>
+                </select>
+            </div>
+            <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+        </div>
 
-        let allSubmissions = [];
-        let selectedSubmissions = new Set(); // Track selected submission IDs
-        let currentFilteredSubmissions = []; // Track currently displayed submissions
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Section</th>
+                        <th>Paper Title</th>
+                        <th>Words</th>
+                        <th>Bibliography</th>
+                        <th>Pledge</th>
+                        <th>Submitted</th>
+                        <th>Reviewed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pp-table">
+                    <tr><td colspan="9" class="loading">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        // Toggle reviewed status for a submission (saves to Supabase)
-        async function toggleReviewed(submissionId) {
-            // Find the submission and get current status
-            const submission = allSubmissions.find(s => s.id === submissionId);
-            if (!submission) return;
+    <!-- ══════════════════════════════════════════ -->
+    <!-- TAB: INTERVIEWS                           -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-pane" id="pane-interviews">
+        <div class="stats">
+            <div class="stat-card"><h3>Total</h3><div class="number" id="iv-total">-</div></div>
+            <div class="stat-card"><h3>Today</h3><div class="number" id="iv-today">-</div></div>
+            <div class="stat-card"><h3>File Uploads</h3><div class="number" id="iv-uploads">-</div></div>
+            <div class="stat-card"><h3>Links</h3><div class="number" id="iv-links">-</div></div>
+            <div class="stat-card"><h3>Reviewed</h3><div class="number" id="iv-reviewed">-</div></div>
+        </div>
 
-            const newStatus = !submission.is_reviewed;
+        <div class="filters">
+            <div class="filter-group">
+                <label>Section</label>
+                <select id="iv-filterSection" onchange="applyInterviewFilters()">
+                    <option value="">All Sections</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Search Student</label>
+                <input type="text" id="iv-search" placeholder="Student name..." oninput="applyInterviewFilters()">
+            </div>
+            <div class="filter-group">
+                <label>Audio Type</label>
+                <select id="iv-filterMethod" onchange="applyInterviewFilters()">
+                    <option value="">All</option>
+                    <option value="upload">File Upload</option>
+                    <option value="link">Link</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Review Status</label>
+                <select id="iv-filterReviewed" onchange="applyInterviewFilters()">
+                    <option value="">All</option>
+                    <option value="unreviewed">Not Reviewed</option>
+                    <option value="reviewed">Reviewed</option>
+                </select>
+            </div>
+            <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+        </div>
 
-            // Update UI immediately for responsiveness
-            const checkbox = document.getElementById(`review-${submissionId}`);
-            const label = document.getElementById(`review-label-${submissionId}`);
-            if (checkbox && label) {
-                checkbox.checked = newStatus;
-                if (newStatus) {
-                    label.classList.add('checked');
-                    label.querySelector('span').textContent = 'Reviewed';
-                } else {
-                    label.classList.remove('checked');
-                    label.querySelector('span').textContent = 'Mark';
-                }
-            }
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Section</th>
+                        <th>Interviewee</th>
+                        <th>Norm</th>
+                        <th>Date</th>
+                        <th>Audio</th>
+                        <th>Submitted</th>
+                        <th>Reviewed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="iv-table">
+                    <tr><td colspan="9" class="loading">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div><!-- end #dashboard -->
 
-            // Update in Supabase
+<script>
+// ── CREDENTIALS ──────────────────────────────────────────────────────────────
+const SUPABASE_URL      = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const DASHBOARD_PASSWORD = 'hauselmann2026';
+
+// ── DATA ─────────────────────────────────────────────────────────────────────
+let allWorksheets  = [];
+let allPapers      = [];
+let allInterviews  = [];
+
+let wsSelected     = new Set();
+let wsFiltered     = [];
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+function checkPassword() {
+    const pw = document.getElementById('passwordInput').value;
+    if (pw === DASHBOARD_PASSWORD) {
+        sessionStorage.setItem('dashboard_auth', 'true');
+        showDashboard();
+    } else {
+        const el = document.getElementById('loginError');
+        el.textContent = 'Incorrect password. Please try again.';
+        el.classList.remove('hidden');
+    }
+}
+
+function logout() {
+    sessionStorage.removeItem('dashboard_auth');
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('passwordInput').value = '';
+}
+
+function showDashboard() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    loadAll();
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────────────────────────
+async function loadAll() {
+    await Promise.all([loadWorksheets(), loadPapers(), loadInterviews()]);
+}
+
+async function loadWorksheets() {
+    document.getElementById('ws-table').innerHTML =
+        '<tr><td colspan="8" class="loading">Loading…</td></tr>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('worksheet_submissions')
+            .select('*')
+            .order('submitted_at', { ascending: false });
+        if (error) throw error;
+        allWorksheets = data || [];
+        updateWorksheetStats();
+        populateWsFilters();
+        applyWorksheetFilters();
+        document.getElementById('count-worksheets').textContent = allWorksheets.length;
+    } catch (e) {
+        showError('Error loading worksheets: ' + e.message);
+        document.getElementById('ws-table').innerHTML =
+            '<tr><td colspan="8" class="no-data">Error loading data.</td></tr>';
+    }
+}
+
+async function loadPapers() {
+    document.getElementById('pp-table').innerHTML =
+        '<tr><td colspan="9" class="loading">Loading…</td></tr>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('paper_submissions')
+            .select('*')
+            .order('submitted_at', { ascending: false });
+        if (error) throw error;
+        allPapers = data || [];
+        updatePaperStats();
+        populatePpFilters();
+        applyPaperFilters();
+        document.getElementById('count-papers').textContent = allPapers.length;
+    } catch (e) {
+        showError('Error loading papers: ' + e.message);
+        document.getElementById('pp-table').innerHTML =
+            '<tr><td colspan="9" class="no-data">Error loading data.</td></tr>';
+    }
+}
+
+async function loadInterviews() {
+    document.getElementById('iv-table').innerHTML =
+        '<tr><td colspan="9" class="loading">Loading…</td></tr>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('interview_submissions')
+            .select('*')
+            .order('submitted_at', { ascending: false });
+        if (error) throw error;
+        allInterviews = data || [];
+        updateInterviewStats();
+        populateIvFilters();
+        applyInterviewFilters();
+        document.getElementById('count-interviews').textContent = allInterviews.length;
+    } catch (e) {
+        showError('Error loading interviews: ' + e.message);
+        document.getElementById('iv-table').innerHTML =
+            '<tr><td colspan="9" class="no-data">Error loading data.</td></tr>';
+    }
+}
+
+// ── WORKSHEET STATS & FILTERS ─────────────────────────────────────────────────
+function updateWorksheetStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('ws-total').textContent     = allWorksheets.length;
+    document.getElementById('ws-hist101').textContent   = allWorksheets.filter(s => s.worksheet_type && s.worksheet_type.startsWith('hist101')).length;
+    document.getElementById('ws-hist107').textContent   = allWorksheets.filter(s => s.worksheet_type && s.worksheet_type.startsWith('hist107')).length;
+    document.getElementById('ws-today').textContent     = allWorksheets.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('ws-reviewed').textContent  = allWorksheets.filter(s => s.is_reviewed).length;
+    document.getElementById('ws-downloaded').textContent = allWorksheets.filter(s => s.is_downloaded).length;
+}
+
+function populateWsFilters() {
+    const sections = [...new Set(allWorksheets.map(s => s.section_number).filter(Boolean))].sort();
+    const secSel = document.getElementById('ws-filterSection');
+    const secVal = secSel.value;
+    secSel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; secSel.appendChild(o); });
+    secSel.value = secVal;
+
+    const types = [...new Set(allWorksheets.map(s => s.worksheet_type).filter(Boolean))].sort();
+    const typeSel = document.getElementById('ws-filterType');
+    const typeVal = typeSel.value;
+    typeSel.innerHTML = '<option value="">All Types</option>';
+    types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = formatWorksheetType(t); typeSel.appendChild(o); });
+    if ([...typeSel.options].some(o => o.value === typeVal)) typeSel.value = typeVal;
+}
+
+function applyWorksheetFilters() {
+    let f = allWorksheets;
+    const course    = document.getElementById('ws-filterCourse').value;
+    const type      = document.getElementById('ws-filterType').value;
+    const section   = document.getElementById('ws-filterSection').value;
+    const search    = document.getElementById('ws-search').value.toLowerCase();
+    const reviewed  = document.getElementById('ws-filterReviewed').value;
+    const downloaded = document.getElementById('ws-filterDownloaded').value;
+
+    if (course)    f = f.filter(s => s.worksheet_type && s.worksheet_type.startsWith(course));
+    if (type)      f = f.filter(s => s.worksheet_type === type);
+    if (section)   f = f.filter(s => s.section_number === section);
+    if (search)    f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
+    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
+    if (downloaded === 'downloaded')     f = f.filter(s => !!s.is_downloaded);
+    if (downloaded === 'not-downloaded') f = f.filter(s => !s.is_downloaded);
+
+    wsFiltered = f;
+    renderWorksheetTable(f);
+    updateWsSelectAll();
+}
+
+function renderWorksheetTable(rows) {
+    const tbody = document.getElementById('ws-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="8" class="no-data">No submissions found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed   = !!sub.is_reviewed;
+        const downloaded = !!sub.is_downloaded;
+        const selected   = wsSelected.has(sub.id);
+        const typeClass  = sub.worksheet_type && sub.worksheet_type.startsWith('hist101') ? 'type-hist101' : 'type-hist107';
+        return `<tr>
+            <td class="select-cell">
+                ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="ws-sel-${sub.id}" ${selected ? 'checked' : ''} onchange="wsToggleSelect(${sub.id})">` : ''}
+            </td>
+            <td><strong>${esc(sub.student_name || 'Unknown')}</strong></td>
+            <td>${esc(sub.section_number || '-')}</td>
+            <td><span class="worksheet-type ${typeClass}">${formatWorksheetType(sub.worksheet_type)}</span></td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell">
+                <label id="ws-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();wsToggleReviewed(${sub.id})">
+                    <input type="checkbox" id="ws-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
+                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                </label>
+            </td>
+            <td class="downloaded-cell">
+                <label id="ws-dl-${sub.id}" class="downloaded-label ${downloaded ? 'checked' : ''}" onclick="event.preventDefault();wsToggleDownloaded(${sub.id})">
+                    <input type="checkbox" id="ws-dc-${sub.id}" class="download-checkbox" ${downloaded ? 'checked' : ''}>
+                    <span>${downloaded ? 'Yes' : 'No'}</span>
+                </label>
+            </td>
+            <td>
+                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : '-'}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ── PAPER STATS & FILTERS ─────────────────────────────────────────────────────
+function updatePaperStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('pp-total').textContent   = allPapers.length;
+    document.getElementById('pp-today').textContent   = allPapers.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('pp-reviewed').textContent = allPapers.filter(s => s.is_reviewed).length;
+    const wcs = allPapers.map(s => s.word_count).filter(Boolean);
+    document.getElementById('pp-avgwords').textContent = wcs.length ? Math.round(wcs.reduce((a,b) => a+b, 0) / wcs.length).toLocaleString() : '-';
+}
+
+function populatePpFilters() {
+    const sections = [...new Set(allPapers.map(s => s.section).filter(Boolean))].sort();
+    const sel = document.getElementById('pp-filterSection');
+    const val = sel.value;
+    sel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
+    sel.value = val;
+}
+
+function applyPaperFilters() {
+    let f = allPapers;
+    const section  = document.getElementById('pp-filterSection').value;
+    const search   = document.getElementById('pp-search').value.toLowerCase();
+    const reviewed = document.getElementById('pp-filterReviewed').value;
+
+    if (section)  f = f.filter(s => s.section === section);
+    if (search)   f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
+    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
+
+    renderPaperTable(f);
+}
+
+function renderPaperTable(rows) {
+    const tbody = document.getElementById('pp-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="no-data">No papers found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed = !!sub.is_reviewed;
+        const wc       = sub.word_count || 0;
+        const wcClass  = wc >= 1500 && wc <= 2000 ? 'wc-ok' : 'wc-low';
+        const bibLines = sub.bibliography
+            ? sub.bibliography.split('\n').filter(l => l.trim()).length
+            : 0;
+        return `<tr>
+            <td><strong>${esc(sub.student_name || 'Unknown')}</strong><br>
+                <span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id || '-')}</span></td>
+            <td>Section ${esc(sub.section || '-')}</td>
+            <td><em>${esc(sub.paper_title || '(Untitled)')}</em></td>
+            <td><span class="wc-pill ${wcClass}">${wc.toLocaleString()}</span></td>
+            <td style="color:#555;font-size:0.88em">${bibLines} source${bibLines !== 1 ? 's' : ''}</td>
+            <td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature || '-')}</td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell">
+                <label id="pp-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();ppToggleReviewed(${sub.id})">
+                    <input type="checkbox" id="pp-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
+                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                </label>
+            </td>
+            <td>
+                <button class="view-btn" onclick="viewPaper(${sub.id})">👁 View</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ── INTERVIEW STATS & FILTERS ─────────────────────────────────────────────────
+function updateInterviewStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('iv-total').textContent    = allInterviews.length;
+    document.getElementById('iv-today').textContent    = allInterviews.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('iv-uploads').textContent  = allInterviews.filter(s => s.audio_method === 'upload').length;
+    document.getElementById('iv-links').textContent    = allInterviews.filter(s => s.audio_method === 'link').length;
+    document.getElementById('iv-reviewed').textContent = allInterviews.filter(s => s.is_reviewed).length;
+}
+
+function populateIvFilters() {
+    const sections = [...new Set(allInterviews.map(s => s.section).filter(Boolean))].sort();
+    const sel = document.getElementById('iv-filterSection');
+    const val = sel.value;
+    sel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
+    sel.value = val;
+}
+
+function applyInterviewFilters() {
+    let f = allInterviews;
+    const section  = document.getElementById('iv-filterSection').value;
+    const search   = document.getElementById('iv-search').value.toLowerCase();
+    const method   = document.getElementById('iv-filterMethod').value;
+    const reviewed = document.getElementById('iv-filterReviewed').value;
+
+    if (section)  f = f.filter(s => s.section === section);
+    if (search)   f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
+    if (method)   f = f.filter(s => s.audio_method === method);
+    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
+
+    renderInterviewTable(f);
+}
+
+function renderInterviewTable(rows) {
+    const tbody = document.getElementById('iv-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="no-data">No interviews found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed = !!sub.is_reviewed;
+        const audioCell = sub.audio_method === 'upload'
+            ? `<button class="download-btn" onclick="downloadAudio('${esc(sub.audio_path || '')}')">⬇ Audio</button>`
+            : sub.audio_link
+                ? `<a href="${esc(sub.audio_link)}" target="_blank" class="audio-link-btn">🔗 Link</a>`
+                : '-';
+        return `<tr>
+            <td><strong>${esc(sub.student_name || 'Unknown')}</strong><br>
+                <span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id || '-')}</span></td>
+            <td>Section ${esc(sub.section || '-')}</td>
+            <td>${esc(sub.interviewee || '-')}<br>
+                <span style="font-size:0.8em;color:#888">${esc(sub.interviewee_role || '')}</span></td>
+            <td style="font-size:0.88em">${esc(sub.democratic_norm || '-')}</td>
+            <td style="font-size:0.88em">${esc(sub.interview_date || '-')}</td>
+            <td>${audioCell}</td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell">
+                <label id="iv-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();ivToggleReviewed(${sub.id})">
+                    <input type="checkbox" id="iv-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
+                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                </label>
+            </td>
+            <td>
+                <button class="view-btn" onclick="viewTranscript(${sub.id})">👁 Transcript</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ── TOGGLE REVIEWED (all three tables) ───────────────────────────────────────
+async function toggleReviewed(table, allData, idPrefix, id) {
+    const sub = allData.find(s => s.id === id);
+    if (!sub) return;
+    const newVal = !sub.is_reviewed;
+
+    const lbl = document.getElementById(`${idPrefix}-rl-${id}`);
+    const chk = document.getElementById(`${idPrefix}-rc-${id}`);
+    if (lbl && chk) {
+        chk.checked = newVal;
+        lbl.classList.toggle('checked', newVal);
+        lbl.querySelector('span').textContent = newVal ? 'Reviewed' : 'Mark';
+    }
+
+    try {
+        const { error } = await supabaseClient.from(table).update({ is_reviewed: newVal }).eq('id', id);
+        if (error) throw error;
+        sub.is_reviewed = newVal;
+        if (table === 'worksheet_submissions') updateWorksheetStats();
+        if (table === 'paper_submissions')     updatePaperStats();
+        if (table === 'interview_submissions') updateInterviewStats();
+    } catch (e) {
+        if (lbl && chk) {
+            chk.checked = !newVal;
+            lbl.classList.toggle('checked', !newVal);
+            lbl.querySelector('span').textContent = !newVal ? 'Reviewed' : 'Mark';
+        }
+        alert('Error saving. Please try again.');
+    }
+}
+
+const wsToggleReviewed = id => toggleReviewed('worksheet_submissions',  allWorksheets,  'ws', id);
+const ppToggleReviewed = id => toggleReviewed('paper_submissions',      allPapers,      'pp', id);
+const ivToggleReviewed = id => toggleReviewed('interview_submissions',  allInterviews,  'iv', id);
+
+// ── WORKSHEET DOWNLOADED TOGGLE ───────────────────────────────────────────────
+async function wsToggleDownloaded(id) {
+    const sub = allWorksheets.find(s => s.id === id);
+    if (!sub) return;
+    const newVal = !sub.is_downloaded;
+
+    const lbl = document.getElementById(`ws-dl-${id}`);
+    const chk = document.getElementById(`ws-dc-${id}`);
+    if (lbl && chk) {
+        chk.checked = newVal;
+        lbl.classList.toggle('checked', newVal);
+        lbl.querySelector('span').textContent = newVal ? 'Yes' : 'No';
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from('worksheet_submissions').update({ is_downloaded: newVal }).eq('id', id);
+        if (error) throw error;
+        sub.is_downloaded = newVal;
+        updateWorksheetStats();
+    } catch (e) {
+        if (lbl && chk) {
+            chk.checked = !newVal;
+            lbl.classList.toggle('checked', !newVal);
+            lbl.querySelector('span').textContent = !newVal ? 'Yes' : 'No';
+        }
+        alert('Error saving. Please try again.');
+    }
+}
+
+// ── WORKSHEET SELECTION ───────────────────────────────────────────────────────
+function wsToggleSelect(id) {
+    wsSelected.has(id) ? wsSelected.delete(id) : wsSelected.add(id);
+    updateWsSelectedCount();
+    updateWsSelectAll();
+}
+
+function toggleSelectAllWorksheets() {
+    const allChk = document.getElementById('ws-selectAll');
+    wsFiltered.filter(s => s.file_path).forEach(sub => {
+        allChk.checked ? wsSelected.add(sub.id) : wsSelected.delete(sub.id);
+        const chk = document.getElementById(`ws-sel-${sub.id}`);
+        if (chk) chk.checked = allChk.checked;
+    });
+    updateWsSelectedCount();
+}
+
+function updateWsSelectAll() {
+    const chk = document.getElementById('ws-selectAll');
+    const selectable = wsFiltered.filter(s => s.file_path);
+    const selectedInView = selectable.filter(s => wsSelected.has(s.id));
+    if (!selectable.length) { chk.checked = false; chk.indeterminate = false; }
+    else if (selectedInView.length === selectable.length) { chk.checked = true; chk.indeterminate = false; }
+    else if (selectedInView.length > 0) { chk.checked = false; chk.indeterminate = true; }
+    else { chk.checked = false; chk.indeterminate = false; }
+}
+
+function updateWsSelectedCount() {
+    const n = wsSelected.size;
+    document.getElementById('ws-selectedCount').textContent = n + ' selected';
+    document.getElementById('ws-downloadSelectedBtn').disabled = n === 0;
+}
+
+// ── DOWNLOAD WORKSHEET FILES ──────────────────────────────────────────────────
+async function downloadFile(filePath) {
+    try {
+        const { data, error } = await supabaseClient.storage
+            .from('student-submissions').createSignedUrl(filePath, 3600);
+        if (error) throw error;
+        window.open(data.signedUrl, '_blank');
+    } catch (e) {
+        alert('Error downloading file: ' + e.message);
+    }
+}
+
+async function downloadAudio(filePath) {
+    if (!filePath) { alert('No audio file path found.'); return; }
+    try {
+        const { data, error } = await supabaseClient.storage
+            .from('audio-files').createSignedUrl(filePath, 3600);
+        if (error) throw error;
+        window.open(data.signedUrl, '_blank');
+    } catch (e) {
+        alert('Error accessing audio: ' + e.message);
+    }
+}
+
+async function downloadSelectedWorksheets() {
+    if (!wsSelected.size) return;
+    const btn = document.getElementById('ws-downloadSelectedBtn');
+    const origText = btn.textContent;
+    btn.disabled = true;
+
+    try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        let count = 0;
+        const ids = Array.from(wsSelected);
+
+        for (let i = 0; i < ids.length; i++) {
+            btn.textContent = `Merging ${i+1}/${ids.length}…`;
+            const sub = allWorksheets.find(s => s.id === ids[i]);
+            if (!sub || !sub.file_path) continue;
             try {
-                const { error } = await supabaseClient
-                    .from('worksheet_submissions')
-                    .update({ is_reviewed: newStatus })
-                    .eq('id', submissionId);
-
-                if (error) throw error;
-
-                // Update local data
-                submission.is_reviewed = newStatus;
-                updateStats();
-
-            } catch (err) {
-                console.error('Error updating review status:', err);
-                // Revert UI on error
-                if (checkbox && label) {
-                    checkbox.checked = !newStatus;
-                    if (!newStatus) {
-                        label.classList.add('checked');
-                        label.querySelector('span').textContent = 'Reviewed';
-                    } else {
-                        label.classList.remove('checked');
-                        label.querySelector('span').textContent = 'Mark';
-                    }
+                const { data, error } = await supabaseClient.storage
+                    .from('student-submissions').createSignedUrl(sub.file_path, 3600);
+                if (error) continue;
+                const bytes = await (await fetch(data.signedUrl)).arrayBuffer();
+                const doc   = await PDFLib.PDFDocument.load(bytes);
+                const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+                pages.forEach(p => mergedPdf.addPage(p));
+                count++;
+                if (!sub.is_downloaded) {
+                    await supabaseClient.from('worksheet_submissions')
+                        .update({ is_downloaded: true }).eq('id', sub.id);
+                    sub.is_downloaded = true;
+                    const lbl = document.getElementById(`ws-dl-${sub.id}`);
+                    const chk = document.getElementById(`ws-dc-${sub.id}`);
+                    if (lbl && chk) { chk.checked = true; lbl.classList.add('checked'); lbl.querySelector('span').textContent = 'Yes'; }
                 }
-                alert('Error saving review status. Please try again.');
-            }
+            } catch(e) { console.error(e); }
         }
 
-        // Toggle downloaded status for a submission (saves to Supabase)
-        async function toggleDownloaded(submissionId) {
-            const submission = allSubmissions.find(s => s.id === submissionId);
-            if (!submission) return;
-
-            const newStatus = !submission.is_downloaded;
-
-            // Update UI immediately
-            const checkbox = document.getElementById(`downloaded-${submissionId}`);
-            const label = document.getElementById(`downloaded-label-${submissionId}`);
-            if (checkbox && label) {
-                checkbox.checked = newStatus;
-                if (newStatus) {
-                    label.classList.add('checked');
-                    label.querySelector('span').textContent = 'Yes';
-                } else {
-                    label.classList.remove('checked');
-                    label.querySelector('span').textContent = 'No';
-                }
-            }
-
-            // Update in Supabase
-            try {
-                const { error } = await supabaseClient
-                    .from('worksheet_submissions')
-                    .update({ is_downloaded: newStatus })
-                    .eq('id', submissionId);
-
-                if (error) throw error;
-
-                submission.is_downloaded = newStatus;
-                updateStats();
-
-            } catch (err) {
-                console.error('Error updating downloaded status:', err);
-                // Revert UI on error
-                if (checkbox && label) {
-                    checkbox.checked = !newStatus;
-                    if (!newStatus) {
-                        label.classList.add('checked');
-                        label.querySelector('span').textContent = 'Yes';
-                    } else {
-                        label.classList.remove('checked');
-                        label.querySelector('span').textContent = 'No';
-                    }
-                }
-                alert('Error saving downloaded status. Please try again.');
-            }
+        if (count > 0) {
+            btn.textContent = 'Creating PDF…';
+            const pdfBytes = await mergedPdf.save();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+            a.download = `worksheets_${new Date().toISOString().split('T')[0]}_${count}_files.pdf`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        } else {
+            alert('No PDFs could be downloaded.');
         }
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
 
-        // Toggle selection for a single submission
-        function toggleSelect(submissionId) {
-            if (selectedSubmissions.has(submissionId)) {
-                selectedSubmissions.delete(submissionId);
-            } else {
-                selectedSubmissions.add(submissionId);
-            }
-            updateSelectedCount();
-            updateSelectAllCheckbox();
-        }
+    wsSelected.clear();
+    updateWsSelectedCount();
+    updateWorksheetStats();
+    applyWorksheetFilters();
+    btn.disabled = false;
+    btn.textContent = origText;
+}
 
-        // Toggle select all (for currently filtered submissions)
-        function toggleSelectAll() {
-            const selectAllCheckbox = document.getElementById('selectAll');
-            if (selectAllCheckbox.checked) {
-                // Select all currently filtered submissions
-                currentFilteredSubmissions.forEach(sub => {
-                    if (sub.file_path) { // Only select ones with files
-                        selectedSubmissions.add(sub.id);
-                        const checkbox = document.getElementById(`select-${sub.id}`);
-                        if (checkbox) checkbox.checked = true;
-                    }
-                });
-            } else {
-                // Deselect all currently filtered submissions
-                currentFilteredSubmissions.forEach(sub => {
-                    selectedSubmissions.delete(sub.id);
-                    const checkbox = document.getElementById(`select-${sub.id}`);
-                    if (checkbox) checkbox.checked = false;
-                });
-            }
-            updateSelectedCount();
-        }
+// ── VIEW PAPER TEXT ───────────────────────────────────────────────────────────
+function viewPaper(id) {
+    const sub = allPapers.find(s => s.id === id);
+    if (!sub) return;
+    document.getElementById('modal-title').textContent = sub.paper_title || '(Untitled)';
+    document.getElementById('modal-meta').textContent =
+        `${sub.student_name} · Section ${sub.section} · ${sub.word_count?.toLocaleString() || '?'} words · ${formatDate(sub.submitted_at)}`;
 
-        // Update the select all checkbox state
-        function updateSelectAllCheckbox() {
-            const selectAllCheckbox = document.getElementById('selectAll');
-            const selectableSubmissions = currentFilteredSubmissions.filter(s => s.file_path);
-            const selectedInView = selectableSubmissions.filter(s => selectedSubmissions.has(s.id));
+    let body = '';
+    if (sub.paper_text) {
+        body += `<div class="modal-section-label">Essay</div>
+                 <div class="modal-text">${esc(sub.paper_text)}</div>`;
+    }
+    if (sub.bibliography) {
+        body += `<div class="modal-section-label">Bibliography</div>
+                 <div class="modal-text">${esc(sub.bibliography)}</div>`;
+    }
+    if (sub.pledge_signature) {
+        body += `<div class="modal-section-label">Pledge Signed By</div>
+                 <div style="font-style:italic;color:#555;padding:6px 0">${esc(sub.pledge_signature)}</div>`;
+    }
 
-            if (selectableSubmissions.length === 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            } else if (selectedInView.length === selectableSubmissions.length) {
-                selectAllCheckbox.checked = true;
-                selectAllCheckbox.indeterminate = false;
-            } else if (selectedInView.length > 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = true;
-            } else {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            }
-        }
+    document.getElementById('modal-body').innerHTML = body;
+    document.getElementById('text-modal').classList.add('show');
+}
 
-        // Update the selected count display
-        function updateSelectedCount() {
-            const count = selectedSubmissions.size;
-            document.getElementById('selectedCount').textContent = `${count} selected`;
-            document.getElementById('downloadSelectedBtn').disabled = count === 0;
-        }
+// ── VIEW TRANSCRIPT ───────────────────────────────────────────────────────────
+function viewTranscript(id) {
+    const sub = allInterviews.find(s => s.id === id);
+    if (!sub) return;
+    document.getElementById('modal-title').textContent =
+        `Interview: ${sub.student_name} with ${sub.interviewee || '?'}`;
+    document.getElementById('modal-meta').textContent =
+        `Section ${sub.section} · ${sub.democratic_norm || ''} · ${formatDate(sub.submitted_at)}`;
 
-        // Download all selected submissions as a single merged PDF
-        async function downloadSelected() {
-            if (selectedSubmissions.size === 0) return;
+    const body = `<div class="modal-section-label">Transcript</div>
+                  <div class="modal-text">${esc(sub.transcript || '(No transcript provided)')}</div>`;
+    document.getElementById('modal-body').innerHTML = body;
+    document.getElementById('text-modal').classList.add('show');
+}
 
-            const btn = document.getElementById('downloadSelectedBtn');
-            const originalText = btn.textContent;
-            btn.disabled = true;
+function closeModal() {
+    document.getElementById('text-modal').classList.remove('show');
+}
 
-            const toDownload = Array.from(selectedSubmissions);
-            const totalCount = toDownload.length;
+document.getElementById('text-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
 
-            try {
-                // Create a new PDF document to merge into
-                const mergedPdf = await PDFLib.PDFDocument.create();
-                let successCount = 0;
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function formatWorksheetType(type) {
+    const labels = {
+        'hist101-research-steps1-2' : 'HIST 101: Steps 1–2',
+        'hist101-research-steps3-4' : 'HIST 101: Steps 3–4',
+        'hist101-research-steps5-6' : 'HIST 101: Steps 5–6',
+        'hist101-interview-guide'   : 'HIST 101: Interview',
+        'hist101-puritan-activity'  : 'HIST 101: Puritan',
+        'hist101-myth-memory'       : 'HIST 101: Myth & Memory',
+        'hist107-role-selection'    : 'HIST 107: Role Selection',
+        'hist107-commodity-steps1-2': 'HIST 107: Commodity'
+    };
+    return labels[type] || type;
+}
 
-                for (let i = 0; i < toDownload.length; i++) {
-                    const submissionId = toDownload[i];
-                    btn.textContent = `Merging ${i + 1}/${totalCount}...`;
+function formatDate(str) {
+    if (!str) return '-';
+    return new Date(str).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit'
+    });
+}
 
-                    const submission = allSubmissions.find(s => s.id === submissionId);
-                    if (submission && submission.file_path) {
-                        try {
-                            // Get signed URL for the PDF
-                            const { data, error } = await supabaseClient
-                                .storage
-                                .from('student-submissions')
-                                .createSignedUrl(submission.file_path, 3600);
+function esc(text) {
+    if (text === null || text === undefined) return '';
+    const d = document.createElement('div');
+    d.textContent = String(text);
+    return d.innerHTML;
+}
 
-                            if (!error && data) {
-                                // Fetch the PDF file
-                                const response = await fetch(data.signedUrl);
-                                const pdfBytes = await response.arrayBuffer();
+function showError(msg) {
+    const el = document.getElementById('errorMessage');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
 
-                                // Load the PDF and copy its pages
-                                const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
-                                const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-                                pages.forEach(page => mergedPdf.addPage(page));
-
-                                successCount++;
-
-                                // Mark as downloaded in database
-                                if (!submission.is_downloaded) {
-                                    await supabaseClient
-                                        .from('worksheet_submissions')
-                                        .update({ is_downloaded: true })
-                                        .eq('id', submissionId);
-                                    submission.is_downloaded = true;
-
-                                    // Update UI
-                                    const label = document.getElementById(`downloaded-label-${submissionId}`);
-                                    const checkbox = document.getElementById(`downloaded-${submissionId}`);
-                                    if (label && checkbox) {
-                                        checkbox.checked = true;
-                                        label.classList.add('checked');
-                                        label.querySelector('span').textContent = 'Yes';
-                                    }
-                                }
-                            }
-                        } catch (err) {
-                            console.error(`Error processing PDF for ${submission.student_name}:`, err);
-                        }
-                    }
-                }
-
-                if (successCount > 0) {
-                    btn.textContent = 'Creating PDF...';
-
-                    // Save and download the merged PDF
-                    const mergedPdfBytes = await mergedPdf.save();
-                    const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
-                    const url = URL.createObjectURL(blob);
-
-                    // Create download link
-                    const a = document.createElement('a');
-                    a.href = url;
-                    const timestamp = new Date().toISOString().split('T')[0];
-                    a.download = `submissions_${timestamp}_${successCount}_files.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-
-                    alert(`Successfully merged ${successCount} PDF(s) into one file.`);
-                } else {
-                    alert('No PDFs could be downloaded. Please try again.');
-                }
-
-            } catch (err) {
-                console.error('Error merging PDFs:', err);
-                alert('Error merging PDFs: ' + err.message);
-            }
-
-            // Clear selection after download
-            selectedSubmissions.clear();
-            updateSelectedCount();
-            updateStats();
-            applyFilters();
-
-            btn.disabled = false;
-            btn.textContent = originalText;
-        }
-
-        function checkPassword() {
-            const password = document.getElementById('passwordInput').value;
-            if (password === DASHBOARD_PASSWORD) {
-                sessionStorage.setItem('dashboard_auth', 'true');
-                showDashboard();
-            } else {
-                document.getElementById('loginError').textContent = 'Incorrect password. Please try again.';
-                document.getElementById('loginError').classList.remove('hidden');
-            }
-        }
-
-        function logout() {
-            sessionStorage.removeItem('dashboard_auth');
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('passwordInput').value = '';
-        }
-
-        function showDashboard() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            loadSubmissions();
-        }
-
-        async function loadSubmissions() {
-            const tbody = document.getElementById('submissionsTable');
-            tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading submissions...</td></tr>';
-
-            try {
-                const { data, error } = await supabaseClient
-                    .from('worksheet_submissions')
-                    .select('*')
-                    .order('submitted_at', { ascending: false });
-
-                if (error) throw error;
-
-                                allSubmissions = data || [];
-                updateStats();
-                populateSectionFilter();
-                populateTypeFilter();
-                applyFilters();
-
-
-            } catch (error) {
-                console.error('Error loading submissions:', error);
-                document.getElementById('errorMessage').textContent = 'Error loading submissions: ' + error.message;
-                document.getElementById('errorMessage').classList.remove('hidden');
-                tbody.innerHTML = '<tr><td colspan="8" class="no-data">Error loading data. Please try again.</td></tr>';
-            }
-        }
-
-        function updateStats() {
-            const total = allSubmissions.length;
-            const hist101 = allSubmissions.filter(s => s.worksheet_type.startsWith('hist101')).length;
-            const hist107 = allSubmissions.filter(s => s.worksheet_type.startsWith('hist107')).length;
-
-            const today = new Date().toISOString().split('T')[0];
-            const todayCount = allSubmissions.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
-
-            const reviewedCount = allSubmissions.filter(s => !!s.is_reviewed).length;
-            const downloadedCount = allSubmissions.filter(s => !!s.is_downloaded).length;
-
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('hist101Count').textContent = hist101;
-            document.getElementById('hist107Count').textContent = hist107;
-            document.getElementById('todayCount').textContent = todayCount;
-            document.getElementById('reviewedCount').textContent = reviewedCount;
-            document.getElementById('downloadedCount').textContent = downloadedCount;
-        }
-
-        function populateSectionFilter() {
-            const sections = [...new Set(allSubmissions.map(s => s.section_number).filter(Boolean))].sort();
-            const select = document.getElementById('filterSection');
-            const currentValue = select.value;
-
-            select.innerHTML = '<option value="">All Sections</option>';
-            sections.forEach(section => {
-                const option = document.createElement('option');
-                option.value = section;
-                option.textContent = section;
-                select.appendChild(option);
-            });
-
-            select.value = currentValue;
-        }
-        
-        function populateTypeFilter() {
-            const types = [...new Set(allSubmissions.map(s => s.worksheet_type).filter(Boolean))].sort();
-            const select = document.getElementById('filterType');
-            const currentValue = select.value;
-
-            select.innerHTML = '<option value="">All Types</option>';
-            types.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = formatWorksheetType(type);
-                select.appendChild(option);
-            });
-
-            if ([...select.options].some(o => o.value === currentValue)) {
-                select.value = currentValue;
-            }
-        }
-
-        function applyFilters() {
-            const courseFilter = document.getElementById('filterCourse').value;
-            const typeFilter = document.getElementById('filterType').value;
-            const sectionFilter = document.getElementById('filterSection').value;
-            const searchFilter = document.getElementById('searchStudent').value.toLowerCase();
-            const reviewedFilter = document.getElementById('filterReviewed').value;
-
-            let filtered = allSubmissions;
-
-            if (courseFilter) {
-                filtered = filtered.filter(s => s.worksheet_type.startsWith(courseFilter));
-            }
-
-            if (typeFilter) {
-                filtered = filtered.filter(s => s.worksheet_type === typeFilter);
-            }
-
-            if (sectionFilter) {
-                filtered = filtered.filter(s => s.section_number === sectionFilter);
-            }
-
-            if (searchFilter) {
-                filtered = filtered.filter(s =>
-                    s.student_name && s.student_name.toLowerCase().includes(searchFilter)
-                );
-            }
-
-            if (reviewedFilter === 'reviewed') {
-                filtered = filtered.filter(s => !!s.is_reviewed);
-            } else if (reviewedFilter === 'unreviewed') {
-                filtered = filtered.filter(s => !s.is_reviewed);
-            }
-
-            const downloadedFilter = document.getElementById('filterDownloaded').value;
-            if (downloadedFilter === 'downloaded') {
-                filtered = filtered.filter(s => !!s.is_downloaded);
-            } else if (downloadedFilter === 'not-downloaded') {
-                filtered = filtered.filter(s => !s.is_downloaded);
-            }
-
-            currentFilteredSubmissions = filtered;
-            renderTable(filtered);
-            updateSelectAllCheckbox();
-        }
-
-        function renderTable(submissions) {
-            const tbody = document.getElementById('submissionsTable');
-
-            if (submissions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="no-data">No submissions found.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = submissions.map(sub => {
-                const reviewed = !!sub.is_reviewed;
-                const downloaded = !!sub.is_downloaded;
-                const selected = selectedSubmissions.has(sub.id);
-                return `
-                <tr>
-                    <td class="select-cell">
-                        ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="select-${sub.id}" ${selected ? 'checked' : ''} onchange="toggleSelect(${sub.id})">` : ''}
-                    </td>
-                    <td><strong>${escapeHtml(sub.student_name || 'Unknown')}</strong></td>
-                    <td>${escapeHtml(sub.section_number || '-')}</td>
-                    <td><span class="worksheet-type ${sub.worksheet_type.startsWith('hist101') ? 'type-hist101' : 'type-hist107'}">${formatWorksheetType(sub.worksheet_type)}</span></td>
-                    <td>${formatDate(sub.submitted_at)}</td>
-                    <td class="reviewed-cell">
-                        <label id="review-label-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault(); toggleReviewed(${sub.id})">
-                            <input type="checkbox" id="review-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
-                            <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
-                        </label>
-                    </td>
-                    <td class="downloaded-cell">
-                        <label id="downloaded-label-${sub.id}" class="downloaded-label ${downloaded ? 'checked' : ''}" onclick="event.preventDefault(); toggleDownloaded(${sub.id})">
-                            <input type="checkbox" id="downloaded-${sub.id}" class="download-checkbox" ${downloaded ? 'checked' : ''}>
-                            <span>${downloaded ? 'Yes' : 'No'}</span>
-                        </label>
-                    </td>
-                    <td>
-                        ${sub.file_path ? `<button onclick="downloadFile('${escapeHtml(sub.file_path)}')" class="download-btn">Download PDF</button>` : '-'}
-                    </td>
-                </tr>
-            `}).join('');
-        }
-
-        async function downloadFile(filePath) {
-            try {
-                // Try to get a signed URL (works for private buckets)
-                const { data, error } = await supabaseClient
-                    .storage
-                    .from('student-submissions')
-                    .createSignedUrl(filePath, 3600); // 1 hour expiry
-
-                if (error) {
-                    // Fall back to public URL
-                    const { data: publicData } = supabaseClient
-                        .storage
-                        .from('student-submissions')
-                        .getPublicUrl(filePath);
-                    window.open(publicData.publicUrl, '_blank');
-                } else {
-                    window.open(data.signedUrl, '_blank');
-                }
-            } catch (err) {
-                console.error('Download error:', err);
-                alert('Error downloading file: ' + err.message);
-            }
-        }
-
-        function formatWorksheetType(type) {
-            const labels = {
-                'hist101-research-steps1-2': 'HIST 101: Steps 1-2',
-                'hist101-research-steps3-4': 'HIST 101: Steps 3-4',
-                'hist101-research-steps5-6': 'HIST 101: Steps 5-6',
-                'hist101-interview-guide': 'HIST 101: Interview',
-                'hist101-puritan-activity': 'HIST 101: Puritan',
-                'hist101-myth-memory': 'HIST 101: Myth & Memory',
-                'hist107-role-selection': 'HIST 107: Role Selection',
-                'hist107-commodity-steps1-2': 'HIST 107: Commodity'
-            };
-            return labels[type] || type;
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit'
-            });
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Check if already authenticated
-        if (sessionStorage.getItem('dashboard_auth') === 'true') {
-            showDashboard();
-        }
-    </script>
+// ── INIT ──────────────────────────────────────────────────────────────────────
+if (sessionStorage.getItem('dashboard_auth') === 'true') showDashboard();
+</script>
 </body>
 </html>
