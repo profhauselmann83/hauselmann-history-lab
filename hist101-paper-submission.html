@@ -10,6 +10,7 @@
 </style>
     <title>Research Paper Submission – HIST 101</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; }
 
@@ -1077,7 +1078,31 @@ async function submitPaper() {
     btn.textContent   = 'Submitting…';
     err.style.display = 'none';
 
-    try {
+try {
+        // Generate and upload PDF
+        btn.textContent = 'Generating PDF…';
+        let filePath = null;
+        try {
+            const pdfBlob   = generatePDFBlob();
+            const lastName  = studentName.split(' ').pop().toLowerCase().replace(/[^a-z0-9]/g, '');
+            const fileName  = `${lastName}_${studentId}_${Date.now()}.pdf`;
+            filePath        = `papers/${section}/${fileName}`;
+
+            const { error: uploadError } = await getDB()
+                .storage
+                .from('student-submissions')
+                .upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: false });
+
+            if (uploadError) {
+                console.warn('PDF upload failed, continuing without file:', uploadError.message);
+                filePath = null;
+            }
+        } catch (pdfErr) {
+            console.warn('PDF generation failed, continuing without file:', pdfErr.message);
+        }
+
+        btn.textContent = 'Submitting…';
+
         const { error } = await getDB().from(TABLE).insert([{
             student_name      : studentName,
             student_id        : studentId,
@@ -1087,6 +1112,7 @@ async function submitPaper() {
             bibliography      : bib,
             word_count        : wordCount,
             pledge_signature  : sig,
+            file_path         : filePath,
             submitted_at      : new Date().toISOString()
         }]);
 
@@ -1263,6 +1289,89 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
+// ── GENERATE PDF BLOB ─────────────────────────────────────────────────────────
+function generatePDFBlob() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'in', format: 'letter' });
+
+    const margin    = 1;
+    const pageW     = 8.5;
+    const pageH     = 11;
+    const contentW  = pageW - margin * 2;
+    const lineHeight = 0.28; // ~double spaced at 12pt
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(12);
+
+    let y = margin;
+
+    // Name block
+    const nameBlock = [
+        studentName || '[Your Name]',
+        'Student ID: ' + (studentId || '[ID]'),
+        'Section ' + (section || '[Section]'),
+        'HIST 101: Democratic Norms & The American Revolution',
+        'Prof. Hauselmann',
+        new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+    ];
+    nameBlock.forEach(line => {
+        doc.text(line, margin, y);
+        y += lineHeight;
+    });
+
+    y += lineHeight; // blank line before title
+
+    // Title (centered, bold)
+    const title = document.getElementById('inp-title').value.trim() || '(Untitled Paper)';
+    doc.setFont('times', 'bold');
+    doc.text(title, pageW / 2, y, { align: 'center' });
+    doc.setFont('times', 'normal');
+    y += lineHeight * 2;
+
+    // Essay body — split into paragraphs
+    const essay = document.getElementById('essay-area').value;
+    const paragraphs = essay.split(/\n+/).filter(p => p.trim().length > 0);
+
+    paragraphs.forEach((para, i) => {
+        const indent = i === 0 ? 0 : 0.5; // no indent on first paragraph
+        const lines  = doc.splitTextToSize(para.trim(), contentW - indent);
+
+        lines.forEach((line, li) => {
+            if (y > pageH - margin) { doc.addPage(); y = margin; }
+            doc.text(line, margin + (li === 0 ? indent : 0), y);
+            y += lineHeight;
+        });
+
+        y += lineHeight; // blank line between paragraphs
+    });
+
+    // Bibliography — new page
+    const bibText = document.getElementById('bib-area').value.trim();
+    if (bibText) {
+        doc.addPage();
+        y = margin;
+
+        doc.setFont('times', 'bold');
+        doc.text('Bibliography', pageW / 2, y, { align: 'center' });
+        doc.setFont('times', 'normal');
+        y += lineHeight * 2;
+
+        const entries = bibText.split('\n').filter(l => l.trim().length > 0);
+        entries.forEach(entry => {
+            // Hanging indent: wrap at contentW, first line flush, subsequent lines indented 0.5in
+            const lines = doc.splitTextToSize(entry.trim(), contentW);
+            lines.forEach((line, li) => {
+                if (y > pageH - margin) { doc.addPage(); y = margin; }
+                doc.text(line, margin + (li > 0 ? 0.5 : 0), y);
+                y += lineHeight;
+            });
+            y += lineHeight * 0.5;
+        });
+    }
+
+    return doc.output('blob');
+}
+    
 // ── PDF / PRINT ───────────────────────────────────────────────────────────────
 function downloadPDF() {
     const name    = studentName || '[Your Name]';
