@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Interview Submission – HIST 101</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+```
+    body {
+        font-family: 'Open Sans', sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f0;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-radius: 5px;
+    }
+    header h1 { margin: 0 0 8px; font-size: 1.8em; }
+    header p  { margin: 0; opacity: 0.85; }
+
+    nav {
+        background-color: #34495e;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        text-align: center;
+    }
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: 600;
+        font-size: 0.95em;
+    }
+    nav a:hover { text-decoration: underline; }
+
+    .breadcrumb {
+        background: white;
+        padding: 12px 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        font-size: 0.9em;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .breadcrumb a { color: #3498db; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* STEP INDICATOR */
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        margin: 20px 0 6px;
+    }
+    .step-dot {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: #dde2e8;
+        color: #999;
+        font-size: 0.82em;
+        font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: background 0.3s, color 0.3s;
+    }
+    .step-dot.active { background: #3498db; color: white; }
+    .step-dot.done   { background: #27ae60; color: white; }
+    .step-line {
+        flex: 1; height: 3px;
+        background: #dde2e8;
+        transition: background 0.3s;
+    }
+    .step-line.done { background: #27ae60; }
+    .progress-bar-wrap {
+        background: #e0e6eb;
+        border-radius: 20px;
+        height: 6px;
+        margin: 6px 0 22px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db, #27ae60);
+        border-radius: 20px;
+        transition: width 0.4s ease;
+    }
+
+    /* PANELS */
+    .step-panel {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        margin: 0 0 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+    }
+    .step-panel h2 {
+        color: #2c3e50;
+        margin: 0 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #eaecef;
+        font-size: 1.25em;
+    }
+
+    /* ALERTS */
+    .alert {
+        padding: 13px 16px;
+        border-radius: 5px;
+        margin: 0 0 16px;
+        font-size: 0.93em;
+        line-height: 1.55;
+    }
+    .alert-info    { background: #e8f4f8; border-left: 4px solid #3498db; color: #1a5276; }
+    .alert-warning { background: #fef9e7; border-left: 4px solid #f39c12; color: #7d6608; }
+    .alert-success { background: #eafaf1; border-left: 4px solid #27ae60; color: #1e8449; }
+    .alert-danger  { background: #fdedec; border-left: 4px solid #e74c3c; color: #922b21; }
+
+    /* FORM */
+    .form-row { margin-bottom: 18px; }
+    label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.95em;
+        margin-bottom: 5px;
+        color: #2c3e50;
+    }
+    .label-sub {
+        font-weight: 400;
+        font-size: 0.85em;
+        color: #666;
+        margin-left: 6px;
+    }
+    input[type="text"], input[type="url"], select, textarea {
+        width: 100%;
+        padding: 10px 13px;
+        border: 1.5px solid #ccd3da;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 1em;
+        color: #333;
+        background: white;
+        transition: border-color 0.2s;
+    }
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #3498db;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(52,152,219,0.12);
+    }
+    textarea { line-height: 1.65; resize: vertical; }
+
+    /* SUBMISSION METHOD TOGGLE */
+    .method-toggle {
+        display: flex;
+        gap: 0;
+        border: 1.5px solid #ccd3da;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .method-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: white;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.95em;
+        font-weight: 600;
+        color: #7f8c8d;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        text-align: center;
+    }
+    .method-btn:first-child { border-right: 1.5px solid #ccd3da; }
+    .method-btn.active {
+        background: #2c3e50;
+        color: white;
+    }
+    .method-panel { display: none; }
+    .method-panel.active { display: block; }
+
+    /* FILE UPLOAD AREA */
+    .upload-zone {
+        border: 2.5px dashed #ccd3da;
+        border-radius: 8px;
+        padding: 36px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        background: #f7f9fb;
+        position: relative;
+    }
+    .upload-zone:hover,
+    .upload-zone.drag-over {
+        border-color: #3498db;
+        background: #eaf4fb;
+    }
+    .upload-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+    .upload-zone .upload-icon { font-size: 2.2em; display: block; margin-bottom: 8px; }
+    .upload-zone .upload-label {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1em;
+        display: block;
+        margin-bottom: 4px;
+    }
+    .upload-zone .upload-hint {
+        font-size: 0.83em;
+        color: #888;
+    }
+    .upload-zone.has-file {
+        border-color: #27ae60;
+        background: #eafaf1;
+    }
+    .upload-zone.has-file .upload-icon::after { content: '✓'; }
+
+    /* PROGRESS BAR FOR UPLOAD */
+    .upload-progress-wrap {
+        display: none;
+        margin-top: 14px;
+    }
+    .upload-progress-wrap.show { display: block; }
+    .upload-progress-track {
+        background: #e0e6eb;
+        border-radius: 10px;
+        height: 8px;
+        overflow: hidden;
+        margin-bottom: 6px;
+    }
+    .upload-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db, #27ae60);
+        border-radius: 10px;
+        transition: width 0.3s;
+        width: 0%;
+    }
+    .upload-progress-label {
+        font-size: 0.83em;
+        color: #555;
+        text-align: center;
+    }
+
+    /* FILE INFO BADGE */
+    .file-badge {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        background: #eafaf1;
+        border: 1px solid #27ae60;
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin-top: 12px;
+        font-size: 0.9em;
+    }
+    .file-badge.show { display: flex; }
+    .file-badge .file-name { font-weight: 600; color: #1e8449; flex: 1; }
+    .file-badge .file-size { color: #666; font-size: 0.85em; }
+    .file-badge .remove-file {
+        background: none;
+        border: none;
+        color: #e74c3c;
+        cursor: pointer;
+        font-size: 1.1em;
+        padding: 0 4px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    /* WORD COUNT (transcript) */
+    .wc-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 6px;
+        font-size: 0.83em;
+        color: #777;
+    }
+    .wc-badge {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9em;
+    }
+    .wc-badge.ok  { background: #eafaf1; color: #1e8449; }
+    .wc-badge.low { background: #fde8e8; color: #c0392b; }
+
+    /* REVIEW BLOCK */
+    .review-block {
+        background: #f7f9fb;
+        border: 1px solid #dde2e8;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        font-size: 0.97em;
+        line-height: 2;
+    }
+    .review-block p { margin: 0; }
+
+    /* BUTTONS */
+    .btn {
+        display: inline-block;
+        padding: 11px 22px;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.97em;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: background 0.18s, opacity 0.18s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary   { background: #3498db; color: white; }
+    .btn-primary:hover:not(:disabled)   { background: #2980b9; }
+    .btn-success   { background: #27ae60; color: white; }
+    .btn-success:hover:not(:disabled)   { background: #1e8449; }
+    .btn-danger    { background: #e74c3c; color: white; }
+    .btn-danger:hover:not(:disabled)    { background: #c0392b; }
+    .btn-secondary { background: #7f8c8d; color: white; }
+    .btn-secondary:hover:not(:disabled) { background: #636e72; }
+
+    .btn-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .btn-row .spacer { flex: 1; }
+
+    /* CONFIRMATION */
+    .confetti { font-size: 2.8em; display: block; text-align: center; margin-bottom: 8px; }
+
+    footer { text-align: center; margin-top: 40px; color: #7f8c8d; font-size: 0.9em; }
+</style>
+```
+
+</head>
+<body>
+
+<header>
+    <h1>HIST 101 Interview Submission</h1>
+    <p>Democratic Norms &amp; The American Revolution — Civic Engagement Interview</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a>
+</nav>
+
+<div class="breadcrumb">
+    <a href="research.html">← Back to Research Guide</a>
+</div>
+
+<!-- STEP INDICATOR -->
+
+<div class="step-indicator">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3">3</div>
+</div>
+<div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill" style="width:16%"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+
+<!-- STEP 1 — IDENTIFY YOURSELF                -->
+
+<!-- ══════════════════════════════════════════ -->
+
+<div class="step-panel" id="step-login">
+    <h2>Step 1 — Identify Yourself</h2>
+
+```
+<div class="alert alert-info">
+    Enter your information exactly as it appears on your course roster before uploading your interview materials.
+</div>
+
+<div class="form-row">
+    <label for="inp-name">Full Name (First Last)</label>
+    <input type="text" id="inp-name" placeholder="e.g. Jane Smith" autocomplete="name">
+</div>
+<div class="form-row">
+    <label for="inp-id">Student ID</label>
+    <input type="text" id="inp-id" placeholder="e.g. 12345678" autocomplete="off" inputmode="numeric">
+</div>
+<div class="form-row">
+    <label for="inp-section">Course Section</label>
+    <select id="inp-section">
+        <option value="">— Select your section —</option>
+        <option value="3944">Section 3944</option>
+        <option value="3945">Section 3945</option>
+        <option value="3946">Section 3946</option>
+    </select>
+</div>
+
+<div class="alert alert-danger" id="login-error" style="display:none"></div>
+
+<div class="btn-row">
+    <button class="btn btn-primary" onclick="proceedToSubmit()">Continue →</button>
+</div>
+```
+
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+
+<!-- STEP 2 — INTERVIEW DETAILS & AUDIO        -->
+
+<!-- ══════════════════════════════════════════ -->
+
+<div class="step-panel" id="step-submit" style="display:none">
+    <h2>Step 2 — Interview Details &amp; Audio</h2>
+
+```
+<div class="alert alert-info">
+    Complete all fields below. Your audio recording is required — you may either upload a file directly or submit a shareable link from Google Drive, Dropbox, or a similar service.
+</div>
+
+<!-- INTERVIEWEE INFO -->
+<div class="form-row">
+    <label for="inp-interviewee">Name of Person Interviewed</label>
+    <input type="text" id="inp-interviewee" placeholder="e.g. Dr. Maria Gonzalez">
+</div>
+<div class="form-row">
+    <label for="inp-role">Their Title / Role / Profession</label>
+    <input type="text" id="inp-role" placeholder="e.g. Professor of Political Science, MJC">
+</div>
+<div class="form-row">
+    <label for="inp-date">Date of Interview</label>
+    <input type="text" id="inp-date" placeholder="e.g. March 10, 2026">
+</div>
+<div class="form-row">
+    <label for="inp-norm">Democratic Norm You Discussed
+        <span class="label-sub">(from Haass's <em>The Bill of Obligations</em>)</span>
+    </label>
+    <input type="text" id="inp-norm" placeholder="e.g. Be informed, Embrace norms of compromise…">
+</div>
+
+<!-- AUDIO SUBMISSION METHOD -->
+<div class="form-row">
+    <label>Audio Recording Submission</label>
+    <div class="method-toggle">
+        <button class="method-btn active" id="btn-method-upload" onclick="setMethod('upload')">⬆ Upload File</button>
+        <button class="method-btn" id="btn-method-link" onclick="setMethod('link')">🔗 Submit a Link</button>
+    </div>
+
+    <!-- UPLOAD PANEL -->
+    <div class="method-panel active" id="panel-upload">
+        <div class="upload-zone" id="upload-zone"
+            ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)"
+            ondrop="handleDrop(event)">
+            <input type="file" id="audio-file" accept=".mp3,.m4a,.wav,.ogg,audio/*" onchange="handleFileSelect(event)">
+            <span class="upload-icon" id="upload-icon">🎙</span>
+            <span class="upload-label" id="upload-label">Click to choose a file, or drag and drop here</span>
+            <span class="upload-hint">Accepted formats: MP3, M4A, WAV, OGG &nbsp;·&nbsp; Max size: 50 MB</span>
+        </div>
+
+        <div class="file-badge" id="file-badge">
+            <span class="file-name" id="file-name-display"></span>
+            <span class="file-size" id="file-size-display"></span>
+            <button class="remove-file" onclick="removeFile()" title="Remove file">✕</button>
+        </div>
+
+        <div class="upload-progress-wrap" id="upload-progress-wrap">
+            <div class="upload-progress-track">
+                <div class="upload-progress-fill" id="upload-progress-fill"></div>
+            </div>
+            <div class="upload-progress-label" id="upload-progress-label">Uploading…</div>
+        </div>
+
+        <div class="alert alert-warning" style="margin-top:12px;margin-bottom:0">
+            <strong>Before uploading:</strong> Make sure your file is clearly audible and under 50 MB. If your file is too large, compress it or use the "Submit a Link" option instead.
+        </div>
+    </div>
+
+    <!-- LINK PANEL -->
+    <div class="method-panel" id="panel-link">
+        <div class="form-row" style="margin-bottom:8px">
+            <label for="inp-audio-link">Shareable Link to Audio Recording</label>
+            <input type="url" id="inp-audio-link" placeholder="https://drive.google.com/file/d/…">
+        </div>
+        <div class="alert alert-warning" style="margin-bottom:0">
+            <strong>Important:</strong> Before submitting, make sure your link is set to <strong>"Anyone with the link can view"</strong> — otherwise Prof. Hauselmann will not be able to access your recording.
+        </div>
+    </div>
+</div>
+
+<!-- TRANSCRIPT -->
+<div class="form-row">
+    <label for="inp-transcript">Written Transcript
+        <span class="label-sub">Type or summarize the key exchanges from your interview</span>
+    </label>
+    <textarea
+        id="inp-transcript"
+        rows="10"
+        placeholder="Type your transcript here. You may use a condensed format:&#10;&#10;Q: What do you see as the most important obligation of citizens in a democracy?&#10;A: I think staying informed is foundational — everything else flows from that…&#10;&#10;Q: How does that connect to the Revolutionary era?&#10;A: …"
+        oninput="updateTranscriptCount()"
+    ></textarea>
+    <div class="wc-row">
+        <span id="transcript-wc-badge" class="wc-badge low">0 words</span>
+        <span id="transcript-wc-hint" style="color:#c0392b">Minimum 150 words required.</span>
+    </div>
+</div>
+
+<div class="alert alert-danger" id="submit-error" style="display:none"></div>
+
+<div class="btn-row">
+    <button class="btn btn-secondary" onclick="backToLogin()">← Back</button>
+    <button class="btn btn-danger" id="btn-final" onclick="submitInterview()">Submit Interview →</button>
+</div>
+```
+
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+
+<!-- STEP 3 — CONFIRMATION                     -->
+
+<!-- ══════════════════════════════════════════ -->
+
+<div class="step-panel" id="step-confirm" style="display:none">
+    <span class="confetti">🎉</span>
+    <h2 style="text-align:center;border-bottom:none">Interview Submitted!</h2>
+    <div class="alert alert-success">
+        Your interview recording and transcript have been successfully submitted and recorded in the course database.
+    </div>
+    <div class="review-block" id="confirm-details-block" style="line-height:1.9"></div>
+    <p style="color:#555;margin:14px 0 0">You may now close this window. If you have any concerns about your submission, contact Prof. Hauselmann.</p>
+</div>
+
+<footer>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_URL    = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON   = 'YOUR_SUPABASE_ANON_KEY';
+const TABLE           = 'interview_submissions';
+const STORAGE_BUCKET  = 'audio-files';
+const MIN_TRANSCRIPT  = 150;  // minimum words for transcript
+
+// Supabase initialized lazily — placeholders won't crash the page
+let dbClient = null;
+function getDB() {
+    if (!dbClient) dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    return dbClient;
+}
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let studentName   = '';
+let studentId     = '';
+let section       = '';
+let method        = 'upload';   // 'upload' or 'link'
+let selectedFile  = null;
+let uploadedPath  = null;       // path in Supabase Storage after upload
+
+// ── STEP NAVIGATION ──────────────────────────────────────────────────────────
+function showStep(n) {
+    document.getElementById('step-login').style.display   = n === 1 ? 'block' : 'none';
+    document.getElementById('step-submit').style.display  = n === 2 ? 'block' : 'none';
+    document.getElementById('step-confirm').style.display = n === 3 ? 'block' : 'none';
+
+    for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('dot-' + i);
+        if (dot) dot.className = i < n ? 'step-dot done' : i === n ? 'step-dot active' : 'step-dot';
+    }
+    for (let i = 1; i <= 2; i++) {
+        const line = document.getElementById('line-' + i);
+        if (line) line.className = 'step-line' + (n > i ? ' done' : '');
+    }
+
+    const pct = { 1: 16, 2: 50, 3: 100 };
+    document.getElementById('progress-fill').style.width = (pct[n] || 16) + '%';
+    window.scrollTo(0, 0);
+}
+
+// ── STEP 1: LOGIN ─────────────────────────────────────────────────────────────
+function proceedToSubmit() {
+    const name = document.getElementById('inp-name').value.trim();
+    const id   = document.getElementById('inp-id').value.trim();
+    const sec  = document.getElementById('inp-section').value;
+    const err  = document.getElementById('login-error');
+
+    if (!name || !id || !sec) {
+        err.textContent   = 'Please complete all fields before continuing.';
+        err.style.display = 'block';
+        return;
+    }
+    if (!/^\d{5,10}$/.test(id)) {
+        err.textContent   = 'Student ID should be 5–10 digits (numbers only).';
+        err.style.display = 'block';
+        return;
+    }
+
+    err.style.display = 'none';
+    studentName = name;
+    studentId   = id;
+    section     = sec;
+    showStep(2);
+}
+
+function backToLogin() { showStep(1); }
+
+// ── SUBMISSION METHOD TOGGLE ──────────────────────────────────────────────────
+function setMethod(m) {
+    method = m;
+    document.getElementById('panel-upload').classList.toggle('active', m === 'upload');
+    document.getElementById('panel-link').classList.toggle('active', m === 'link');
+    document.getElementById('btn-method-upload').classList.toggle('active', m === 'upload');
+    document.getElementById('btn-method-link').classList.toggle('active', m === 'link');
+}
+
+// ── FILE HANDLING ─────────────────────────────────────────────────────────────
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) setFile(file);
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('upload-zone').classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    document.getElementById('upload-zone').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('upload-zone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) setFile(file);
+}
+
+function setFile(file) {
+    const allowed = ['audio/mpeg','audio/mp4','audio/wav','audio/ogg','audio/x-m4a','audio/m4a'];
+    const ext     = file.name.split('.').pop().toLowerCase();
+    const allowedExt = ['mp3','m4a','wav','ogg'];
+
+    if (!allowed.includes(file.type) && !allowedExt.includes(ext)) {
+        showError('Please select an audio file (MP3, M4A, WAV, or OGG).');
+        return;
+    }
+
+    const maxBytes = 50 * 1024 * 1024;
+    if (file.size > maxBytes) {
+        showError('Your file is larger than 50 MB. Please compress it or use the "Submit a Link" option.');
+        return;
+    }
+
+    selectedFile = file;
+    uploadedPath = null;  // reset any previous upload
+
+    // Update UI
+    const zone = document.getElementById('upload-zone');
+    zone.classList.add('has-file');
+    document.getElementById('upload-icon').textContent = '🎵';
+    document.getElementById('upload-label').textContent = 'File selected — ready to submit';
+
+    const badge = document.getElementById('file-badge');
+    badge.classList.add('show');
+    document.getElementById('file-name-display').textContent = file.name;
+    document.getElementById('file-size-display').textContent = formatBytes(file.size);
+}
+
+function removeFile() {
+    selectedFile = null;
+    uploadedPath = null;
+    document.getElementById('audio-file').value = '';
+
+    const zone = document.getElementById('upload-zone');
+    zone.classList.remove('has-file');
+    document.getElementById('upload-icon').textContent = '🎙';
+    document.getElementById('upload-label').textContent = 'Click to choose a file, or drag and drop here';
+
+    document.getElementById('file-badge').classList.remove('show');
+    document.getElementById('upload-progress-wrap').classList.remove('show');
+}
+
+function formatBytes(bytes) {
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// ── TRANSCRIPT WORD COUNT ─────────────────────────────────────────────────────
+function countWords(text) {
+    const t = text.trim();
+    return t === '' ? 0 : t.split(/\s+/).length;
+}
+
+function updateTranscriptCount() {
+    const wc      = countWords(document.getElementById('inp-transcript').value);
+    const badge   = document.getElementById('transcript-wc-badge');
+    const hint    = document.getElementById('transcript-wc-hint');
+    badge.textContent = wc.toLocaleString() + ' words';
+
+    if (wc >= MIN_TRANSCRIPT) {
+        badge.className = 'wc-badge ok';
+        hint.textContent = '✓ Transcript meets the minimum length.';
+        hint.style.color = '#1e8449';
+    } else {
+        badge.className = 'wc-badge low';
+        hint.textContent = `${MIN_TRANSCRIPT - wc} more word(s) needed (minimum ${MIN_TRANSCRIPT}).`;
+        hint.style.color = '#c0392b';
+    }
+}
+
+// ── VALIDATION ────────────────────────────────────────────────────────────────
+function validate() {
+    const err = document.getElementById('submit-error');
+
+    const interviewee = document.getElementById('inp-interviewee').value.trim();
+    const role        = document.getElementById('inp-role').value.trim();
+    const date        = document.getElementById('inp-date').value.trim();
+    const norm        = document.getElementById('inp-norm').value.trim();
+    const transcript  = document.getElementById('inp-transcript').value.trim();
+    const link        = document.getElementById('inp-audio-link').value.trim();
+
+    if (!interviewee || !role || !date || !norm) {
+        err.textContent   = 'Please fill in all interview details (interviewee name, role, date, and democratic norm).';
+        err.style.display = 'block';
+        return false;
+    }
+
+    if (method === 'upload' && !selectedFile) {
+        err.textContent   = 'Please select an audio file to upload, or switch to "Submit a Link."';
+        err.style.display = 'block';
+        return false;
+    }
+
+    if (method === 'link') {
+        if (!link) {
+            err.textContent   = 'Please enter a shareable link to your audio recording.';
+            err.style.display = 'block';
+            return false;
+        }
+        if (!link.startsWith('http')) {
+            err.textContent   = 'Please enter a valid URL starting with http:// or https://';
+            err.style.display = 'block';
+            return false;
+        }
+    }
+
+    if (countWords(transcript) < MIN_TRANSCRIPT) {
+        err.textContent   = `Your transcript needs at least ${MIN_TRANSCRIPT} words. Please add more detail.`;
+        err.style.display = 'block';
+        return false;
+    }
+
+    err.style.display = 'none';
+    return true;
+}
+
+function showError(msg) {
+    const err = document.getElementById('submit-error');
+    err.textContent   = msg;
+    err.style.display = 'block';
+}
+
+// ── UPLOAD FILE TO SUPABASE STORAGE ──────────────────────────────────────────
+async function uploadAudioFile() {
+    const progressWrap  = document.getElementById('upload-progress-wrap');
+    const progressFill  = document.getElementById('upload-progress-fill');
+    const progressLabel = document.getElementById('upload-progress-label');
+
+    progressWrap.classList.add('show');
+    progressFill.style.width  = '10%';
+    progressLabel.textContent = 'Uploading audio…';
+
+    // Sanitize filename: lastname_id_timestamp.ext
+    const ext       = selectedFile.name.split('.').pop().toLowerCase();
+    const lastName  = studentName.split(' ').pop().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const filename  = `${lastName}_${studentId}_${Date.now()}.${ext}`;
+    const filePath  = `${section}/${filename}`;
+
+    const { data, error } = await getDB()
+        .storage
+        .from(STORAGE_BUCKET)
+        .upload(filePath, selectedFile, {
+            cacheControl : '3600',
+            upsert       : false,
+            contentType  : selectedFile.type || 'audio/mpeg'
+        });
+
+    if (error) throw new Error('Audio upload failed: ' + error.message);
+
+    progressFill.style.width  = '100%';
+    progressLabel.textContent = 'Upload complete ✓';
+
+    return filePath;
+}
+
+// ── MAIN SUBMIT ───────────────────────────────────────────────────────────────
+async function submitInterview() {
+    if (!validate()) return;
+
+    const btn = document.getElementById('btn-final');
+    btn.disabled      = true;
+    btn.textContent   = 'Submitting…';
+
+    try {
+        let audioPath = null;
+        let audioLink = null;
+
+        if (method === 'upload') {
+            audioPath = await uploadAudioFile();
+        } else {
+            audioLink = document.getElementById('inp-audio-link').value.trim();
+        }
+
+        const payload = {
+            student_name  : studentName,
+            student_id    : studentId,
+            section       : section,
+            interviewee   : document.getElementById('inp-interviewee').value.trim(),
+            interviewee_role : document.getElementById('inp-role').value.trim(),
+            interview_date   : document.getElementById('inp-date').value.trim(),
+            democratic_norm  : document.getElementById('inp-norm').value.trim(),
+            transcript    : document.getElementById('inp-transcript').value.trim(),
+            audio_method  : method,
+            audio_path    : audioPath,
+            audio_link    : audioLink,
+            submitted_at  : new Date().toISOString()
+        };
+
+        const { error } = await getDB().from(TABLE).insert([payload]);
+        if (error) throw error;
+
+        // Build confirmation block
+        document.getElementById('confirm-details-block').innerHTML =
+            `<p><strong>Student:</strong> ${studentName} &nbsp;|&nbsp; ID: ${studentId} &nbsp;|&nbsp; Section ${section}</p>` +
+            `<p><strong>Interviewee:</strong> ${payload.interviewee}, ${payload.interviewee_role}</p>` +
+            `<p><strong>Date of Interview:</strong> ${payload.interview_date}</p>` +
+            `<p><strong>Democratic Norm:</strong> ${payload.democratic_norm}</p>` +
+            `<p><strong>Audio:</strong> ${method === 'upload' ? '📁 File uploaded' : '🔗 Link submitted'}</p>` +
+            `<p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>`;
+
+        for (let i = 1; i <= 3; i++) {
+            const dot = document.getElementById('dot-' + i);
+            if (dot) dot.className = 'step-dot done';
+        }
+        for (let i = 1; i <= 2; i++) {
+            const line = document.getElementById('line-' + i);
+            if (line) line.className = 'step-line done';
+        }
+        document.getElementById('progress-fill').style.width = '100%';
+
+        showStep(3);
+
+    } catch (e) {
+        console.error(e);
+        showError('Submission failed: ' + (e.message || 'Unknown error. Please try again or contact Prof. Hauselmann.'));
+        btn.disabled    = false;
+        btn.textContent = 'Submit Interview →';
+    }
+}
+
+// ── INSTRUCTOR MODE ───────────────────────────────────────────────────────────
+const INSTRUCTOR_MODE = new URLSearchParams(window.location.search).get('instructor') === 'true';
+
+if (INSTRUCTOR_MODE) {
+    document.getElementById('inp-name').value      = 'Instructor Preview';
+    document.getElementById('inp-id').value        = '00000000';
+    document.getElementById('inp-section').value   = '3944';
+    document.getElementById('inp-interviewee').value = 'Dr. Maria Gonzalez';
+    document.getElementById('inp-role').value      = 'Professor of Political Science, MJC';
+    document.getElementById('inp-date').value      = 'March 10, 2026';
+    document.getElementById('inp-norm').value      = 'Be informed';
+    document.getElementById('inp-transcript').value =
+        'Q: What do you consider the most important democratic obligation?\n' +
+        'A: I believe staying informed is foundational. Without an informed citizenry, all other democratic norms break down. We saw this clearly in the Revolutionary period — the pamphlets, the town meetings, the constant exchange of ideas. That was a society actively working to understand its own political moment.\n\n' +
+        'Q: How does that connect to the challenges democracy faces today?\n' +
+        'A: The challenge today is that information is abundant but trust is scarce. The Founders worried about tyranny from above. We now also have to worry about confusion from below — the deliberate muddying of shared facts.';
+    updateTranscriptCount();
+    studentName = 'Instructor Preview';
+    studentId   = '00000000';
+    section     = '3944';
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#2c3e50;color:white;text-align:center;padding:10px;font-family:Open Sans,sans-serif;font-size:0.9em;font-weight:600;position:sticky;top:0;z-index:1000;';
+    banner.innerHTML = '🔍 Instructor Preview Mode — <span style="font-weight:400">all steps unlocked, submission disabled</span>';
+    document.body.insertBefore(banner, document.body.firstChild);
+
+    const jumper = document.createElement('div');
+    jumper.style.cssText = 'background:#34495e;padding:10px;text-align:center;font-family:Open Sans,sans-serif;position:sticky;top:41px;z-index:999;';
+    jumper.innerHTML = `
+        <span style="color:white;font-size:0.82em;font-weight:600;margin-right:10px">Jump to step:</span>
+        <button onclick="instructorGoTo(1)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#3498db;color:white">1 · Login</button>
+        <button onclick="instructorGoTo(2)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#3498db;color:white">2 · Submit</button>
+        <button onclick="instructorGoTo(3)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#27ae60;color:white">3 · Confirmation</button>
+    `;
+    document.body.insertBefore(jumper, document.body.children[1]);
+}
+
+function instructorGoTo(n) {
+    if (!INSTRUCTOR_MODE) return;
+    if (n === 3) {
+        document.getElementById('confirm-details-block').innerHTML =
+            `<p><strong>Student:</strong> Instructor Preview &nbsp;|&nbsp; ID: 00000000 &nbsp;|&nbsp; Section 3944</p>` +
+            `<p><strong>Interviewee:</strong> Dr. Maria Gonzalez, Professor of Political Science, MJC</p>` +
+            `<p><strong>Date of Interview:</strong> March 10, 2026</p>` +
+            `<p><strong>Democratic Norm:</strong> Be informed</p>` +
+            `<p><strong>Audio:</strong> 📁 File uploaded (preview)</p>` +
+            `<p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>`;
+    }
+    if (n === 2) {
+        setTimeout(() => {
+            const btn = document.getElementById('btn-final');
+            if (btn) { btn.disabled = true; btn.title = 'Submission disabled in preview mode'; }
+        }, 50);
+    }
+    showStep(n);
+}
+</script>
+
+</body>
+</html>
