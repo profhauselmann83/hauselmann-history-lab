@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Research Paper Submission – HIST 101</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+```
+    body {
+        font-family: 'Open Sans', sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f0;
+        color: #333;
+    }
+
+    header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-radius: 5px;
+    }
+
+    nav {
+        background-color: #34495e;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: bold;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    .breadcrumb {
+        background-color: white;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        font-size: 0.9em;
+    }
+
+    .breadcrumb a { color: #3498db; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── STEP PANELS ── */
+    .step-panel {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        margin: 20px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .step-panel h2 {
+        color: #2c3e50;
+        margin-top: 0;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e8ecf0;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-bar-wrap {
+        background: #e8ecf0;
+        border-radius: 20px;
+        height: 8px;
+        margin: 0 0 24px 0;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        border-radius: 20px;
+        transition: width 0.4s ease;
+    }
+
+    .step-indicator {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .step-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #e8ecf0;
+        color: #999;
+        font-size: 0.8em;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+    .step-dot.active { background: #3498db; color: white; }
+    .step-dot.done { background: #2ecc71; color: white; }
+
+    /* ── FORM ELEMENTS ── */
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #2c3e50;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid #ddd;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 1em;
+        transition: border-color 0.2s;
+        background: white;
+    }
+
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #3498db;
+        outline: none;
+    }
+
+    .form-row { margin-bottom: 18px; }
+
+    /* ── ESSAY AREA ── */
+    #essay-area {
+        width: 100%;
+        min-height: 420px;
+        padding: 18px;
+        border: 1.5px solid #ddd;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 1em;
+        line-height: 1.7;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+
+    #essay-area:focus { border-color: #3498db; outline: none; }
+
+    /* ── WORD COUNT BAR ── */
+    .word-count-panel {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 14px 18px;
+        margin: 12px 0 18px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .word-count-label {
+        font-weight: 700;
+        font-size: 1.1em;
+        min-width: 90px;
+    }
+
+    .word-count-label.too-few { color: #e74c3c; }
+    .word-count-label.in-range { color: #27ae60; }
+    .word-count-label.too-many { color: #e67e22; }
+
+    .wc-track {
+        flex: 1;
+        min-width: 200px;
+        height: 10px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        position: relative;
+        overflow: visible;
+    }
+
+    .wc-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s, background 0.3s;
+    }
+
+    .wc-min-marker, .wc-max-marker {
+        position: absolute;
+        top: -4px;
+        width: 3px;
+        height: 18px;
+        background: #2c3e50;
+        border-radius: 2px;
+    }
+
+    .wc-min-marker::after, .wc-max-marker::after {
+        content: attr(data-label);
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.7em;
+        color: #666;
+        white-space: nowrap;
+    }
+
+    .wc-hint {
+        font-size: 0.85em;
+        color: #777;
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    /* ── AUTOSAVE BADGE ── */
+    .autosave-badge {
+        font-size: 0.82em;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .autosave-badge.saved { background: #d5f5e3; color: #1e8449; }
+    .autosave-badge.saving { background: #fef9c3; color: #b7770d; }
+    .autosave-badge.unsaved { background: #fde8e8; color: #c0392b; }
+
+    /* ── BUTTONS ── */
+    .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 1em;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary { background: #3498db; color: white; }
+    .btn-primary:hover { background: #2980b9; }
+
+    .btn-success { background: #27ae60; color: white; }
+    .btn-success:hover { background: #1e8449; }
+
+    .btn-danger { background: #e74c3c; color: white; }
+    .btn-danger:hover { background: #c0392b; }
+
+    .btn-secondary { background: #7f8c8d; color: white; }
+    .btn-secondary:hover { background: #636e72; }
+
+    .btn-outline {
+        background: white;
+        color: #2c3e50;
+        border: 2px solid #2c3e50;
+    }
+
+    .btn-outline:hover { background: #2c3e50; color: white; }
+
+    .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    /* ── ALERTS & STATUS ── */
+    .alert {
+        padding: 14px 18px;
+        border-radius: 6px;
+        margin: 14px 0;
+        font-size: 0.95em;
+        line-height: 1.5;
+    }
+
+    .alert-info { background: #e8f4f8; border-left: 4px solid #3498db; color: #1a5276; }
+    .alert-warning { background: #fef9c3; border-left: 4px solid #f39c12; color: #7d6608; }
+    .alert-success { background: #d5f5e3; border-left: 4px solid #27ae60; color: #1e8449; }
+    .alert-danger { background: #fde8e8; border-left: 4px solid #e74c3c; color: #922b21; }
+
+    /* ── PASTE BLOCK OVERLAY ── */
+    #paste-warning {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #paste-warning.show { display: flex; }
+
+    .paste-warning-box {
+        background: white;
+        border-radius: 10px;
+        padding: 36px 40px;
+        max-width: 420px;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .paste-warning-box h3 { color: #e74c3c; margin-top: 0; font-size: 1.3em; }
+    .paste-warning-box p { color: #555; line-height: 1.6; }
+
+    /* ── SUBMISSION CONFIRMATION ── */
+    #confirmation-panel { display: none; }
+
+    .confetti-emoji { font-size: 2.5em; display: block; margin-bottom: 10px; }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+        header, nav, .breadcrumb, #step-login,
+        #step-write .btn-row, #step-write .word-count-panel,
+        #step-write .autosave-badge, .alert-info,
+        footer, #paste-warning, #confirmation-panel { display: none !important; }
+
+        body { background: white; padding: 0; max-width: 100%; }
+
+        #print-header {
+            display: block !important;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+
+        #essay-area {
+            border: none;
+            padding: 0;
+            font-size: 12pt;
+            min-height: unset;
+        }
+
+        .step-panel { box-shadow: none; padding: 0; }
+    }
+
+    /* Print header (hidden on screen) */
+    #print-header { display: none; }
+</style>
+```
+
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  PASTE WARNING MODAL                                   -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<div id="paste-warning" role="dialog" aria-modal="true">
+    <div class="paste-warning-box">
+        <h3>⚠️ Copy-Paste Not Allowed</h3>
+        <p>This assignment requires you to type your essay directly into the text field. Copying and pasting text is not permitted.</p>
+        <p>Please type your work in your own words.</p>
+        <button class="btn btn-primary" onclick="closePasteWarning()">I Understand</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  PAGE CHROME                                           -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<header>
+    <h1>HIST 101 Research Paper</h1>
+    <p>Democratic Norms & The American Revolution — Final Submission</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI & Learning</a>
+</nav>
+
+<div class="breadcrumb">
+    <a href="research.html">← Back to Research Guide</a>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  STEP INDICATOR                                        -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<div class="step-indicator">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-dot" id="dot-3">3</div>
+</div>
+<div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill" style="width:33%"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  STEP 1 — LOGIN                                        -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<div class="step-panel" id="step-login">
+    <h2>Step 1 — Identify Yourself</h2>
+    <div class="alert alert-info">
+        Enter your information exactly as it appears in your course roster. Your work is automatically saved to your browser as you type, and your final submission will be stored in the course database.
+    </div>
+
+```
+<div class="form-row">
+    <label for="student-name">Full Name (First Last)</label>
+    <input type="text" id="student-name" placeholder="e.g. Jane Smith" autocomplete="name">
+</div>
+
+<div class="form-row">
+    <label for="student-id">Student ID</label>
+    <input type="text" id="student-id" placeholder="e.g. 12345678" autocomplete="off">
+</div>
+
+<div class="form-row">
+    <label for="section">Course Section</label>
+    <select id="section">
+        <option value="">— Select your section —</option>
+        <option value="3944">Section 3944</option>
+        <option value="3945">Section 3945</option>
+        <option value="3946">Section 3946</option>
+    </select>
+</div>
+
+<div id="login-error" class="alert alert-danger" style="display:none"></div>
+
+<div class="btn-row">
+    <button class="btn btn-primary" onclick="proceedToWrite()">Continue to Paper →</button>
+</div>
+```
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  STEP 2 — WRITE                                        -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<div class="step-panel" id="step-write" style="display:none">
+
+```
+<!-- PRINT HEADER (screen-hidden, print-visible) -->
+<div id="print-header">
+    <p><strong>HIST 101 — Democratic Norms & The American Revolution</strong></p>
+    <p id="print-name-section"></p>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+    <h2 id="print-paper-title" style="margin-top:16px"></h2>
+</div>
+
+<h2>Step 2 — Write Your Paper</h2>
+
+<div class="alert alert-warning">
+    <strong>📝 Typing Only:</strong> You must type your essay directly into the field below. Copy-pasting is disabled. Your work saves automatically every 30 seconds — look for the "Saved" badge.
+</div>
+
+<div class="form-row">
+    <label for="paper-title">Paper Title</label>
+    <input type="text" id="paper-title" placeholder="Enter your paper title…" oninput="scheduleSave()">
+</div>
+
+<!-- WORD COUNT PANEL -->
+<div class="word-count-panel">
+    <span class="word-count-label too-few" id="wc-label">0 words</span>
+    <div class="wc-track" id="wc-track">
+        <div class="wc-fill" id="wc-fill" style="width:0%;background:#e74c3c"></div>
+        <div class="wc-min-marker" id="wc-min-marker" data-label="min"></div>
+        <div class="wc-max-marker" id="wc-max-marker" data-label="max"></div>
+    </div>
+    <span class="autosave-badge unsaved" id="autosave-badge">Unsaved</span>
+    <div class="wc-hint" id="wc-hint">You need at least <strong id="hint-min">1,200</strong> words. Maximum is <strong id="hint-max">2,000</strong> words.</div>
+</div>
+
+<textarea
+    id="essay-area"
+    placeholder="Begin typing your paper here…"
+    oninput="onEssayInput()"
+    onpaste="blockPaste(event)"
+    ondrop="blockDrop(event)"
+    oncontextmenu="blockContextMenu(event)"
+    spellcheck="true"
+    autocomplete="off"
+></textarea>
+
+<div id="wc-over-warning" class="alert alert-danger" style="display:none">
+    You have exceeded the maximum word count. Please shorten your paper before downloading or submitting.
+</div>
+
+<div class="btn-row">
+    <button class="btn btn-outline" onclick="downloadPDF()" id="btn-download">⬇ Download PDF Draft</button>
+    <button class="btn btn-success" onclick="proceedToSubmit()" id="btn-next-submit">Review &amp; Submit →</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-secondary" style="font-size:0.85em" onclick="clearSavedDraft()">🗑 Clear Saved Draft</button>
+</div>
+```
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  STEP 3 — CONFIRM & SUBMIT                             -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<div class="step-panel" id="step-submit" style="display:none">
+    <h2>Step 3 — Review &amp; Submit</h2>
+
+```
+<div class="alert alert-warning">
+    <strong>⚠️ Final Submission:</strong> Once submitted, your paper cannot be edited. Please review carefully before clicking Submit.
+</div>
+
+<div id="review-block" style="background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:18px;margin-bottom:18px">
+    <p><strong>Name:</strong> <span id="review-name"></span></p>
+    <p><strong>Student ID:</strong> <span id="review-id"></span></p>
+    <p><strong>Section:</strong> <span id="review-section"></span></p>
+    <p><strong>Paper Title:</strong> <span id="review-title"></span></p>
+    <p style="margin-bottom:0"><strong>Word Count:</strong> <span id="review-wc"></span></p>
+</div>
+
+<div class="alert alert-info">
+    By submitting, you confirm that this paper is entirely your own work, typed directly into this form, and that all sources are properly cited in Turabian format.
+</div>
+
+<div id="submit-error" class="alert alert-danger" style="display:none"></div>
+
+<div class="btn-row">
+    <button class="btn btn-secondary" onclick="backToWrite()">← Back to Edit</button>
+    <button class="btn btn-danger" onclick="submitPaper()" id="btn-final-submit">Submit Final Paper</button>
+</div>
+```
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  CONFIRMATION                                          -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<div class="step-panel" id="confirmation-panel">
+    <h2>✅ Submission Received!</h2>
+    <span class="confetti-emoji">🎉</span>
+    <div class="alert alert-success">
+        Your paper has been successfully submitted. A record has been saved in the course database.
+    </div>
+    <p id="confirm-details" style="color:#555"></p>
+    <p>You may now close this window. If you have any concerns about your submission, contact Prof. Hauselmann.</p>
+</div>
+
+<footer style="text-align:center; margin-top:40px; color:#7f8c8d;">
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!--  JAVASCRIPT                                            -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+const TABLE_NAME    = 'paper_submissions';
+
+const MIN_WORDS = 1200;
+const MAX_WORDS = 2000;
+const SAVE_KEY  = 'hist101_paper_draft';
+
+// ── SUPABASE CLIENT ──────────────────────────────────────
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── STATE ────────────────────────────────────────────────
+let studentName = '';
+let studentId   = '';
+let sectionNum  = '';
+let saveTimer   = null;
+let wordCount   = 0;
+
+// ── STEP MANAGEMENT ─────────────────────────────────────
+function showStep(n) {
+    document.getElementById('step-login').style.display   = n === 1 ? 'block' : 'none';
+    document.getElementById('step-write').style.display   = n === 2 ? 'block' : 'none';
+    document.getElementById('step-submit').style.display  = n === 3 ? 'block' : 'none';
+
+    [1,2,3].forEach(i => {
+        const dot = document.getElementById('dot-' + i);
+        dot.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+    });
+
+    const pct = { 1: 33, 2: 66, 3: 100 };
+    document.getElementById('progress-fill').style.width = pct[n] + '%';
+}
+
+// ── STEP 1: LOGIN ────────────────────────────────────────
+function proceedToWrite() {
+    const nameEl = document.getElementById('student-name');
+    const idEl   = document.getElementById('student-id');
+    const secEl  = document.getElementById('section');
+    const errEl  = document.getElementById('login-error');
+
+    const name = nameEl.value.trim();
+    const id   = idEl.value.trim();
+    const sec  = secEl.value;
+
+    if (!name || !id || !sec) {
+        errEl.textContent = 'Please fill in all fields before continuing.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    if (!/^\d{6,10}$/.test(id)) {
+        errEl.textContent = 'Student ID should be 6–10 digits.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    errEl.style.display = 'none';
+    studentName = name;
+    studentId   = id;
+    sectionNum  = sec;
+
+    // Load any saved draft
+    loadDraft();
+    showStep(2);
+    window.scrollTo(0, 0);
+}
+
+// ── DRAFT SAVE / LOAD ────────────────────────────────────
+function scheduleSave() {
+    setBadge('saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveDraft, 1500);
+}
+
+function saveDraft() {
+    const draft = {
+        name:    studentName,
+        id:      studentId,
+        section: sectionNum,
+        title:   document.getElementById('paper-title').value,
+        essay:   document.getElementById('essay-area').value,
+        saved:   new Date().toISOString()
+    };
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
+        setBadge('saved');
+    } catch(e) {
+        setBadge('unsaved');
+    }
+}
+
+function loadDraft() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        // Only restore if same student
+        if (d.id === studentId) {
+            if (d.title) document.getElementById('paper-title').value = d.title;
+            if (d.essay) {
+                document.getElementById('essay-area').value = d.essay;
+                updateWordCount();
+            }
+            setBadge('saved');
+        }
+    } catch(e) { /* ignore */ }
+}
+
+function clearSavedDraft() {
+    if (!confirm('Are you sure you want to clear your saved draft? This cannot be undone.')) return;
+    localStorage.removeItem(SAVE_KEY);
+    document.getElementById('essay-area').value = '';
+    document.getElementById('paper-title').value = '';
+    updateWordCount();
+    setBadge('unsaved');
+}
+
+function setBadge(state) {
+    const b = document.getElementById('autosave-badge');
+    b.className = 'autosave-badge ' + state;
+    b.textContent = state === 'saved' ? '✓ Saved' : state === 'saving' ? 'Saving…' : '● Unsaved';
+}
+
+// Auto-save every 30 seconds
+setInterval(() => {
+    if (studentId && document.getElementById('step-write').style.display !== 'none') {
+        saveDraft();
+    }
+}, 30000);
+
+// ── WORD COUNT ───────────────────────────────────────────
+function countWords(text) {
+    return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+}
+
+function onEssayInput() {
+    updateWordCount();
+    scheduleSave();
+}
+
+function updateWordCount() {
+    const text = document.getElementById('essay-area').value;
+    wordCount = countWords(text);
+
+    const label   = document.getElementById('wc-label');
+    const fill    = document.getElementById('wc-fill');
+    const hint    = document.getElementById('wc-hint');
+    const overWarn = document.getElementById('wc-over-warning');
+    const btnSubmit = document.getElementById('btn-next-submit');
+    const btnDl     = document.getElementById('btn-download');
+
+    // Update label
+    label.textContent = wordCount.toLocaleString() + ' word' + (wordCount !== 1 ? 's' : '');
+
+    // Position markers
+    // We show a track from 0 → MAX * 1.1 so over-max is visible
+    const trackMax = MAX_WORDS * 1.1;
+    const minPct = (MIN_WORDS / trackMax * 100).toFixed(1);
+    const maxPct = (MAX_WORDS / trackMax * 100).toFixed(1);
+    document.getElementById('wc-min-marker').style.left = minPct + '%';
+    document.getElementById('wc-max-marker').style.left = maxPct + '%';
+
+    // Fill bar
+    const fillPct = Math.min(wordCount / trackMax * 100, 100);
+    fill.style.width = fillPct + '%';
+
+    if (wordCount < MIN_WORDS) {
+        label.className = 'word-count-label too-few';
+        fill.style.background = '#e74c3c';
+        hint.innerHTML = `You need <strong>${(MIN_WORDS - wordCount).toLocaleString()}</strong> more word${MIN_WORDS - wordCount !== 1 ? 's' : ''} to reach the minimum of <strong>${MIN_WORDS.toLocaleString()}</strong>.`;
+        overWarn.style.display = 'none';
+        btnSubmit.disabled = true;
+        btnDl.disabled = false;
+    } else if (wordCount <= MAX_WORDS) {
+        label.className = 'word-count-label in-range';
+        fill.style.background = 'linear-gradient(90deg,#27ae60,#2ecc71)';
+        hint.innerHTML = `✓ Word count is within range (${MIN_WORDS.toLocaleString()}–${MAX_WORDS.toLocaleString()}).`;
+        overWarn.style.display = 'none';
+        btnSubmit.disabled = false;
+        btnDl.disabled = false;
+    } else {
+        label.className = 'word-count-label too-many';
+        fill.style.background = '#e67e22';
+        hint.innerHTML = `You are <strong>${(wordCount - MAX_WORDS).toLocaleString()}</strong> word${wordCount - MAX_WORDS !== 1 ? 's' : ''} over the maximum of <strong>${MAX_WORDS.toLocaleString()}</strong>. Please shorten your paper.`;
+        overWarn.style.display = 'block';
+        btnSubmit.disabled = true;
+        btnDl.disabled = false;
+    }
+
+    // Update hint-min / hint-max static labels
+    document.getElementById('hint-min').textContent = MIN_WORDS.toLocaleString();
+    document.getElementById('hint-max').textContent = MAX_WORDS.toLocaleString();
+}
+
+// ── PASTE / DROP BLOCKING ────────────────────────────────
+function blockPaste(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    showPasteWarning();
+}
+
+function blockDrop(e) {
+    e.preventDefault();
+    showPasteWarning();
+}
+
+function blockContextMenu(e) {
+    e.preventDefault(); // disable right-click inside textarea
+}
+
+function showPasteWarning() {
+    document.getElementById('paste-warning').classList.add('show');
+}
+
+function closePasteWarning() {
+    document.getElementById('paste-warning').classList.remove('show');
+    document.getElementById('essay-area').focus();
+}
+
+// Also block keyboard shortcut paste at document level when essay is focused
+document.addEventListener('keydown', function(e) {
+    const active = document.activeElement;
+    if (active && active.id === 'essay-area') {
+        const isMac = navigator.platform.toUpperCase().includes('MAC');
+        const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+        if (ctrlOrCmd && (e.key === 'v' || e.key === 'V')) {
+            e.preventDefault();
+            showPasteWarning();
+        }
+    }
+});
+
+// ── PDF DOWNLOAD ─────────────────────────────────────────
+function downloadPDF() {
+    // Set print header content
+    document.getElementById('print-name-section').textContent =
+        `${studentName}  |  Student ID: ${studentId}  |  Section ${sectionNum}`;
+    document.getElementById('print-paper-title').textContent =
+        document.getElementById('paper-title').value || '(Untitled Paper)';
+
+    window.print();
+}
+
+// ── STEP 3: REVIEW ───────────────────────────────────────
+function proceedToSubmit() {
+    const title = document.getElementById('paper-title').value.trim();
+    if (!title) {
+        alert('Please enter a title for your paper before submitting.');
+        document.getElementById('paper-title').focus();
+        return;
+    }
+
+    if (wordCount < MIN_WORDS || wordCount > MAX_WORDS) return;
+
+    document.getElementById('review-name').textContent    = studentName;
+    document.getElementById('review-id').textContent      = studentId;
+    document.getElementById('review-section').textContent = 'Section ' + sectionNum;
+    document.getElementById('review-title').textContent   = title;
+    document.getElementById('review-wc').textContent      = wordCount.toLocaleString() + ' words';
+
+    showStep(3);
+    window.scrollTo(0, 0);
+}
+
+function backToWrite() {
+    showStep(2);
+    window.scrollTo(0, 0);
+}
+
+// ── FINAL SUBMISSION ─────────────────────────────────────
+async function submitPaper() {
+    const btn    = document.getElementById('btn-final-submit');
+    const errEl  = document.getElementById('submit-error');
+    const essay  = document.getElementById('essay-area').value;
+    const title  = document.getElementById('paper-title').value.trim();
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    errEl.style.display = 'none';
+
+    try {
+        const payload = {
+            student_name:  studentName,
+            student_id:    studentId,
+            section:       sectionNum,
+            paper_title:   title,
+            paper_text:    essay,
+            word_count:    wordCount,
+            submitted_at:  new Date().toISOString()
+        };
+
+        const { error } = await db.from(TABLE_NAME).insert([payload]);
+
+        if (error) throw error;
+
+        // Clear draft on successful submission
+        localStorage.removeItem(SAVE_KEY);
+
+        // Show confirmation
+        document.getElementById('step-submit').style.display = 'none';
+        const conf = document.getElementById('confirmation-panel');
+        conf.style.display = 'block';
+
+        document.getElementById('confirm-details').innerHTML =
+            `<strong>${studentName}</strong> (ID: ${studentId}, Section ${sectionNum})<br>` +
+            `<strong>"${title}"</strong> — ${wordCount.toLocaleString()} words<br>` +
+            `Submitted: ${new Date().toLocaleString()}`;
+
+        [1,2,3].forEach(i => document.getElementById('dot-' + i).className = 'step-dot done');
+        document.getElementById('progress-fill').style.width = '100%';
+        window.scrollTo(0, 0);
+
+    } catch(err) {
+        console.error(err);
+        errEl.textContent = 'Submission failed: ' + (err.message || 'Unknown error. Please try again or contact Prof. Hauselmann.');
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Submit Final Paper';
+    }
+}
+
+// ── INIT ─────────────────────────────────────────────────
+updateWordCount();
+</script>
+
+</body>
+</html>
