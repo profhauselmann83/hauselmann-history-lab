@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Research Paper Submission – HIST 105</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+    body {
+        font-family: 'Open Sans', sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f0;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-radius: 5px;
+    }
+    header h1 { margin: 0 0 8px; font-size: 1.8em; }
+    header p  { margin: 0; opacity: 0.85; }
+
+    nav {
+        background-color: #34495e;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        text-align: center;
+    }
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: 600;
+        font-size: 0.95em;
+    }
+    nav a:hover { text-decoration: underline; }
+
+    .breadcrumb {
+        background: white;
+        padding: 12px 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        font-size: 0.9em;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .breadcrumb a { color: #8e44ad; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* STEP INDICATOR */
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        margin: 20px 0 6px;
+    }
+    .step-dot {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: #dde2e8;
+        color: #999;
+        font-size: 0.82em;
+        font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: background 0.3s, color 0.3s;
+    }
+    .step-dot.active { background: #8e44ad; color: white; }
+    .step-dot.done   { background: #27ae60; color: white; }
+    .step-line {
+        flex: 1; height: 3px;
+        background: #dde2e8;
+        transition: background 0.3s;
+    }
+    .step-line.done { background: #27ae60; }
+
+    .progress-bar-wrap {
+        background: #e0e6eb;
+        border-radius: 20px;
+        height: 6px;
+        margin: 6px 0 22px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #8e44ad, #27ae60);
+        border-radius: 20px;
+        transition: width 0.4s ease;
+    }
+
+    /* PANELS */
+    .step-panel {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        margin: 0 0 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+    }
+    .step-panel h2 {
+        color: #2c3e50;
+        margin: 0 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #eaecef;
+        font-size: 1.25em;
+    }
+
+    /* ALERTS */
+    .alert {
+        padding: 13px 16px;
+        border-radius: 5px;
+        margin: 0 0 16px;
+        font-size: 0.93em;
+        line-height: 1.55;
+    }
+    .alert-info    { background: #f5eefb; border-left: 4px solid #8e44ad; color: #5b2c6f; }
+    .alert-warning { background: #fef9e7; border-left: 4px solid #f39c12; color: #7d6608; }
+    .alert-success { background: #eafaf1; border-left: 4px solid #27ae60; color: #1e8449; }
+    .alert-danger  { background: #fdedec; border-left: 4px solid #e74c3c; color: #922b21; }
+
+    /* FORM */
+    .form-row { margin-bottom: 16px; }
+    label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.95em;
+        margin-bottom: 5px;
+        color: #2c3e50;
+    }
+    input[type="text"], select, textarea {
+        width: 100%;
+        padding: 10px 13px;
+        border: 1.5px solid #ccd3da;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 1em;
+        color: #333;
+        background: white;
+        transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, select:focus, textarea:focus {
+        border-color: #8e44ad;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(142,68,173,0.12);
+    }
+
+    /* TABS */
+    .tab-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid #dde2e8;
+        margin-bottom: 20px;
+    }
+    .tab-btn {
+        padding: 10px 22px;
+        border: none;
+        background: none;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.95em;
+        font-weight: 600;
+        color: #7f8c8d;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: #2c3e50; }
+    .tab-btn.active { color: #8e44ad; border-bottom-color: #8e44ad; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ESSAY / BIBLIOGRAPHY AREAS */
+    #essay-area, #bib-area {
+        width: 100%;
+        line-height: 1.7;
+        resize: vertical;
+        min-height: 420px;
+    }
+    #bib-area { min-height: 260px; }
+
+    /* WORD COUNT */
+    .wc-panel {
+        background: #f7f9fb;
+        border: 1px solid #dde2e8;
+        border-radius: 6px;
+        padding: 13px 16px;
+        margin: 10px 0 16px;
+    }
+    .wc-top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+    .wc-number {
+        font-size: 1.1em;
+        font-weight: 700;
+        font-family: 'Open Sans', sans-serif;
+        min-width: 105px;
+    }
+    .wc-number.too-few  { color: #e74c3c; }
+    .wc-number.in-range { color: #27ae60; }
+    .wc-number.too-many { color: #e67e22; }
+    .wc-track {
+        flex: 1;
+        min-width: 180px;
+        height: 10px;
+        background: #dde2e8;
+        border-radius: 10px;
+        position: relative;
+    }
+    .wc-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.25s, background 0.25s;
+    }
+    .wc-marker {
+        position: absolute;
+        top: -5px;
+        width: 3px; height: 20px;
+        background: #2c3e50;
+        border-radius: 2px;
+    }
+    .wc-marker::after {
+        content: attr(data-label);
+        position: absolute;
+        top: 22px; left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.68em;
+        font-family: 'Open Sans', sans-serif;
+        color: #555;
+        white-space: nowrap;
+    }
+    .autosave-badge {
+        font-size: 0.8em;
+        font-family: 'Open Sans', sans-serif;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    .autosave-badge.saved   { background: #d5f5e3; color: #1e8449; }
+    .autosave-badge.saving  { background: #fef9c3; color: #9a7d0a; }
+    .autosave-badge.unsaved { background: #fde8e8; color: #c0392b; }
+    .wc-hint { font-size: 0.85em; color: #666; font-family: 'Open Sans', sans-serif; }
+
+    /* CITATION GUIDE */
+    .cite-guide {
+        background: #f7f9fb;
+        border: 1px solid #dde2e8;
+        border-radius: 6px;
+        padding: 18px 20px;
+        margin-bottom: 18px;
+        font-size: 0.92em;
+        line-height: 1.65;
+    }
+    .cite-guide h4 {
+        margin: 0 0 10px;
+        color: #2c3e50;
+        font-size: 1em;
+    }
+    .cite-guide .cite-rule {
+        margin-bottom: 14px;
+    }
+    .cite-guide .cite-rule:last-child { margin-bottom: 0; }
+    .cite-guide .label {
+        font-weight: 700;
+        color: #2c3e50;
+        display: block;
+        margin-bottom: 3px;
+    }
+    .cite-example {
+        background: white;
+        border-left: 3px solid #8e44ad;
+        padding: 6px 12px;
+        margin: 4px 0;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.97em;
+        color: #333;
+        border-radius: 0 4px 4px 0;
+    }
+    .cite-note {
+        font-size: 0.88em;
+        color: #666;
+        margin-top: 3px;
+    }
+
+    /* BIBLIOGRAPHY GUIDE */
+    .bib-guide {
+        background: #f7f9fb;
+        border: 1px solid #dde2e8;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        font-size: 0.91em;
+        line-height: 1.65;
+    }
+    .bib-guide h4 { margin: 0 0 8px; color: #2c3e50; font-size: 0.97em; }
+    .bib-example {
+        background: white;
+        border-left: 3px solid #27ae60;
+        padding: 6px 12px;
+        margin: 4px 0 8px;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.95em;
+        color: #333;
+        border-radius: 0 4px 4px 0;
+        line-height: 1.6;
+    }
+
+    /* INTEGRITY PLEDGE */
+    .pledge-box {
+        background: #fef9e7;
+        border: 1.5px solid #f39c12;
+        border-radius: 6px;
+        padding: 20px 22px;
+        margin-bottom: 18px;
+    }
+    .pledge-box h4 {
+        margin: 0 0 10px;
+        color: #7d6608;
+        font-size: 1em;
+    }
+    .pledge-box p {
+        margin: 0 0 14px;
+        color: #555;
+        font-size: 0.93em;
+        line-height: 1.65;
+    }
+    .pledge-check-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .pledge-check-row input[type="checkbox"] {
+        width: 18px; height: 18px;
+        margin-top: 2px;
+        flex-shrink: 0;
+        cursor: pointer;
+        accent-color: #27ae60;
+    }
+    .pledge-check-row label {
+        font-weight: 400;
+        font-size: 0.93em;
+        color: #333;
+        cursor: pointer;
+        margin: 0;
+    }
+    .pledge-sign-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+    .pledge-sign-row label {
+        font-weight: 600;
+        font-size: 0.93em;
+        color: #2c3e50;
+        margin: 0;
+        white-space: nowrap;
+    }
+    .pledge-sign-row input[type="text"] {
+        max-width: 280px;
+        font-style: italic;
+    }
+
+    /* BUTTONS */
+    .btn {
+        display: inline-block;
+        padding: 11px 22px;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.97em;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: background 0.18s, opacity 0.18s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary  { background: #8e44ad; color: white; }
+    .btn-primary:hover:not(:disabled)  { background: #7d3c98; }
+    .btn-success  { background: #27ae60; color: white; }
+    .btn-success:hover:not(:disabled)  { background: #1e8449; }
+    .btn-danger   { background: #e74c3c; color: white; }
+    .btn-danger:hover:not(:disabled)   { background: #c0392b; }
+    .btn-secondary { background: #7f8c8d; color: white; }
+    .btn-secondary:hover:not(:disabled) { background: #636e72; }
+    .btn-outline {
+        background: white; color: #2c3e50;
+        border: 2px solid #2c3e50;
+    }
+    .btn-outline:hover:not(:disabled) { background: #2c3e50; color: white; }
+
+    .btn-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .btn-row .spacer { flex: 1; }
+
+    /* REVIEW BLOCK */
+    .review-block {
+        background: #f7f9fb;
+        border: 1px solid #dde2e8;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        font-size: 0.97em;
+        line-height: 2;
+    }
+    .review-block p { margin: 0; }
+
+    /* PASTE MODAL */
+    #paste-modal {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 9999;
+        align-items: center; justify-content: center;
+    }
+    #paste-modal.show { display: flex; }
+    .modal-box {
+        background: white;
+        border-radius: 10px;
+        padding: 36px 40px;
+        max-width: 400px; width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        font-family: 'Open Sans', sans-serif;
+    }
+    .modal-box h3 { color: #e74c3c; margin: 0 0 12px; font-size: 1.2em; }
+    .modal-box p  { color: #555; line-height: 1.6; margin: 0 0 20px; font-size: 0.95em; }
+
+    /* CONFIRMATION */
+    .confetti { font-size: 2.8em; display: block; text-align: center; margin-bottom: 8px; }
+
+    footer { text-align: center; margin-top: 40px; color: #7f8c8d; font-size: 0.9em; }
+
+    /* PRINT STYLES */
+    #print-doc { display: none; }
+
+    @media print {
+        body > *:not(#print-doc) { display: none !important; }
+
+        body {
+            background: white;
+            padding: 0;
+            margin: 0;
+            max-width: 100%;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            color: black;
+        }
+
+        #print-doc {
+            display: block !important;
+            margin: 0;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 2;
+            color: black;
+        }
+
+        #print-doc .print-name-block {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 2;
+            margin-bottom: 0;
+        }
+
+        #print-doc .print-paper-title {
+            text-align: center;
+            font-weight: bold;
+            margin: 0;
+            font-size: 12pt;
+        }
+
+        #print-doc .print-body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 2;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #print-doc .print-paragraph {
+            text-indent: 0.5in;
+            margin: 0;
+            padding: 0;
+            line-height: 2;
+        }
+
+        #print-doc .print-paragraph:first-child {
+            text-indent: 0;
+        }
+
+        #print-doc .print-bib-section {
+            page-break-before: always;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 2;
+        }
+
+        #print-doc .print-bib-heading {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+
+        #print-doc .print-bib-entry {
+            padding-left: 0.5in;
+            text-indent: -0.5in;
+            margin: 0;
+            line-height: 2;
+            word-wrap: break-word;
+        }
+
+        @page {
+            margin: 1in;
+            size: letter;
+        }
+    }
+    </style>
+</head>
+<body>
+
+<!-- PASTE BLOCKED MODAL -->
+<div id="paste-modal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+        <h3>⚠️ Copy-Paste Not Allowed</h3>
+        <p>This assignment requires you to type your essay directly. Pasting text is not permitted — please type your work in your own words.</p>
+        <button class="btn btn-primary" onclick="closePasteModal()">I Understand</button>
+    </div>
+</div>
+
+<!-- HIDDEN PRINT DOCUMENT -->
+<div id="print-doc">
+    <div class="print-name-block" id="print-name-block"></div>
+    <div class="print-paper-title" id="print-paper-title"></div>
+    <div class="print-body" id="print-body"></div>
+    <div class="print-bib-section" id="print-bib-section"></div>
+</div>
+
+<!-- PAGE CHROME -->
+<header>
+    <h1>HIST 105 Research Paper</h1>
+    <p>The Weimar Republic &amp; Comparative Authoritarianism — Final Submission</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a>
+</nav>
+
+<div class="breadcrumb">
+    <a href="research-hist105.html">← Back to HIST 105 Research Guide</a>
+</div>
+
+<!-- STEP INDICATOR -->
+<div class="step-indicator">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3">3</div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="dot-4">4</div>
+</div>
+<div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill" style="width:12%"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- STEP 1 — IDENTIFY YOURSELF                -->
+<!-- ══════════════════════════════════════════ -->
+<div class="step-panel" id="step-login">
+    <h2>Step 1 — Identify Yourself</h2>
+
+    <div class="alert alert-info">
+        Enter your information exactly as it appears on your course roster. Your progress saves automatically to your browser, so you can leave and return to finish your paper if needed.
+    </div>
+
+    <div class="form-row">
+        <label for="inp-name">Full Name (First Last)</label>
+        <input type="text" id="inp-name" placeholder="e.g. Jane Smith" autocomplete="name">
+    </div>
+    <div class="form-row">
+        <label for="inp-id">Student ID</label>
+        <input type="text" id="inp-id" placeholder="e.g. 12345678" autocomplete="off" inputmode="numeric">
+    </div>
+    <div class="form-row">
+        <label for="inp-section">Course Section</label>
+        <select id="inp-section">
+            <option value="">— Select your section —</option>
+            <option value="3944">Section 3944</option>
+            <option value="3945">Section 3945</option>
+            <option value="3946">Section 3946</option>
+        </select>
+    </div>
+
+    <div class="alert alert-danger" id="login-error" style="display:none"></div>
+
+    <div class="btn-row">
+        <button class="btn btn-primary" onclick="proceedToWrite()">Continue to Paper →</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- STEP 2 — WRITE YOUR PAPER                 -->
+<!-- ══════════════════════════════════════════ -->
+<div class="step-panel" id="step-write" style="display:none">
+    <h2>Step 2 — Write Your Paper</h2>
+
+    <div class="alert alert-warning">
+        <strong>📝 Type directly into the fields below.</strong> Copy-pasting is disabled. Your work saves automatically every 30 seconds — watch the badge in the word count bar. You can leave and return to finish as long as you use the same browser.
+    </div>
+
+    <div class="form-row">
+        <label for="inp-title">Paper Title</label>
+        <input type="text" id="inp-title" placeholder="Enter your paper title…" oninput="scheduleSave()">
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('essay', this)">📄 Essay</button>
+        <button class="tab-btn" onclick="switchTab('citations', this)">📚 Citation Guide</button>
+        <button class="tab-btn" onclick="switchTab('bibliography', this)">📑 Bibliography</button>
+    </div>
+
+    <!-- TAB: ESSAY -->
+    <div class="tab-content active" id="tab-essay">
+        <div class="wc-panel">
+            <div class="wc-top">
+                <span class="wc-number too-few" id="wc-number">0 words</span>
+                <div class="wc-track">
+                    <div class="wc-fill" id="wc-fill" style="width:0%;background:#e74c3c"></div>
+                    <div class="wc-marker" id="wc-min-marker" data-label="1,500 min"></div>
+                    <div class="wc-marker" id="wc-max-marker" data-label="2,000 max"></div>
+                </div>
+                <span class="autosave-badge unsaved" id="autosave-badge">● Unsaved</span>
+            </div>
+            <div class="wc-hint" id="wc-hint">You need at least <strong>1,500</strong> words. Maximum is <strong>2,000</strong> words.</div>
+        </div>
+
+        <textarea
+            id="essay-area"
+            placeholder="Begin typing your essay here… Press Enter once to start a new paragraph.
+
+Use Chicago/Turabian or MLA citations as you write. See the Citation Guide tab for examples."
+            oninput="onEssayInput()"
+            onpaste="blockPaste(event)"
+            ondrop="blockDrop(event)"
+            oncontextmenu="return false"
+            spellcheck="true"
+            autocomplete="off"
+        ></textarea>
+
+        <div class="alert alert-danger" id="wc-over-alert" style="display:none;margin-top:10px">
+            You have exceeded the 2,000-word maximum. Please shorten your paper before proceeding.
+        </div>
+    </div>
+
+    <!-- TAB: CITATION GUIDE -->
+    <div class="tab-content" id="tab-citations">
+        <div class="cite-guide">
+            <h4>📚 Chicago/Turabian Author-Date Citation Guide</h4>
+            <p style="margin:0 0 14px;color:#555;font-size:0.95em">Use parenthetical citations within your essay to credit sources. Place the citation directly after the information or quotation it supports, before the period. Your instructor accepts either Chicago/Turabian <em>or</em> MLA — be consistent throughout.</p>
+
+            <div class="cite-rule">
+                <span class="label">Basic format — one author (Chicago/Turabian)</span>
+                <div class="cite-example">(Author's Last Name Year, page number)</div>
+                <div class="cite-example">(Evans 2004, 112)</div>
+                <p class="cite-note">Use this for most books and articles with a single author.</p>
+            </div>
+
+            <div class="cite-rule">
+                <span class="label">Two authors</span>
+                <div class="cite-example">(Kershaw and Lewin 1997, 88)</div>
+            </div>
+
+            <div class="cite-rule">
+                <span class="label">Three or more authors</span>
+                <div class="cite-example">(Weitz et al. 2007, 45)</div>
+                <p class="cite-note">Use "et al." after the first author's name when there are three or more authors.</p>
+            </div>
+
+            <div class="cite-rule">
+                <span class="label">Direct quotation</span>
+                <div class="cite-example">"The Weimar constitution contained the seeds of its own destruction in its emergency powers clauses" (Haffner 2002, 63).</div>
+                <p class="cite-note">Place the citation after the closing quotation mark, before the period.</p>
+            </div>
+
+            <div class="cite-rule">
+                <span class="label">Paraphrase or summary</span>
+                <div class="cite-example">Economic instability in the early 1930s accelerated the collapse of democratic institutions across Europe (Pelz 2016, 98–101).</div>
+                <p class="cite-note">You do not need quotation marks when paraphrasing, but you must still cite the source.</p>
+            </div>
+
+            <div class="cite-rule">
+                <span class="label">Pelz — required source</span>
+                <div class="cite-example">(Pelz 2016, 110)</div>
+                <p class="cite-note">Cite Pelz by chapter and page. You must reference and cite <em>A People's History of Modern Europe</em> in your paper.</p>
+            </div>
+
+            <div class="cite-rule">
+                <span class="label">Primary source — no page number</span>
+                <div class="cite-example">(KPD 1930)</div>
+                <div class="cite-example">(Nazi Party 1920)</div>
+                <p class="cite-note">For primary documents without page numbers, use title/author and year. For speeches, laws, and manifestos, include paragraph or section numbers if available.</p>
+            </div>
+
+            <div class="cite-rule">
+                <span class="label">MLA parenthetical (alternative)</span>
+                <div class="cite-example">(Evans 112)</div>
+                <div class="cite-example">(Pelz 98–101)</div>
+                <p class="cite-note">MLA uses author + page number only, no year. Be consistent — use either Chicago/Turabian or MLA throughout your entire paper.</p>
+            </div>
+
+            <div class="cite-rule" style="background:#f5eefb;padding:10px 12px;border-radius:5px;margin-top:16px">
+                <span class="label" style="color:#5b2c6f">💡 Tips</span>
+                <ul style="margin:4px 0 0 16px;padding:0;color:#555">
+                    <li>Every source cited in your essay must appear in your bibliography.</li>
+                    <li>Every source in your bibliography must be cited at least once in your essay.</li>
+                    <li>You must cite at least 5 scholarly sources, 2 primary sources, and Pelz.</li>
+                    <li>At least 1 primary source must be from the Weimar period (course website documents).</li>
+                    <li>At least 1 primary source must be from your chosen authoritarian government.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: BIBLIOGRAPHY -->
+    <div class="tab-content" id="tab-bibliography">
+        <div class="bib-guide">
+            <h4>📑 Bibliography Format (Chicago/Turabian Author-Date)</h4>
+            <p style="margin:0 0 10px;color:#555;font-size:0.92em">List all sources cited in your paper. Entries are alphabetical by author's last name. The second and subsequent lines of each entry are indented (hanging indent). MLA users: format as a Works Cited page using MLA hanging-indent style.</p>
+
+            <span style="font-weight:700;font-size:0.9em;color:#2c3e50;display:block;margin-bottom:4px">Required book — Pelz:</span>
+            <div class="bib-example">Pelz, William A. 2016. <em>A People's History of Modern Europe</em>. London: Pluto Press.</div>
+
+            <span style="font-weight:700;font-size:0.9em;color:#2c3e50;display:block;margin-bottom:4px">Scholarly book — one author:</span>
+            <div class="bib-example">Evans, Richard J. 2004. <em>The Coming of the Third Reich</em>. New York: Penguin Press.</div>
+
+            <span style="font-weight:700;font-size:0.9em;color:#2c3e50;display:block;margin-bottom:4px">Journal article:</span>
+            <div class="bib-example">Weitz, Eric D. 2007. "Weimar Germany and Its Legacies." <em>Central European History</em> 40 (2): 201–20.</div>
+
+            <span style="font-weight:700;font-size:0.9em;color:#2c3e50;display:block;margin-bottom:4px">Primary source — party document:</span>
+            <div class="bib-example">Communist Party of Germany (KPD). 1930. "National Program of the KPD." Hauselmann History Lab, course website.</div>
+
+            <span style="font-weight:700;font-size:0.9em;color:#2c3e50;display:block;margin-bottom:4px">Primary source — government document:</span>
+            <div class="bib-example">Nazi Party (NSDAP). 1920. "The Twenty-Five Points." Hauselmann History Lab, course website.</div>
+
+            <span style="font-weight:700;font-size:0.9em;color:#2c3e50;display:block;margin-bottom:4px">Website / online source:</span>
+            <div class="bib-example">United States Holocaust Memorial Museum. 2023. "Nuremberg Laws." https://encyclopedia.ushmm.org/content/en/article/nuremberg-laws.</div>
+        </div>
+
+        <label for="bib-area">Your Bibliography</label>
+        <textarea
+            id="bib-area"
+            placeholder="Type your bibliography entries here, one per line, in alphabetical order by author's last name.
+
+Example:
+Pelz, William A. 2016. A People's History of Modern Europe. London: Pluto Press."
+            oninput="scheduleSave()"
+            onpaste="blockPaste(event)"
+            ondrop="blockDrop(event)"
+            oncontextmenu="return false"
+            spellcheck="true"
+            autocomplete="off"
+        ></textarea>
+        <p style="font-size:0.82em;color:#888;margin:6px 0 0">Bibliography entries are subject to the same no-paste rule as your essay.</p>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-outline" onclick="downloadPDF()">⬇ Download PDF Draft</button>
+        <button class="btn btn-success" id="btn-to-submit" onclick="proceedToPledge()" disabled>Continue to Pledge →</button>
+        <span class="spacer"></span>
+        <button class="btn btn-secondary" style="font-size:0.85em" onclick="clearDraft()">🗑 Clear Draft</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- STEP 3 — ACADEMIC INTEGRITY PLEDGE        -->
+<!-- ══════════════════════════════════════════ -->
+<div class="step-panel" id="step-pledge" style="display:none">
+    <h2>Step 3 — Academic Integrity Pledge</h2>
+
+    <div class="alert alert-info">
+        Before submitting your paper, you must read and agree to the following academic integrity pledge. This confirms that the work you are submitting is your own.
+    </div>
+
+    <div class="pledge-box">
+        <h4>🎓 Academic Integrity Pledge — HIST 105</h4>
+        <p>Please read each statement carefully and check the box to indicate your agreement.</p>
+
+        <div class="pledge-check-row">
+            <input type="checkbox" id="pledge-1" onchange="checkPledge()">
+            <label for="pledge-1">I wrote this paper myself. The ideas, arguments, and writing are my own, except where I have clearly cited sources.</label>
+        </div>
+        <div class="pledge-check-row">
+            <input type="checkbox" id="pledge-2" onchange="checkPledge()">
+            <label for="pledge-2">I did not copy, paste, or directly import text from any outside source — including websites, books, or AI tools — into the submission field.</label>
+        </div>
+        <div class="pledge-check-row">
+            <input type="checkbox" id="pledge-3" onchange="checkPledge()">
+            <label for="pledge-3">I have cited all sources using Chicago/Turabian or MLA citations consistently throughout, and I have included a complete bibliography with at least 5 scholarly sources, 2 primary sources, and Pelz.</label>
+        </div>
+        <div class="pledge-check-row">
+            <input type="checkbox" id="pledge-4" onchange="checkPledge()">
+            <label for="pledge-4">I understand that submitting another person's work as my own, or using AI to write this paper, constitutes academic dishonesty and may result in a failing grade or other disciplinary action.</label>
+        </div>
+
+        <div class="pledge-sign-row">
+            <label for="pledge-signature">Type your full name as your digital signature:</label>
+            <input type="text" id="pledge-signature" placeholder="Your full name…" oninput="checkPledge()" style="font-style:italic">
+        </div>
+    </div>
+
+    <div class="alert alert-danger" id="pledge-error" style="display:none"></div>
+
+    <div class="btn-row">
+        <button class="btn btn-secondary" onclick="backToWrite()">← Back to Paper</button>
+        <button class="btn btn-danger" id="btn-to-review" onclick="proceedToReview()" disabled>Review &amp; Submit →</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- STEP 4 — FINAL REVIEW & SUBMIT            -->
+<!-- ══════════════════════════════════════════ -->
+<div class="step-panel" id="step-submit" style="display:none">
+    <h2>Step 4 — Final Review &amp; Submit</h2>
+
+    <div class="alert alert-warning">
+        <strong>⚠️ This is your final submission.</strong> Once submitted, your paper cannot be edited. Please confirm all details below are correct before clicking Submit.
+    </div>
+
+    <div class="review-block">
+        <p><strong>Name:</strong> <span id="rv-name"></span></p>
+        <p><strong>Student ID:</strong> <span id="rv-id"></span></p>
+        <p><strong>Section:</strong> <span id="rv-section"></span></p>
+        <p><strong>Paper Title:</strong> <span id="rv-title"></span></p>
+        <p><strong>Essay Word Count:</strong> <span id="rv-wc"></span></p>
+        <p><strong>Bibliography Entries:</strong> <span id="rv-bib"></span></p>
+        <p><strong>Pledge Signed:</strong> <span id="rv-pledge" style="color:#27ae60"></span></p>
+    </div>
+
+    <div class="alert alert-info">
+        By clicking Submit, you confirm that all information above is accurate and that you have agreed to the Academic Integrity Pledge.
+    </div>
+
+    <div class="alert alert-danger" id="submit-error" style="display:none"></div>
+
+    <div class="btn-row">
+        <button class="btn btn-secondary" onclick="backToPledge()">← Back to Pledge</button>
+        <button class="btn btn-danger" id="btn-final" onclick="submitPaper()">Submit Final Paper</button>
+    </div>
+</div>
+
+<!-- CONFIRMATION -->
+<div class="step-panel" id="step-confirm" style="display:none">
+    <span class="confetti">🎉</span>
+    <h2 style="text-align:center;border-bottom:none">Submission Received!</h2>
+    <div class="alert alert-success">
+        Your paper has been successfully submitted and recorded in the course database.
+    </div>
+    <p id="confirm-details" style="color:#555;line-height:1.9;margin-bottom:14px"></p>
+    <p style="color:#555;margin:0">You may now close this window. If you have any questions about your submission, contact Prof. Hauselmann.</p>
+</div>
+
+<footer>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const TABLE         = 'paper_submissions';
+const MIN_WORDS     = 1500;
+const MAX_WORDS     = 2000;
+const DRAFT_KEY     = 'hist105_paper_draft';
+
+let dbClient = null;
+function getDB() {
+    if (!dbClient) dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    return dbClient;
+}
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let studentName = '';
+let studentId   = '';
+let section     = '';
+let wordCount   = 0;
+let saveTimer   = null;
+
+// ── STEP NAVIGATION ──────────────────────────────────────────────────────────
+const STEPS = ['step-login','step-write','step-pledge','step-submit','step-confirm'];
+
+function showStep(n) {
+    STEPS.forEach((id, i) => {
+        document.getElementById(id).style.display = (i + 1 === n) ? 'block' : 'none';
+    });
+
+    for (let i = 1; i <= 4; i++) {
+        const dot = document.getElementById('dot-' + i);
+        if (!dot) continue;
+        dot.className = i < n ? 'step-dot done' : i === n ? 'step-dot active' : 'step-dot';
+    }
+
+    for (let i = 1; i <= 3; i++) {
+        const line = document.getElementById('line-' + i);
+        if (line) line.className = 'step-line' + (n > i ? ' done' : '');
+    }
+
+    const pct = { 1: 12, 2: 37, 3: 62, 4: 87, 5: 100 };
+    document.getElementById('progress-fill').style.width = (pct[n] || 12) + '%';
+    window.scrollTo(0, 0);
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── STEP 1: LOGIN ─────────────────────────────────────────────────────────────
+function proceedToWrite() {
+    const name = document.getElementById('inp-name').value.trim();
+    const id   = document.getElementById('inp-id').value.trim();
+    const sec  = document.getElementById('inp-section').value;
+    const err  = document.getElementById('login-error');
+
+    if (!name || !id || !sec) {
+        err.textContent   = 'Please complete all fields before continuing.';
+        err.style.display = 'block';
+        return;
+    }
+    if (!/^\d{5,10}$/.test(id)) {
+        err.textContent   = 'Student ID should be 5–10 digits (numbers only).';
+        err.style.display = 'block';
+        return;
+    }
+
+    err.style.display = 'none';
+    studentName = name;
+    studentId   = id;
+    section     = sec;
+
+    loadDraft();
+    showStep(2);
+}
+
+// ── STEP 2 → 3 ───────────────────────────────────────────────────────────────
+function proceedToPledge() {
+    const title = document.getElementById('inp-title').value.trim();
+    if (!title) {
+        alert('Please enter a title for your paper.');
+        document.getElementById('inp-title').focus();
+        return;
+    }
+    if (wordCount < MIN_WORDS || wordCount > MAX_WORDS) return;
+
+    const bib = document.getElementById('bib-area').value.trim();
+    if (!bib) {
+        switchTab('bibliography', document.querySelectorAll('.tab-btn')[2]);
+        alert('Please enter your bibliography before continuing.');
+        document.getElementById('bib-area').focus();
+        return;
+    }
+
+    showStep(3);
+}
+
+function backToWrite() { showStep(2); }
+
+// ── STEP 3: PLEDGE ───────────────────────────────────────────────────────────
+function checkPledge() {
+    const allChecked = ['pledge-1','pledge-2','pledge-3','pledge-4']
+        .every(id => document.getElementById(id).checked);
+    const sig = document.getElementById('pledge-signature').value.trim();
+    document.getElementById('btn-to-review').disabled = !(allChecked && sig.length > 2);
+}
+
+function proceedToReview() {
+    const allChecked = ['pledge-1','pledge-2','pledge-3','pledge-4']
+        .every(id => document.getElementById(id).checked);
+    const sig = document.getElementById('pledge-signature').value.trim();
+    const err = document.getElementById('pledge-error');
+
+    if (!allChecked) {
+        err.textContent   = 'Please check all four boxes before continuing.';
+        err.style.display = 'block';
+        return;
+    }
+    if (sig.length < 3) {
+        err.textContent   = 'Please type your full name as a digital signature.';
+        err.style.display = 'block';
+        return;
+    }
+
+    err.style.display = 'none';
+
+    const bibLines = document.getElementById('bib-area').value
+        .split('\n').filter(l => l.trim().length > 0);
+
+    document.getElementById('rv-name').textContent    = studentName;
+    document.getElementById('rv-id').textContent      = studentId;
+    document.getElementById('rv-section').textContent = 'Section ' + section;
+    document.getElementById('rv-title').textContent   = document.getElementById('inp-title').value.trim();
+    document.getElementById('rv-wc').textContent      = wordCount.toLocaleString() + ' words';
+    document.getElementById('rv-bib').textContent     = bibLines.length + ' source' + (bibLines.length !== 1 ? 's' : '');
+    document.getElementById('rv-pledge').textContent  = '✓ Signed by ' + sig;
+
+    showStep(4);
+}
+
+function backToPledge() { showStep(3); }
+
+// ── STEP 4: FINAL SUBMIT ──────────────────────────────────────────────────────
+async function submitPaper() {
+    const btn   = document.getElementById('btn-final');
+    const err   = document.getElementById('submit-error');
+    const essay = document.getElementById('essay-area').value;
+    const bib   = document.getElementById('bib-area').value;
+    const title = document.getElementById('inp-title').value.trim();
+    const sig   = document.getElementById('pledge-signature').value.trim();
+
+    btn.disabled      = true;
+    btn.textContent   = 'Submitting…';
+    err.style.display = 'none';
+
+    try {
+        btn.textContent = 'Generating PDF…';
+        let filePath = null;
+        try {
+            const pdfBlob   = generatePDFBlob();
+            const lastName  = studentName.split(' ').pop().toLowerCase().replace(/[^a-z0-9]/g, '');
+            const fileName  = `${lastName}_${studentId}_${Date.now()}.pdf`;
+            filePath        = `hist105-papers/${section}/${fileName}`;
+
+            const { error: uploadError } = await getDB()
+                .storage
+                .from('student-submissions')
+                .upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: false });
+
+            if (uploadError) {
+                console.warn('PDF upload failed, continuing without file:', uploadError.message);
+                filePath = null;
+            }
+        } catch (pdfErr) {
+            console.warn('PDF generation failed, continuing without file:', pdfErr.message);
+        }
+
+        btn.textContent = 'Submitting…';
+
+        const { error } = await getDB().from(TABLE).insert([{
+            student_name      : studentName,
+            student_id        : studentId,
+            section           : section,
+            paper_title       : title,
+            paper_text        : essay,
+            bibliography      : bib,
+            word_count        : wordCount,
+            pledge_signature  : sig,
+            file_path         : filePath,
+            course            : 'HIST 105',
+            submitted_at      : new Date().toISOString()
+        }]);
+
+        if (error) throw error;
+
+        localStorage.removeItem(DRAFT_KEY);
+
+        document.getElementById('confirm-details').innerHTML =
+            `<strong>${studentName}</strong> &nbsp;|&nbsp; ID: ${studentId} &nbsp;|&nbsp; Section ${section}<br>` +
+            `<em>"${title}"</em> — ${wordCount.toLocaleString()} words<br>` +
+            `Submitted: ${new Date().toLocaleString()}`;
+
+        for (let i = 1; i <= 4; i++) {
+            const dot = document.getElementById('dot-' + i);
+            if (dot) dot.className = 'step-dot done';
+        }
+        for (let i = 1; i <= 3; i++) {
+            const line = document.getElementById('line-' + i);
+            if (line) line.className = 'step-line done';
+        }
+        document.getElementById('progress-fill').style.width = '100%';
+
+        showStep(5);
+
+    } catch (e) {
+        console.error(e);
+        err.textContent   = 'Submission failed: ' + (e.message || 'Unknown error. Please try again or contact Prof. Hauselmann.');
+        err.style.display = 'block';
+        btn.disabled      = false;
+        btn.textContent   = 'Submit Final Paper';
+    }
+}
+
+// ── WORD COUNT ────────────────────────────────────────────────────────────────
+function countWords(text) {
+    const t = text.trim();
+    return t === '' ? 0 : t.split(/\s+/).length;
+}
+
+function onEssayInput() {
+    updateWordCount();
+    scheduleSave();
+}
+
+document.getElementById('essay-area').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const el = this;
+        const start = el.selectionStart;
+        const end   = el.selectionEnd;
+        el.value = el.value.substring(0, start) + '\n\n' + el.value.substring(end);
+        el.selectionStart = el.selectionEnd = start + 2;
+        onEssayInput();
+    }
+});
+
+function updateWordCount() {
+    wordCount = countWords(document.getElementById('essay-area').value);
+
+    const numEl     = document.getElementById('wc-number');
+    const fillEl    = document.getElementById('wc-fill');
+    const hintEl    = document.getElementById('wc-hint');
+    const overEl    = document.getElementById('wc-over-alert');
+    const submitBtn = document.getElementById('btn-to-submit');
+
+    numEl.textContent = wordCount.toLocaleString() + (wordCount === 1 ? ' word' : ' words');
+
+    const trackMax = MAX_WORDS * 1.1;
+    document.getElementById('wc-min-marker').style.left = (MIN_WORDS / trackMax * 100).toFixed(1) + '%';
+    document.getElementById('wc-max-marker').style.left = (MAX_WORDS / trackMax * 100).toFixed(1) + '%';
+    fillEl.style.width = Math.min(wordCount / trackMax * 100, 100).toFixed(1) + '%';
+
+    if (wordCount < MIN_WORDS) {
+        numEl.className         = 'wc-number too-few';
+        fillEl.style.background = '#e74c3c';
+        hintEl.innerHTML        = `Need <strong>${(MIN_WORDS - wordCount).toLocaleString()}</strong> more word(s) to reach the 1,500-word minimum.`;
+        overEl.style.display    = 'none';
+        submitBtn.disabled      = true;
+    } else if (wordCount <= MAX_WORDS) {
+        numEl.className         = 'wc-number in-range';
+        fillEl.style.background = 'linear-gradient(90deg,#27ae60,#2ecc71)';
+        hintEl.innerHTML        = `✓ Word count is within range (1,500–2,000 words).`;
+        overEl.style.display    = 'none';
+        submitBtn.disabled      = false;
+    } else {
+        numEl.className         = 'wc-number too-many';
+        fillEl.style.background = '#e67e22';
+        hintEl.innerHTML        = `<strong>${(wordCount - MAX_WORDS).toLocaleString()}</strong> word(s) over the 2,000-word maximum. Please shorten your paper.`;
+        overEl.style.display    = 'block';
+        submitBtn.disabled      = true;
+    }
+}
+
+// ── DRAFT SAVE / LOAD ─────────────────────────────────────────────────────────
+function scheduleSave() {
+    setBadge('saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveDraft, 1500);
+}
+
+function saveDraft() {
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            id    : studentId,
+            title : document.getElementById('inp-title').value,
+            essay : document.getElementById('essay-area').value,
+            bib   : document.getElementById('bib-area').value,
+            saved : new Date().toISOString()
+        }));
+        setBadge('saved');
+    } catch (e) {
+        setBadge('unsaved');
+    }
+}
+
+function loadDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        if (d.id !== studentId) return;
+        if (d.title) document.getElementById('inp-title').value  = d.title;
+        if (d.essay) document.getElementById('essay-area').value = d.essay;
+        if (d.bib)   document.getElementById('bib-area').value   = d.bib;
+        updateWordCount();
+        setBadge('saved');
+    } catch (e) { /* ignore */ }
+}
+
+function clearDraft() {
+    if (!confirm('Clear your saved draft? This cannot be undone.')) return;
+    localStorage.removeItem(DRAFT_KEY);
+    document.getElementById('inp-title').value  = '';
+    document.getElementById('essay-area').value = '';
+    document.getElementById('bib-area').value   = '';
+    updateWordCount();
+    setBadge('unsaved');
+}
+
+function setBadge(state) {
+    const b = document.getElementById('autosave-badge');
+    b.className   = 'autosave-badge ' + state;
+    b.textContent = state === 'saved' ? '✓ Saved' : state === 'saving' ? 'Saving…' : '● Unsaved';
+}
+
+setInterval(() => {
+    if (studentId && document.getElementById('step-write').style.display !== 'none') saveDraft();
+}, 30000);
+
+// ── PASTE / DROP BLOCKING ─────────────────────────────────────────────────────
+function blockPaste(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('paste-modal').classList.add('show');
+}
+function blockDrop(e) {
+    e.preventDefault();
+    document.getElementById('paste-modal').classList.add('show');
+}
+function closePasteModal() {
+    document.getElementById('paste-modal').classList.remove('show');
+    document.activeElement && document.activeElement.blur();
+}
+
+document.addEventListener('keydown', function (e) {
+    const active = document.activeElement;
+    if (!active) return;
+    const blocked = ['essay-area', 'bib-area'];
+    if (!blocked.includes(active.id)) return;
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'v' || e.key === 'V')) {
+        e.preventDefault();
+        document.getElementById('paste-modal').classList.add('show');
+    }
+});
+
+// ── GENERATE PDF BLOB ─────────────────────────────────────────────────────────
+function generatePDFBlob() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'in', format: 'letter' });
+
+    const margin    = 1;
+    const pageW     = 8.5;
+    const pageH     = 11;
+    const contentW  = pageW - margin * 2;
+    const lineHeight = 0.28;
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(12);
+
+    let y = margin;
+
+    const nameBlock = [
+        studentName || '[Your Name]',
+        'Student ID: ' + (studentId || '[ID]'),
+        'Section ' + (section || '[Section]'),
+        'HIST 105: Western Civilization Since 1648',
+        'Prof. Hauselmann',
+        new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+    ];
+    nameBlock.forEach(line => {
+        doc.text(line, margin, y);
+        y += lineHeight;
+    });
+
+    y += lineHeight;
+
+    const title = document.getElementById('inp-title').value.trim() || '(Untitled Paper)';
+    doc.setFont('times', 'bold');
+    doc.text(title, pageW / 2, y, { align: 'center' });
+    doc.setFont('times', 'normal');
+    y += lineHeight * 2;
+
+    const essay = document.getElementById('essay-area').value;
+    const paragraphs = essay.split(/\n+/).filter(p => p.trim().length > 0);
+
+    paragraphs.forEach((para, i) => {
+        const indent = i === 0 ? 0 : 0.5;
+        const lines  = doc.splitTextToSize(para.trim(), contentW - indent);
+
+        lines.forEach((line, li) => {
+            if (y > pageH - margin) { doc.addPage(); y = margin; }
+            doc.text(line, margin + (li === 0 ? indent : 0), y);
+            y += lineHeight;
+        });
+
+        y += lineHeight;
+    });
+
+    const bibText = document.getElementById('bib-area').value.trim();
+    if (bibText) {
+        doc.addPage();
+        y = margin;
+
+        doc.setFont('times', 'bold');
+        doc.text('Bibliography', pageW / 2, y, { align: 'center' });
+        doc.setFont('times', 'normal');
+        y += lineHeight * 2;
+
+        const entries = bibText.split('\n').filter(l => l.trim().length > 0);
+        entries.forEach(entry => {
+            const lines = doc.splitTextToSize(entry.trim(), contentW);
+            lines.forEach((line, li) => {
+                if (y > pageH - margin) { doc.addPage(); y = margin; }
+                doc.text(line, margin + (li > 0 ? 0.5 : 0), y);
+                y += lineHeight;
+            });
+            y += lineHeight * 0.5;
+        });
+    }
+
+    return doc.output('blob');
+}
+
+// ── PDF / PRINT ───────────────────────────────────────────────────────────────
+function downloadPDF() {
+    const name    = studentName || '[Your Name]';
+    const id      = studentId   || '[Student ID]';
+    const sec     = section     || '[Section]';
+    const title   = document.getElementById('inp-title').value.trim() || '(Untitled Paper)';
+    const essay   = document.getElementById('essay-area').value;
+    const bibText = document.getElementById('bib-area').value.trim();
+
+    document.getElementById('print-name-block').innerHTML =
+        name + '<br>' +
+        'Student ID: ' + id + '<br>' +
+        'Section ' + sec + '<br>' +
+        'HIST 105: Western Civilization Since 1648<br>' +
+        'Prof. Hauselmann<br>' +
+        new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+    document.getElementById('print-paper-title').textContent = title;
+
+    const paragraphs = essay.split(/\n+/).filter(p => p.trim().length > 0);
+    const bodyEl = document.getElementById('print-body');
+    bodyEl.innerHTML = '';
+    paragraphs.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'print-paragraph';
+        if (i === 0) div.style.textIndent = '0';
+        div.textContent = p.trim();
+        bodyEl.appendChild(div);
+    });
+
+    const bibEl = document.getElementById('print-bib-section');
+    if (bibText) {
+        const entries = bibText.split('\n').filter(l => l.trim().length > 0);
+        let bibHTML = '<div class="print-bib-heading">Bibliography</div>';
+        entries.forEach(entry => {
+            bibHTML += `<div class="print-bib-entry">${entry.trim()}</div>`;
+        });
+        bibEl.innerHTML = bibHTML;
+    } else {
+        bibEl.innerHTML = '<div class="print-bib-heading">Bibliography</div><div class="print-bib-entry">[No bibliography entered]</div>';
+    }
+
+    window.print();
+}
+
+// ── INSTRUCTOR MODE ───────────────────────────────────────────────────────────
+const INSTRUCTOR_MODE = new URLSearchParams(window.location.search).get('instructor') === 'true';
+
+if (INSTRUCTOR_MODE) {
+    document.getElementById('inp-name').value    = 'Instructor Preview';
+    document.getElementById('inp-id').value      = '00000000';
+    document.getElementById('inp-section').value = '3944';
+    document.getElementById('inp-title').value   = 'Sample Paper Title';
+    document.getElementById('essay-area').value  =
+        'This is a preview of the essay field. In instructor mode all steps are accessible without meeting word count or completion requirements.\n\nThis is a second paragraph to show paragraph spacing.\n\nThis is a third paragraph.';
+    document.getElementById('bib-area').value    =
+        'Pelz, William A. 2016. A People\'s History of Modern Europe. London: Pluto Press.\nEvans, Richard J. 2004. The Coming of the Third Reich. New York: Penguin Press.';
+
+    ['pledge-1','pledge-2','pledge-3','pledge-4'].forEach(id => {
+        document.getElementById(id).checked = true;
+    });
+    document.getElementById('pledge-signature').value = 'Instructor Preview';
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#2c3e50;color:white;text-align:center;padding:10px;font-family:Open Sans,sans-serif;font-size:0.9em;font-weight:600;position:sticky;top:0;z-index:1000;';
+    banner.innerHTML = '🔍 Instructor Preview Mode — <span style="font-weight:400">all steps unlocked, submission disabled</span>';
+    document.body.insertBefore(banner, document.body.firstChild);
+
+    const jumper = document.createElement('div');
+    jumper.style.cssText = 'background:#34495e;padding:10px;text-align:center;font-family:Open Sans,sans-serif;position:sticky;top:41px;z-index:999;';
+    jumper.innerHTML = `
+        <span style="color:white;font-size:0.82em;font-weight:600;margin-right:10px">Jump to step:</span>
+        <button onclick="instructorGoTo(1)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#8e44ad;color:white">1 · Login</button>
+        <button onclick="instructorGoTo(2)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#8e44ad;color:white">2 · Write</button>
+        <button onclick="instructorGoTo(3)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#8e44ad;color:white">3 · Pledge</button>
+        <button onclick="instructorGoTo(4)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#8e44ad;color:white">4 · Review</button>
+        <button onclick="instructorGoTo(5)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-family:Open Sans,sans-serif;font-size:0.82em;font-weight:700;cursor:pointer;background:#27ae60;color:white">5 · Confirmation</button>
+    `;
+    document.body.insertBefore(jumper, document.body.children[1]);
+
+    studentName = 'Instructor Preview';
+    studentId   = '00000000';
+    section     = '3944';
+    updateWordCount();
+    checkPledge();
+}
+
+function instructorGoTo(n) {
+    if (!INSTRUCTOR_MODE) return;
+
+    if (n === 4) {
+        const bibLines = document.getElementById('bib-area').value
+            .split('\n').filter(l => l.trim().length > 0);
+        document.getElementById('rv-name').textContent    = studentName;
+        document.getElementById('rv-id').textContent      = studentId;
+        document.getElementById('rv-section').textContent = 'Section ' + section;
+        document.getElementById('rv-title').textContent   = document.getElementById('inp-title').value.trim();
+        document.getElementById('rv-wc').textContent      = wordCount.toLocaleString() + ' words';
+        document.getElementById('rv-bib').textContent     = bibLines.length + ' source(s)';
+        document.getElementById('rv-pledge').textContent  = '✓ Signed by Instructor Preview';
+    }
+
+    if (n === 5) {
+        document.getElementById('confirm-details').innerHTML =
+            '<strong>Instructor Preview</strong> &nbsp;|&nbsp; ID: 00000000 &nbsp;|&nbsp; Section 3944<br>' +
+            '<em>"Sample Paper Title"</em> — preview<br>' +
+            'Submitted: ' + new Date().toLocaleString();
+    }
+
+    if (n === 4) {
+        setTimeout(() => {
+            const btn = document.getElementById('btn-final');
+            if (btn) {
+                btn.disabled = true;
+                btn.title    = 'Submission disabled in instructor preview mode';
+            }
+        }, 50);
+    }
+
+    showStep(n);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateWordCount();
+</script>
+
+</body>
+</html>
