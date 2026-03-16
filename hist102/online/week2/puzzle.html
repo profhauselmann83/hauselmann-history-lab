@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="../access-guard.js" data-week="w1" data-gate="../week1/gate.html"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Week 2 Unlock — Reconstruction Review | HIST 102</title>
@@ -12,7 +11,6 @@
   <style>
     .puzzle-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
 
-    /* Password letter boxes */
     .pw-display { display: flex; gap: 12px; justify-content: center; margin: 2rem 0 0.5rem; }
     .letter-box {
       width: 58px; height: 70px;
@@ -23,54 +21,36 @@
       background: var(--cream-dark);
       transition: background 0.4s, border-color 0.4s;
     }
-    .letter-box.revealed {
-      background: var(--gold);
-      border-color: var(--gold);
-    }
+    .letter-box.revealed { background: var(--gold); border-color: var(--gold); }
     .letter-box .ltr {
       font-family: 'DM Mono', monospace;
-      font-size: 1.9rem;
-      font-weight: 500;
-      color: var(--cream);
-      opacity: 0;
-      transition: opacity 0.4s;
-      line-height: 1;
+      font-size: 1.9rem; font-weight: 500;
+      color: var(--cream); opacity: 0;
+      transition: opacity 0.4s; line-height: 1;
     }
     .letter-box.revealed .ltr { opacity: 1; }
     .letter-box .ltr-qnum {
       font-family: 'DM Mono', monospace;
-      font-size: 0.58rem;
-      letter-spacing: 0.1em;
-      color: var(--ink-light);
-      margin-top: 5px;
-      text-transform: uppercase;
+      font-size: 0.58rem; letter-spacing: 0.1em;
+      color: var(--ink-light); margin-top: 5px; text-transform: uppercase;
     }
     .letter-box.revealed .ltr-qnum { color: var(--cream-deep); }
 
-    /* Progress bar */
     .puzzle-prog-wrap {
-      background: var(--cream-deep);
-      border-radius: 3px;
-      height: 5px;
-      margin: 0.75rem 0 2.5rem;
-      overflow: hidden;
+      background: var(--cream-deep); border-radius: 3px;
+      height: 5px; margin: 0.75rem 0 2.5rem; overflow: hidden;
     }
     .puzzle-prog-fill {
-      height: 100%;
-      background: var(--gold);
-      border-radius: 3px;
-      width: 0%;
-      transition: width 0.4s ease;
+      height: 100%; background: var(--gold); border-radius: 3px;
+      width: 0%; transition: width 0.4s ease;
     }
 
-    /* Question cards */
     .q-card {
       background: #fff;
       border: 1px solid var(--rule-strong);
       border-left: 4px solid var(--rule-strong);
       border-radius: 0 4px 4px 0;
-      padding: 1.4rem 1.6rem;
-      margin-bottom: 1rem;
+      padding: 1.4rem 1.6rem; margin-bottom: 1rem;
       transition: border-left-color 0.3s;
     }
     .q-card.state-correct { border-left-color: var(--gold); }
@@ -82,136 +62,74 @@
     }
 
     .q-eyebrow {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--ink-light);
-      margin-bottom: 0.6rem;
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--ink-light); margin-bottom: 0.6rem;
     }
     .q-eyebrow .unlock-tag { color: var(--gold); font-weight: 500; }
 
     .q-text {
-      font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--ink);
-      line-height: 1.5;
-      margin-bottom: 1rem;
+      font-family: 'Playfair Display', serif; font-size: 1rem;
+      font-weight: 600; color: var(--ink); line-height: 1.5; margin-bottom: 1rem;
     }
 
-    /* Answer options */
     .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     @media(max-width: 560px) { .q-options { grid-template-columns: 1fr; } }
 
     .opt-btn {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 0.88rem;
-      font-weight: 300;
-      color: var(--ink);
-      background: var(--cream);
-      border: 1px solid var(--rule-strong);
-      border-radius: 3px;
-      padding: 0.7rem 0.9rem;
-      text-align: left;
-      cursor: pointer;
-      line-height: 1.5;
-      transition: background 0.15s, border-color 0.15s;
+      font-family: 'Source Serif 4', Georgia, serif; font-size: 0.88rem;
+      font-weight: 300; color: var(--ink); background: var(--cream);
+      border: 1px solid var(--rule-strong); border-radius: 3px;
+      padding: 0.7rem 0.9rem; text-align: left; cursor: pointer;
+      line-height: 1.5; transition: background 0.15s, border-color 0.15s;
     }
-    .opt-btn:hover:not(:disabled) {
-      background: var(--cream-dark);
-      border-color: var(--gold);
-    }
+    .opt-btn:hover:not(:disabled) { background: var(--cream-dark); border-color: var(--gold); }
     .opt-btn:disabled { cursor: default; }
-    .opt-btn.opt-correct {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: var(--cream);
-    }
-    .opt-btn.opt-wrong {
-      background: #fdf4f2;
-      border-color: var(--rust);
-      color: var(--rust);
-    }
+    .opt-btn.opt-correct { background: var(--gold); border-color: var(--gold); color: var(--cream); }
+    .opt-btn.opt-wrong   { background: #fdf4f2; border-color: var(--rust); color: var(--rust); }
 
-    /* Feedback text */
     .q-feedback {
-      display: none;
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 0.86rem;
-      font-weight: 300;
-      line-height: 1.65;
-      margin-top: 0.9rem;
-      padding: 0.75rem 1rem;
-      border-radius: 3px;
+      display: none; font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.86rem; font-weight: 300; line-height: 1.65;
+      margin-top: 0.9rem; padding: 0.75rem 1rem; border-radius: 3px;
     }
     .q-feedback.fb-correct {
-      display: block;
-      background: rgba(154,111,42,0.08);
-      border-left: 3px solid var(--gold);
-      color: var(--ink-mid);
+      display: block; background: rgba(154,111,42,0.08);
+      border-left: 3px solid var(--gold); color: var(--ink-mid);
     }
     .q-feedback.fb-wrong {
-      display: block;
-      background: #fdf4f2;
-      border-left: 3px solid var(--rust);
-      color: var(--ink-mid);
+      display: block; background: #fdf4f2;
+      border-left: 3px solid var(--rust); color: var(--ink-mid);
     }
 
-    /* Victory banner */
     .victory-banner {
-      display: none;
-      text-align: center;
-      border: 2px solid var(--gold);
-      border-radius: 6px;
-      padding: 2.5rem 2rem;
-      margin-top: 1.5rem;
-      background: var(--cream-dark);
+      display: none; text-align: center;
+      border: 2px solid var(--gold); border-radius: 6px;
+      padding: 2.5rem 2rem; margin-top: 1.5rem; background: var(--cream-dark);
     }
     .victory-banner.show { display: block; }
     .victory-eyebrow {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0.5rem;
+      font-family: 'DM Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.5rem;
     }
     .victory-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 0.5rem;
+      font-family: 'Playfair Display', serif; font-size: 1.5rem;
+      font-weight: 700; color: var(--ink); margin-bottom: 0.5rem;
     }
     .victory-code {
-      font-family: 'DM Mono', monospace;
-      font-size: 2.4rem;
-      font-weight: 500;
-      letter-spacing: 0.25em;
-      color: var(--gold);
-      margin: 0.75rem 0;
+      font-family: 'DM Mono', monospace; font-size: 2.4rem;
+      font-weight: 500; letter-spacing: 0.25em; color: var(--gold); margin: 0.75rem 0;
     }
     .victory-sub {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 0.92rem;
-      color: var(--ink-mid);
-      margin-bottom: 1.5rem;
+      font-family: 'Source Serif 4', Georgia, serif; font-size: 0.92rem;
+      color: var(--ink-mid); margin-bottom: 1.5rem;
     }
     .victory-cta {
-      display: inline-block;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--cream);
-      background: var(--ink);
-      border: none;
-      border-radius: 3px;
-      padding: 0.75rem 1.75rem;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background 0.2s;
+      display: inline-block; font-family: 'DM Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cream); background: var(--ink); border: none; border-radius: 3px;
+      padding: 0.75rem 1.75rem; text-decoration: none; cursor: pointer; transition: background 0.2s;
     }
     .victory-cta:hover { background: var(--gold); text-decoration: none; color: var(--cream); }
   </style>
@@ -244,12 +162,10 @@
 
 <div class="puzzle-wrap">
 
-  <p></p>
   <p style="font-family:'Source Serif 4',Georgia,serif; font-size:0.95rem; color:var(--ink-mid); line-height:1.75; margin-bottom:1.5rem;">
     Before diving into this week's material and topics, let's make sure last week's <strong>Reconstruction</strong> history is still sharp. Each correct answer reveals one letter of your Week 2 access code. Wrong answers still reveal the letter &mdash; but read the feedback, because this material connects directly to what's coming.
   </p>
 
-  <!-- Password display -->
   <div class="pw-display">
     <div class="letter-box" id="lb-0"><span class="ltr">G</span><span class="ltr-qnum">Q1</span></div>
     <div class="letter-box" id="lb-1"><span class="ltr">I</span><span class="ltr-qnum">Q2</span></div>
@@ -262,10 +178,8 @@
     <div class="puzzle-prog-fill" id="prog-fill"></div>
   </div>
 
-  <!-- Questions injected by JS -->
   <div id="questions-mount"></div>
 
-  <!-- Victory -->
   <div class="victory-banner" id="victory">
     <div class="victory-eyebrow">All six letters unlocked</div>
     <div class="victory-title">Your Week 2 Access Code</div>
@@ -274,7 +188,6 @@
     <a href="gate.html" class="victory-cta">Continue to Week 2 &rarr;</a>
   </div>
 
-  <!-- Footer nav (always visible) -->
   <div class="page-footer" style="margin-top:3rem;">
     <a href="../index.html" class="nav-btn nav-btn-prev">&larr; Course Home</a>
     <a href="gate.html" class="nav-btn nav-btn-next">Enter Week 2 &rarr;</a>
@@ -357,8 +270,7 @@
   var answered = [false, false, false, false, false, false];
 
   function revealLetter(i) {
-    var box = document.getElementById('lb-' + i);
-    box.classList.add('revealed');
+    document.getElementById('lb-' + i).classList.add('revealed');
   }
 
   function updateProgress() {
@@ -366,8 +278,9 @@
     document.getElementById('prog-fill').style.width = (count / 6 * 100) + '%';
     if (count === 6) {
       setTimeout(function() {
-        document.getElementById('victory').classList.add('show');
-        document.getElementById('victory').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var v = document.getElementById('victory');
+        v.classList.add('show');
+        v.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 600);
     }
   }
@@ -401,7 +314,6 @@
     updateProgress();
   }
 
-  // Expose to onclick handlers
   window.handleAnswer = handleAnswer;
 
   function buildQuestions() {
