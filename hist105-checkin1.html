@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>HIST 105 Check-In #1: Research Materials — Hauselmann's History Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Open Sans', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f5f5f0; color: #333; }
+        header { background-color: #2c3e50; color: white; padding: 30px; text-align: center; border-radius: 5px; }
+        header p { margin: 5px 0 0 0; opacity: 0.85; }
+        nav { background-color: #34495e; padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center; }
+        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .breadcrumb { background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px; font-size: 0.9em; }
+        .breadcrumb a { color: #8e44ad; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .instructions { background-color: #f5eefb; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #8e44ad; }
+        .instructions h3 { margin-top: 0; color: #2c3e50; }
+        .instructions ul { margin: 10px 0; padding-left: 20px; }
+        .instructions li { margin: 6px 0; line-height: 1.5; }
+        .progress-bar-container { background: #e0e0e0; border-radius: 20px; height: 10px; margin: 20px 0 5px 0; }
+        .progress-bar { background: #8e44ad; height: 10px; border-radius: 20px; width: 25%; transition: width 0.4s; }
+        .progress-label { font-size: 0.8em; color: #777; text-align: right; margin-bottom: 20px; }
+        .section-card { background-color: white; padding: 25px; margin: 25px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .section-card h2 { color: #2c3e50; margin-top: 0; font-size: 1.1em; border-bottom: 2px solid #f0e6f6; padding-bottom: 10px; }
+        .source-block { border: 1px solid #e0d0ec; border-radius: 5px; padding: 18px; margin: 18px 0; background: #fdf9ff; }
+        .source-block h4 { margin: 0 0 14px 0; color: #6c3483; font-size: 0.95em; text-transform: uppercase; letter-spacing: 0.04em; }
+        label { display: block; font-weight: 600; font-size: 0.9em; margin: 12px 0 4px 0; color: #444; }
+        input[type="text"], textarea, select { width: 100%; padding: 9px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; color: #333; background: white; }
+        input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: #8e44ad; box-shadow: 0 0 0 2px rgba(142,68,173,0.15); }
+        textarea { resize: vertical; }
+        .char-count { font-size: 0.78em; color: #999; text-align: right; margin-top: 2px; }
+        .char-count.good { color: #27ae60; }
+        .add-source-btn { background: none; border: 2px dashed #8e44ad; color: #8e44ad; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: 'Open Sans', sans-serif; font-size: 0.9em; font-weight: 600; width: 100%; margin-top: 10px; transition: background 0.2s; }
+        .add-source-btn:hover { background: #f5eefb; }
+        .remove-btn { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 0.8em; float: right; padding: 0; font-family: 'Open Sans', sans-serif; }
+        .remove-btn:hover { text-decoration: underline; }
+        .example-box { background: #fffde7; border-left: 3px solid #f1c40f; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 0.88em; margin: 10px 0 0 0; color: #555; }
+        .example-box strong { color: #7d6608; }
+        .action-row { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; align-items: center; }
+        .btn-save { background-color: #8e44ad; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-save:hover { background-color: #7d3c98; }
+        .btn-pdf { background-color: #2c3e50; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-pdf:hover { background-color: #1a252f; }
+        .btn-submit { background-color: #e74c3c; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-submit:hover:not(:disabled) { background-color: #c0392b; }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-clear { background: none; border: 1px solid #ccc; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; cursor: pointer; color: #666; }
+        .btn-clear:hover { border-color: #999; color: #333; }
+        .save-notice { font-size: 0.82em; color: #27ae60; display: none; margin-top: 8px; }
+        .submit-message { margin-top: 12px; padding: 12px 16px; border-radius: 5px; font-size: 0.92em; display: none; line-height: 1.5; }
+        .submit-message.success { background: #eafaf1; border-left: 4px solid #27ae60; color: #1e8449; }
+        .submit-message.error   { background: #fdedec; border-left: 4px solid #e74c3c; color: #922b21; }
+        .submit-message.loading { background: #fef9e7; border-left: 4px solid #f39c12; color: #7d6608; }
+        .nav-links { display: flex; justify-content: space-between; margin-top: 30px; font-size: 0.9em; }
+        .nav-links a { color: #8e44ad; text-decoration: none; font-weight: 600; }
+        .nav-links a:hover { text-decoration: underline; }
+        @media print {
+            nav, .breadcrumb, .action-row, .add-source-btn, .remove-btn, .nav-links, .submit-message { display: none !important; }
+            body { background: white; padding: 0; }
+            .section-card { box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>HIST 105 — Check-In #1</h1>
+    <p>Research Materials List &amp; Summaries</p>
+</header>
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a>
+</nav>
+<div class="breadcrumb">
+    <a href="research.html">← Research Tools</a> &nbsp;/&nbsp;
+    <a href="research-hist105.html">← HIST 105 Research Guide</a>
+</div>
+<div class="progress-bar-container"><div class="progress-bar" style="width:25%"></div></div>
+<div class="progress-label">Step 1 of 4 — Research Materials</div>
+
+<div class="instructions">
+    <h3>📋 What to do for Check-In #1</h3>
+    <p>Before you begin writing, you need to gather high-quality sources for both of your case studies. For each source, write a brief annotation explaining what it argues and how you'll use it.</p>
+    <ul>
+        <li>At least <strong>2 scholarly sources</strong> on the <strong>Weimar Republic</strong> (Pelz counts)</li>
+        <li>At least <strong>2 scholarly sources</strong> on your <strong>chosen authoritarian government</strong></li>
+        <li>At least <strong>2 primary sources</strong> — at least 1 must be from the Weimar period (use the course website)</li>
+        <li>For each source: write <strong>3–5 sentences</strong> covering its main argument, how you'll use it, and any perspective or bias to note</li>
+    </ul>
+    <div class="example-box">
+        <strong>Example annotation:</strong> Pelz, William A. <em>A People's History of Modern Europe.</em> Pluto Press, 2016. — Pelz provides a bottom-up perspective on European political movements, covering revolutions, working-class struggles, and authoritarian regimes. Chapter 10 is especially relevant because it traces how economic instability in the 1920s–30s produced conditions for fascism. I will use it to analyze the structural parallels between Weimar's collapse and my second case study. Pelz's emphasis on ordinary people's experiences will help me move beyond elite political history.
+    </div>
+</div>
+
+<!-- Student Info -->
+<div class="section-card">
+    <h2>Your Information</h2>
+    <label for="student-name">Full Name</label>
+    <input type="text" id="student-name" placeholder="Your full name">
+    <label for="student-section">Course Section</label>
+    <select id="student-section">
+        <option value="">— Select your section —</option>
+        <option value="3944">Section 3944</option>
+        <option value="3945">Section 3945</option>
+        <option value="3946">Section 3946</option>
+    </select>
+    <label for="chosen-govt">Your Chosen Authoritarian Government (Case Study 2)</label>
+    <input type="text" id="chosen-govt" placeholder="e.g., Stalin's Soviet Union, Pinochet's Chile, Viktor Orbán's Hungary…">
+</div>
+
+<!-- Weimar Sources -->
+<div class="section-card">
+    <h2>📚 Case Study 1: Weimar Republic Sources</h2>
+    <p style="color:#555; font-size:0.92em;">Include at least 2 scholarly sources. Pelz counts as one. Use Chicago or MLA format for the citation.</p>
+    <div id="weimar-sources-container"></div>
+    <button class="add-source-btn" onclick="addSource('weimar')">+ Add Weimar Source</button>
+</div>
+
+<!-- Chosen Govt Sources -->
+<div class="section-card">
+    <h2>📚 Case Study 2: Your Chosen Government Sources</h2>
+    <p style="color:#555; font-size:0.92em;">Include at least 2 scholarly sources on the authoritarian government you selected.</p>
+    <div id="chosen-sources-container"></div>
+    <button class="add-source-btn" onclick="addSource('chosen')">+ Add Source</button>
+</div>
+
+<!-- Primary Sources -->
+<div class="section-card">
+    <h2>🗂️ Primary Sources</h2>
+    <p style="color:#555; font-size:0.92em;">At least 2 primary sources total. At least 1 must be from the Weimar period (use the course website). The second can be from your chosen government.</p>
+    <div id="primary-sources-container"></div>
+    <button class="add-source-btn" onclick="addSource('primary')">+ Add Primary Source</button>
+</div>
+
+<!-- Reflection -->
+<div class="section-card">
+    <h2>🔎 Initial Reflection</h2>
+    <p style="color:#555; font-size:0.92em;">After reviewing your sources, write 2–3 sentences: What patterns or themes are you already noticing across your two case studies? What questions are you still trying to answer?</p>
+    <label for="reflection">Your Reflection</label>
+    <textarea id="reflection" rows="5" placeholder="After reviewing your sources, what patterns are you noticing? What questions do you still have?"></textarea>
+    <div class="char-count" id="reflection-count">0 characters</div>
+</div>
+
+<div class="action-row">
+    <button class="btn-save" onclick="saveProgress()">💾 Save Progress</button>
+    <button class="btn-pdf" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button class="btn-submit" id="submit-btn" onclick="submitToSupabase()">📤 Submit to Professor</button>
+    <button class="btn-clear" onclick="clearAll()">Clear All</button>
+</div>
+<div class="save-notice" id="save-notice">✓ Progress saved to this browser.</div>
+<div class="submit-message" id="submit-message"></div>
+
+<div class="nav-links">
+    <span></span>
+    <a href="hist105-checkin2.html">Next: Check-In #2 — Thesis Statement →</a>
+</div>
+
+<footer style="text-align:center; margin-top:40px; color:#7f8c8d;">
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script>
+const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const STORAGE_KEY   = 'hist105-checkin1';
+const CHECKIN_NUM   = '1';
+let db = null;
+function getDB() { if (!db) db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON); return db; }
+
+let sourceCounts = { weimar: 0, chosen: 0, primary: 0 };
+const sourceLabels = { weimar: 'Weimar Republic', chosen: 'Chosen Government', primary: 'Primary Source' };
+
+function addSource(type, data = {}) {
+    sourceCounts[type]++;
+    const n = sourceCounts[type];
+    const container = document.getElementById(type + '-sources-container');
+    const block = document.createElement('div');
+    block.className = 'source-block';
+    block.id = type + '-source-' + n;
+    const isPrimary = type === 'primary';
+    const typeOptions = isPrimary
+        ? `<option value="">Select type…</option><option value="weimar" ${data.sourceType==='weimar'?'selected':''}>Weimar Period Primary Source</option><option value="other" ${data.sourceType==='other'?'selected':''}>Other Government Primary Source</option>`
+        : '';
+    block.innerHTML = `
+        <h4>${sourceLabels[type]} #${n} <button class="remove-btn" onclick="removeSource('${type}',${n})">✕ Remove</button></h4>
+        ${isPrimary ? `<label>Source Type</label><select id="${type}-${n}-type">${typeOptions}</select>` : ''}
+        <label>Full Citation (Chicago or MLA format)</label>
+        <input type="text" id="${type}-${n}-citation" placeholder="Author Last, First. Title. Publisher, Year." value="${data.citation||''}">
+        <label>Annotation (3–5 sentences: main argument, how you'll use it, any bias)</label>
+        <textarea id="${type}-${n}-annotation" rows="4" placeholder="What does this source argue? How will you use it in your paper? Does the author have a particular perspective or bias?">${data.annotation||''}</textarea>
+    `;
+    container.appendChild(block);
+}
+
+function removeSource(type, n) {
+    const el = document.getElementById(type + '-source-' + n);
+    if (el) el.remove();
+}
+
+function gatherData() {
+    const data = {
+        name: document.getElementById('student-name').value,
+        section: document.getElementById('student-section').value,
+        chosenGovt: document.getElementById('chosen-govt').value,
+        reflection: document.getElementById('reflection').value,
+        sources: { weimar: [], chosen: [], primary: [] }
+    };
+    ['weimar','chosen','primary'].forEach(type => {
+        for (let i = 1; i <= sourceCounts[type]; i++) {
+            const el = document.getElementById(type+'-source-'+i);
+            if (!el) continue;
+            const entry = {
+                citation: document.getElementById(type+'-'+i+'-citation')?.value || '',
+                annotation: document.getElementById(type+'-'+i+'-annotation')?.value || ''
+            };
+            if (type === 'primary') entry.sourceType = document.getElementById(type+'-'+i+'-type')?.value || '';
+            data.sources[type].push(entry);
+        }
+    });
+    return data;
+}
+
+function saveProgress() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherData()));
+    const n = document.getElementById('save-notice');
+    n.style.display = 'block';
+    setTimeout(() => n.style.display = 'none', 3000);
+}
+
+function loadProgress() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+        addSource('weimar'); addSource('weimar');
+        addSource('chosen'); addSource('chosen');
+        addSource('primary'); addSource('primary');
+        return;
+    }
+    const data = JSON.parse(raw);
+    document.getElementById('student-name').value    = data.name || '';
+    document.getElementById('student-section').value = data.section || '';
+    document.getElementById('chosen-govt').value     = data.chosenGovt || '';
+    document.getElementById('reflection').value      = data.reflection || '';
+    ['weimar','chosen','primary'].forEach(type => {
+        (data.sources[type] || []).forEach(s => addSource(type, s));
+    });
+    ['weimar','chosen','primary'].forEach(type => { while (sourceCounts[type] < 2) addSource(type); });
+    updateCharCount();
+}
+
+function clearAll() {
+    if (!confirm('Clear all your work? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+}
+
+function updateCharCount() {
+    const el = document.getElementById('reflection');
+    const count = document.getElementById('reflection-count');
+    const len = el.value.length;
+    count.textContent = len + ' characters';
+    count.className = 'char-count ' + (len >= 200 ? 'good' : '');
+}
+
+// ── PDF ───────────────────────────────────────────────────────────────────────
+function generatePDFBlob() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'in', format: 'letter' });
+    const data = gatherData();
+    const margin = 1, pageH = 11, cW = 6.5, lh = 0.22;
+    let y = margin;
+
+    const write = (text, size = 11, bold = false, indent = 0) => {
+        doc.setFontSize(size);
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        doc.splitTextToSize(String(text || ''), cW - indent).forEach(line => {
+            if (y > pageH - margin) { doc.addPage(); y = margin; }
+            doc.text(line, margin + indent, y);
+            y += lh * (size / 10);
+        });
+    };
+    const gap = (n = 1) => { y += lh * n; };
+
+    write('HIST 105 — Check-In #1: Research Materials List & Summaries', 13, true);
+    gap();
+    write(`Student: ${data.name || '[Name]'}     Section: ${data.section || '[Section]'}     Date: ${new Date().toLocaleDateString()}`, 10);
+    write(`Chosen Government (Case Study 2): ${data.chosenGovt || '[Not specified]'}`, 10);
+    gap(2);
+
+    const printSources = (label, sources) => {
+        write(label, 12, true);
+        gap(0.5);
+        if (!sources?.length) { write('(No sources entered)', 10, false, 0.2); gap(); return; }
+        sources.forEach((s, i) => {
+            write(`Source ${i+1}:`, 10, true);
+            write(s.citation || '(No citation)', 10, false, 0.25);
+            gap(0.3);
+            write('Annotation:', 10, true);
+            write(s.annotation || '(No annotation)', 10, false, 0.25);
+            gap();
+        });
+        gap();
+    };
+
+    printSources('Weimar Republic Sources (Case Study 1)', data.sources.weimar);
+    printSources('Chosen Government Sources (Case Study 2)', data.sources.chosen);
+    printSources('Primary Sources', data.sources.primary);
+    write('Initial Reflection', 12, true);
+    gap(0.5);
+    write(data.reflection || '(No reflection entered)', 10, false, 0.25);
+    return doc.output('blob');
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+async function submitToSupabase() {
+    const name    = document.getElementById('student-name').value.trim();
+    const section = document.getElementById('student-section').value;
+    const msgEl   = document.getElementById('submit-message');
+    const btn     = document.getElementById('submit-btn');
+
+    if (!name)    { alert('Please enter your full name before submitting.');         document.getElementById('student-name').focus();    return; }
+    if (!section) { alert('Please select your course section before submitting.');   document.getElementById('student-section').focus(); return; }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Submitting…';
+    msgEl.className = 'submit-message loading';
+    msgEl.style.display = 'block';
+    msgEl.textContent = 'Generating PDF and uploading your submission…';
+
+    try {
+        const pdfBlob  = generatePDFBlob();
+        const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+        const filePath = `hist105-checkins/checkin${CHECKIN_NUM}/${section}/${safeName}_${Date.now()}.pdf`;
+
+        const { error: upErr } = await getDB().storage.from('student-submissions')
+            .upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: false });
+        if (upErr) console.warn('PDF upload warning:', upErr.message);
+
+        const { error: dbErr } = await getDB().from('checkin_submissions').insert([{
+            student_name  : name,
+            section       : section,
+            course        : 'HIST 105',
+            checkin_number: CHECKIN_NUM,
+            form_data     : gatherData(),
+            file_path     : upErr ? null : filePath,
+            submitted_at  : new Date().toISOString()
+        }]);
+        if (dbErr) throw dbErr;
+
+        msgEl.className = 'submit-message success';
+        msgEl.textContent = `✅ Submitted successfully! Prof. Hauselmann has received your Check-In #1. (${new Date().toLocaleString()})`;
+        btn.textContent = '✓ Submitted';
+    } catch (err) {
+        console.error(err);
+        msgEl.className = 'submit-message error';
+        msgEl.textContent = `❌ Submission failed: ${err.message || 'Unknown error'}. Please try again or email your work to Prof. Hauselmann.`;
+        btn.disabled = false;
+        btn.textContent = '📤 Submit to Professor';
+    }
+}
+
+document.getElementById('reflection').addEventListener('input', updateCharCount);
+document.addEventListener('input', saveProgress);
+window.addEventListener('load', loadProgress);
+</script>
+</body>
+</html>
