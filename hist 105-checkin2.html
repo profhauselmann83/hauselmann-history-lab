@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>HIST 105 Check-In #2: Thesis Statement — Hauselmann's History Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Open Sans', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f5f5f0; color: #333; }
+        header { background-color: #2c3e50; color: white; padding: 30px; text-align: center; border-radius: 5px; }
+        header p { margin: 5px 0 0 0; opacity: 0.85; }
+        nav { background-color: #34495e; padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center; }
+        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .breadcrumb { background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px; font-size: 0.9em; }
+        .breadcrumb a { color: #8e44ad; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .instructions { background-color: #f5eefb; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #8e44ad; }
+        .instructions h3 { margin-top: 0; color: #2c3e50; }
+        .progress-bar-container { background: #e0e0e0; border-radius: 20px; height: 10px; margin: 20px 0 5px 0; }
+        .progress-bar { background: #8e44ad; height: 10px; border-radius: 20px; width: 50%; transition: width 0.4s; }
+        .progress-label { font-size: 0.8em; color: #777; text-align: right; margin-bottom: 20px; }
+        .section-card { background-color: white; padding: 25px; margin: 25px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .section-card h2 { color: #2c3e50; margin-top: 0; font-size: 1.1em; border-bottom: 2px solid #f0e6f6; padding-bottom: 10px; }
+        label { display: block; font-weight: 600; font-size: 0.9em; margin: 14px 0 4px 0; color: #444; }
+        label span { font-weight: 400; color: #888; font-size: 0.92em; }
+        input[type="text"], textarea, select { width: 100%; padding: 9px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; color: #333; }
+        input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: #8e44ad; box-shadow: 0 0 0 2px rgba(142,68,173,0.15); }
+        textarea { resize: vertical; }
+        .char-count { font-size: 0.78em; color: #999; text-align: right; margin-top: 2px; }
+        .char-count.warn { color: #e67e22; }
+        .char-count.good { color: #27ae60; }
+        .thesis-preview { margin-top: 16px; padding: 14px 18px; background: #f0e6f6; border-radius: 5px; border-left: 3px solid #8e44ad; font-style: italic; color: #4a235a; min-height: 40px; font-size: 0.95em; line-height: 1.6; }
+        .thesis-preview em { color: #aaa; font-style: italic; }
+        .example-box { background: #fffde7; border-left: 3px solid #f1c40f; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 0.88em; margin: 12px 0 0 0; color: #555; line-height: 1.6; }
+        .example-box strong { color: #7d6608; }
+        .checklist { margin: 12px 0; padding: 0; list-style: none; }
+        .checklist li { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0; font-size: 0.92em; color: #555; }
+        .checklist input[type="checkbox"] { width: auto; margin-top: 2px; accent-color: #8e44ad; }
+        .strength-meter { margin-top: 14px; }
+        .strength-meter p { font-size: 0.88em; color: #666; margin: 6px 0 3px; font-weight: 600; }
+        .strength-bar-container { background: #eee; border-radius: 10px; height: 8px; }
+        .strength-bar { height: 8px; border-radius: 10px; width: 0; transition: width 0.4s, background 0.4s; }
+        .strength-label { font-size: 0.78em; color: #888; margin-top: 3px; }
+        .action-row { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; align-items: center; }
+        .btn-save { background-color: #8e44ad; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-save:hover { background-color: #7d3c98; }
+        .btn-pdf { background-color: #2c3e50; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-pdf:hover { background-color: #1a252f; }
+        .btn-submit { background-color: #e74c3c; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-submit:hover:not(:disabled) { background-color: #c0392b; }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-clear { background: none; border: 1px solid #ccc; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; cursor: pointer; color: #666; }
+        .btn-clear:hover { border-color: #999; color: #333; }
+        .save-notice { font-size: 0.82em; color: #27ae60; display: none; margin-top: 8px; }
+        .submit-message { margin-top: 12px; padding: 12px 16px; border-radius: 5px; font-size: 0.92em; display: none; line-height: 1.5; }
+        .submit-message.success { background: #eafaf1; border-left: 4px solid #27ae60; color: #1e8449; }
+        .submit-message.error   { background: #fdedec; border-left: 4px solid #e74c3c; color: #922b21; }
+        .submit-message.loading { background: #fef9e7; border-left: 4px solid #f39c12; color: #7d6608; }
+        .nav-links { display: flex; justify-content: space-between; margin-top: 30px; font-size: 0.9em; }
+        .nav-links a { color: #8e44ad; text-decoration: none; font-weight: 600; }
+        .nav-links a:hover { text-decoration: underline; }
+        @media print {
+            nav, .breadcrumb, .action-row, .nav-links, .checklist input, .submit-message { display: none !important; }
+            body { background: white; padding: 0; }
+            .section-card { box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>HIST 105 — Check-In #2</h1>
+    <p>Thesis Statement &amp; Research Question</p>
+</header>
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a>
+</nav>
+<div class="breadcrumb">
+    <a href="research.html">← Research Tools</a> &nbsp;/&nbsp;
+    <a href="research-hist105.html">← HIST 105 Research Guide</a>
+</div>
+<div class="progress-bar-container"><div class="progress-bar" style="width:50%"></div></div>
+<div class="progress-label">Step 2 of 4 — Thesis &amp; Research Question</div>
+
+<div class="instructions">
+    <h3>📋 What to do for Check-In #2</h3>
+    <p>Before you write a single body paragraph, you need a clear central argument. This step asks you to:</p>
+    <ol style="margin:10px 0; padding-left:20px; line-height:1.7;">
+        <li>Write a <strong>thesis statement</strong> (1–2 sentences) arguing why the Weimar Republic collapsed and what your comparison reveals</li>
+        <li>Write a <strong>1-paragraph explanation</strong> of your thesis: What is your central argument? Why does this comparison matter? What historical patterns do you hope to illuminate?</li>
+        <li>Develop a <strong>guiding research question</strong> that frames your paper</li>
+    </ol>
+    <div class="example-box">
+        <strong>Example thesis:</strong> The collapse of the Weimar Republic illustrates how economic crisis, ideological polarization, and the exploitation of emergency legal powers can dismantle democracy from within — a pattern that also appears in [chosen regime], where [specific parallel]. Both cases reveal that democracy is most vulnerable not to direct assault, but to the slow erosion of institutional trust.
+    </div>
+</div>
+
+<!-- Student Info -->
+<div class="section-card">
+    <h2>Your Information</h2>
+    <label for="student-name">Full Name</label>
+    <input type="text" id="student-name" placeholder="Your full name">
+    <label for="student-section">Course Section</label>
+    <select id="student-section">
+        <option value="">— Select your section —</option>
+        <option value="3944">Section 3944</option>
+        <option value="3945">Section 3945</option>
+        <option value="3946">Section 3946</option>
+    </select>
+    <label for="chosen-govt">Your Chosen Authoritarian Government (Case Study 2)</label>
+    <input type="text" id="chosen-govt" placeholder="e.g., Stalin's Soviet Union, Pinochet's Chile…">
+</div>
+
+<!-- Thesis Statement -->
+<div class="section-card">
+    <h2>✍️ Your Thesis Statement</h2>
+    <p style="color:#555; font-size:0.92em;">Write 1–2 sentences. Your thesis should: (1) argue why the Weimar Republic collapsed, and (2) state what your comparative case reveals about the pattern.</p>
+    <label for="thesis">Thesis Statement <span>(1–2 sentences)</span></label>
+    <textarea id="thesis" rows="4" placeholder="The collapse of the Weimar Republic…" oninput="updateThesisPreview(); updateStrength();"></textarea>
+    <div class="char-count" id="thesis-count">0 words</div>
+    <div class="thesis-preview" id="thesis-preview"><em>Your thesis will appear here as you type…</em></div>
+    <div class="strength-meter">
+        <p>Thesis Strength Check</p>
+        <div class="strength-bar-container"><div class="strength-bar" id="strength-bar"></div></div>
+        <div class="strength-label" id="strength-label">Start typing your thesis above…</div>
+    </div>
+    <div style="margin-top:18px;">
+        <p style="font-size:0.9em; font-weight:600; color:#444;">Self-check: Does your thesis…</p>
+        <ul class="checklist">
+            <li><input type="checkbox" id="c1"><label for="c1" style="font-weight:400;margin:0;">Make a specific historical argument (not just describe what happened)?</label></li>
+            <li><input type="checkbox" id="c2"><label for="c2" style="font-weight:400;margin:0;">Explain <em>why</em> the Weimar Republic collapsed (not just <em>that</em> it did)?</label></li>
+            <li><input type="checkbox" id="c3"><label for="c3" style="font-weight:400;margin:0;">Reference your second case study and what the comparison reveals?</label></li>
+            <li><input type="checkbox" id="c4"><label for="c4" style="font-weight:400;margin:0;">Identify a historical pattern that both cases share?</label></li>
+            <li><input type="checkbox" id="c5"><label for="c5" style="font-weight:400;margin:0;">Avoid vague phrases like "throughout history" or "many factors"?</label></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Thesis Explanation -->
+<div class="section-card">
+    <h2>📝 Thesis Explanation <span style="font-size:0.85em; font-weight:400; color:#777;">(1 paragraph)</span></h2>
+    <p style="color:#555; font-size:0.92em;">Explain your thesis in 1 paragraph. Address: What is your central argument? Why is this comparison historically important? What patterns do you hope to illuminate?</p>
+    <label for="explanation">Your Explanation</label>
+    <textarea id="explanation" rows="7" placeholder="My central argument is…  This comparison matters because…  I hope to show that…"></textarea>
+    <div class="char-count" id="explanation-count">0 words</div>
+</div>
+
+<!-- Research Question -->
+<div class="section-card">
+    <h2>❓ Guiding Research Question</h2>
+    <p style="color:#555; font-size:0.92em;">Write one clear question that frames your entire paper. This is the question your thesis answers. A strong research question is specific, historically grounded, and requires analysis — not just description.</p>
+    <div class="example-box" style="margin-bottom:14px;">
+        <strong>Weak question:</strong> Why did the Weimar Republic fail? &nbsp;|&nbsp; <strong>Stronger:</strong> How did economic crisis and the exploitation of emergency powers combine to dismantle Weimar democracy, and does this pattern appear in [chosen regime]?
+    </div>
+    <label for="research-question">Your Research Question</label>
+    <textarea id="research-question" rows="3" placeholder="How did…"></textarea>
+    <label style="margin-top:18px;">Why is this question significant? <span>(1–2 sentences)</span></label>
+    <textarea id="question-significance" rows="3" placeholder="This question matters because…"></textarea>
+</div>
+
+<!-- Connection to Pelz -->
+<div class="section-card">
+    <h2>📖 Connection to Pelz</h2>
+    <p style="color:#555; font-size:0.92em;">Pelz is required. Which chapter(s) from <em>A People's History of Modern Europe</em> are most relevant to your thesis? How does Pelz's bottom-up perspective shape or complicate your argument?</p>
+    <label for="pelz-connection">Relevant Chapter(s) and How You'll Use Them</label>
+    <textarea id="pelz-connection" rows="4" placeholder="Chapter 10 ('Economic Collapse and the Rise of Fascism') is most relevant because… Pelz's people-centered approach will help me…"></textarea>
+</div>
+
+<div class="action-row">
+    <button class="btn-save" onclick="saveProgress()">💾 Save Progress</button>
+    <button class="btn-pdf" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button class="btn-submit" id="submit-btn" onclick="submitToSupabase()">📤 Submit to Professor</button>
+    <button class="btn-clear" onclick="clearAll()">Clear All</button>
+</div>
+<div class="save-notice" id="save-notice">✓ Progress saved to this browser.</div>
+<div class="submit-message" id="submit-message"></div>
+
+<div class="nav-links">
+    <a href="hist105-checkin1.html">← Check-In #1: Research Materials</a>
+    <a href="hist105-checkin3.html">Next: Check-In #3 — Paper Outline →</a>
+</div>
+
+<footer style="text-align:center; margin-top:40px; color:#7f8c8d;">
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script>
+const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const STORAGE_KEY   = 'hist105-checkin2';
+const CHECKIN_NUM   = '2';
+let db = null;
+function getDB() { if (!db) db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON); return db; }
+
+function wordCount(str) { return str.trim() ? str.trim().split(/\s+/).length : 0; }
+
+function updateThesisPreview() {
+    const val = document.getElementById('thesis').value.trim();
+    const preview = document.getElementById('thesis-preview');
+    preview.innerHTML = val ? val : '<em>Your thesis will appear here as you type…</em>';
+    const wc = wordCount(val);
+    const el = document.getElementById('thesis-count');
+    el.textContent = wc + ' words';
+    el.className = 'char-count ' + (wc >= 25 && wc <= 60 ? 'good' : wc > 60 ? 'warn' : '');
+}
+
+function updateStrength() {
+    const thesis = document.getElementById('thesis').value.toLowerCase();
+    let score = 0;
+    [/weimar|republic/i, /collapse|fail|crumbl|dismantle|erode/i, /economic|ideolog|propaganda|polariz|emergency/i, /pattern|parallel|reveal|compar/i].forEach(s => { if (s.test(thesis)) score++; });
+    if (wordCount(thesis) >= 25) score = Math.min(score + 1, 5);
+    const bar = document.getElementById('strength-bar');
+    const label = document.getElementById('strength-label');
+    bar.style.width = (score / 5 * 100) + '%';
+    const colors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#27ae60'];
+    const labels = ['Keep going — add more specificity','Getting there — mention your comparison','Developing — identify a pattern','Looking strong — almost there','Strong thesis!'];
+    bar.style.background = colors[Math.min(score, 4)];
+    label.textContent = score === 0 ? 'Start typing your thesis above…' : labels[Math.min(score - 1, 4)];
+}
+
+function updateWordCounts() {
+    ['explanation','pelz-connection'].forEach(id => {
+        const el = document.getElementById(id);
+        const count = document.getElementById(id + '-count');
+        if (!el || !count) return;
+        count.textContent = wordCount(el.value) + ' words';
+    });
+    updateThesisPreview();
+}
+
+function gatherData() {
+    return {
+        name: document.getElementById('student-name').value,
+        section: document.getElementById('student-section').value,
+        chosenGovt: document.getElementById('chosen-govt').value,
+        thesis: document.getElementById('thesis').value,
+        explanation: document.getElementById('explanation').value,
+        researchQuestion: document.getElementById('research-question').value,
+        questionSignificance: document.getElementById('question-significance').value,
+        pelzConnection: document.getElementById('pelz-connection').value,
+        checks: [1,2,3,4,5].map(i => document.getElementById('c'+i)?.checked || false)
+    };
+}
+
+function saveProgress() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherData()));
+    const n = document.getElementById('save-notice');
+    n.style.display = 'block';
+    setTimeout(() => n.style.display = 'none', 3000);
+}
+
+function loadProgress() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    document.getElementById('student-name').value       = d.name || '';
+    document.getElementById('student-section').value    = d.section || '';
+    document.getElementById('chosen-govt').value        = d.chosenGovt || '';
+    document.getElementById('thesis').value             = d.thesis || '';
+    document.getElementById('explanation').value        = d.explanation || '';
+    document.getElementById('research-question').value  = d.researchQuestion || '';
+    document.getElementById('question-significance').value = d.questionSignificance || '';
+    document.getElementById('pelz-connection').value    = d.pelzConnection || '';
+    (d.checks || []).forEach((v, i) => { const el = document.getElementById('c'+(i+1)); if (el) el.checked = v; });
+    updateWordCounts(); updateStrength();
+}
+
+function clearAll() {
+    if (!confirm('Clear all your work? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY); location.reload();
+}
+
+// ── PDF ───────────────────────────────────────────────────────────────────────
+function generatePDFBlob() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'in', format: 'letter' });
+    const d = gatherData();
+    const margin = 1, pageH = 11, cW = 6.5, lh = 0.22;
+    let y = margin;
+
+    const write = (text, size = 11, bold = false, indent = 0) => {
+        doc.setFontSize(size); doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        doc.splitTextToSize(String(text || ''), cW - indent).forEach(line => {
+            if (y > pageH - margin) { doc.addPage(); y = margin; }
+            doc.text(line, margin + indent, y); y += lh * (size / 10);
+        });
+    };
+    const gap = (n = 1) => { y += lh * n; };
+
+    write('HIST 105 — Check-In #2: Thesis Statement & Research Question', 13, true);
+    gap();
+    write(`Student: ${d.name || '[Name]'}     Section: ${d.section || '[Section]'}     Date: ${new Date().toLocaleDateString()}`, 10);
+    write(`Chosen Government (Case Study 2): ${d.chosenGovt || '[Not specified]'}`, 10);
+    gap(2);
+    write('Thesis Statement', 12, true); gap(0.5);
+    write(d.thesis || '(No thesis entered)', 10, false, 0.25); gap(1.5);
+    write('Thesis Explanation', 12, true); gap(0.5);
+    write(d.explanation || '(No explanation entered)', 10, false, 0.25); gap(1.5);
+    write('Guiding Research Question', 12, true); gap(0.5);
+    write(d.researchQuestion || '(No question entered)', 10, false, 0.25); gap(0.5);
+    write('Why this question is significant:', 10, true);
+    write(d.questionSignificance || '(Not answered)', 10, false, 0.25); gap(1.5);
+    write('Connection to Pelz', 12, true); gap(0.5);
+    write(d.pelzConnection || '(Not answered)', 10, false, 0.25);
+    return doc.output('blob');
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+async function submitToSupabase() {
+    const name    = document.getElementById('student-name').value.trim();
+    const section = document.getElementById('student-section').value;
+    const msgEl   = document.getElementById('submit-message');
+    const btn     = document.getElementById('submit-btn');
+
+    if (!name)    { alert('Please enter your full name before submitting.');        document.getElementById('student-name').focus();    return; }
+    if (!section) { alert('Please select your course section before submitting.');  document.getElementById('student-section').focus(); return; }
+
+    btn.disabled = true; btn.textContent = '⏳ Submitting…';
+    msgEl.className = 'submit-message loading'; msgEl.style.display = 'block';
+    msgEl.textContent = 'Generating PDF and uploading your submission…';
+
+    try {
+        const pdfBlob  = generatePDFBlob();
+        const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+        const filePath = `hist105-checkins/checkin${CHECKIN_NUM}/${section}/${safeName}_${Date.now()}.pdf`;
+        const { error: upErr } = await getDB().storage.from('student-submissions').upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: false });
+        if (upErr) console.warn('PDF upload warning:', upErr.message);
+        const { error: dbErr } = await getDB().from('checkin_submissions').insert([{
+            student_name: name, section, course: 'HIST 105', checkin_number: CHECKIN_NUM,
+            form_data: gatherData(), file_path: upErr ? null : filePath, submitted_at: new Date().toISOString()
+        }]);
+        if (dbErr) throw dbErr;
+        msgEl.className = 'submit-message success';
+        msgEl.textContent = `✅ Submitted successfully! Prof. Hauselmann has received your Check-In #2. (${new Date().toLocaleString()})`;
+        btn.textContent = '✓ Submitted';
+    } catch (err) {
+        console.error(err);
+        msgEl.className = 'submit-message error';
+        msgEl.textContent = `❌ Submission failed: ${err.message || 'Unknown error'}. Please try again or email your work to Prof. Hauselmann.`;
+        btn.disabled = false; btn.textContent = '📤 Submit to Professor';
+    }
+}
+
+document.addEventListener('input', () => { updateWordCounts(); saveProgress(); });
+window.addEventListener('load', loadProgress);
+</script>
+</body>
+</html>
