@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>HIST 105 Check-In #3: Paper Outline — Hauselmann's History Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Open Sans', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f5f5f0; color: #333; }
+        header { background-color: #2c3e50; color: white; padding: 30px; text-align: center; border-radius: 5px; }
+        header p { margin: 5px 0 0 0; opacity: 0.85; }
+        nav { background-color: #34495e; padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center; }
+        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .breadcrumb { background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px; font-size: 0.9em; }
+        .breadcrumb a { color: #8e44ad; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .instructions { background-color: #f5eefb; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #8e44ad; }
+        .instructions h3 { margin-top: 0; color: #2c3e50; }
+        .progress-bar-container { background: #e0e0e0; border-radius: 20px; height: 10px; margin: 20px 0 5px 0; }
+        .progress-bar { background: #8e44ad; height: 10px; border-radius: 20px; width: 75%; }
+        .progress-label { font-size: 0.8em; color: #777; text-align: right; margin-bottom: 20px; }
+        .outline-section { background-color: white; padding: 25px; margin: 20px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-top: 4px solid #8e44ad; }
+        .outline-section.weimar  { border-top-color: #2980b9; }
+        .outline-section.chosen  { border-top-color: #27ae60; }
+        .outline-section.compare { border-top-color: #e67e22; }
+        .outline-section.conclude { border-top-color: #7f8c8d; }
+        .outline-section h2 { color: #2c3e50; margin-top: 0; font-size: 1.1em; display: flex; align-items: center; gap: 10px; }
+        .section-badge { font-size: 0.72em; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; color: white; }
+        .badge-intro { background: #8e44ad; }
+        .badge-weimar { background: #2980b9; }
+        .badge-chosen { background: #27ae60; }
+        .badge-compare { background: #e67e22; }
+        .badge-conclude { background: #7f8c8d; }
+        label { display: block; font-weight: 600; font-size: 0.9em; margin: 14px 0 4px 0; color: #444; }
+        label span { font-weight: 400; color: #888; font-size: 0.92em; }
+        input[type="text"], textarea, select { width: 100%; padding: 9px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; color: #333; }
+        input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: #8e44ad; box-shadow: 0 0 0 2px rgba(142,68,173,0.15); }
+        textarea { resize: vertical; }
+        .evidence-item { display: flex; gap: 8px; margin: 6px 0; align-items: flex-start; }
+        .evidence-item input { flex: 1; }
+        .remove-evidence { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 1.1em; padding: 8px 6px; line-height: 1; }
+        .add-evidence-btn { background: none; border: 1px dashed #ccc; color: #888; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-family: 'Open Sans', sans-serif; font-size: 0.85em; margin-top: 6px; }
+        .add-evidence-btn:hover { border-color: #8e44ad; color: #8e44ad; }
+        .example-box { background: #fffde7; border-left: 3px solid #f1c40f; padding: 10px 14px; border-radius: 0 4px 4px 0; font-size: 0.86em; margin: 8px 0 4px 0; color: #555; line-height: 1.5; }
+        .example-box strong { color: #7d6608; }
+        .required-badge { font-size: 0.75em; background: #e74c3c; color: white; padding: 1px 6px; border-radius: 3px; margin-left: 6px; font-weight: 600; }
+        .action-row { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; align-items: center; }
+        .btn-save { background-color: #8e44ad; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-save:hover { background-color: #7d3c98; }
+        .btn-pdf { background-color: #2c3e50; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-pdf:hover { background-color: #1a252f; }
+        .btn-submit { background-color: #e74c3c; color: white; border: none; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; font-weight: 700; cursor: pointer; }
+        .btn-submit:hover:not(:disabled) { background-color: #c0392b; }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-clear { background: none; border: 1px solid #ccc; padding: 12px 28px; border-radius: 5px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; cursor: pointer; color: #666; }
+        .btn-clear:hover { border-color: #999; color: #333; }
+        .save-notice { font-size: 0.82em; color: #27ae60; display: none; margin-top: 8px; }
+        .submit-message { margin-top: 12px; padding: 12px 16px; border-radius: 5px; font-size: 0.92em; display: none; line-height: 1.5; }
+        .submit-message.success { background: #eafaf1; border-left: 4px solid #27ae60; color: #1e8449; }
+        .submit-message.error   { background: #fdedec; border-left: 4px solid #e74c3c; color: #922b21; }
+        .submit-message.loading { background: #fef9e7; border-left: 4px solid #f39c12; color: #7d6608; }
+        .nav-links { display: flex; justify-content: space-between; margin-top: 30px; font-size: 0.9em; }
+        .nav-links a { color: #8e44ad; text-decoration: none; font-weight: 600; }
+        .nav-links a:hover { text-decoration: underline; }
+        @media print {
+            nav, .breadcrumb, .action-row, .add-evidence-btn, .remove-evidence, .nav-links, .submit-message { display: none !important; }
+            body { background: white; padding: 0; }
+            .outline-section { box-shadow: none; border: 1px solid #ddd; border-top: 4px solid #8e44ad; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>HIST 105 — Check-In #3</h1>
+    <p>Paper Outline</p>
+</header>
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a>
+</nav>
+<div class="breadcrumb">
+    <a href="research.html">← Research Tools</a> &nbsp;/&nbsp;
+    <a href="research-hist105.html">← HIST 105 Research Guide</a>
+</div>
+<div class="progress-bar-container"><div class="progress-bar" style="width:75%"></div></div>
+<div class="progress-label">Step 3 of 4 — Paper Outline</div>
+
+<div class="instructions">
+    <h3>📋 What to do for Check-In #3</h3>
+    <p>Build a detailed outline for each section of your paper. For every major section, you need:</p>
+    <ul style="margin:8px 0; padding-left:20px; line-height:1.7;">
+        <li>A <strong>topic sentence</strong> stating the main argument of that section</li>
+        <li><strong>Key evidence</strong> — specific sources, documents, or Pelz chapters you'll cite</li>
+        <li>At least <strong>1 specific primary source</strong> identified for each main body section</li>
+        <li>Brief notes on the <strong>analytical points</strong> you'll develop</li>
+    </ul>
+    <p style="margin-bottom:0;"><strong>Goal:</strong> By the end of this step, you should be able to see where your argument is strong and where you need more research.</p>
+</div>
+
+<!-- Student Info -->
+<div class="outline-section">
+    <h2><span class="section-badge badge-intro">Setup</span> Your Information</h2>
+    <label for="student-name">Full Name</label>
+    <input type="text" id="student-name" placeholder="Your full name">
+    <label for="student-section">Course Section</label>
+    <select id="student-section">
+        <option value="">— Select your section —</option>
+        <option value="3944">Section 3944</option>
+        <option value="3945">Section 3945</option>
+        <option value="3946">Section 3946</option>
+    </select>
+    <label for="chosen-govt">Your Chosen Authoritarian Government (Case Study 2)</label>
+    <input type="text" id="chosen-govt" placeholder="e.g., Stalin's Soviet Union, Pinochet's Chile…">
+    <label for="thesis-reminder">Your Thesis Statement <span>(paste from Check-In #2)</span></label>
+    <textarea id="thesis-reminder" rows="3" placeholder="The collapse of the Weimar Republic…"></textarea>
+</div>
+
+<!-- Section I: Introduction -->
+<div class="outline-section">
+    <h2><span class="section-badge badge-intro">Section I</span> Introduction <span style="font-size:0.8em; font-weight:400; color:#888;">(~1 page)</span></h2>
+    <label for="intro-hook">Hook <span>(a compelling fact, quote, or scene from the Weimar period)</span></label>
+    <textarea id="intro-hook" rows="3" placeholder="e.g., In November 1923, Adolf Hitler stood trial for treason…"></textarea>
+    <label for="intro-context">Background Context <span>(brief intro to both case studies)</span></label>
+    <textarea id="intro-context" rows="3" placeholder="Briefly introduce the Weimar Republic and your chosen government…"></textarea>
+    <label for="intro-thesis">Thesis Statement</label>
+    <textarea id="intro-thesis" rows="3" placeholder="State your argument clearly…"></textarea>
+    <label for="intro-roadmap">Roadmap <span>(preview your major points)</span></label>
+    <textarea id="intro-roadmap" rows="3" placeholder="This paper will first analyze… then examine… and finally compare…"></textarea>
+</div>
+
+<!-- Section II: Weimar -->
+<div class="outline-section weimar">
+    <h2><span class="section-badge badge-weimar">Section II</span> The Weimar Republic <span style="font-size:0.8em; font-weight:400; color:#888;">(3–4 pages)</span></h2>
+    <label for="weimar-topic">Topic Sentence</label>
+    <textarea id="weimar-topic" rows="3" placeholder="e.g., Economic crisis and ideological polarization fatally weakened Weimar's democratic institutions…"></textarea>
+    <div class="example-box"><strong>Example evidence:</strong> KPD 1930 Program; Nazi Twenty-Five Points; Pelz Ch. 10; Goebbels propaganda writings.</div>
+    <label>Key Evidence &amp; Sources <span class="required-badge">Must include ≥1 Weimar primary source</span></label>
+    <div id="weimar-evidence-list"></div>
+    <button class="add-evidence-btn" onclick="addEvidence('weimar')">+ Add evidence or source</button>
+    <label for="weimar-analysis">Analytical Points</label>
+    <textarea id="weimar-analysis" rows="4" placeholder="I will argue that… The evidence shows… This matters because…"></textarea>
+    <label for="weimar-primary">Primary Source(s) You Will Analyze <span class="required-badge">Required</span></label>
+    <input type="text" id="weimar-primary" placeholder="e.g., KPD 1930 National Program; Nazi Twenty-Five Points (1920)">
+    <label for="weimar-pelz">Pelz Chapter(s) You Will Cite</label>
+    <input type="text" id="weimar-pelz" placeholder="e.g., Chapter 10 — 'Economic Collapse and the Rise of Fascism'">
+</div>
+
+<!-- Section III: Chosen Government -->
+<div class="outline-section chosen">
+    <h2><span class="section-badge badge-chosen">Section III</span> <span id="chosen-section-title">Your Chosen Government</span> <span style="font-size:0.8em; font-weight:400; color:#888;">(2–3 pages)</span></h2>
+    <label for="chosen-topic">Topic Sentence</label>
+    <textarea id="chosen-topic" rows="3" placeholder="e.g., [Chosen regime]'s rise to power followed a pattern of…"></textarea>
+    <label>Key Evidence &amp; Sources <span class="required-badge">Must include ≥1 primary source from this regime</span></label>
+    <div id="chosen-evidence-list"></div>
+    <button class="add-evidence-btn" onclick="addEvidence('chosen')">+ Add evidence or source</button>
+    <label for="chosen-analysis">Analytical Points</label>
+    <textarea id="chosen-analysis" rows="4" placeholder="I will analyze how this regime came to power…"></textarea>
+    <label for="chosen-primary">Primary Source(s) You Will Analyze <span class="required-badge">Required</span></label>
+    <input type="text" id="chosen-primary" placeholder="e.g., [Regime speech, party platform, propaganda document, constitution]">
+</div>
+
+<!-- Section IV: Comparative Analysis -->
+<div class="outline-section compare">
+    <h2><span class="section-badge badge-compare">Section IV</span> Comparative Analysis <span style="font-size:0.8em; font-weight:400; color:#888;">(1–2 pages)</span></h2>
+    <label for="compare-topic">Topic Sentence</label>
+    <textarea id="compare-topic" rows="3" placeholder="Comparing the Weimar Republic's collapse to [chosen regime] reveals that…"></textarea>
+    <label for="compare-shared">Shared Patterns</label>
+    <textarea id="compare-shared" rows="4" placeholder="Both cases share… In both, we see… This pattern suggests…"></textarea>
+    <label for="compare-distinct">Key Differences</label>
+    <textarea id="compare-distinct" rows="4" placeholder="What makes the Weimar case distinct is… What sets [chosen regime] apart is…"></textarea>
+    <label for="compare-insight">Comparative Insight</label>
+    <textarea id="compare-insight" rows="4" placeholder="By placing these two cases side by side, we can see…"></textarea>
+    <label for="compare-contemporary">Optional: Connection to Contemporary Democracy</label>
+    <textarea id="compare-contemporary" rows="3" placeholder="These historical patterns appear today in…"></textarea>
+</div>
+
+<!-- Section V: Conclusion -->
+<div class="outline-section conclude">
+    <h2><span class="section-badge badge-conclude">Section V</span> Conclusion <span style="font-size:0.8em; font-weight:400; color:#888;">(~1 page)</span></h2>
+    <label for="conclude-restate">Restatement of Thesis</label>
+    <textarea id="conclude-restate" rows="3" placeholder="Restate your central argument in new language…"></textarea>
+    <label for="conclude-findings">Key Analytical Findings</label>
+    <textarea id="conclude-findings" rows="4" placeholder="This paper has shown that… The comparison reveals…"></textarea>
+    <label for="conclude-significance">Broader Significance</label>
+    <textarea id="conclude-significance" rows="3" placeholder="These cases remind us that… Democracy is most vulnerable when…"></textarea>
+</div>
+
+<!-- Self-Check -->
+<div class="outline-section">
+    <h2><span class="section-badge badge-intro">Self-Check</span> Outline Completeness</h2>
+    <p style="color:#555; font-size:0.92em;">Check each box as you confirm your outline addresses these points.</p>
+    <div id="checklist-container"></div>
+</div>
+
+<div class="action-row">
+    <button class="btn-save" onclick="saveProgress()">💾 Save Progress</button>
+    <button class="btn-pdf" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button class="btn-submit" id="submit-btn" onclick="submitToSupabase()">📤 Submit to Professor</button>
+    <button class="btn-clear" onclick="clearAll()">Clear All</button>
+</div>
+<div class="save-notice" id="save-notice">✓ Progress saved to this browser.</div>
+<div class="submit-message" id="submit-message"></div>
+
+<div class="nav-links">
+    <a href="hist105-checkin2.html">← Check-In #2: Thesis Statement</a>
+    <a href="hist105-checkin4.html">Next: Check-In #4 — Intro Paragraph →</a>
+</div>
+
+<footer style="text-align:center; margin-top:40px; color:#7f8c8d;">
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script>
+const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const STORAGE_KEY   = 'hist105-checkin3';
+const CHECKIN_NUM   = '3';
+let db = null;
+function getDB() { if (!db) db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON); return db; }
+
+const evidenceCounts = { weimar: 0, chosen: 0 };
+const checkItems = [
+    'Introduction has a compelling Weimar-rooted hook',
+    'Thesis is clearly stated in the introduction',
+    'Weimar section has a specific topic sentence with an analytical argument',
+    'Weimar section identifies at least one primary source from the course website',
+    'Weimar section cites specific Pelz chapter(s)',
+    'Chosen government section has a specific topic sentence',
+    'Chosen government section identifies at least one primary source from that regime',
+    'Comparative analysis identifies shared patterns across both cases',
+    'Comparative analysis explains what is distinct about each case',
+    'Conclusion restates thesis and offers broader significance'
+];
+
+function buildChecklist() {
+    const container = document.getElementById('checklist-container');
+    checkItems.forEach((item, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:flex-start;gap:10px;margin:8px 0;font-size:0.9em;';
+        row.innerHTML = `<input type="checkbox" id="ck${i}" style="margin-top:2px;accent-color:#8e44ad;width:auto;"><label for="ck${i}" style="font-weight:400;margin:0;color:#444;">${item}</label>`;
+        container.appendChild(row);
+    });
+}
+
+function addEvidence(type, value = '') {
+    evidenceCounts[type]++;
+    const n = evidenceCounts[type];
+    const container = document.getElementById(type + '-evidence-list');
+    const row = document.createElement('div');
+    row.className = 'evidence-item';
+    row.id = type + '-ev-' + n;
+    row.innerHTML = `<input type="text" id="${type}-ev-input-${n}" placeholder="Source, document, or Pelz chapter…" value="${value}"><button class="remove-evidence" onclick="removeEvidence('${type}',${n})" title="Remove">✕</button>`;
+    container.appendChild(row);
+}
+
+function removeEvidence(type, n) {
+    const el = document.getElementById(type + '-ev-' + n);
+    if (el) el.remove();
+}
+
+function syncChosenTitle() {
+    const val = document.getElementById('chosen-govt').value.trim();
+    document.getElementById('chosen-section-title').textContent = val || 'Your Chosen Government';
+}
+
+function gatherData() {
+    const data = {
+        name: document.getElementById('student-name').value,
+        section: document.getElementById('student-section').value,
+        chosenGovt: document.getElementById('chosen-govt').value,
+        thesisReminder: document.getElementById('thesis-reminder').value,
+        intro: { hook: document.getElementById('intro-hook').value, context: document.getElementById('intro-context').value, thesis: document.getElementById('intro-thesis').value, roadmap: document.getElementById('intro-roadmap').value },
+        weimar: { topic: document.getElementById('weimar-topic').value, evidence: [], analysis: document.getElementById('weimar-analysis').value, primary: document.getElementById('weimar-primary').value, pelz: document.getElementById('weimar-pelz').value },
+        chosen: { topic: document.getElementById('chosen-topic').value, evidence: [], analysis: document.getElementById('chosen-analysis').value, primary: document.getElementById('chosen-primary').value },
+        compare: { topic: document.getElementById('compare-topic').value, shared: document.getElementById('compare-shared').value, distinct: document.getElementById('compare-distinct').value, insight: document.getElementById('compare-insight').value, contemporary: document.getElementById('compare-contemporary').value },
+        conclude: { restate: document.getElementById('conclude-restate').value, findings: document.getElementById('conclude-findings').value, significance: document.getElementById('conclude-significance').value },
+        checks: checkItems.map((_, i) => document.getElementById('ck'+i)?.checked || false),
+        evidenceCounts: { ...evidenceCounts }
+    };
+    ['weimar','chosen'].forEach(type => {
+        for (let i = 1; i <= evidenceCounts[type]; i++) {
+            const el = document.getElementById(type+'-ev-input-'+i);
+            if (el) data[type].evidence.push(el.value);
+        }
+    });
+    return data;
+}
+
+function saveProgress() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherData()));
+    const n = document.getElementById('save-notice');
+    n.style.display = 'block';
+    setTimeout(() => n.style.display = 'none', 3000);
+}
+
+function loadProgress() {
+    buildChecklist();
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) { addEvidence('weimar'); addEvidence('weimar'); addEvidence('chosen'); addEvidence('chosen'); return; }
+    const d = JSON.parse(raw);
+    document.getElementById('student-name').value    = d.name || '';
+    document.getElementById('student-section').value = d.section || '';
+    document.getElementById('chosen-govt').value     = d.chosenGovt || '';
+    document.getElementById('thesis-reminder').value = d.thesisReminder || '';
+    if (d.intro) { document.getElementById('intro-hook').value = d.intro.hook||''; document.getElementById('intro-context').value = d.intro.context||''; document.getElementById('intro-thesis').value = d.intro.thesis||''; document.getElementById('intro-roadmap').value = d.intro.roadmap||''; }
+    if (d.weimar) { document.getElementById('weimar-topic').value = d.weimar.topic||''; (d.weimar.evidence||[]).forEach(v => addEvidence('weimar',v)); document.getElementById('weimar-analysis').value = d.weimar.analysis||''; document.getElementById('weimar-primary').value = d.weimar.primary||''; document.getElementById('weimar-pelz').value = d.weimar.pelz||''; }
+    if (d.chosen) { document.getElementById('chosen-topic').value = d.chosen.topic||''; (d.chosen.evidence||[]).forEach(v => addEvidence('chosen',v)); document.getElementById('chosen-analysis').value = d.chosen.analysis||''; document.getElementById('chosen-primary').value = d.chosen.primary||''; }
+    if (d.compare) { document.getElementById('compare-topic').value = d.compare.topic||''; document.getElementById('compare-shared').value = d.compare.shared||''; document.getElementById('compare-distinct').value = d.compare.distinct||''; document.getElementById('compare-insight').value = d.compare.insight||''; document.getElementById('compare-contemporary').value = d.compare.contemporary||''; }
+    if (d.conclude) { document.getElementById('conclude-restate').value = d.conclude.restate||''; document.getElementById('conclude-findings').value = d.conclude.findings||''; document.getElementById('conclude-significance').value = d.conclude.significance||''; }
+    (d.checks||[]).forEach((v,i) => { const el = document.getElementById('ck'+i); if (el) el.checked = v; });
+    while (evidenceCounts.weimar < 2) addEvidence('weimar');
+    while (evidenceCounts.chosen < 2) addEvidence('chosen');
+    syncChosenTitle();
+}
+
+function clearAll() {
+    if (!confirm('Clear all your work? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY); location.reload();
+}
+
+// ── PDF ───────────────────────────────────────────────────────────────────────
+function generatePDFBlob() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'in', format: 'letter' });
+    const d = gatherData();
+    const margin = 1, pageH = 11, cW = 6.5, lh = 0.22;
+    let y = margin;
+
+    const write = (text, size = 11, bold = false, indent = 0) => {
+        doc.setFontSize(size); doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        doc.splitTextToSize(String(text || ''), cW - indent).forEach(line => {
+            if (y > pageH - margin) { doc.addPage(); y = margin; }
+            doc.text(line, margin + indent, y); y += lh * (size / 10);
+        });
+    };
+    const gap = (n = 1) => { y += lh * n; };
+    const section = (title) => { write(title, 12, true); gap(0.5); };
+
+    write('HIST 105 — Check-In #3: Paper Outline', 13, true); gap();
+    write(`Student: ${d.name||'[Name]'}     Section: ${d.section||'[Section]'}     Date: ${new Date().toLocaleDateString()}`, 10);
+    write(`Chosen Government: ${d.chosenGovt||'[Not specified]'}`, 10); gap(1.5);
+
+    section('Thesis (from Check-In #2)');
+    write(d.thesisReminder||'(Not entered)', 10, false, 0.25); gap(1.5);
+
+    section('Section I: Introduction');
+    write('Hook: ' + (d.intro?.hook||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Context: ' + (d.intro?.context||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Thesis: ' + (d.intro?.thesis||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Roadmap: ' + (d.intro?.roadmap||'(Not entered)'), 10, false, 0.25); gap(1.5);
+
+    section('Section II: The Weimar Republic');
+    write('Topic Sentence: ' + (d.weimar?.topic||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Evidence: ' + (d.weimar?.evidence?.join('; ')||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Analytical Points: ' + (d.weimar?.analysis||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Primary Source(s): ' + (d.weimar?.primary||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Pelz Chapter(s): ' + (d.weimar?.pelz||'(Not entered)'), 10, false, 0.25); gap(1.5);
+
+    section('Section III: Chosen Government');
+    write('Topic Sentence: ' + (d.chosen?.topic||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Evidence: ' + (d.chosen?.evidence?.join('; ')||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Analytical Points: ' + (d.chosen?.analysis||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Primary Source(s): ' + (d.chosen?.primary||'(Not entered)'), 10, false, 0.25); gap(1.5);
+
+    section('Section IV: Comparative Analysis');
+    write('Topic Sentence: ' + (d.compare?.topic||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Shared Patterns: ' + (d.compare?.shared||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Key Differences: ' + (d.compare?.distinct||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Comparative Insight: ' + (d.compare?.insight||'(Not entered)'), 10, false, 0.25); gap(1.5);
+
+    section('Section V: Conclusion');
+    write('Thesis Restatement: ' + (d.conclude?.restate||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Key Findings: ' + (d.conclude?.findings||'(Not entered)'), 10, false, 0.25); gap(0.5);
+    write('Broader Significance: ' + (d.conclude?.significance||'(Not entered)'), 10, false, 0.25);
+    return doc.output('blob');
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+async function submitToSupabase() {
+    const name    = document.getElementById('student-name').value.trim();
+    const section = document.getElementById('student-section').value;
+    const msgEl   = document.getElementById('submit-message');
+    const btn     = document.getElementById('submit-btn');
+
+    if (!name)    { alert('Please enter your full name before submitting.');        document.getElementById('student-name').focus();    return; }
+    if (!section) { alert('Please select your course section before submitting.');  document.getElementById('student-section').focus(); return; }
+
+    btn.disabled = true; btn.textContent = '⏳ Submitting…';
+    msgEl.className = 'submit-message loading'; msgEl.style.display = 'block';
+    msgEl.textContent = 'Generating PDF and uploading your submission…';
+
+    try {
+        const pdfBlob  = generatePDFBlob();
+        const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+        const filePath = `hist105-checkins/checkin${CHECKIN_NUM}/${section}/${safeName}_${Date.now()}.pdf`;
+        const { error: upErr } = await getDB().storage.from('student-submissions').upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: false });
+        if (upErr) console.warn('PDF upload warning:', upErr.message);
+        const { error: dbErr } = await getDB().from('checkin_submissions').insert([{
+            student_name: name, section, course: 'HIST 105', checkin_number: CHECKIN_NUM,
+            form_data: gatherData(), file_path: upErr ? null : filePath, submitted_at: new Date().toISOString()
+        }]);
+        if (dbErr) throw dbErr;
+        msgEl.className = 'submit-message success';
+        msgEl.textContent = `✅ Submitted successfully! Prof. Hauselmann has received your Check-In #3. (${new Date().toLocaleString()})`;
+        btn.textContent = '✓ Submitted';
+    } catch (err) {
+        console.error(err);
+        msgEl.className = 'submit-message error';
+        msgEl.textContent = `❌ Submission failed: ${err.message || 'Unknown error'}. Please try again or email your work to Prof. Hauselmann.`;
+        btn.disabled = false; btn.textContent = '📤 Submit to Professor';
+    }
+}
+
+document.getElementById('chosen-govt').addEventListener('input', syncChosenTitle);
+document.addEventListener('input', saveProgress);
+window.addEventListener('load', loadProgress);
+</script>
+</body>
+</html>
