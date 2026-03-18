@@ -909,6 +909,7 @@ function renderPaperTable(rows) {
                 </label>
             </td>
             <td>
+                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : ''}
                 <button class="view-btn" onclick="viewPaper(${sub.id})">👁 View</button>
             </td>
         </tr>`;
@@ -977,6 +978,7 @@ function renderInterviewTable(rows) {
                 </label>
             </td>
             <td>
+                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : ''}
                 <button class="view-btn" onclick="viewTranscript(${sub.id})">👁 Transcript</button>
             </td>
         </tr>`;
@@ -1099,7 +1101,12 @@ async function downloadAudio(filePath) {
         const { data, error } = await supabaseClient.storage
             .from('audio-files').createSignedUrl(filePath, 3600);
         if (error) throw error;
-        window.open(data.signedUrl, '_blank');
+        const a = document.createElement('a');
+        a.href = data.signedUrl;
+        a.download = filePath.split('/').pop();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     } catch (e) {
         alert('Error accessing audio: ' + e.message);
     }
