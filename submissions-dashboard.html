@@ -559,12 +559,21 @@
                 </select>
             </div>
             <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+            <div class="selection-info">
+                <span id="pp-selectedCount">0 selected</span>
+                <button class="download-selected-btn" id="pp-downloadSelectedBtn"
+                    onclick="downloadSelectedPapers()" disabled>Download Selected</button>
+            </div>
         </div>
 
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
+                        <th class="select-cell">
+                            <input type="checkbox" class="select-checkbox" id="pp-selectAll"
+                                onchange="toggleSelectAllPapers()">
+                        </th>
                         <th>Student Name</th>
                         <th>Section</th>
                         <th>Paper Title</th>
@@ -725,7 +734,7 @@ async function loadWorksheets() {
 
 async function loadPapers() {
     document.getElementById('pp-table').innerHTML =
-        '<tr><td colspan="9" class="loading">Loading…</td></tr>';
+        '<tr><td colspan="10" class="loading">Loading…</td></tr>';
     try {
         const { data, error } = await supabaseClient
             .from('paper_submissions')
@@ -740,7 +749,7 @@ async function loadPapers() {
     } catch (e) {
         showError('Error loading papers: ' + e.message);
         document.getElementById('pp-table').innerHTML =
-            '<tr><td colspan="9" class="no-data">Error loading data.</td></tr>';
+            '<tr><td colspan="10" class="no-data">Error loading data.</td></tr>';
     }
 }
 
@@ -880,12 +889,14 @@ function applyPaperFilters() {
     if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
     if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
 
+ppFiltered = f;
     renderPaperTable(f);
+    updatePpSelectAll();
 }
 
 function renderPaperTable(rows) {
     const tbody = document.getElementById('pp-table');
-    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="no-data">No papers found.</td></tr>'; return; }
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="no-data">No papers found.</td></tr>'; return; }
     tbody.innerHTML = rows.map(sub => {
         const reviewed = !!sub.is_reviewed;
         const wc       = sub.word_count || 0;
@@ -893,7 +904,11 @@ function renderPaperTable(rows) {
         const bibLines = sub.bibliography
             ? sub.bibliography.split('\n').filter(l => l.trim()).length
             : 0;
+        const ppSelected = ppSelectedSet.has(sub.id);
         return `<tr>
+            <td class="select-cell">
+                ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="pp-sel-${sub.id}" ${ppSelected ? 'checked' : ''} onchange="ppToggleSelect(${sub.id})">` : ''}
+            </td>
             <td><strong>${esc(sub.student_name || 'Unknown')}</strong><br>
                 <span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id || '-')}</span></td>
             <td>Section ${esc(sub.section || '-')}</td>
@@ -985,6 +1000,92 @@ function renderInterviewTable(rows) {
     }).join('');
 }
 
+// ── PAPER SELECTION & BULK DOWNLOAD ──────────────────────────────────────────
+let ppSelectedSet = new Set();
+let ppFiltered    = [];
+
+function ppToggleSelect(id) {
+    ppSelectedSet.has(id) ? ppSelectedSet.delete(id) : ppSelectedSet.add(id);
+    updatePpSelectedCount();
+    updatePpSelectAll();
+}
+
+function toggleSelectAllPapers() {
+    const allChk = document.getElementById('pp-selectAll');
+    ppFiltered.filter(s => s.file_path).forEach(sub => {
+        allChk.checked ? ppSelectedSet.add(sub.id) : ppSelectedSet.delete(sub.id);
+        const chk = document.getElementById(`pp-sel-${sub.id}`);
+        if (chk) chk.checked = allChk.checked;
+    });
+    updatePpSelectedCount();
+}
+
+function updatePpSelectAll() {
+    const chk = document.getElementById('pp-selectAll');
+    if (!chk) return;
+    const selectable = ppFiltered.filter(s => s.file_path);
+    const selectedInView = selectable.filter(s => ppSelectedSet.has(s.id));
+    if (!selectable.length)                                { chk.checked = false; chk.indeterminate = false; }
+    else if (selectedInView.length === selectable.length)  { chk.checked = true;  chk.indeterminate = false; }
+    else if (selectedInView.length > 0)                    { chk.checked = false;  chk.indeterminate = true;  }
+    else                                                   { chk.checked = false;  chk.indeterminate = false; }
+}
+
+function updatePpSelectedCount() {
+    const n = ppSelectedSet.size;
+    document.getElementById('pp-selectedCount').textContent = n + ' selected';
+    document.getElementById('pp-downloadSelectedBtn').disabled = n === 0;
+}
+
+async function downloadSelectedPapers() {
+    if (!ppSelectedSet.size) return;
+    const btn = document.getElementById('pp-downloadSelectedBtn');
+    const origText = btn.textContent;
+    btn.disabled = true;
+
+    try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        let count = 0;
+        const ids = Array.from(ppSelectedSet);
+
+        for (let i = 0; i < ids.length; i++) {
+            btn.textContent = `Merging ${i+1}/${ids.length}…`;
+            const sub = allPapers.find(s => s.id === ids[i]);
+            if (!sub || !sub.file_path) continue;
+            try {
+                const { data, error } = await supabaseClient.storage
+                    .from('student-submissions').createSignedUrl(sub.file_path, 3600);
+                if (error) continue;
+                const bytes = await (await fetch(data.signedUrl)).arrayBuffer();
+                const doc   = await PDFLib.PDFDocument.load(bytes);
+                const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+                pages.forEach(p => mergedPdf.addPage(p));
+                count++;
+            } catch(e) { console.error('Failed to merge paper:', e); }
+        }
+
+        if (count > 0) {
+            btn.textContent = 'Creating PDF…';
+            const pdfBytes = await mergedPdf.save();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+            a.download = `papers_${new Date().toISOString().split('T')[0]}_${count}_files.pdf`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        } else {
+            alert('No PDFs could be downloaded. Papers submitted before the file_path column was added cannot be bulk downloaded.');
+        }
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+
+    ppSelectedSet.clear();
+    updatePpSelectedCount();
+    applyPaperFilters();
+    btn.disabled = false;
+    btn.textContent = origText;
+}
+    
 // ── TOGGLE REVIEWED (all three tables) ───────────────────────────────────────
 async function toggleReviewed(table, allData, idPrefix, id) {
     const sub = allData.find(s => s.id === id);
