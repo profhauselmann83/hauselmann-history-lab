@@ -916,6 +916,9 @@
     </div>
     <p id="confirm-details" style="color:#555;line-height:1.9;margin-bottom:14px"></p>
     <p style="color:#555;margin:0">You may now close this window. If you have any questions about your submission, contact Prof. Hauselmann.</p>
+    <div style="margin-top:20px;text-align:center">
+        <button class="btn btn-primary" id="confirm-download-btn" onclick="downloadSubmittedPDF()" style="display:none">⬇ Download Your Submitted PDF</button>
+    </div>
 </div>
 
 <footer>
@@ -1144,6 +1147,11 @@ try {
             if (line) line.className = 'step-line done';
         }
         document.getElementById('progress-fill').style.width = '100%';
+
+        // Store filePath so confirmation screen can offer download
+        window._submittedFilePath = filePath;
+        const dlBtn = document.getElementById('confirm-download-btn');
+        if (dlBtn && filePath) dlBtn.style.display = 'inline-block';
 
         showStep(5);
 
@@ -1516,6 +1524,25 @@ function instructorGoTo(n) {
     }
 
     showStep(n);
+
+    // ── DOWNLOAD SUBMITTED PDF ────────────────────────────────────────────────────
+async function downloadSubmittedPDF() {
+    const filePath = window._submittedFilePath;
+    if (!filePath) { alert('No file path available.'); return; }
+    try {
+        const { data, error } = await getDB().storage
+            .from('student-submissions').createSignedUrl(filePath, 3600);
+        if (error) throw error;
+        const a = document.createElement('a');
+        a.href = data.signedUrl;
+        a.download = filePath.split('/').pop();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } catch (e) {
+        alert('Error downloading PDF: ' + e.message);
+    }
+}
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
