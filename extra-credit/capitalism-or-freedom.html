@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capitalism or Freedom? - Assignment</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.7; color: #2c3e50;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 850px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+        header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 40px 30px; text-align: center; }
+        header h1 { font-size: 2em; margin-bottom: 10px; font-weight: 700; letter-spacing: -0.5px; }
+        header .subtitle { font-size: 1.1em; opacity: 0.9; font-weight: 300; margin-bottom: 8px; }
+        header .series { font-size: 0.95em; opacity: 0.85; font-style: italic; }
+        .content { padding: 40px 30px; }
+        section { margin-bottom: 35px; }
+        h2 { color: #2c3e50; font-size: 1.5em; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #3498db; font-weight: 700; }
+        h3 { color: #34495e; font-size: 1.15em; margin-top: 20px; margin-bottom: 12px; font-weight: 600; }
+        p { margin-bottom: 12px; line-height: 1.8; color: #34495e; }
+        ul, ol { margin-left: 25px; margin-bottom: 15px; }
+        li { margin-bottom: 10px; color: #34495e; line-height: 1.7; }
+        .overview-box { background-color: #ecf0f1; border-left: 5px solid #3498db; padding: 20px; margin-bottom: 25px; border-radius: 4px; line-height: 1.8; }
+        .guidelines { background-color: #fffacd; border-left: 5px solid #f39c12; padding: 20px; margin-bottom: 25px; border-radius: 4px; }
+        .guidelines h3 { color: #d68910; margin-top: 0; }
+        .guidelines p { margin-bottom: 8px; font-size: 0.95em; }
+        .guidelines strong { color: #2c3e50; }
+        .option-selector { background-color: #f8f9fa; border: 2px solid #e0e6ed; border-radius: 4px; padding: 20px; margin-bottom: 25px; }
+        .option-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .option-btn { background-color: #ecf0f1; border: 3px solid #bdc3c7; padding: 18px; border-radius: 6px; cursor: pointer; font-size: 0.95em; font-weight: 600; color: #2c3e50; transition: all 0.3s ease; text-align: left; line-height: 1.5; }
+        .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-2px); }
+        .option-btn.active { background-color: #3498db; color: white; border-color: #2980b9; }
+        .option-content { display: none; background-color: #f8f9fa; border: 2px solid #e0e6ed; border-top: none; border-radius: 0 0 6px 6px; padding: 25px; margin-bottom: 25px; }
+        .option-content.active { display: block; }
+        .option-content h3 { margin-top: 0; color: #2c3e50; }
+        .option-content p { margin-bottom: 15px; line-height: 1.8; }
+        .option-content ul { margin-left: 25px; }
+        .option-content li { margin-bottom: 12px; }
+        .student-info { background-color: #eaf5fb; border: 2px solid #3498db; border-radius: 4px; padding: 20px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #2c3e50; font-size: 0.95em; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; font-family: inherit; font-size: 0.95em; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #3498db; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
+        .form-group.required label::after { content: " *"; color: #e74c3c; }
+        .response-section { background-color: #f8f9fa; border: 2px solid #e0e6ed; border-left: 5px solid #3498db; border-radius: 4px; padding: 25px; margin-bottom: 25px; }
+        .response-section h3 { margin-top: 0; color: #2c3e50; }
+        .word-counter { font-size: 0.85em; color: #7f8c8d; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .counter-status { font-weight: 600; padding: 4px 10px; border-radius: 3px; font-size: 0.9em; }
+        .counter-status.too-short { background-color: #fadbd8; color: #c0392b; }
+        .counter-status.too-long { background-color: #fadbd8; color: #c0392b; }
+        .counter-status.perfect { background-color: #d5f4e6; color: #27ae60; }
+        textarea { width: 100%; padding: 15px; border: 2px solid #bdc3c7; border-radius: 4px; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 0.95em; line-height: 1.6; resize: vertical; min-height: 300px; }
+        textarea:focus { outline: none; border-color: #3498db; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
+        .button-group { display: flex; gap: 12px; justify-content: center; margin-top: 25px; flex-wrap: wrap; }
+        .btn { padding: 12px 30px; border: none; border-radius: 4px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .btn-submit { background-color: #27ae60; color: white; }
+        .btn-submit:hover:not(:disabled) { background-color: #229954; transform: translateY(-2px); }
+        .btn-download { background-color: #3498db; color: white; }
+        .btn-download:hover:not(:disabled) { background-color: #2980b9; transform: translateY(-2px); }
+        .btn-clear { background-color: #e74c3c; color: white; }
+        .btn-clear:hover { background-color: #c0392b; transform: translateY(-2px); }
+        .message { padding: 15px; border-radius: 4px; margin-bottom: 20px; display: none; }
+        .message.success { background-color: #d5f4e6; border-left: 5px solid #27ae60; color: #27ae60; }
+        .message.error { background-color: #fadbd8; border-left: 5px solid #e74c3c; color: #c0392b; }
+        .message.info { background-color: #d6eaf8; border-left: 5px solid #3498db; color: #1f618d; }
+        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        footer { background-color: #ecf0f1; padding: 25px 30px; border-top: 1px solid #bdc3c7; font-size: 0.9em; color: #7f8c8d; text-align: center; }
+        footer p { margin-bottom: 8px; color: #7f8c8d; }
+        footer a { color: #3498db; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .back-link { display: inline-block; color: #3498db; text-decoration: none; margin-bottom: 20px; font-weight: 500; transition: color 0.3s ease; }
+        .back-link:hover { color: #2980b9; }
+        @media (max-width: 600px) {
+            header { padding: 25px 20px; } header h1 { font-size: 1.5em; }
+            .content { padding: 25px 20px; } h2 { font-size: 1.3em; }
+            .option-buttons { grid-template-columns: 1fr; }
+            .button-group { flex-direction: column; } .btn { width: 100%; }
+        }
+        @media print {
+            body { background: white; padding: 0; } .container { box-shadow: none; border-radius: 0; }
+            .student-info, .button-group, .back-link, .message { display: none; }
+            footer { border-top: 1px solid #bdc3c7; } textarea { border: 1px solid #ccc; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Capitalism or Freedom?</h1>
+            <div class="subtitle">Extra Credit Reflection Assignment</div>
+            <div class="series">Democracy in the Public Space Series &bull; Redrawing Freedom</div>
+        </header>
+
+        <div class="content">
+            <a href="https://profhauselmann.org/" class="back-link">&larr; Back to Hauselmann's History Lab</a>
+
+            <div id="successMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+            <div id="infoMessage" class="message info"></div>
+
+            <section>
+                <h2>Overview</h2>
+                <div class="overview-box">
+                    <p>This assignment invites you to reflect on the ideas presented by Trevor Jackson in his lecture "Capitalism or Freedom?" You will explore the history of how capitalism developed as an economic system, how property rights were created and defended, and what it means to think about freedom within a capitalist economy. By examining the historical origins of capitalism, you'll develop a more critical understanding of how economic systems shape the choices available to us&mdash;and to whom.</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>Assignment Guidelines</h2>
+                <div class="guidelines">
+                    <h3>How to Complete This Assignment</h3>
+                    <p><strong>Word Count:</strong> Minimum 200 words, Maximum 300 words</p>
+                    <p><strong>Format:</strong> Type your reflection directly into the form below</p>
+                    <p><strong>Due:</strong> One week from the event date</p>
+                    <p><strong>Submission:</strong> Click "Submit Reflection" to send it directly to your instructor</p>
+                </div>
+            </section>
+
+            <section>
+                <div class="student-info">
+                    <h3>Student Information</h3>
+                    <div class="form-group required">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="section">Class and Section</label>
+                        <select id="section" required>
+                            <option value="">Select your class and section</option>
+                            <option value="HIST 101-3944">HIST 101-3944</option>
+                            <option value="HIST 101-3945">HIST 101-3945</option>
+                            <option value="HIST 101-3946">HIST 101-3946</option>
+                            <option value="HIST 105-4167">HIST 105-4167</option>
+                            <option value="HIST 107-4169">HIST 107-4169</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Choose Your Prompt</h2>
+                <div class="option-selector">
+                    <div class="option-buttons">
+                        <button class="option-btn active" onclick="selectOption(1, event)">
+                            <strong>Prompt 1:</strong> Property and Power
+                        </button>
+                        <button class="option-btn" onclick="selectOption(2, event)">
+                            <strong>Prompt 2:</strong> Labor, Freedom, and Choice
+                        </button>
+                        <button class="option-btn" onclick="selectOption(3, event)">
+                            <strong>Prompt 3:</strong> Capitalism as Promise vs. Reality
+                        </button>
+                    </div>
+
+                    <div id="option1" class="option-content active">
+                        <h3>Prompt 1: Property and Power</h3>
+                        <p>Trevor Jackson traced how property rights were created and defended through law and sometimes violence. He showed that what makes something "yours" is ultimately the state's willingness to enforce your claims against others. Reflect on this:</p>
+                        <ul>
+                            <li>How does understanding property as something that had to be created (rather than naturally existing) change how you think about it?</li>
+                            <li>Jackson discussed how colonists claimed Native American land by saying it was "untransformed" and therefore unowned. What's the danger in this logic?</li>
+                            <li>How does the history of property creation connect to who has freedom and who doesn't today?</li>
+                        </ul>
+                    </div>
+
+                    <div id="option2" class="option-content">
+                        <h3>Prompt 2: Labor, Freedom, and Choice</h3>
+                        <p>Jackson explored how "free labor" (the ability to quit your job) is actually a recent invention, and how the Industrial Revolution changed what freedom at work means. He showed the story of hand-loom weavers who were displaced by machines. Reflect on this:</p>
+                        <ul>
+                            <li>What does "free labor" actually mean? Does working for a wage feel like freedom, or does it involve different kinds of constraints?</li>
+                            <li>Jackson suggested we might be living through a modern version of the weavers' story with AI and automation. What parallels do you see?</li>
+                            <li>How might the state protect workers being displaced by technology, and what would that require?</li>
+                        </ul>
+                    </div>
+
+                    <div id="option3" class="option-content">
+                        <h3>Prompt 3: Capitalism as Promise vs. Reality</h3>
+                        <p>Jackson discussed how early advocates for capitalism (like Adam Smith) hoped markets would make us better people and foster moral community. But he also showed how capitalism actually produces unequal distributions of freedom and unfreedom. Reflect on this:</p>
+                        <ul>
+                            <li>What was the original hope for capitalism? Why do you think it hasn't worked out that way?</li>
+                            <li>Jackson said capitalism produces both freedom and unfreedom. Who gets freedom in a capitalist economy, and who doesn't?</li>
+                            <li>How does understanding capitalism's history help us imagine different economic systems?</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="response-section">
+                    <h3>Your Reflection (200&ndash;300 words)</h3>
+                    <div class="word-counter">
+                        <span><span id="wordCount">0</span> words | <span id="charCount">0</span> characters</span>
+                        <span id="countStatus" class="counter-status too-short">Minimum 200 words required</span>
+                    </div>
+                    <textarea id="reflection" placeholder="Type your reflection here..." oninput="updateWordCount()" required></textarea>
+                </div>
+            </section>
+
+            <section>
+                <div class="button-group">
+                    <button class="btn btn-submit" id="submitBtn" onclick="submitResponse()" disabled>&#9993;&#65039; Submit Reflection</button>
+                    <button class="btn btn-download" onclick="downloadResponse()">&#128229; Download Your Response</button>
+                    <button class="btn btn-clear" onclick="clearForm()">&#128465;&#65039; Clear Form</button>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p><strong>Hauselmann's History Lab</strong></p>
+            <p>Democracy in the Public Space Series</p>
+            <p>Modesto Junior College | <a href="https://profhauselmann.org/">profhauselmann.org</a></p>
+            <p style="margin-top: 15px; font-size: 0.85em;">Questions? Contact your instructor</p>
+        </footer>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const MIN_WORDS = 200;
+        const MAX_WORDS = 300;
+
+        // Update SUBMISSION_DEADLINE to actual event date + 1 week
+        const SUBMISSION_OPEN = true;
+        const SUBMISSION_DEADLINE = '2026-03-25T23:59:59';
+
+        let selectedOption = 1;
+
+        const PROMPT_LABELS = {
+            1: 'Prompt 1: Property and Power',
+            2: 'Prompt 2: Labor, Freedom, and Choice',
+            3: 'Prompt 3: Capitalism as Promise vs. Reality'
+        };
+
+        function selectOption(optionNumber, event) {
+            selectedOption = optionNumber;
+            [1,2,3].forEach(n => document.getElementById('option' + n).classList.remove('active'));
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('option' + optionNumber).classList.add('active');
+            event.target.closest('.option-btn').classList.add('active');
+        }
+
+        function updateWordCount() {
+            const text = document.getElementById('reflection').value.trim();
+            const words = text.length > 0 ? text.split(/\s+/).length : 0;
+            document.getElementById('wordCount').textContent = words;
+            document.getElementById('charCount').textContent = text.length;
+
+            const statusEl = document.getElementById('countStatus');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (words < MIN_WORDS) {
+                statusEl.className = 'counter-status too-short';
+                statusEl.textContent = 'Minimum ' + MIN_WORDS + ' words required (' + words + ' words)';
+                submitBtn.disabled = true;
+            } else if (words > MAX_WORDS) {
+                statusEl.className = 'counter-status too-long';
+                statusEl.textContent = 'Maximum ' + MAX_WORDS + ' words allowed (' + words + ' words)';
+                submitBtn.disabled = true;
+            } else {
+                statusEl.className = 'counter-status perfect';
+                statusEl.textContent = 'Perfect! ' + words + ' words';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const section = document.getElementById('section').value.trim();
+            const reflection = document.getElementById('reflection').value.trim();
+            const words = reflection.length > 0 ? reflection.split(/\s+/).length : 0;
+            if (!name) { showMessage('Please enter your name.', 'error'); return false; }
+            if (!section) { showMessage('Please select your class and section.', 'error'); return false; }
+            if (words < MIN_WORDS || words > MAX_WORDS) {
+                showMessage('Your reflection must be between ' + MIN_WORDS + ' and ' + MAX_WORDS + ' words. Currently ' + words + ' words.', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function generatePDFBlob(name, section, promptLabel, reflection, wordCount) {
+            return new Promise((resolve) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                let y = 20;
+                const lineHeight = 7;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+
+                function addText(text, size, isBold) {
+                    size = size || 12; isBold = isBold || false;
+                    doc.setFontSize(size);
+                    doc.setFont(undefined, isBold ? 'bold' : 'normal');
+                    const lines = doc.splitTextToSize(String(text || ''), 170);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > pageHeight - margin) { doc.addPage(); y = 20; }
+                        doc.text(lines[i], 20, y);
+                        y += lineHeight;
+                    }
+                    y += 3;
+                }
+
+                addText('Capitalism or Freedom?', 18, true);
+                addText('Extra Credit Reflection - Democracy in the Public Space Series', 12);
+                y += 5;
+                addText('Student: ' + name, 12, true);
+                addText('Class and Section: ' + section, 12, true);
+                addText('Submitted: ' + new Date().toLocaleString(), 10);
+                y += 5;
+                addText('ASSIGNMENT DETAILS', 13, true);
+                addText('Selected Prompt: ' + promptLabel, 11);
+                y += 5;
+                addText('REFLECTION', 13, true);
+                addText(reflection, 11);
+                y += 5;
+                addText('Word Count: ' + wordCount, 10);
+
+                resolve(doc.output('blob'));
+            });
+        }
+
+        async function submitResponse() {
+            if (!SUBMISSION_OPEN) {
+                showMessage('This assignment is now closed. Submissions are no longer being accepted. Please contact your instructor if you have questions.', 'error');
+                return;
+            }
+            if (SUBMISSION_DEADLINE) {
+                const deadline = new Date(SUBMISSION_DEADLINE);
+                if (new Date() > deadline) {
+                    showMessage('The submission deadline (' + deadline.toLocaleString() + ') has passed.', 'error');
+                    return;
+                }
+            }
+            if (!validateForm()) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
+
+            const name = document.getElementById('name').value.trim();
+            const section = document.getElementById('section').value.trim();
+            const reflection = document.getElementById('reflection').value.trim();
+            const wordCount = reflection.split(/\s+/).length;
+            const promptLabel = PROMPT_LABELS[selectedOption];
+
+            try {
+                const pdfBlob = await generatePDFBlob(name, section, promptLabel, reflection, wordCount);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, '_');
+                const fileName = 'ec-capitalism-freedom/' + section + '/' + sanitizedName + '_' + timestamp + '.pdf';
+
+                const { error: uploadError } = await supabaseClient
+                    .storage.from('student-submissions')
+                    .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
+                if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
+
+                const { data: urlData } = supabaseClient
+                    .storage.from('student-submissions')
+                    .getPublicUrl(fileName);
+
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: name,
+                        section_number: section,
+                        worksheet_type: 'hist101-ec-capitalism-freedom',
+                        file_path: fileName,
+                        file_url: urlData.publicUrl,
+                        form_data: { selected_prompt: promptLabel, reflection: reflection, word_count: wordCount },
+                        submitted_at: new Date().toISOString()
+                    });
+                if (dbError) throw dbError;
+
+                showMessage('Your reflection has been submitted successfully!', 'success');
+                setTimeout(() => {
+                    document.getElementById('reflection').value = '';
+                    document.getElementById('name').value = '';
+                    document.getElementById('section').value = '';
+                    updateWordCount();
+                }, 2000);
+            } catch (err) {
+                console.error('Submission error:', err);
+                showMessage('Submission failed: ' + err.message + '. Please try again or download your response and email it to your instructor.', 'error');
+            } finally {
+                submitBtn.innerHTML = originalHTML;
+                updateWordCount();
+            }
+        }
+
+        function downloadResponse() {
+            const name = document.getElementById('name').value || 'Student';
+            const reflection = document.getElementById('reflection').value;
+            if (!reflection.trim()) { showMessage('Please write your reflection before downloading.', 'error'); return; }
+            const section = document.getElementById('section').value;
+            const wordCount = parseInt(document.getElementById('wordCount').textContent) || 0;
+            const promptLabel = PROMPT_LABELS[selectedOption];
+
+            generatePDFBlob(name, section, promptLabel, reflection, wordCount).then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = name.replace(/\s+/g, '_') + '_Capitalism_or_Freedom_Reflection.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showMessage('Your reflection has been downloaded as a PDF.', 'success');
+            }).catch(err => {
+                console.error('PDF error:', err);
+                showMessage('Error generating PDF. Please try again.', 'error');
+            });
+        }
+
+        function showMessage(text, type) {
+            ['successMessage','errorMessage','infoMessage'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.display = 'none'; el.textContent = '';
+            });
+            const map = { success: 'successMessage', error: 'errorMessage', info: 'infoMessage' };
+            const el = document.getElementById(map[type]);
+            if (el) {
+                el.textContent = text; el.style.display = 'block';
+                if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
+            }
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear everything? This cannot be undone.')) {
+                document.getElementById('name').value = '';
+                document.getElementById('section').value = '';
+                document.getElementById('reflection').value = '';
+                updateWordCount();
+                showMessage('Form cleared.', 'info');
+            }
+        }
+
+        window.addEventListener('load', () => {
+            updateWordCount();
+            if (!SUBMISSION_OPEN) {
+                showMessage('This assignment is now closed. You can still download your response for your records.', 'error');
+                document.getElementById('submitBtn').disabled = true;
+            } else if (SUBMISSION_DEADLINE) {
+                const deadline = new Date(SUBMISSION_DEADLINE);
+                const now = new Date();
+                if (now > deadline) {
+                    showMessage('The submission deadline (' + deadline.toLocaleString() + ') has passed.', 'error');
+                    document.getElementById('submitBtn').disabled = true;
+                } else {
+                    const ms = deadline - now;
+                    const days = Math.floor(ms / (1000*60*60*24));
+                    const hours = Math.floor((ms % (1000*60*60*24)) / (1000*60*60));
+                    showMessage('Deadline: ' + deadline.toLocaleString() + ' (' + days + 'd ' + hours + 'h remaining)', 'info');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
