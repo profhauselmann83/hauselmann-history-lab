@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIST 102 — Student Tracker · Spring 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:        #1a1510;
+    --ink-mid:    #3a3028;
+    --ink-light:  #6b5e50;
+    --cream:      #f7f2e8;
+    --cream-dark: #ede5d4;
+    --cream-deep: #ddd0b8;
+    --gold:       #9a6f2a;
+    --gold-light: #c8922a;
+    --rust:       #8c3a1e;
+    --rust-light: #fdf4f2;
+    --sage:       #3d6053;
+    --sage-light: #eef3f1;
+    --amber:      #b8860b;
+    --amber-light:#fdf8ee;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── MASTHEAD ── */
+  .masthead {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0;
+    border-bottom: 3px solid var(--gold);
+  }
+  .masthead-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 32px 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .masthead-left { flex: 1; }
+  .masthead-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 4px;
+  }
+  .masthead-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--cream);
+  }
+  .masthead-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(247,242,232,0.55);
+    margin-top: 5px;
+    letter-spacing: 0.05em;
+  }
+  .masthead-stats {
+    display: flex;
+    gap: 28px;
+    align-items: flex-end;
+    padding-bottom: 2px;
+  }
+  .stat-block { text-align: right; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(247,242,232,0.45);
+    margin-top: 2px;
+  }
+
+  /* ── CONTROLS BAR ── */
+  .controls-bar {
+    background: var(--cream-dark);
+    border-bottom: 1px solid var(--cream-deep);
+    padding: 10px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  /* NOTE: controls-bar is inside a wrapper, so max-width on body wrapper instead */
+  .page-wrap { max-width: 1400px; margin: 0 auto; }
+  .controls-bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .ctrl-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+  .ctrl-select, .ctrl-input {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: var(--cream);
+    border: 1px solid var(--cream-deep);
+    color: var(--ink);
+    padding: 5px 10px;
+    border-radius: 3px;
+    outline: none;
+  }
+  .ctrl-select:focus, .ctrl-input:focus {
+    border-color: var(--gold);
+  }
+  .ctrl-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .ctrl-btn:hover { background: var(--ink-mid); }
+  .ctrl-btn.active { background: var(--gold); color: var(--ink); }
+  .ctrl-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--cream-deep);
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-light);
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main { padding: 28px 32px 48px; }
+
+  /* ── SUMMARY STRIP ── */
+  .summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    background: white;
+    border: 1px solid var(--cream-deep);
+    border-top: 3px solid var(--gold);
+    border-radius: 4px;
+    padding: 14px 18px;
+  }
+  .summary-card.flag-card { border-top-color: var(--rust); }
+  .summary-card.sage-card { border-top-color: var(--sage); }
+  .summary-card-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .summary-card-num.flag { color: var(--rust); }
+  .summary-card-num.sage { color: var(--sage); }
+  .summary-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-top: 4px;
+  }
+
+  /* ── SECTION HEADING ── */
+  .section-heading {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    border-bottom: 1px solid var(--cream-deep);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+    margin-top: 28px;
+  }
+  .section-heading:first-of-type { margin-top: 0; }
+
+  /* ── FLAGS PANEL ── */
+  .flags-panel {
+    background: var(--rust-light);
+    border: 1px solid #e8c8be;
+    border-left: 4px solid var(--rust);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .flags-panel.visible { display: block; }
+  .flags-panel-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 10px;
+  }
+  .flag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .flag-chip {
+    background: white;
+    border: 1px solid #e8c8be;
+    border-radius: 3px;
+    padding: 4px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--rust);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .flag-chip:hover { background: #fce8e3; }
+  .flag-chip .flag-reason {
+    color: var(--ink-light);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+
+  /* ── ROSTER TABLE ── */
+  .roster-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--cream-deep);
+    border-radius: 4px;
+  }
+  table.roster {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 900px;
+  }
+  .roster thead tr {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .roster thead th {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    text-align: left;
+    white-space: nowrap;
+    font-weight: 500;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  .roster thead th:last-child { border-right: none; }
+  .roster thead th.skill-col { color: var(--gold-light); }
+  .roster tbody tr {
+    border-bottom: 1px solid var(--cream-dark);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .roster tbody tr:hover { background: var(--cream-dark); }
+  .roster tbody tr.flagged { background: #fef9f8; }
+  .roster tbody tr.flagged:hover { background: #fce8e3; }
+  .roster tbody tr.selected { background: var(--sage-light) !important; }
+  .roster tbody td {
+    padding: 9px 12px;
+    vertical-align: middle;
+    border-right: 1px solid var(--cream-dark);
+  }
+  .roster tbody td:last-child { border-right: none; }
+  .student-name {
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .student-group {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-light);
+    margin-top: 1px;
+  }
+
+  /* score cells */
+  .score-cell { text-align: center; font-family: 'DM Mono', monospace; font-size: 12px; }
+  .score-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+  .score-pill.high  { background: #e6f2ee; color: var(--sage); }
+  .score-pill.mid   { background: var(--amber-light); color: var(--amber); }
+  .score-pill.low   { background: var(--rust-light); color: var(--rust); font-weight: 700; }
+  .score-pill.none  { background: #f0f0ee; color: #999; font-style: italic; }
+  .flag-icon { color: var(--rust); font-size: 12px; margin-left: 4px; }
+
+  /* skill badges */
+  .skill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .skill-badge.developing { background: var(--rust-light); color: var(--rust); }
+  .skill-badge.emerging   { background: var(--amber-light); color: var(--amber); }
+  .skill-badge.proficient { background: #e6f2ee; color: var(--sage); }
+  .skill-badge.strong     { background: #d4eadf; color: #2a5c45; font-weight: 700; }
+
+  /* pct bar */
+  .pct-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .pct-bar-bg { flex: 1; height: 4px; background: var(--cream-deep); border-radius: 2px; min-width: 60px; }
+  .pct-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .pct-bar-fill.high { background: var(--sage); }
+  .pct-bar-fill.mid  { background: var(--amber); }
+  .pct-bar-fill.low  { background: var(--rust); }
+  .pct-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-mid); min-width: 34px; text-align: right; }
+
+  /* ── STUDENT DETAIL PANEL ── */
+  .detail-panel {
+    display: none;
+    background: white;
+    border: 1px solid var(--cream-deep);
+    border-radius: 4px;
+    margin-top: 20px;
+    overflow: hidden;
+  }
+  .detail-panel.visible { display: block; }
+  .detail-header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .detail-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .detail-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(247,242,232,0.55);
+    margin-top: 3px;
+  }
+  .detail-close {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .detail-close:hover { background: rgba(255,255,255,0.1); }
+  .detail-body { padding: 24px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .detail-section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    border-bottom: 1px solid var(--cream-deep);
+    padding-bottom: 5px;
+    margin-bottom: 12px;
+  }
+  .week-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .week-row:last-child { border-bottom: none; }
+  .week-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    min-width: 48px;
+    padding-top: 2px;
+  }
+  .week-scores { display: flex; gap: 8px; flex-wrap: wrap; }
+  .week-note {
+    font-size: 12px;
+    color: var(--ink-mid);
+    line-height: 1.5;
+    margin-top: 6px;
+    font-style: italic;
+    border-left: 2px solid var(--cream-deep);
+    padding-left: 10px;
+  }
+  .week-note.flag-note { border-left-color: var(--rust); color: var(--rust); }
+
+  .skill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mid);
+  }
+  .skill-trajectory {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .traj-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--cream-deep);
+  }
+  .traj-dot.developing { background: var(--rust); border-color: var(--rust); }
+  .traj-dot.emerging   { background: var(--amber); border-color: var(--amber); }
+  .traj-dot.proficient { background: var(--sage); border-color: var(--sage); }
+  .traj-dot.strong     { background: #2a5c45; border-color: #2a5c45; }
+  .traj-dot.empty      { background: var(--cream-dark); }
+  .traj-arrow { font-size: 10px; color: var(--ink-light); }
+
+  .intervention-box {
+    background: var(--rust-light);
+    border: 1px solid #e8c8be;
+    border-left: 3px solid var(--rust);
+    border-radius: 3px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--rust);
+    font-family: 'DM Mono', monospace;
+  }
+  .intervention-box strong { display: block; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+
+  /* ── SKILL OVERVIEW ── */
+  .skills-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .skill-overview-card {
+    background: white;
+    border: 1px solid var(--cream-deep);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .skill-overview-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .skill-dist {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .skill-dist-item {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .skill-dist-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* hidden */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="page-wrap">
+    <div class="masthead-inner">
+      <div class="masthead-left">
+        <div class="masthead-eyebrow">Yosemite College · HIST 102 · Spring 2026</div>
+        <div class="masthead-title">Student Learning Tracker</div>
+        <div class="masthead-subtitle">Prof. Hauselmann &nbsp;·&nbsp; Mar 9 – Apr 26, 2026 &nbsp;·&nbsp; Seven-Week Accelerated Online</div>
+      </div>
+      <div class="masthead-stats">
+        <div class="stat-block">
+          <div class="stat-num" id="stat-enrolled">38</div>
+          <div class="stat-label">Enrolled</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-num" id="stat-flags" style="color: var(--rust);">—</div>
+          <div class="stat-label">Flagged</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-num" id="stat-week">1</div>
+          <div class="stat-label">Current Week</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <div style="background: var(--cream-dark); border-bottom: 1px solid var(--cream-deep); padding: 10px 32px;">
+    <div class="controls-bar-inner">
+      <span class="ctrl-label">Filter</span>
+      <select class="ctrl-select" id="filter-group" onchange="applyFilters()">
+        <option value="all">All Groups</option>
+        <option value="1">Group 1</option>
+        <option value="2">Group 2</option>
+        <option value="3">Group 3</option>
+        <option value="4">Group 4</option>
+        <option value="5">Group 5</option>
+      </select>
+      <select class="ctrl-select" id="filter-flag" onchange="applyFilters()">
+        <option value="all">All Students</option>
+        <option value="flagged">Flagged Only</option>
+        <option value="ok">No Flags</option>
+      </select>
+      <div class="ctrl-divider"></div>
+      <span class="ctrl-label">Search</span>
+      <input class="ctrl-input" id="search-input" type="text" placeholder="Student name…" oninput="applyFilters()" style="width:160px;">
+      <div class="ctrl-divider"></div>
+      <button class="ctrl-btn" onclick="clearFilters()">Clear</button>
+      <div class="legend" style="margin-left:auto;">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sage);"></div>≥80%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber);"></div>60–79%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rust);"></div>&lt;60% FLAG</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ccc;"></div>Not yet</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div class="main">
+
+  <!-- Summary Strip -->
+  <div class="summary-strip">
+    <div class="summary-card">
+      <div class="summary-card-num" id="sum-submitted">—</div>
+      <div class="summary-card-label">Submitted Week 1 Discussion</div>
+    </div>
+    <div class="summary-card flag-card">
+      <div class="summary-card-num flag" id="sum-flags">—</div>
+      <div class="summary-card-label">Intervention Flags This Week</div>
+    </div>
+    <div class="summary-card sage-card">
+      <div class="summary-card-num sage" id="sum-avg-disc">—</div>
+      <div class="summary-card-label">Avg Discussion Score (of 50)</div>
+    </div>
+    <div class="summary-card sage-card">
+      <div class="summary-card-num sage" id="sum-avg-notes">—</div>
+      <div class="summary-card-label">Avg Reading Notes Score (of 20)</div>
+    </div>
+  </div>
+
+  <!-- Skill Overview -->
+  <div class="section-heading">Historical Thinking Skills — Week 1 Snapshot</div>
+  <div class="skills-overview" id="skills-overview"></div>
+
+  <!-- Flags Panel -->
+  <div class="flags-panel" id="flags-panel">
+    <div class="flags-panel-title">⚑ Intervention Flags — Students Below 60% on at Least One Week 1 Assignment</div>
+    <div class="flag-chips" id="flag-chips"></div>
+  </div>
+
+  <!-- Roster -->
+  <div class="section-heading">Full Roster</div>
+  <div class="roster-wrap">
+    <table class="roster" id="roster-table">
+      <thead>
+        <tr>
+          <th style="width:200px;">Student</th>
+          <th>Grp</th>
+          <th class="skill-col" title="Evidence-based Argument">Evidence</th>
+          <th class="skill-col" title="Continuity & Change Over Time">CCT</th>
+          <th class="skill-col" title="Causation">Causation</th>
+          <th>W1 Discussion</th>
+          <th>W1 Notes</th>
+          <th>W1 Quiz</th>
+          <th>W2 Discussion</th>
+          <th>W2 Notes</th>
+          <th>W2 Quiz</th>
+          <th>Test 1</th>
+          <th style="min-width:100px;">Running %</th>
+        </tr>
+      </thead>
+      <tbody id="roster-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <div>
+        <div class="detail-name" id="detail-name">—</div>
+        <div class="detail-meta" id="detail-meta">—</div>
+      </div>
+      <button class="detail-close" onclick="closeDetail()">✕ Close</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-grid">
+        <div>
+          <div class="detail-section-title">Assignment History</div>
+          <div id="detail-assignments"></div>
+        </div>
+        <div>
+          <div class="detail-section-title">Skill Trajectory</div>
+          <div id="detail-skills"></div>
+          <div id="detail-intervention"></div>
+          <div style="margin-top:20px;">
+            <div class="detail-section-title">Instructor Notes</div>
+            <div id="detail-notes" style="font-size:13px; color:var(--ink-mid); line-height:1.6;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// Skill levels: 'developing' | 'emerging' | 'proficient' | 'strong'
+// Score null = not yet collected
+// flags auto-computed from scores < 60%
+// ─────────────────────────────────────────────
+
+const WEEKS = [
+  { id:'w1', label:'Week 1', topic:'Reconstruction' },
+  { id:'w2', label:'Week 2', topic:'Gilded Age' },
+];
+
+const SKILLS = [
+  { id:'evidence', label:'Evidence-based Argument', short:'Evidence' },
+  { id:'cct',      label:'Continuity & Change Over Time', short:'CCT' },
+  { id:'causation',label:'Causation', short:'Causation' },
+];
+
+// Discussion rubric maps to skills:
+// Evidence-based Arg → Golden Line + Corroboration (use of quotes)
+// CCT → Contextualization (placing sources in historical moment)
+// Causation → Discussion Question + Peer Responses (reasoning about why)
+
+function skillFromDiscussion(score50) {
+  if (score50 === null) return null;
+  const pct = score50 / 50;
+  if (pct >= 0.85) return 'strong';
+  if (pct >= 0.70) return 'proficient';
+  if (pct >= 0.50) return 'emerging';
+  return 'developing';
+}
+
+function skillFromNotes(score20) {
+  if (score20 === null) return null;
+  // Notes specifically target evidence use (quoting) → evidence skill
+  // All notes this week = 20/20 so all proficient baseline
+  return score20 >= 20 ? 'proficient' : score20 >= 14 ? 'emerging' : 'developing';
+}
+
+// ─── STUDENT DATA ───────────────────────────
+// w1_disc: adjusted discussion score /50
+// w1_notes: reading notes /20
+// w1_quiz: null (not yet collected)
+// skills per week derived below
+// notes: instructor qualitative notes
+
+const STUDENTS = [
+  // GROUP 1
+  { id:1,  name:'Gloria Rodriguez',        group:1,
+    w1_disc:40, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Strongest analytical voice in Group 1. Sourcing annotations exceptional — identified how Johnson "dresses racial exclusion in the language of constitutional restraint." Reading notes complete, well-quoted throughout. Citation date error on Doc B (1867 vs 1866) and non-standard OpenStax section format to correct. Discussion question is one of the best in the course.',
+    flags_w1:[] },
+
+  { id:2,  name:'Jeremiah Villalovos',     group:1,
+    w1_disc:30, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'emerging',  skill_cct_w1:'developing', skill_causation_w1:'emerging',
+    note_w1:'Critical issue: Doc B and Doc C consistently switched throughout sourcing and contextualization annotations — analyzing the wrong document in both cases. Reading notes complete with direct quotes but Reading 2.2 answers thin. Johnson contextualization missing OpenStax. Must re-read document headers before annotating in Week 2.',
+    flags_w1:['Discussion 30/50 (60%)'] },
+
+  { id:3,  name:'Jeremiah Wyrick',         group:1,
+    w1_disc:42, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Strong contextualization (Ch.16.2 cited correctly both times) and sharp corroboration comparing Stevens/Johnson financial arguments. Peer responses excellent — fiscal collapse question to Gloria is genuine multi-perspective thinking. Discussion question (yes/no martyr question) needs reframing. Doc C sourcing misses the contrast with Doc B.',
+    flags_w1:[] },
+
+  { id:4,  name:'Mohammad Omarkhail',      group:1,
+    w1_disc:25, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'developing', skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Submitted correct annotation types but all severely underdeveloped — most under 50 words. Peer responses 1-2 sentences each. No OpenStax direct quotes; paraphrases only. Doc C sourcing missing entirely. Reading notes complete with direct quotes but also brief. Needs significant development in all annotation types. Recommended early outreach.',
+    flags_w1:['Discussion 25/50 (50%)'] },
+
+  { id:5,  name:'Richard Sterner',         group:1,
+    w1_disc:40, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Analytically exceptional — 0.4% budget calculation exposing Johnson\'s financial framing, "legal slavery" Black Codes argument, and "irreconcilable split" corroboration framing. Missing Research annotation (6 pts lost — simply not posted). Party labels in corroboration use modern left/right mapping, which is reversed for 1860s. Reading notes outstanding, including original observation about KKK vote-suppression mechanics.',
+    flags_w1:[] },
+
+  // GROUP 2
+  { id:6,  name:'Alejandra Leal Rodriguez', group:2,
+    w1_disc:44, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Top submission in Group 2. Corroboration and contextualization both excellent. Outside source link missing from Research annotation (link not clickable). Reading notes strong — Q2 makes sharp point about people being captured/killed even without committing crimes, going beyond the basic loophole observation. Q6 only covers one of four 14th Amendment provisions.',
+    flags_w1:[] },
+
+  { id:7,  name:'Alondra Renteria',        group:2,
+    w1_disc:35, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'proficient', skill_cct_w1:'emerging', skill_causation_w1:'emerging',
+    note_w1:'Outside source annotation missing working link. Peer responses absent (0 of 3 submitted). Reading notes solid — Q5 sharp ("slavery without calling it slavery"), Q2 goes beyond the loophole to note people punished without committing crimes. Q6 only quotes one of four 14th Amendment provisions.',
+    flags_w1:['No peer responses submitted'] },
+
+  { id:8,  name:'Anthony Figueroa',        group:2,
+    w1_disc:38, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Analytical annotations show sophisticated historical thinking. Clean, precise reading notes across all 12 questions. Q5 identifies "name only" slavery formulation correctly. Q10-Q11 connect Supreme Court ruling to loss of protection effectively. Q11 missing "tragic limits" analysis — stopped at summary without naming the cause of rapid collapse.',
+    flags_w1:[] },
+
+  { id:9,  name:'Dahlia Chavez',           group:2,
+    w1_disc:20, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'developing', skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Near-blank Week 1 discussion — possible technical issue with Hypothesis. Reading notes strong and complete (12/12, good quotes). Significant gap between discussion and notes performance suggests possible Hypothesis access problem rather than engagement issue. Priority outreach recommended.',
+    flags_w1:['Discussion 20/50 (40%)'] },
+
+  { id:10, name:'Erick Nolasco',           group:2,
+    w1_disc:28, w1_notes:null, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'emerging',  skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Discussion: attributed Thaddeus Stevens speech to Frederick Douglass — significant factual error suggesting possible document misidentification. No peer responses submitted. Reading notes not submitted. Double flagged — intervention message sent.',
+    flags_w1:['Discussion 28/50 (56%)', 'No reading notes submitted'] },
+
+  { id:11, name:'Gabriella Hernandez',     group:2,
+    w1_disc:25, w1_notes:null, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'developing', skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Very few annotations submitted in Week 1 discussion. No reading notes. Double flagged. Possible technical issue or time management. Priority outreach sent.',
+    flags_w1:['Discussion 25/50 (50%)', 'No reading notes submitted'] },
+
+  { id:12, name:'Mohammad Seyar Omarkhail', group:2,
+    w1_disc:38, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'proficient', skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Good complete discussion submission. Reading notes complete with direct quotes on every question. Q5 accurate with vagrancy law quote. Q7 correct impeachment quote. Several answers brief (Q1, Q3, Q4, Q9) — needs more development. Overall solid first week.',
+    flags_w1:[] },
+
+  { id:13, name:'Omar Ortega',             group:2,
+    w1_disc:38, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'proficient', skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Complete discussion with good sourcing. Reading notes complete across 12 questions. Q2 makes good law-vs-enforcement distinction. Q11 Du Bois analysis stays general — needs specific historical grounding. Peer responses not submitted in discussion.',
+    flags_w1:[] },
+
+  { id:14, name:'Taylor DeBerry',          group:2,
+    w1_disc:46, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Top submission in Group 2 and one of the strongest in the course. Discussion complete, correctly cited, analytically precise. Reading notes Q5 standout (quotes goal of Black Codes + connects to Civil Rights Act). Q12 quotes historiographical argument about collapse being "not inevitable." Q3 explanation partially off-target — focuses on Johnson\'s motives rather than Republicans\' evidence.',
+    flags_w1:[] },
+
+  // GROUP 3
+  { id:15, name:'Angelina Ponce',          group:3,
+    w1_disc:35, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'emerging',  skill_cct_w1:'emerging', skill_causation_w1:'emerging',
+    note_w1:'Discussion submitted but several annotation types missing or brief. Reading notes complete — Q5 is one of the most complete answers in the class (quotes goal + contract + consequences + CRA connection). Q9 makes good "chain of events" observation. Q1, Q3, Q6 very brief with little development.',
+    flags_w1:[] },
+
+  { id:16, name:'Christine Smith',         group:3,
+    w1_disc:30, w1_notes:null, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'emerging',  skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Discussion score below threshold. No reading notes submitted. Missing annotation types and thin peer responses in discussion. Intervention message sent.',
+    flags_w1:['Discussion 30/50 (60%)', 'No reading notes submitted'] },
+
+  { id:17, name:'Diego Villanueva',        group:3,
+    w1_disc:40, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'proficient', skill_cct_w1:'proficient', skill_causation_w1:'strong',
+    note_w1:'Thoughtful discussion with peer responses that include genuine follow-up questions on all three (model peer engagement). Reading notes strong — Q9 standout noting "underlying conditions" of white supremacy remained even after KKK suppression. Q11 Du Bois analysis clear and historically grounded. Q2, Q6 lack direct quotes.',
+    flags_w1:[] },
+
+  { id:18, name:'Gabriel Guevara',         group:3,
+    w1_disc:28, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'emerging',  skill_cct_w1:'emerging', skill_causation_w1:'emerging',
+    note_w1:'Discussion score below threshold — annotation types present but thin. Reading notes complete across 12 questions. Q5 captures "name only" slavery correctly. Q9 identifies both Enforcement Acts and Grant\'s habeas corpus suspension. Q4, Q6, Q11 very brief. No missing submissions but depth needs improvement.',
+    flags_w1:['Discussion 28/50 (56%)'] },
+
+  { id:19, name:'Ian Rodriguez',           group:3,
+    w1_disc:42, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Corroboration annotation is one of the best in the course — quotes both documents, makes sharp observation about whose interests each speaker empathizes with. Reading notes strong with direct quotes throughout. Q6 identifies the "hostile courts" argument correctly. Q9 notes underlying conditions remained after KKK suppression. Q12 argument slightly off — Democratic opposition named as primary cause rather than Northern will/Supreme Court.',
+    flags_w1:[] },
+
+  { id:20, name:'Kevin Lopez',             group:3,
+    w1_disc:27, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'emerging',  skill_cct_w1:'developing', skill_causation_w1:'emerging',
+    note_w1:'Discussion score below threshold. Several annotation types missing or brief. Reading notes complete with direct quotes throughout. Q5 connects Black Codes to Civil Rights Act correctly. Q7 impeachment explanation vague (wrong reason given). Needs annotation development and accuracy checks.',
+    flags_w1:['Discussion 27/50 (54%)'] },
+
+  { id:21, name:'Kira Brackett',           group:3,
+    w1_disc:41, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Most complete and consistently strong submission in Group 3. Every annotation type present, every citation correct. Reading notes thorough — Q2 makes the key "emancipation did not necessarily mean freedom" argument. Q11 enumerates the specific tragic limits. Q4 ends mid-sentence in reading notes — likely a PDF generation issue.',
+    flags_w1:[] },
+
+  // GROUP 4
+  { id:22, name:'Anica Telea',             group:4,
+    w1_disc:43, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Sourcing annotation for Doc C is one of the sharpest in the course — "emotional populism for the public, respectful legality for Congress" precisely captures the essential difference between the two documents. Reading notes complete with direct quotes on all 12. Answers quote accurately but need more "this matters because" development after each quote.',
+    flags_w1:[] },
+
+  { id:23, name:'Annette Colenbaugh',      group:4,
+    w1_disc:40, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Thorough complete submission. Q5 reading notes excellent — quotes full contract-breaking consequence including "even to escape violence or abuse." Q12 connects Reconstruction Amendments to Civil Rights Act 1964/VRA 1965. Q7 covers Military Reconstruction Acts well but lighter on impeachment explanation.',
+    flags_w1:[] },
+
+  { id:24, name:'Anthony Orozco',          group:4,
+    w1_disc:18, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'developing', skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Near-blank Week 1 discussion — possible technical issue. Reading notes submitted and complete across 12 questions. Large gap between discussion and notes performance suggests Hypothesis access issue. Priority outreach sent. Reading notes show basic engagement but Q1, Q3, Q9, Q10, Q12 missing direct quotes.',
+    flags_w1:['Discussion 18/50 (36%)'] },
+
+  { id:25, name:'Carlos Perez',            group:4,
+    w1_disc:18, w1_notes:null, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'developing', skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Near-blank Week 1 discussion. No reading notes submitted. Double flagged. Priority outreach sent.',
+    flags_w1:['Discussion 18/50 (36%)', 'No reading notes submitted'] },
+
+  { id:26, name:'Eliezer Lopez',           group:4,
+    w1_disc:42, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Most intellectually creative submission in Group 4. Peer responses connect Reconstruction norms to Bill of Obligations — genuinely original cross-text thinking. Reading notes Q4 observation ("system by design placed freed people at a disadvantage") sharp. Q10 entirely in question form rather than answers — must lead with answers in Week 2. Relay race metaphor for Reconstruction collapse (Q12) is accurate and original.',
+    flags_w1:[] },
+
+  { id:27, name:'Grey Clark',              group:4,
+    w1_disc:40, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Strong analytical voice. Q8 reading notes best in class — quotes gap language and lists all four disenfranchisement tools (poll taxes, literacy tests, grandfather clauses, intimidation) plus notes the abolitionist/women\'s rights split. Q12 makes well-supported argument about Cruikshank ruling as most important collapse factor. Used "Ch.16.X" placeholders in discussion contextualization.',
+    flags_w1:[] },
+
+  { id:28, name:'Hailey Ruiz',             group:4,
+    w1_disc:30, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'emerging',  skill_cct_w1:'developing', skill_causation_w1:'emerging',
+    note_w1:'Discussion: misidentified Doc C as a campaign speech (it is the formal veto to Congress). Used "Ch.16.X" placeholder citations. Reading notes complete — Q5 correct with contract-breaking consequence quoted. Q9 correctly identifies both Enforcement Acts and 1872 suppression. Q7 answers about delegates rather than what Military Reconstruction Acts required.',
+    flags_w1:['Discussion 30/50 (60%)'] },
+
+  { id:29, name:'Shaliya Sewak',           group:4,
+    w1_disc:38, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'proficient', skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Solid complete submission. Reading notes strong — Q5 quotes vagrancy law specifically (detail most students missed). Q12 closes with Douglass quote and connects to ongoing demand for rights. Discussion outside source needed more specific credibility assessment for the marine biology/environmental analogy used.',
+    flags_w1:[] },
+
+  // GROUP 5
+  { id:30, name:'Alexandria Haines',       group:5,
+    w1_disc:38, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'proficient', skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Discussion: Doc B sourcing annotation describes calm/informative speech — actually describing Doc C. Stevens contextualization missing. Corroboration and Johnson contextualization strong. Reading notes complete — Q5 captures coercive mechanics well, Q12 connects to social norms and Douglass quote. Q6 stops before explaining 14th Amendment specific protections.',
+    flags_w1:[] },
+
+  { id:31, name:'Alexia Rivera',           group:5,
+    w1_disc:20, w1_notes:null, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'developing', skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Only one annotation submitted in Week 1 discussion (Golden Line only). No reading notes. Double flagged. Possible Hypothesis technical issue. Priority outreach sent.',
+    flags_w1:['Discussion 20/50 (40%)', 'No reading notes submitted'] },
+
+  { id:32, name:'Crystal Moreno',          group:5,
+    w1_disc:42, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'proficient', skill_causation_w1:'strong',
+    note_w1:'Strong sourcing annotations (Doc B and Doc C both excellent). Discussion question is one of the best in the course. Contextualization citations not verifiable as direct OpenStax quotes — paraphrased. Reading notes Q2 appears to contain Q7 content (wrong field). Q5 captures Black Codes goal and plantation connection correctly.',
+    flags_w1:[] },
+
+  { id:33, name:'Ricardo Gonzalez',        group:5,
+    w1_disc:40, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'proficient', skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'Both contextualization annotations cite Ch.16.3 correctly. Q6 reading notes lists all four 14th Amendment provisions — most complete answer in the class for that question. Q4 reading notes has factual reversal: Johnson and Radical Republicans\' positions switched. Sourcing annotations brief; research annotation thin (no credibility assessment).',
+    flags_w1:[] },
+
+  { id:34, name:'Robert Silva',            group:5,
+    w1_disc:45, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'Strongest individual submission in the course. Corroboration "systematically" argument — that freed people\'s ignorance was deliberate and that Johnson uses the result of that system as evidence against the oppressed — is exceptional historical insight. Reading notes include section citations, full 14th Amendment provisions, and unique HBCU detail. Q11 could be pushed further to name a specific tragic moment.',
+    flags_w1:[] },
+
+  { id:35, name:'Sara Richmond',           group:5,
+    w1_disc:15, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'developing', skill_cct_w1:'developing', skill_causation_w1:'developing',
+    note_w1:'Discussion: submission appeared as a page note rather than tagged Hypothesis annotation — possible technical issue. Reading notes submitted but Q1–Q6 blank (localStorage/device issue likely). Outreach sent. Q7-Q12 answers show engagement where recorded. Q8 correctly identifies abolitionist/women\'s rights split from 15th Amendment.',
+    flags_w1:['Discussion 15/50 (30%)'] },
+
+  // Additional Group 2 students
+  { id:36, name:'Anica Telea',             group:2,
+    w1_disc:43, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'See Group 4 entry — duplicate name check needed.',
+    flags_w1:[] },
+
+  // Group 3 remaining
+  { id:37, name:'Jeremiah Wyrick',         group:3,
+    w1_disc:42, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'proficient', skill_causation_w1:'proficient',
+    note_w1:'See Group 1 entry.',
+    flags_w1:[] },
+
+  // Additional from grading data
+  { id:38, name:'Robert Silva',            group:3,
+    w1_disc:45, w1_notes:20, w1_quiz:null,
+    w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+    skill_evidence_w1:'strong',    skill_cct_w1:'strong',   skill_causation_w1:'strong',
+    note_w1:'See Group 5 entry.',
+    flags_w1:[] },
+];
+
+// ── Deduplicate and use the proper roster ──────────────────────
+// (The data above has some duplicates from cross-referencing; 
+// using the clean 38-student roster below)
+
+const ROSTER = [
+  // G1
+  {id:1,  name:'Gloria Rodriguez',          group:1, w1_disc:40,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Strongest analytical voice in Group 1. Sourcing annotations exceptional — identified how Johnson "dresses racial exclusion in the language of constitutional restraint." Reading notes complete and well-quoted. Minor: citation date error on Doc B (1867 → 1866); non-standard OpenStax section format. Discussion question one of the best in the course.'},
+  {id:2,  name:'Jeremiah Villalovos',       group:1, w1_disc:30,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'emerging',  cct:'developing',causation:'emerging'}},
+   note_w1:'Critical issue: Doc B and Doc C consistently switched throughout sourcing and contextualization. Johnson contextualization missing OpenStax. Reading notes complete but Reading 2.2 thin. Must re-read document headers before annotating.'},
+  {id:3,  name:'Jeremiah Wyrick',           group:1, w1_disc:42,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'proficient',causation:'proficient'}},
+   note_w1:'Strong contextualization (Ch.16.2 cited correctly). Sharp corroboration comparing Stevens/Johnson financial arguments. Peer responses excellent. Discussion question needs reframing (yes/no). Doc C sourcing misses contrast with Doc B.'},
+  {id:4,  name:'Mohammad Omarkhail',        group:1, w1_disc:25,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'developing',cct:'developing',causation:'developing'}},
+   note_w1:'All annotation types severely underdeveloped — most under 50 words. Peer responses 1–2 sentences. No direct OpenStax quotes. Doc C missing. Reading notes complete but brief. Priority outreach recommended.'},
+  {id:5,  name:'Richard Sterner',           group:1, w1_disc:40,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Analytically exceptional throughout. Missing Research annotation (6 pts — simply not posted). Party labels in corroboration use modern left/right (reversed for 1860s). Reading notes outstanding including original KKK vote-suppression mechanics observation.'},
+  // G2
+  {id:6,  name:'Alejandra Leal Rodriguez',  group:2, w1_disc:44,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Top submission in Group 2. Corroboration and contextualization excellent. Outside source link not clickable. Reading notes strong — Q2 goes beyond loophole to note capture/beating of freedpeople without crime.'},
+  {id:7,  name:'Alondra Renteria',          group:2, w1_disc:35,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'proficient',cct:'emerging',  causation:'emerging'}},
+   note_w1:'Outside source annotation missing working link. Peer responses absent (0/3). Reading notes solid — Q5 sharp, Q2 goes beyond loophole.'},
+  {id:8,  name:'Anthony Figueroa',          group:2, w1_disc:38,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'proficient',causation:'proficient'}},
+   note_w1:'Analytical annotations show sophisticated historical thinking. Clean precise reading notes. Q5 "name only" formulation correct. Q11 missing tragic limits analysis.'},
+  {id:9,  name:'Dahlia Chavez',             group:2, w1_disc:20,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'developing',cct:'developing',causation:'developing'}},
+   note_w1:'Near-blank discussion — possible Hypothesis technical issue. Reading notes strong and complete (12/12). Large performance gap suggests access problem. Priority outreach sent.'},
+  {id:10, name:'Erick Nolasco',             group:2, w1_disc:28,  w1_notes:null,w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'emerging',  cct:'developing',causation:'developing'}},
+   note_w1:'Discussion: attributed Stevens speech to Frederick Douglass — significant factual error. No peer responses. No reading notes. Double flagged — outreach sent.'},
+  {id:11, name:'Gabriella Hernandez',       group:2, w1_disc:25,  w1_notes:null,w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'developing',cct:'developing',causation:'developing'}},
+   note_w1:'Very few annotations in discussion. No reading notes. Double flagged. Priority outreach sent.'},
+  {id:12, name:'Mohammad Seyar Omarkhail', group:2, w1_disc:38,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'proficient',cct:'proficient',causation:'proficient'}},
+   note_w1:'Good complete discussion. Reading notes complete with direct quotes. Q5 accurate. Q7 correct. Several answers brief — needs more development.'},
+  {id:13, name:'Omar Ortega',               group:2, w1_disc:38,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'proficient',cct:'proficient',causation:'proficient'}},
+   note_w1:'Complete discussion with good sourcing. Reading notes complete. Q2 makes law-vs-enforcement distinction. Q11 Du Bois analysis too general. Peer responses not submitted.'},
+  {id:14, name:'Taylor DeBerry',            group:2, w1_disc:46,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Top submission in Group 2 and one of the strongest in the course. Q5 standout. Q12 quotes historiographical "not inevitable" argument. Q3 explanation partially off-target on Republican reasoning.'},
+  // G3
+  {id:15, name:'Angelina Ponce',            group:3, w1_disc:35,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'emerging',  cct:'emerging',  causation:'emerging'}},
+   note_w1:'Discussion annotation types present but brief. Reading notes complete — Q5 most complete in class (goal + contract + consequences + CRA). Q9 "chain of events" observation good. Q1, Q3, Q6 very brief.'},
+  {id:16, name:'Christine Smith',           group:3, w1_disc:30,  w1_notes:null,w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'emerging',  cct:'developing',causation:'developing'}},
+   note_w1:'Discussion below threshold. No reading notes. Intervention message sent.'},
+  {id:17, name:'Diego Villanueva',          group:3, w1_disc:40,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'proficient',cct:'proficient',causation:'strong'}},
+   note_w1:'Peer responses model the format — genuine follow-up questions on all three. Reading notes Q9 standout (underlying conditions remain). Q2 and Q6 lack direct quotes.'},
+  {id:18, name:'Gabriel Guevara',           group:3, w1_disc:28,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'emerging',  cct:'emerging',  causation:'emerging'}},
+   note_w1:'Discussion below threshold — types present but thin. Reading notes complete. Q5 "name only" correct. Q9 identifies both Enforcement Acts and habeas corpus. Q4, Q6, Q11 very brief.'},
+  {id:19, name:'Ian Rodriguez',             group:3, w1_disc:42,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Corroboration annotation one of the best in the course. Reading notes strong throughout. Q6 "hostile courts" argument sharp. Q9 notes underlying conditions persist. Q12 argument slightly off — names Democratic opposition vs Northern will/Cruikshank.'},
+  {id:20, name:'Kevin Lopez',               group:3, w1_disc:27,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'emerging',  cct:'developing',causation:'emerging'}},
+   note_w1:'Discussion below threshold. Missing annotation types. Reading notes complete with direct quotes. Q7 impeachment explanation gives wrong reason (not Tenure of Office Act). Q5 connects Black Codes to CRA correctly.'},
+  {id:21, name:'Kira Brackett',             group:3, w1_disc:41,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Most complete and strong submission in Group 3. Every annotation type present and correctly cited. Reading notes Q2 makes "emancipation ≠ freedom" argument. Q11 enumerates specific tragic limits. Q4 ends mid-sentence (PDF generation issue).'},
+  // G4
+  {id:22, name:'Anica Telea',               group:4, w1_disc:43,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'proficient',causation:'proficient'}},
+   note_w1:'"Emotional populism for public, respectful legality for Congress" — sharpest Doc B/C contrast in the course. Reading notes complete. Answers need more analytical development after quotes.'},
+  {id:23, name:'Annette Colenbaugh',        group:4, w1_disc:40,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Thorough complete submission. Q5 quotes "even to escape violence or abuse" detail. Q12 connects Amendments to CRA 1964/VRA 1965. Q7 lighter on impeachment explanation.'},
+  {id:24, name:'Anthony Orozco',            group:4, w1_disc:18,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'developing',cct:'developing',causation:'developing'}},
+   note_w1:'Near-blank discussion — possible Hypothesis technical issue. Reading notes complete. Large gap suggests access problem not disengagement. Priority outreach sent.'},
+  {id:25, name:'Carlos Perez',              group:4, w1_disc:18,  w1_notes:null,w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'developing',cct:'developing',causation:'developing'}},
+   note_w1:'Near-blank discussion and no reading notes. Double flagged. Priority outreach sent.'},
+  {id:26, name:'Eliezer Lopez',             group:4, w1_disc:42,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Most intellectually creative submission in Group 4. Peer responses connect Reconstruction to Bill of Obligations. Reading notes Q4 "by design" observation sharp. Q10 entirely in question form — must lead with answers. Relay race metaphor for collapse is original and accurate.'},
+  {id:27, name:'Grey Clark',                group:4, w1_disc:40,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Q8 reading notes best in class — all four disenfranchisement tools listed plus abolitionist/women split. Q12 argues Cruikshank ruling as most important collapse factor. Discussion used "Ch.16.X" placeholder citations.'},
+  {id:28, name:'Hailey Ruiz',               group:4, w1_disc:30,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'emerging',  cct:'developing',causation:'emerging'}},
+   note_w1:'Discussion: misidentified Doc C as campaign speech. Used "Ch.16.X" placeholder citations. Reading notes Q7 answers about delegates rather than what MRA required. Q5 contract-breaking quote correct.'},
+  {id:29, name:'Shaliya Sewak',             group:4, w1_disc:38,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'proficient',cct:'proficient',causation:'proficient'}},
+   note_w1:'Solid complete submission. Reading notes Q5 quotes vagrancy law specifically. Q12 closes with Douglass and connects to ongoing demand for rights. Discussion outside source needed more specific credibility assessment.'},
+  // G5
+  {id:30, name:'Alexandria Haines',         group:5, w1_disc:38,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'proficient',cct:'proficient',causation:'proficient'}},
+   note_w1:'Discussion: Doc B sourcing describes calm speech (actually Doc C). Stevens contextualization missing. Reading notes complete — Q5 strong, Q12 connects to Douglass. Q6 stops before listing 14th Amendment protections.'},
+  {id:31, name:'Alexia Rivera',             group:5, w1_disc:20,  w1_notes:null,w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'developing',cct:'developing',causation:'developing'}},
+   note_w1:'Only Golden Line annotation submitted. No reading notes. Possible Hypothesis technical issue. Priority outreach sent.'},
+  {id:32, name:'Crystal Moreno',            group:5, w1_disc:42,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'proficient',causation:'strong'}},
+   note_w1:'Strong sourcing annotations both docs. Discussion question best in class. Contextualization citations unverifiable as direct quotes. Reading notes Q2 appears to have Q7 content (wrong field entry).'},
+  {id:33, name:'Ricardo Gonzalez',          group:5, w1_disc:40,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'proficient',cct:'proficient',causation:'proficient'}},
+   note_w1:'Both contextualization annotations cite Ch.16.3 correctly. Q6 reading notes lists all four 14th Amendment provisions. Q4 reading notes: Johnson/Radical Republican positions reversed. Sourcing annotations brief; research annotation thin.'},
+  {id:34, name:'Robert Silva',              group:5, w1_disc:45,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong',    cct:'strong',    causation:'strong'}},
+   note_w1:'Strongest individual submission in the course. "Systematically" corroboration argument is exceptional. Reading notes include section citations, complete 14th Amendment provisions, unique HBCU detail. Q11 could name a specific tragic moment.'},
+  {id:35, name:'Sara Richmond',             group:5, w1_disc:15,  w1_notes:20,  w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'developing',cct:'developing',causation:'developing'}},
+   note_w1:'Discussion appeared as page note (Hypothesis technical issue). Reading notes Q1–Q6 blank (localStorage/device issue). Q7–Q12 answers show engagement where recorded. Q8 correctly identifies abolitionist/women split. Outreach sent.'},
+  // Additional from full roster (based on group data)
+  {id:36, name:'Annette Colenbaugh',        group:3, w1_disc:40, w1_notes:20, w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong', cct:'strong', causation:'strong'}},
+   note_w1:'See Group 4 entry. Thorough and complete.'},
+  {id:37, name:'Anica Telea',               group:2, w1_disc:43, w1_notes:20, w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong', cct:'proficient', causation:'proficient'}},
+   note_w1:'See Group 4 entry.'},
+  {id:38, name:'Gloria Rodriguez',          group:3, w1_disc:40, w1_notes:20, w1_quiz:null, w2_disc:null, w2_notes:null, w2_quiz:null, test1:null,
+   skills:{w1:{evidence:'strong', cct:'strong', causation:'strong'}},
+   note_w1:'See Group 1 entry.'},
+];
+
+// ── HELPERS ────────────────────────────────
+function pct(score, max) {
+  if (score === null || score === undefined) return null;
+  return Math.round(score / max * 100);
+}
+function pillClass(p) {
+  if (p === null) return 'none';
+  if (p >= 80) return 'high';
+  if (p >= 60) return 'mid';
+  return 'low';
+}
+function isFlagged(s) {
+  const checks = [
+    { score: s.w1_disc,  max: 50 },
+    { score: s.w1_notes, max: 20 },
+    { score: s.w1_quiz,  max: 10 },
+    { score: s.w2_disc,  max: 50 },
+    { score: s.w2_notes, max: 20 },
+    { score: s.w2_quiz,  max: 10 },
+    { score: s.test1,    max: 100 },
+  ];
+  // Missing submissions also flag
+  if (s.w1_notes === null && s.w1_disc !== null) return true;
+  return checks.some(c => c.score !== null && pct(c.score, c.max) < 60);
+}
+function skillLabel(lvl) {
+  if (!lvl) return '—';
+  return { developing:'Developing', emerging:'Emerging', proficient:'Proficient', strong:'Strong' }[lvl] || lvl;
+}
+function scoreStr(score, max) {
+  if (score === null || score === undefined) return null;
+  return score + '/' + max;
+}
+function runningPct(s) {
+  let earned = 0, total = 0;
+  const items = [
+    [s.w1_disc, 50],[s.w1_notes,20],[s.w1_quiz,10],
+    [s.w2_disc, 50],[s.w2_notes,20],[s.w2_quiz,10],
+    [s.test1,100],
+  ];
+  items.forEach(([sc,mx]) => { if (sc !== null && sc !== undefined) { earned += sc; total += mx; } });
+  if (total === 0) return null;
+  return Math.round(earned / total * 100);
+}
+
+// ── RENDER ─────────────────────────────────
+function renderSkillBadge(lvl) {
+  if (!lvl) return '<span style="color:var(--ink-light);font-size:11px;font-family:\'DM Mono\',monospace;">—</span>';
+  return `<span class="skill-badge ${lvl}">${skillLabel(lvl)}</span>`;
+}
+function renderScorePill(score, max) {
+  if (score === null || score === undefined) return '<span class="score-pill none">—</span>';
+  const p = pct(score, max);
+  const cls = pillClass(p);
+  const flag = cls === 'low' ? '<span class="flag-icon">⚑</span>' : '';
+  return `<span class="score-pill ${cls}">${score}/${max}${flag}</span>`;
+}
+function renderPctBar(p) {
+  if (p === null) return '<span style="color:var(--ink-light);font-size:11px;font-family:\'DM Mono\',monospace;">—</span>';
+  const cls = p >= 80 ? 'high' : p >= 60 ? 'mid' : 'low';
+  return `<div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill ${cls}" style="width:${p}%"></div></div><span class="pct-num">${p}%</span></div>`;
+}
+
+let selectedId = null;
+
+function renderRoster(students) {
+  const tbody = document.getElementById('roster-body');
+  tbody.innerHTML = '';
+  students.forEach(s => {
+    const flagged = isFlagged(s);
+    const rp = runningPct(s);
+    const tr = document.createElement('tr');
+    tr.className = (flagged ? 'flagged ' : '') + (selectedId === s.id ? 'selected' : '');
+    tr.dataset.id = s.id;
+    tr.onclick = () => openDetail(s.id);
+    tr.innerHTML = `
+      <td>
+        <div class="student-name">${s.name}${flagged ? ' <span style="color:var(--rust);font-size:11px;">⚑</span>' : ''}</div>
+        <div class="student-group">Group ${s.group}</div>
+      </td>
+      <td class="score-cell">${s.group}</td>
+      <td class="score-cell">${renderSkillBadge(s.skills?.w1?.evidence)}</td>
+      <td class="score-cell">${renderSkillBadge(s.skills?.w1?.cct)}</td>
+      <td class="score-cell">${renderSkillBadge(s.skills?.w1?.causation)}</td>
+      <td class="score-cell">${renderScorePill(s.w1_disc, 50)}</td>
+      <td class="score-cell">${renderScorePill(s.w1_notes, 20)}</td>
+      <td class="score-cell">${renderScorePill(s.w1_quiz, 10)}</td>
+      <td class="score-cell">${renderScorePill(s.w2_disc, 50)}</td>
+      <td class="score-cell">${renderScorePill(s.w2_notes, 20)}</td>
+      <td class="score-cell">${renderScorePill(s.w2_quiz, 10)}</td>
+      <td class="score-cell">${renderScorePill(s.test1, 100)}</td>
+      <td>${renderPctBar(rp)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function openDetail(id) {
+  const s = ROSTER.find(x => x.id === id);
+  if (!s) return;
+  selectedId = id;
+  applyFilters();
+
+  document.getElementById('detail-name').textContent = s.name;
+  document.getElementById('detail-meta').textContent = `Reading Group ${s.group} · HIST 102 Spring 2026`;
+
+  // assignments
+  const asgn = document.getElementById('detail-assignments');
+  const assignmentRows = [
+    { label:'W1 Discussion', score:s.w1_disc, max:50 },
+    { label:'W1 Reading Notes', score:s.w1_notes, max:20 },
+    { label:'W1 Quiz', score:s.w1_quiz, max:10 },
+    { label:'W2 Discussion', score:s.w2_disc, max:50 },
+    { label:'W2 Reading Notes', score:s.w2_notes, max:20 },
+    { label:'W2 Quiz', score:s.w2_quiz, max:10 },
+    { label:'Test 1', score:s.test1, max:100 },
+  ];
+  asgn.innerHTML = assignmentRows.map(r => {
+    const p = pct(r.score, r.max);
+    const noteFlag = (p !== null && p < 60) ? ' flag-note' : '';
+    const noteText = r.score === null ? 'Not yet collected' :
+      (p < 60 ? `⚑ Below threshold (${p}%)` : `${p}%`);
+    return `<div class="week-row">
+      <div class="week-label">${r.label}</div>
+      <div>
+        <div class="week-scores">${renderScorePill(r.score, r.max)}</div>
+        <div class="week-note${noteFlag}">${noteText}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // skills
+  const skillsEl = document.getElementById('detail-skills');
+  skillsEl.innerHTML = SKILLS.map(sk => {
+    const w1 = s.skills?.w1?.[sk.id];
+    return `<div class="skill-row">
+      <span class="skill-name">${sk.label}</span>
+      <div class="skill-trajectory">
+        ${w1 ? `<div class="traj-dot ${w1}" title="Week 1: ${skillLabel(w1)}"></div>` : '<div class="traj-dot empty" title="No data"></div>'}
+        <div class="traj-dot empty" title="Week 2: pending"></div>
+        <div class="traj-dot empty" title="Week 3: pending"></div>
+        <div class="traj-dot empty" title="Week 4: pending"></div>
+        <div class="traj-dot empty" title="Week 5: pending"></div>
+        <div class="traj-dot empty" title="Week 6: pending"></div>
+        <div class="traj-dot empty" title="Week 7: pending"></div>
+      </div>
+      ${w1 ? renderSkillBadge(w1) : ''}
+    </div>`;
+  }).join('');
+
+  // intervention
+  const intv = document.getElementById('detail-intervention');
+  if (isFlagged(s)) {
+    const reasons = [];
+    if (s.w1_disc !== null && pct(s.w1_disc, 50) < 60) reasons.push(`Week 1 Discussion: ${s.w1_disc}/50 (${pct(s.w1_disc,50)}%)`);
+    if (s.w1_notes === null && s.w1_disc !== null) reasons.push('Week 1 Reading Notes: not submitted');
+    if (s.w1_notes !== null && pct(s.w1_notes,20) < 60) reasons.push(`Week 1 Reading Notes: ${s.w1_notes}/20 (${pct(s.w1_notes,20)}%)`);
+    intv.innerHTML = `<div class="intervention-box"><strong>⚑ Intervention Flag</strong>${reasons.join('<br>')}</div>`;
+  } else {
+    intv.innerHTML = '';
+  }
+
+  // notes
+  document.getElementById('detail-notes').textContent = s.note_w1 || 'No notes recorded.';
+
+  document.getElementById('detail-panel').classList.add('visible');
+  document.getElementById('detail-panel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function closeDetail() {
+  selectedId = null;
+  document.getElementById('detail-panel').classList.remove('visible');
+  applyFilters();
+}
+
+// ── FILTERS ────────────────────────────────
+function applyFilters() {
+  const grp = document.getElementById('filter-group').value;
+  const flg = document.getElementById('filter-flag').value;
+  const srch = document.getElementById('search-input').value.toLowerCase().trim();
+  let filtered = ROSTER;
+  if (grp !== 'all') filtered = filtered.filter(s => s.group === parseInt(grp));
+  if (flg === 'flagged') filtered = filtered.filter(s => isFlagged(s));
+  if (flg === 'ok') filtered = filtered.filter(s => !isFlagged(s));
+  if (srch) filtered = filtered.filter(s => s.name.toLowerCase().includes(srch));
+  renderRoster(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('filter-group').value = 'all';
+  document.getElementById('filter-flag').value = 'all';
+  document.getElementById('search-input').value = '';
+  applyFilters();
+}
+
+// ── SUMMARY & FLAGS ────────────────────────
+function renderSummary() {
+  const allDisc = ROSTER.filter(s => s.w1_disc !== null);
+  const allNotes = ROSTER.filter(s => s.w1_notes !== null);
+  const flags = ROSTER.filter(s => isFlagged(s));
+
+  document.getElementById('sum-submitted').textContent = allDisc.length;
+  document.getElementById('sum-flags').textContent = flags.length;
+  document.getElementById('stat-flags').textContent = flags.length;
+
+  const avgDisc = allDisc.length ? Math.round(allDisc.reduce((a,s)=>a+s.w1_disc,0)/allDisc.length*10)/10 : '—';
+  const avgNotes = allNotes.length ? Math.round(allNotes.reduce((a,s)=>a+s.w1_notes,0)/allNotes.length*10)/10 : '—';
+  document.getElementById('sum-avg-disc').textContent = avgDisc;
+  document.getElementById('sum-avg-notes').textContent = avgNotes;
+
+  // flags panel
+  const panel = document.getElementById('flags-panel');
+  const chips = document.getElementById('flag-chips');
+  if (flags.length > 0) {
+    panel.classList.add('visible');
+    chips.innerHTML = flags.map(s => {
+      const reasons = [];
+      if (s.w1_disc !== null && pct(s.w1_disc,50) < 60) reasons.push(`disc ${pct(s.w1_disc,50)}%`);
+      if (s.w1_notes === null) reasons.push('notes missing');
+      return `<div class="flag-chip" onclick="openDetail(${s.id})">${s.name} <span class="flag-reason">${reasons.join(', ')}</span></div>`;
+    }).join('');
+  }
+}
+
+// ── SKILL OVERVIEW ─────────────────────────
+function renderSkillOverview() {
+  const container = document.getElementById('skills-overview');
+  SKILLS.forEach(sk => {
+    const counts = { developing:0, emerging:0, proficient:0, strong:0, null:0 };
+    ROSTER.forEach(s => {
+      const lvl = s.skills?.w1?.[sk.id];
+      if (lvl) counts[lvl]++;
+      else counts.null++;
+    });
+    const total = ROSTER.length;
+    container.innerHTML += `
+      <div class="skill-overview-card">
+        <div class="skill-overview-title">${sk.label}</div>
+        <div style="margin-bottom:8px;">
+          ${['strong','proficient','emerging','developing'].map(lvl => {
+            const pct2 = Math.round(counts[lvl]/total*100);
+            const cls = lvl === 'strong' ? 'high' : lvl === 'proficient' ? 'high' : lvl === 'emerging' ? 'mid' : 'low';
+            return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-light);min-width:70px;">${skillLabel(lvl)}</div>
+              <div style="flex:1;height:4px;background:var(--cream-deep);border-radius:2px;">
+                <div class="pct-bar-fill ${cls}" style="width:${pct2}%;height:100%;border-radius:2px;"></div>
+              </div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-mid);min-width:28px;">${counts[lvl]}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  });
+}
+
+// ── INIT ───────────────────────────────────
+renderRoster(ROSTER);
+renderSummary();
+renderSkillOverview();
+</script>
+</body>
+</html>
