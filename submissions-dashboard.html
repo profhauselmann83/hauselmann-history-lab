@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * { box-sizing: border-box; }
 
@@ -254,26 +255,58 @@
 
         .select-cell { text-align: center; width: 46px; }
 
-        /* DOWNLOAD SELECTED */
-        .download-selected-btn {
-            background-color: #9b59b6;
-            color: white;
-            border: none;
-            padding: 9px 18px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-family: 'Open Sans', sans-serif;
-        }
-        .download-selected-btn:hover { background-color: #8e44ad; }
-        .download-selected-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
-
+        /* DOWNLOAD CONTROLS — updated for split button */
         .selection-info {
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 0.9em;
             color: #7f8c8d;
+        }
+
+        /* Split download button group */
+        .dl-btn-group {
+            display: inline-flex;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+        .dl-btn-group .dl-main {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.88em;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,0.25);
+            transition: background 0.15s;
+        }
+        .dl-btn-group .dl-main:hover:not(:disabled) { background-color: #8e44ad; }
+        .dl-btn-group .dl-alt {
+            background-color: #8e44ad;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.88em;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+        .dl-btn-group .dl-alt:hover:not(:disabled) { background-color: #7d3c98; }
+        .dl-btn-group button:disabled {
+            background-color: #bdc3c7 !important;
+            cursor: not-allowed;
+        }
+        /* Divider pip between the two buttons */
+        .dl-btn-group .dl-divider {
+            width: 1px;
+            background: rgba(255,255,255,0.3);
+            flex-shrink: 0;
         }
 
         /* ACTION BUTTONS */
@@ -499,8 +532,12 @@
             <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
             <div class="selection-info">
                 <span id="ws-selectedCount">0 selected</span>
-                <button class="download-selected-btn" id="ws-downloadSelectedBtn"
-                    onclick="downloadSelectedWorksheets()" disabled>Download Selected</button>
+                <div class="dl-btn-group">
+                    <button class="dl-main" id="ws-downloadMergedBtn"
+                        onclick="downloadSelectedWorksheets('merged')" disabled>⬇ Merged PDF</button>
+                    <button class="dl-alt" id="ws-downloadZipBtn"
+                        onclick="downloadSelectedWorksheets('zip')" disabled>🗜 ZIP</button>
+                </div>
             </div>
         </div>
 
@@ -561,8 +598,12 @@
             <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
             <div class="selection-info">
                 <span id="pp-selectedCount">0 selected</span>
-                <button class="download-selected-btn" id="pp-downloadSelectedBtn"
-                    onclick="downloadSelectedPapers()" disabled>Download Selected</button>
+                <div class="dl-btn-group">
+                    <button class="dl-main" id="pp-downloadMergedBtn"
+                        onclick="downloadSelectedPapers('merged')" disabled>⬇ Merged PDF</button>
+                    <button class="dl-alt" id="pp-downloadZipBtn"
+                        onclick="downloadSelectedPapers('zip')" disabled>🗜 ZIP</button>
+                </div>
             </div>
         </div>
 
@@ -889,7 +930,7 @@ function applyPaperFilters() {
     if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
     if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
 
-ppFiltered = f;
+    ppFiltered = f;
     renderPaperTable(f);
     updatePpSelectAll();
 }
@@ -1034,58 +1075,217 @@ function updatePpSelectAll() {
 function updatePpSelectedCount() {
     const n = ppSelectedSet.size;
     document.getElementById('pp-selectedCount').textContent = n + ' selected';
-    document.getElementById('pp-downloadSelectedBtn').disabled = n === 0;
+    const disabled = n === 0;
+    document.getElementById('pp-downloadMergedBtn').disabled = disabled;
+    document.getElementById('pp-downloadZipBtn').disabled    = disabled;
 }
 
-async function downloadSelectedPapers() {
-    if (!ppSelectedSet.size) return;
-    const btn = document.getElementById('pp-downloadSelectedBtn');
-    const origText = btn.textContent;
-    btn.disabled = true;
+// ── SHARED BULK DOWNLOAD HELPERS ──────────────────────────────────────────────
+
+/**
+ * Fetch a signed URL and return raw ArrayBuffer bytes.
+ * Returns null on failure.
+ */
+async function fetchFileBytes(filePath, bucket = 'student-submissions') {
+    const { data, error } = await supabaseClient.storage
+        .from(bucket).createSignedUrl(filePath, 3600);
+    if (error) return null;
+    try {
+        const resp = await fetch(data.signedUrl);
+        if (!resp.ok) return null;
+        return await resp.arrayBuffer();
+    } catch(e) { return null; }
+}
+
+/**
+ * Build a safe filename from student name + original path extension.
+ * e.g. "Jane_Smith_paper.pdf"
+ */
+function safeFilename(studentName, filePath) {
+    const ext  = filePath.split('.').pop() || 'pdf';
+    const name = (studentName || 'Unknown').replace(/[^a-zA-Z0-9_\- ]/g, '').trim().replace(/\s+/g, '_');
+    return `${name}.${ext}`;
+}
+
+/**
+ * Download a set of files as a merged PDF.
+ * submissions: array of {id, student_name, file_path}
+ * onProgress(current, total): optional callback for button label
+ * Returns number of successfully merged files.
+ */
+async function bulkMergePdf(submissions, filenameStem, onProgress) {
+    const mergedPdf = await PDFLib.PDFDocument.create();
+    let count = 0;
+
+    for (let i = 0; i < submissions.length; i++) {
+        if (onProgress) onProgress(i + 1, submissions.length);
+        const sub = submissions[i];
+        if (!sub.file_path) continue;
+        const bytes = await fetchFileBytes(sub.file_path);
+        if (!bytes) continue;
+        try {
+            const doc   = await PDFLib.PDFDocument.load(bytes);
+            const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+            pages.forEach(p => mergedPdf.addPage(p));
+            count++;
+        } catch(e) { console.error('Merge error for', sub.student_name, e); }
+    }
+
+    if (count === 0) return 0;
+
+    const pdfBytes = await mergedPdf.save();
+    const dateStr  = new Date().toISOString().split('T')[0];
+    triggerDownload(
+        new Blob([pdfBytes], { type: 'application/pdf' }),
+        `${filenameStem}_${dateStr}_${count}_files.pdf`
+    );
+    return count;
+}
+
+/**
+ * Download a set of files as individual files inside a ZIP.
+ * submissions: array of {id, student_name, file_path}
+ * Returns number of successfully zipped files.
+ */
+async function bulkZip(submissions, filenameStem, onProgress) {
+    const zip   = new JSZip();
+    const folder = zip.folder(filenameStem);
+    let count   = 0;
+    const usedNames = {};   // avoid duplicate filenames
+
+    for (let i = 0; i < submissions.length; i++) {
+        if (onProgress) onProgress(i + 1, submissions.length);
+        const sub = submissions[i];
+        if (!sub.file_path) continue;
+        const bytes = await fetchFileBytes(sub.file_path);
+        if (!bytes) continue;
+
+        // Deduplicate filenames (e.g. two students named "John Smith")
+        let fname = safeFilename(sub.student_name, sub.file_path);
+        if (usedNames[fname] !== undefined) {
+            usedNames[fname]++;
+            const parts = fname.split('.');
+            const ext   = parts.pop();
+            fname = `${parts.join('.')}_${usedNames[fname]}.${ext}`;
+        } else {
+            usedNames[fname] = 0;
+        }
+
+        folder.file(fname, bytes);
+        count++;
+    }
+
+    if (count === 0) return 0;
+
+    const dateStr  = new Date().toISOString().split('T')[0];
+    const zipBlob  = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+    triggerDownload(zipBlob, `${filenameStem}_${dateStr}_${count}_files.zip`);
+    return count;
+}
+
+function triggerDownload(blob, filename) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+}
+
+// ── WORKSHEET BULK DOWNLOAD ───────────────────────────────────────────────────
+async function downloadSelectedWorksheets(mode) {
+    if (!wsSelected.size) return;
+
+    const mergedBtn = document.getElementById('ws-downloadMergedBtn');
+    const zipBtn    = document.getElementById('ws-downloadZipBtn');
+    const activeBtn = mode === 'merged' ? mergedBtn : zipBtn;
+    const origText  = activeBtn.textContent;
+
+    mergedBtn.disabled = true;
+    zipBtn.disabled    = true;
+
+    const submissions = Array.from(wsSelected)
+        .map(id => allWorksheets.find(s => s.id === id))
+        .filter(Boolean);
+
+    const onProgress = (cur, tot) => { activeBtn.textContent = `${mode === 'merged' ? 'Merging' : 'Fetching'} ${cur}/${tot}…`; };
 
     try {
-        const mergedPdf = await PDFLib.PDFDocument.create();
-        let count = 0;
-        const ids = Array.from(ppSelectedSet);
-
-        for (let i = 0; i < ids.length; i++) {
-            btn.textContent = `Merging ${i+1}/${ids.length}…`;
-            const sub = allPapers.find(s => s.id === ids[i]);
-            if (!sub || !sub.file_path) continue;
-            try {
-                const { data, error } = await supabaseClient.storage
-                    .from('student-submissions').createSignedUrl(sub.file_path, 3600);
-                if (error) continue;
-                const bytes = await (await fetch(data.signedUrl)).arrayBuffer();
-                const doc   = await PDFLib.PDFDocument.load(bytes);
-                const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
-                pages.forEach(p => mergedPdf.addPage(p));
-                count++;
-            } catch(e) { console.error('Failed to merge paper:', e); }
+        let count;
+        if (mode === 'merged') {
+            count = await bulkMergePdf(submissions, 'worksheets', onProgress);
+        } else {
+            activeBtn.textContent = 'Building ZIP…';
+            count = await bulkZip(submissions, 'worksheets', onProgress);
         }
 
-        if (count > 0) {
-            btn.textContent = 'Creating PDF…';
-            const pdfBytes = await mergedPdf.save();
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
-            a.download = `papers_${new Date().toISOString().split('T')[0]}_${count}_files.pdf`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
+        if (count === 0) {
+            alert('No PDFs could be downloaded.');
         } else {
+            // Mark as downloaded
+            for (const sub of submissions) {
+                if (sub.file_path && !sub.is_downloaded) {
+                    await supabaseClient.from('worksheet_submissions')
+                        .update({ is_downloaded: true }).eq('id', sub.id);
+                    sub.is_downloaded = true;
+                    const lbl = document.getElementById(`ws-dl-${sub.id}`);
+                    const chk = document.getElementById(`ws-dc-${sub.id}`);
+                    if (lbl && chk) { chk.checked = true; lbl.classList.add('checked'); lbl.querySelector('span').textContent = 'Yes'; }
+                }
+            }
+        }
+    } catch(e) { alert('Error: ' + e.message); }
+
+    wsSelected.clear();
+    updateWsSelectedCount();
+    updateWorksheetStats();
+    applyWorksheetFilters();
+    activeBtn.textContent = origText;
+    mergedBtn.disabled = false;
+    zipBtn.disabled    = false;
+}
+
+// ── PAPER BULK DOWNLOAD ───────────────────────────────────────────────────────
+async function downloadSelectedPapers(mode) {
+    if (!ppSelectedSet.size) return;
+
+    const mergedBtn = document.getElementById('pp-downloadMergedBtn');
+    const zipBtn    = document.getElementById('pp-downloadZipBtn');
+    const activeBtn = mode === 'merged' ? mergedBtn : zipBtn;
+    const origText  = activeBtn.textContent;
+
+    mergedBtn.disabled = true;
+    zipBtn.disabled    = true;
+
+    const submissions = Array.from(ppSelectedSet)
+        .map(id => allPapers.find(s => s.id === id))
+        .filter(Boolean);
+
+    const onProgress = (cur, tot) => { activeBtn.textContent = `${mode === 'merged' ? 'Merging' : 'Fetching'} ${cur}/${tot}…`; };
+
+    try {
+        let count;
+        if (mode === 'merged') {
+            count = await bulkMergePdf(submissions, 'papers', onProgress);
+        } else {
+            activeBtn.textContent = 'Building ZIP…';
+            count = await bulkZip(submissions, 'papers', onProgress);
+        }
+
+        if (count === 0) {
             alert('No PDFs could be downloaded. Papers submitted before the file_path column was added cannot be bulk downloaded.');
         }
-    } catch(e) {
-        alert('Error: ' + e.message);
-    }
+    } catch(e) { alert('Error: ' + e.message); }
 
     ppSelectedSet.clear();
     updatePpSelectedCount();
     applyPaperFilters();
-    btn.disabled = false;
-    btn.textContent = origText;
+    activeBtn.textContent = origText;
+    mergedBtn.disabled = false;
+    zipBtn.disabled    = false;
 }
-    
+
 // ── TOGGLE REVIEWED (all three tables) ───────────────────────────────────────
 async function toggleReviewed(table, allData, idPrefix, id) {
     const sub = allData.find(s => s.id === id);
@@ -1181,10 +1381,12 @@ function updateWsSelectAll() {
 function updateWsSelectedCount() {
     const n = wsSelected.size;
     document.getElementById('ws-selectedCount').textContent = n + ' selected';
-    document.getElementById('ws-downloadSelectedBtn').disabled = n === 0;
+    const disabled = n === 0;
+    document.getElementById('ws-downloadMergedBtn').disabled = disabled;
+    document.getElementById('ws-downloadZipBtn').disabled    = disabled;
 }
 
-// ── DOWNLOAD WORKSHEET FILES ──────────────────────────────────────────────────
+// ── SINGLE FILE DOWNLOAD ──────────────────────────────────────────────────────
 async function downloadFile(filePath) {
     try {
         const { data, error } = await supabaseClient.storage
@@ -1211,64 +1413,6 @@ async function downloadAudio(filePath) {
     } catch (e) {
         alert('Error accessing audio: ' + e.message);
     }
-}
-
-async function downloadSelectedWorksheets() {
-    if (!wsSelected.size) return;
-    const btn = document.getElementById('ws-downloadSelectedBtn');
-    const origText = btn.textContent;
-    btn.disabled = true;
-
-    try {
-        const mergedPdf = await PDFLib.PDFDocument.create();
-        let count = 0;
-        const ids = Array.from(wsSelected);
-
-        for (let i = 0; i < ids.length; i++) {
-            btn.textContent = `Merging ${i+1}/${ids.length}…`;
-            const sub = allWorksheets.find(s => s.id === ids[i]);
-            if (!sub || !sub.file_path) continue;
-            try {
-                const { data, error } = await supabaseClient.storage
-                    .from('student-submissions').createSignedUrl(sub.file_path, 3600);
-                if (error) continue;
-                const bytes = await (await fetch(data.signedUrl)).arrayBuffer();
-                const doc   = await PDFLib.PDFDocument.load(bytes);
-                const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
-                pages.forEach(p => mergedPdf.addPage(p));
-                count++;
-                if (!sub.is_downloaded) {
-                    await supabaseClient.from('worksheet_submissions')
-                        .update({ is_downloaded: true }).eq('id', sub.id);
-                    sub.is_downloaded = true;
-                    const lbl = document.getElementById(`ws-dl-${sub.id}`);
-                    const chk = document.getElementById(`ws-dc-${sub.id}`);
-                    if (lbl && chk) { chk.checked = true; lbl.classList.add('checked'); lbl.querySelector('span').textContent = 'Yes'; }
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        if (count > 0) {
-            btn.textContent = 'Creating PDF…';
-            const pdfBytes = await mergedPdf.save();
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
-            a.download = `worksheets_${new Date().toISOString().split('T')[0]}_${count}_files.pdf`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        } else {
-            alert('No PDFs could be downloaded.');
-        }
-    } catch(e) {
-        alert('Error: ' + e.message);
-    }
-
-    wsSelected.clear();
-    updateWsSelectedCount();
-    updateWorksheetStats();
-    applyWorksheetFilters();
-    btn.disabled = false;
-    btn.textContent = origText;
 }
 
 // ── VIEW PAPER TEXT ───────────────────────────────────────────────────────────
