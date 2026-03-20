@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 3 Unlock — Gilded Age Review | HIST 102</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css?v=4">
+  <style>
+    .puzzle-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+    /* ── Sticky code tracker ── */
+    .code-tracker {
+      position: sticky;
+      top: 42px; /* clears the progress-strip nav */
+      z-index: 90;
+      background: var(--cream);
+      border-bottom: 1px solid var(--rule-strong);
+      padding: 0.75rem 1.5rem 0.6rem;
+      margin: 0 -1.5rem 2rem; /* bleed to full puzzle-wrap width */
+    }
+
+    .pw-display { display: flex; gap: 8px; justify-content: center; margin: 0 0 0.5rem; flex-wrap: wrap; }
+    .letter-box {
+      width: 44px; height: 54px;
+      border: 2px solid var(--rule-strong);
+      border-radius: 5px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: var(--cream-dark);
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .letter-box.revealed { background: var(--gold); border-color: var(--gold); }
+    .letter-box .ltr {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.45rem; font-weight: 500;
+      color: var(--cream); opacity: 0;
+      transition: opacity 0.4s; line-height: 1;
+    }
+    .letter-box.revealed .ltr { opacity: 1; }
+    .letter-box .ltr-qnum {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.5rem; letter-spacing: 0.08em;
+      color: var(--ink-light); margin-top: 4px; text-transform: uppercase;
+    }
+    .letter-box.revealed .ltr-qnum { color: var(--cream-deep); }
+
+    .puzzle-prog-wrap {
+      background: var(--cream-deep); border-radius: 3px;
+      height: 4px; margin: 0.5rem 0 0; overflow: hidden;
+    }
+    .puzzle-prog-fill {
+      height: 100%; background: var(--gold); border-radius: 3px;
+      width: 0%; transition: width 0.4s ease;
+    }
+
+    .tracker-label {
+      font-family: 'DM Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink-light); text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .q-card {
+      background: #fff;
+      border: 1px solid var(--rule-strong);
+      border-left: 4px solid var(--rule-strong);
+      border-radius: 0 4px 4px 0;
+      padding: 1.4rem 1.6rem; margin-bottom: 1rem;
+      transition: border-left-color 0.3s;
+    }
+    .q-card.state-correct { border-left-color: var(--gold); }
+    .q-card.state-wrong   { border-left-color: var(--rust); animation: shake 0.3s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-7px); }
+      75%      { transform: translateX(7px); }
+    }
+
+    .q-eyebrow {
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--ink-light); margin-bottom: 0.6rem;
+    }
+    .q-eyebrow .unlock-tag { color: var(--gold); font-weight: 500; }
+
+    .q-text {
+      font-family: 'Playfair Display', serif; font-size: 1rem;
+      font-weight: 600; color: var(--ink); line-height: 1.5; margin-bottom: 1rem;
+    }
+
+    .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media(max-width: 560px) { .q-options { grid-template-columns: 1fr; } }
+
+    .opt-btn {
+      font-family: 'Source Serif 4', Georgia, serif; font-size: 0.88rem;
+      font-weight: 300; color: var(--ink); background: var(--cream);
+      border: 1px solid var(--rule-strong); border-radius: 3px;
+      padding: 0.7rem 0.9rem; text-align: left; cursor: pointer;
+      line-height: 1.5; transition: background 0.15s, border-color 0.15s;
+    }
+    .opt-btn:hover:not(:disabled) { background: var(--cream-dark); border-color: var(--gold); }
+    .opt-btn:disabled { cursor: default; }
+    .opt-btn.opt-correct { background: var(--gold); border-color: var(--gold); color: var(--cream); }
+    .opt-btn.opt-wrong   { background: #fdf4f2; border-color: var(--rust); color: var(--rust); }
+
+    .q-feedback {
+      display: none; font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.86rem; font-weight: 300; line-height: 1.65;
+      margin-top: 0.9rem; padding: 0.75rem 1rem; border-radius: 3px;
+    }
+    .q-feedback.fb-correct {
+      display: block; background: rgba(154,111,42,0.08);
+      border-left: 3px solid var(--gold); color: var(--ink-mid);
+    }
+    .q-feedback.fb-wrong {
+      display: block; background: #fdf4f2;
+      border-left: 3px solid var(--rust); color: var(--ink-mid);
+    }
+
+    .victory-banner {
+      display: none; text-align: center;
+      border: 2px solid var(--gold); border-radius: 6px;
+      padding: 2.5rem 2rem; margin-top: 1.5rem; background: var(--cream-dark);
+    }
+    .victory-banner.show { display: block; }
+    .victory-eyebrow {
+      font-family: 'DM Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.5rem;
+    }
+    .victory-title {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem;
+      font-weight: 700; color: var(--ink); margin-bottom: 0.5rem;
+    }
+    .victory-code {
+      font-family: 'DM Mono', monospace; font-size: 2.4rem;
+      font-weight: 500; letter-spacing: 0.25em; color: var(--gold); margin: 0.75rem 0;
+    }
+    .victory-sub {
+      font-family: 'Source Serif 4', Georgia, serif; font-size: 0.92rem;
+      color: var(--ink-mid); margin-bottom: 1.5rem;
+    }
+    .victory-cta {
+      display: inline-block; font-family: 'DM Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cream); background: var(--ink); border: none; border-radius: 3px;
+      padding: 0.75rem 1.75rem; text-decoration: none; cursor: pointer; transition: background 0.2s;
+    }
+    .victory-cta:hover { background: var(--gold); text-decoration: none; color: var(--cream); }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step active" href="puzzle.html"><span class="step-num">1</span> Unlock</a>
+    <a class="prog-step" href="gate.html"><span class="step-num">2</span> Gate</a>
+    <a class="prog-step" href="index.html"><span class="step-num">3</span> Overview</a>
+    <a class="prog-step" href="video.html"><span class="step-num">4</span> Video</a>
+    <a class="prog-step" href="reading-1.html"><span class="step-num">5</span> Reading 3.1</a>
+    <a class="prog-step" href="reading-2.html"><span class="step-num">6</span> Reading 3.2</a>
+    <a class="prog-step" href="#"><span class="step-num">7</span> Canvas</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 3 &nbsp;&middot;&nbsp; Before You Begin</div>
+    <h1>Crack the Code</h1>
+    <p class="page-subtitle">A Gilded Age Review &mdash; answer all eight to unlock your Week 3 access code</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~12 min</span>
+      <span class="chip chip-site">Not graded</span>
+    </div>
+  </div>
+</header>
+
+<div class="puzzle-wrap">
+
+  <p style="font-family:'Source Serif 4',Georgia,serif; font-size:0.95rem; color:var(--ink-mid); line-height:1.75; margin-bottom:1.5rem;">
+    Before diving into this week's material and topics, let's make sure last week's <strong>Gilded Age</strong> history is still sharp. Each correct answer reveals one letter of your Week 3 access code. Wrong answers still reveal the letter &mdash; but read the feedback, because this material connects directly to what's coming.
+  </p>
+
+  <!-- Sticky code tracker -->
+  <div class="code-tracker">
+    <div class="tracker-label">Your access code — answers revealed as you go</div>
+    <div class="pw-display">
+      <div class="letter-box" id="lb-0"><span class="ltr">P</span><span class="ltr-qnum">Q1</span></div>
+      <div class="letter-box" id="lb-1"><span class="ltr">R</span><span class="ltr-qnum">Q2</span></div>
+      <div class="letter-box" id="lb-2"><span class="ltr">O</span><span class="ltr-qnum">Q3</span></div>
+      <div class="letter-box" id="lb-3"><span class="ltr">G</span><span class="ltr-qnum">Q4</span></div>
+      <div class="letter-box" id="lb-4"><span class="ltr">R</span><span class="ltr-qnum">Q5</span></div>
+      <div class="letter-box" id="lb-5"><span class="ltr">E</span><span class="ltr-qnum">Q6</span></div>
+      <div class="letter-box" id="lb-6"><span class="ltr">S</span><span class="ltr-qnum">Q7</span></div>
+      <div class="letter-box" id="lb-7"><span class="ltr">S</span><span class="ltr-qnum">Q8</span></div>
+    </div>
+    <div class="puzzle-prog-wrap">
+      <div class="puzzle-prog-fill" id="prog-fill"></div>
+    </div>
+  </div>
+
+  <div id="questions-mount"></div>
+
+  <div class="victory-banner" id="victory">
+    <div class="victory-eyebrow">All eight letters unlocked</div>
+    <div class="victory-title">Your Week 3 Access Code</div>
+    <div class="victory-code">PROGRESS</div>
+    <p class="victory-sub">Enter this code on the next page when prompted. Keep it handy &mdash; you'll need it each time you start a new browser session this week.</p>
+    <a href="gate.html" class="victory-cta">Continue to Week 3 &rarr;</a>
+  </div>
+
+  <div class="page-footer" style="margin-top:3rem;">
+    <a href="../index.html" class="nav-btn nav-btn-prev">&larr; Course Home</a>
+    <a href="gate.html" class="nav-btn nav-btn-next">Enter Week 3 &rarr;</a>
+  </div>
+
+</div><!-- /.puzzle-wrap -->
+
+<script src="../security.js"></script>
+<script>
+(function() {
+  var QUESTIONS = [
+    {
+      q: "Andrew Carnegie, John D. Rockefeller, and J.P. Morgan accumulated unprecedented wealth during the Gilded Age. What term did critics use to describe these industrialists, and why?",
+      opts: [
+        "\"Self-made men\" — because they rose from poverty through hard work and virtue",
+        "\"Captains of industry\" — because they led the nation's economic modernization",
+        "\"Robber barons\" — because they used monopolistic practices, bribery, and labor exploitation to crush competition",
+        "\"Philanthropists\" — because they donated the majority of their wealth to public institutions"
+      ],
+      answer: 2,
+      feedback: "Critics called them \"robber barons\" because their wealth came not just from innovation but from crushing competitors, bribing politicians, and exploiting workers. Carnegie's steel workers labored 12-hour days, seven days a week, in dangerous conditions — while Carnegie himself preached the \"Gospel of Wealth.\""
+    },
+    {
+      q: "The Sherman Antitrust Act was passed in 1890 to limit monopoly power. What was its practical impact in the Gilded Age?",
+      opts: [
+        "It immediately broke up Standard Oil, Carnegie Steel, and the major railroad trusts",
+        "It was largely ineffective — courts interpreted it narrowly and it was used more against labor unions than corporations",
+        "It gave the federal government sweeping power to regulate any business it chose",
+        "It was declared unconstitutional by the Supreme Court within a year of passage"
+      ],
+      answer: 1,
+      feedback: "The Sherman Act had little practical effect on big business in the 1890s. Courts interpreted \"restraint of trade\" narrowly, and the Act was actually used more often against labor unions (whose strikes supposedly restrained commerce) than against the corporate trusts it was designed to target."
+    },
+    {
+      q: "Richard Haass argues that citizens have an obligation to \"promote the common good.\" How does Gilded Age industrialism most directly challenge that obligation?",
+      opts: [
+        "By demonstrating that economic growth naturally benefits everyone through trickle-down effects",
+        "By showing that individual wealth creation and the common good are always compatible goals",
+        "By revealing how private accumulation of power can undermine democratic equality when corporations captured regulatory agencies and legislatures",
+        "By proving that voluntary philanthropy is more effective than government regulation at helping workers"
+      ],
+      answer: 2,
+      feedback: "Haass argues the common good requires more than charity — it requires structural fairness. The Gilded Age showed what happens when that obligation goes unmet: corporations bought state legislatures, owned the courts, and crushed labor organizing. Carnegie's libraries didn't undo 12-hour workdays."
+    },
+    {
+      q: "The Knights of Labor and the American Federation of Labor represented two different strategies for the labor movement. What was the key difference?",
+      opts: [
+        "The Knights organized only skilled workers; the AFL organized all workers regardless of skill",
+        "The Knights sought broad social reform and included all workers; the AFL focused on skilled trades and winning concrete economic gains",
+        "The Knights favored strikes while the AFL preferred negotiation and political lobbying",
+        "The AFL was a radical socialist organization; the Knights were moderate reformers"
+      ],
+      answer: 1,
+      feedback: "The Knights of Labor (1869) sought sweeping reform — an 8-hour workday, end of child labor, equal pay for women — and welcomed all workers including Black workers and women. The AFL (1886) was more conservative: it focused on skilled craft workers and winning higher wages and shorter hours rather than remaking the economy."
+    },
+    {
+      q: "The Homestead Strike of 1892 and the Pullman Strike of 1894 both ended in defeat for workers. What do these events reveal about the power dynamics of the era?",
+      opts: [
+        "They show that American workers lacked genuine grievances and were manipulated by outside agitators",
+        "They demonstrate that strikes were always illegal under the Sherman Antitrust Act",
+        "They reveal that employers could call on Pinkerton agents, state militia, and federal troops to break strikes — making organizing nearly impossible",
+        "They prove that workers had sufficient legal protections but chose violence over negotiation"
+      ],
+      answer: 2,
+      feedback: "At Homestead, Carnegie brought in 300 Pinkerton detectives to confront strikers — and then the Pennsylvania governor sent in the state militia. At Pullman, President Cleveland deployed federal troops against the advice of the Illinois governor, citing mail disruption. The state was firmly on the side of capital."
+    },
+    {
+      q: "The Populist Party's 1892 Omaha Platform called for government ownership of railroads, a graduated income tax, and direct election of senators. What does this agenda reveal about the core grievance of the movement?",
+      opts: [
+        "Farmers wanted free land and an end to all private property",
+        "Populists believed wealthy elites had captured the political and economic system, leaving farmers and workers with no democratic recourse",
+        "The movement was primarily about immigration restriction and cultural conservatism",
+        "Populists sought to return to a pre-industrial, agrarian economy and end industrialization entirely"
+      ],
+      answer: 1,
+      feedback: "The Omaha Platform was a diagnosis of captured democracy. Railroads set arbitrary freight rates, banks charged ruinous interest, and senators were chosen by state legislatures (which corporations controlled). Populists weren't anti-capitalist — they wanted capitalism to be accountable to democratic majorities, not just to those who could buy elections."
+    },
+    {
+      q: "The federal government's policy toward Native Americans shifted significantly between 1870 and 1900. Which best describes the overall direction of that shift?",
+      opts: [
+        "From military conquest to treaty recognition of tribal sovereignty and self-governance",
+        "From treaty-based reservations to forced assimilation — epitomized by the Dawes Act's allotment policy and boarding schools",
+        "From assimilation efforts to a policy of formal separation and preserved cultural autonomy",
+        "From hostility to increasing legal recognition of tribal governments as independent nations"
+      ],
+      answer: 1,
+      feedback: "The Dawes Act (1887) broke up communal tribal lands into individual allotments — and sold the \"surplus\" to white settlers. Native Americans lost roughly 90 million acres in two decades. Boarding schools like Carlisle operated on the principle of \"kill the Indian, save the man,\" forcibly stripping children of language, religion, and culture."
+    },
+    {
+      q: "William Jennings Bryan's \"Cross of Gold\" speech in 1896 electrified the Democratic convention. What was the central economic argument, and why did it matter so much to farmers?",
+      opts: [
+        "Bryan argued for protective tariffs to shield American manufacturers from foreign competition",
+        "Bryan demanded the abolition of the Federal Reserve and a return to pure barter exchange",
+        "Bryan advocated for silver coinage to expand the money supply, ease debt burdens, and shift power from Eastern creditors to Western and Southern debtors",
+        "Bryan called for government ownership of all farms to end the crop-lien system"
+      ],
+      answer: 2,
+      feedback: "Farmers were trapped in a deflationary spiral — crop prices fell while their debts (denominated in gold) stayed fixed. More money in circulation (from silver) would raise crop prices and reduce the real burden of debt. McKinley's victory for the gold standard meant creditors won, debtors lost, and the Populist movement collapsed — paving the way for Progressive Era reform instead."
+    }
+  ];
+
+  var TOTAL = QUESTIONS.length;
+  var answered = new Array(TOTAL).fill(false);
+
+  function revealLetter(i) {
+    document.getElementById('lb-' + i).classList.add('revealed');
+  }
+
+  function updateProgress() {
+    var count = answered.filter(Boolean).length;
+    document.getElementById('prog-fill').style.width = (count / TOTAL * 100) + '%';
+    if (count === TOTAL) {
+      setTimeout(function() {
+        var v = document.getElementById('victory');
+        v.classList.add('show');
+        v.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 600);
+    }
+  }
+
+  function handleAnswer(qi, chosen) {
+    if (answered[qi]) return;
+    var q = QUESTIONS[qi];
+    var optsEl = document.getElementById('opts-' + qi);
+    var btns = optsEl.querySelectorAll('button');
+    var fbEl = document.getElementById('fb-' + qi);
+    var card = document.getElementById('qcard-' + qi);
+
+    btns.forEach(function(b) { b.disabled = true; });
+
+    if (chosen === q.answer) {
+      btns[chosen].classList.add('opt-correct');
+      card.classList.add('state-correct');
+      fbEl.className = 'q-feedback fb-correct';
+      fbEl.textContent = q.feedback;
+    } else {
+      btns[chosen].classList.add('opt-wrong');
+      btns[q.answer].classList.add('opt-correct');
+      card.classList.add('state-wrong');
+      fbEl.className = 'q-feedback fb-wrong';
+      fbEl.textContent = 'Not quite — the correct answer is highlighted above. ' + q.feedback;
+      setTimeout(function() { card.classList.remove('state-wrong'); }, 400);
+    }
+
+    answered[qi] = true;
+    revealLetter(qi);
+    updateProgress();
+  }
+
+  window.handleAnswer = handleAnswer;
+
+  function buildQuestions() {
+    var mount = document.getElementById('questions-mount');
+    QUESTIONS.forEach(function(q, i) {
+      var card = document.createElement('div');
+      card.className = 'q-card';
+      card.id = 'qcard-' + i;
+
+      var eyebrow = document.createElement('p');
+      eyebrow.className = 'q-eyebrow';
+      eyebrow.innerHTML = 'Question ' + (i + 1) + ' &nbsp;&middot;&nbsp; <span class="unlock-tag">unlocks letter ' + (i + 1) + '</span>';
+
+      var qtext = document.createElement('p');
+      qtext.className = 'q-text';
+      qtext.textContent = q.q;
+
+      var optsDiv = document.createElement('div');
+      optsDiv.className = 'q-options';
+      optsDiv.id = 'opts-' + i;
+
+      q.opts.forEach(function(opt, j) {
+        var btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt;
+        btn.setAttribute('onclick', 'handleAnswer(' + i + ',' + j + ')');
+        optsDiv.appendChild(btn);
+      });
+
+      var fb = document.createElement('div');
+      fb.className = 'q-feedback';
+      fb.id = 'fb-' + i;
+
+      card.appendChild(eyebrow);
+      card.appendChild(qtext);
+      card.appendChild(optsDiv);
+      card.appendChild(fb);
+      mount.appendChild(card);
+    });
+  }
+
+  buildQuestions();
+})();
+</script>
+</body>
+</html>
