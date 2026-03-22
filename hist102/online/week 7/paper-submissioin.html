@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Paper Submission – HIST 102</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /* ── ROOT PALETTE ── */
+    :root {
+      --ink:        #1a1510;
+      --ink-mid:    #3a3028;
+      --ink-light:  #6b5e50;
+      --cream:      #f7f2e8;
+      --cream-dark: #ede5d4;
+      --cream-deep: #ddd0b8;
+      --gold:       #9a6f2a;
+      --gold-light: #c8922a;
+      --rust:       #8c3a1e;
+      --sage:       #3d6053;
+      --canvas-blue:#1e4488;
+      --white:      #ffffff;
+    }
+
+    body {
+      font-family: 'Source Serif 4', Georgia, serif;
+      background: var(--cream);
+      color: var(--ink);
+      margin: 0;
+      padding: 0 0 60px;
+      line-height: 1.7;
+    }
+
+    /* ── PASTE MODAL ── */
+    #paste-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(26,21,16,0.7); z-index: 9999;
+      align-items: center; justify-content: center;
+    }
+    #paste-modal.show { display: flex; }
+    .modal-box {
+      background: var(--white); border-radius: 6px;
+      padding: 36px 40px; max-width: 400px; width: 90%;
+      text-align: center;
+      border-top: 4px solid var(--rust);
+      box-shadow: 0 16px 48px rgba(26,21,16,0.35);
+    }
+    .modal-box h3 { color: var(--rust); margin: 0 0 12px; font-family: 'Playfair Display', Georgia, serif; font-size: 1.25em; }
+    .modal-box p  { color: var(--ink-mid); line-height: 1.65; margin: 0 0 20px; font-size: 0.95em; }
+
+    /* ── HIDDEN PRINT DOCUMENT ── */
+    #print-doc { display: none; }
+    @media print {
+      body > *:not(#print-doc) { display: none !important; }
+      body { background: white; padding: 0; margin: 0; max-width: 100%; font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: black; }
+      #print-doc { display: block !important; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 2; color: black; }
+      #print-doc .print-name-block { font-size: 12pt; line-height: 2; margin-bottom: 0; }
+      #print-doc .print-paper-title { text-align: center; font-weight: bold; margin: 0; }
+      #print-doc .print-paragraph { text-indent: 0.5in; margin: 0; line-height: 2; }
+      #print-doc .print-paragraph:first-child { text-indent: 0; }
+      #print-doc .print-bib-section { page-break-before: always; font-size: 12pt; line-height: 2; }
+      #print-doc .print-bib-heading { text-align: center; font-weight: bold; margin-bottom: 0; }
+      #print-doc .print-bib-entry { padding-left: 0.5in; text-indent: -0.5in; margin: 0; line-height: 2; word-wrap: break-word; }
+      @page { margin: 1in; size: letter; }
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 28px 40px 24px;
+      border-bottom: 3px solid var(--gold);
+    }
+    .header-inner { max-width: 860px; margin: 0 auto; }
+    .header-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold-light);
+      margin: 0 0 6px;
+    }
+    header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.9em; font-weight: 700;
+      margin: 0 0 4px; color: var(--cream);
+    }
+    header p.subtitle {
+      margin: 0 0 18px; color: rgba(247,242,232,0.75);
+      font-style: italic; font-size: 0.97em;
+    }
+
+    /* ── COUNTDOWN ── */
+    .countdown-block {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(200,146,42,0.35);
+      border-radius: 5px; padding: 10px 20px; margin-top: 4px;
+    }
+    .cd-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--gold-light); opacity: 0.9;
+    }
+    .cd-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.5em; font-weight: 500;
+      letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
+      min-width: 120px; text-align: center;
+      color: #7ecb98; transition: color 0.4s;
+    }
+    .cd-time.urgent { color: #ff8a7a; }
+    .cd-time.closed { color: rgba(200,200,200,0.5); }
+    .cd-deadline {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: rgba(247,242,232,0.55);
+      border-left: 1px solid rgba(200,146,42,0.3);
+      padding-left: 12px;
+    }
+
+    /* ── STEP INDICATOR ── */
+    .step-wrap {
+      max-width: 860px; margin: 24px auto 0; padding: 0 40px;
+    }
+    .step-indicator {
+      display: flex; align-items: center; margin-bottom: 6px;
+    }
+    .step-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--cream-deep); color: var(--ink-light);
+      font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.3s, color 0.3s;
+    }
+    .step-dot.active { background: var(--gold); color: var(--white); }
+    .step-dot.done   { background: var(--sage); color: var(--white); }
+    .step-line {
+      flex: 1; height: 3px; background: var(--cream-deep);
+      transition: background 0.3s;
+    }
+    .step-line.done { background: var(--sage); }
+    .progress-bar-wrap {
+      background: var(--cream-deep); border-radius: 20px;
+      height: 5px; margin: 0 0 28px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--sage));
+      border-radius: 20px; transition: width 0.4s ease;
+    }
+
+    /* ── MAIN CONTENT WRAPPER ── */
+    .main { max-width: 860px; margin: 0 auto; padding: 0 40px; }
+
+    /* ── LOCKED PANEL ── */
+    #locked-panel {
+      display: none; background: var(--white);
+      border-radius: 6px; padding: 50px 30px;
+      margin: 0 0 24px; text-align: center;
+      border-top: 4px solid var(--rust);
+      box-shadow: 0 2px 12px rgba(26,21,16,0.08);
+    }
+    #locked-panel .lock-icon { font-size: 3em; display: block; margin-bottom: 16px; }
+    #locked-panel h2 { font-family: 'Playfair Display', Georgia, serif; color: var(--ink); margin: 0 0 12px; }
+    #locked-panel p  { color: var(--ink-mid); line-height: 1.7; max-width: 500px; margin: 0 auto 10px; }
+    .lock-time {
+      display: inline-block; margin-top: 18px;
+      background: #fdf4f2; color: var(--rust);
+      border: 1.5px solid var(--rust); border-radius: 4px;
+      padding: 9px 22px; font-family: 'DM Mono', monospace;
+      font-size: 0.9em; font-weight: 500;
+    }
+
+    /* ── STEP PANELS ── */
+    .step-panel {
+      background: var(--white); border-radius: 6px;
+      padding: 32px 36px; margin: 0 0 24px;
+      box-shadow: 0 2px 12px rgba(26,21,16,0.08);
+    }
+    .step-panel h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      color: var(--ink); margin: 0 0 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--cream-deep);
+      font-size: 1.3em;
+    }
+
+    /* ── ALERTS ── */
+    .alert {
+      padding: 13px 16px; border-radius: 4px;
+      margin: 0 0 16px; font-size: 0.93em; line-height: 1.6;
+      font-family: 'Source Serif 4', Georgia, serif;
+    }
+    .alert-info    { background: #f0f4fb; border-left: 4px solid var(--canvas-blue); color: #1a3060; }
+    .alert-warning { background: #fdf8ee; border-left: 4px solid var(--gold); color: #5a3e10; }
+    .alert-success { background: #f0f7f4; border-left: 4px solid var(--sage); color: #1e3d35; }
+    .alert-danger  { background: #fdf4f2; border-left: 4px solid var(--rust); color: #5a1e10; }
+
+    /* ── FORM ── */
+    .form-row { margin-bottom: 16px; }
+    label {
+      display: block; font-family: 'DM Mono', monospace;
+      font-size: 12px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ink-light);
+      margin-bottom: 6px;
+    }
+    input[type="text"], select, textarea {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid var(--cream-deep); border-radius: 4px;
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 1em; color: var(--ink); background: var(--white);
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, select:focus, textarea:focus {
+      border-color: var(--gold); outline: none;
+      box-shadow: 0 0 0 3px rgba(154,111,42,0.12);
+    }
+
+    /* ── PROMPT OPTION CARDS ── */
+    .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 20px; }
+    @media (max-width: 600px) { .prompt-grid { grid-template-columns: 1fr; } }
+    .prompt-card {
+      border: 1.5px solid var(--cream-deep); border-radius: 4px;
+      padding: 14px 16px; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .prompt-card:hover { border-color: var(--gold); background: var(--cream); }
+    .prompt-card.selected { border-color: var(--gold); background: var(--cream); border-left: 4px solid var(--gold); }
+    .prompt-card input[type="radio"] { display: none; }
+    .prompt-letter {
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 4px;
+    }
+    .prompt-title { font-weight: 600; font-size: 0.97em; color: var(--ink); margin-bottom: 2px; }
+    .prompt-sub   { font-size: 0.88em; color: var(--ink-light); font-style: italic; }
+
+    /* ── TABS ── */
+    .tab-bar {
+      display: flex; border-bottom: 2px solid var(--cream-deep);
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 10px 20px; border: none; background: none;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-light); cursor: pointer;
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    #essay-area, #bib-area {
+      width: 100%; line-height: 1.8; resize: vertical;
+      min-height: 440px; font-size: 1em;
+    }
+    #bib-area { min-height: 260px; }
+
+    /* ── WORD COUNT ── */
+    .wc-panel {
+      background: var(--cream); border: 1px solid var(--cream-deep);
+      border-radius: 4px; padding: 14px 16px; margin: 0 0 16px;
+    }
+    .wc-top {
+      display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap; margin-bottom: 8px;
+    }
+    .wc-number { font-family: 'DM Mono', monospace; font-size: 1em; font-weight: 500; min-width: 100px; }
+    .wc-number.too-few  { color: var(--rust); }
+    .wc-number.in-range { color: var(--sage); }
+    .wc-number.too-many { color: var(--gold); }
+    .wc-track {
+      flex: 1; min-width: 180px; height: 8px;
+      background: var(--cream-deep); border-radius: 8px; position: relative;
+    }
+    .wc-fill { height: 100%; border-radius: 8px; transition: width 0.25s, background 0.25s; }
+    .wc-marker {
+      position: absolute; top: -5px;
+      width: 2px; height: 18px;
+      background: var(--ink); border-radius: 2px;
+    }
+    .wc-marker::after {
+      content: attr(data-label); position: absolute;
+      top: 20px; left: 50%; transform: translateX(-50%);
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--ink-light); white-space: nowrap;
+    }
+    .autosave-badge {
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      padding: 3px 10px; border-radius: 20px; font-weight: 500;
+    }
+    .autosave-badge.saved   { background: #e8f4f0; color: var(--sage); }
+    .autosave-badge.saving  { background: #fdf8ee; color: var(--gold); }
+    .autosave-badge.unsaved { background: #fdf4f2; color: var(--rust); }
+    .wc-hint { font-size: 0.85em; color: var(--ink-light); font-family: 'DM Mono', monospace; }
+
+    /* ── CITATION GUIDE ── */
+    .cite-guide, .bib-guide {
+      background: var(--cream); border: 1px solid var(--cream-deep);
+      border-radius: 4px; padding: 18px 20px; margin-bottom: 18px;
+      font-size: 0.92em; line-height: 1.65;
+    }
+    .cite-guide h4, .bib-guide h4 {
+      margin: 0 0 12px; color: var(--ink);
+      font-family: 'Playfair Display', Georgia, serif; font-size: 1.05em;
+    }
+    .cite-rule { margin-bottom: 14px; }
+    .cite-rule .label { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-light); display: block; margin-bottom: 4px; }
+    .cite-example, .bib-example {
+      background: var(--white); border-left: 3px solid var(--gold);
+      padding: 7px 13px; margin: 4px 0 6px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 0.97em; color: var(--ink-mid);
+      border-radius: 0 3px 3px 0;
+    }
+    .cite-note { font-size: 0.87em; color: var(--ink-light); margin-top: 3px; }
+
+    /* ── PLEDGE ── */
+    .pledge-box {
+      background: #fdf8ee; border: 1.5px solid var(--gold);
+      border-radius: 5px; padding: 22px 24px; margin-bottom: 18px;
+    }
+    .pledge-box h4 {
+      font-family: 'Playfair Display', Georgia, serif;
+      margin: 0 0 10px; color: var(--gold); font-size: 1.05em;
+    }
+    .pledge-box p { margin: 0 0 14px; color: var(--ink-mid); font-size: 0.93em; }
+    .pledge-check-row {
+      display: flex; align-items: flex-start;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .pledge-check-row input[type="checkbox"] {
+      width: 18px; height: 18px; margin-top: 3px; flex-shrink: 0;
+      cursor: pointer; accent-color: var(--sage);
+    }
+    .pledge-check-row label { font-weight: 400; font-size: 0.93em; color: var(--ink-mid); cursor: pointer; margin: 0; }
+    .pledge-sign-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    .pledge-sign-row label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); white-space: nowrap; margin: 0; }
+    .pledge-sign-row input[type="text"] { max-width: 280px; font-style: italic; }
+
+    /* ── REVIEW BLOCK ── */
+    .review-block {
+      background: var(--cream); border: 1px solid var(--cream-deep);
+      border-radius: 4px; padding: 18px 20px; margin-bottom: 16px;
+      font-size: 0.97em; line-height: 2;
+    }
+    .review-block p { margin: 0; }
+    .review-block strong { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-light); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block; padding: 11px 22px; border-radius: 4px;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      font-weight: 500; cursor: pointer; border: none;
+      transition: background 0.18s, opacity 0.18s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--gold); color: var(--white); }
+    .btn-primary:hover:not(:disabled) { background: var(--gold-light); }
+    .btn-success { background: var(--sage); color: var(--white); }
+    .btn-success:hover:not(:disabled) { background: #2e4d42; }
+    .btn-danger  { background: var(--rust); color: var(--white); }
+    .btn-danger:hover:not(:disabled)  { background: #6e2c14; }
+    .btn-secondary { background: var(--ink-light); color: var(--white); }
+    .btn-secondary:hover:not(:disabled) { background: var(--ink-mid); }
+    .btn-outline { background: transparent; color: var(--ink); border: 2px solid var(--cream-deep); }
+    .btn-outline:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 22px; }
+    .btn-row .spacer { flex: 1; }
+
+    /* ── CONFIRM ── */
+    .confetti { font-size: 2.8em; display: block; text-align: center; margin-bottom: 8px; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; margin-top: 48px;
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-light);
+    }
+  </style>
+</head>
+<body>
+
+<!-- PASTE BLOCKED MODAL -->
+<div id="paste-modal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <h3>Copy-Paste Not Allowed</h3>
+    <p>This assignment requires you to type your paper directly. Pasting text is not permitted — please write your work in your own words.</p>
+    <button class="btn btn-danger" onclick="closePasteModal()">I Understand</button>
+  </div>
+</div>
+
+<!-- HIDDEN PRINT DOCUMENT -->
+<div id="print-doc">
+  <div class="print-name-block" id="print-name-block"></div>
+  <div class="print-paper-title" id="print-paper-title"></div>
+  <div class="print-body" id="print-body"></div>
+  <div class="print-bib-section" id="print-bib-section"></div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <p class="header-eyebrow">HIST 102 · US History After 1877 · Spring 2026</p>
+    <h1>Research &amp; Reflection Paper</h1>
+    <p class="subtitle">The Bill of Obligations and American History — Final Submission</p>
+    <div class="countdown-block">
+      <span class="cd-label">Time remaining</span>
+      <span class="cd-time" id="cd-time">–:––:––</span>
+      <span class="cd-deadline" id="cd-deadline"></span>
+    </div>
+  </div>
+</header>
+
+<!-- STEP INDICATOR -->
+<div class="step-wrap">
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3">3</div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="dot-4">4</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill" style="width:12%"></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LOCKED PANEL -->
+  <div id="locked-panel">
+    <span class="lock-icon">🔒</span>
+    <h2>Submissions Are Closed</h2>
+    <p>The deadline for this assignment has passed and the portal is now locked.</p>
+    <p>If you have extenuating circumstances, please contact Prof. Hauselmann directly at hauselmannh@yosemite.edu.</p>
+    <div class="lock-time" id="lock-time-label"></div>
+  </div>
+
+  <!-- ── STEP 1 — IDENTIFY YOURSELF ── -->
+  <div class="step-panel" id="step-login">
+    <h2>Step 1 — Identify Yourself</h2>
+    <div class="alert alert-info">
+      Enter your information exactly as it appears on your course roster. Your progress saves automatically to your browser — you can leave and return to finish as long as you use the same browser.
+    </div>
+    <div class="form-row">
+      <label for="inp-name">Full Name (First Last)</label>
+      <input type="text" id="inp-name" placeholder="e.g. Jane Smith" autocomplete="name">
+    </div>
+    <div class="form-row">
+      <label for="inp-wnum">W Number</label>
+      <input type="text" id="inp-wnum" placeholder="e.g. W1234567" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <label for="inp-prompt">Which prompt are you writing on?</label>
+      <div class="prompt-grid">
+        <label class="prompt-card" id="card-a">
+          <input type="radio" name="prompt" value="A" onchange="selectPrompt('A')">
+          <div class="prompt-letter">Option A</div>
+          <div class="prompt-title">The Broken Obligation</div>
+          <div class="prompt-sub">Which one has history violated most?</div>
+        </label>
+        <label class="prompt-card" id="card-b">
+          <input type="radio" name="prompt" value="B" onchange="selectPrompt('B')">
+          <div class="prompt-letter">Option B</div>
+          <div class="prompt-title">The Blind Spot</div>
+          <div class="prompt-sub">What does Haass's framework miss?</div>
+        </label>
+        <label class="prompt-card" id="card-c">
+          <input type="radio" name="prompt" value="C" onchange="selectPrompt('C')">
+          <div class="prompt-letter">Option C</div>
+          <div class="prompt-title">The Crossroads Moment</div>
+          <div class="prompt-sub">When history diverged from the framework</div>
+        </label>
+        <label class="prompt-card" id="card-d">
+          <input type="radio" name="prompt" value="D" onchange="selectPrompt('D')">
+          <div class="prompt-letter">Option D</div>
+          <div class="prompt-title">The Obligation That Matters Most Now</div>
+          <div class="prompt-sub">History as a guide to the present</div>
+        </label>
+      </div>
+    </div>
+    <div class="alert alert-danger" id="login-error" style="display:none"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="proceedToWrite()">Continue to Paper →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2 — WRITE YOUR PAPER ── -->
+  <div class="step-panel" id="step-write" style="display:none">
+    <h2>Step 2 — Write Your Paper</h2>
+    <div class="alert alert-warning">
+      <strong>Type directly into the fields below.</strong> Copy-pasting is disabled. Your work saves automatically every 30 seconds — watch the badge in the word count bar. You can leave and return to finish as long as you use the same browser.
+    </div>
+    <div class="alert alert-info">
+      <strong>Required sources:</strong>
+      <ul style="margin: 6px 0 0; padding-left: 20px;">
+        <li><em>The Bill of Obligations</em> — at least one specific chapter (direct quotation required)</li>
+        <li>OpenStax US History — at least two specific sections (cite by chapter and section, e.g. Ch. 16.2)</li>
+        <li>At least one primary source from the course — a document, speech, law, or other historical source</li>
+      </ul>
+    </div>
+    <div class="form-row">
+      <label for="inp-title">Paper Title</label>
+      <input type="text" id="inp-title" placeholder="Enter your paper title…" oninput="scheduleSave()">
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('essay', this)">Essay</button>
+      <button class="tab-btn" onclick="switchTab('citations', this)">Citation Guide</button>
+      <button class="tab-btn" onclick="switchTab('bibliography', this)">Bibliography</button>
+    </div>
+
+    <!-- TAB: ESSAY -->
+    <div class="tab-content active" id="tab-essay">
+      <div class="wc-panel">
+        <div class="wc-top">
+          <span class="wc-number too-few" id="wc-number">0 words</span>
+          <div class="wc-track">
+            <div class="wc-fill" id="wc-fill" style="width:0%;background:var(--rust)"></div>
+            <div class="wc-marker" id="wc-min-marker" data-label="1,500 min"></div>
+            <div class="wc-marker" id="wc-max-marker" data-label="2,000 max"></div>
+          </div>
+          <span class="autosave-badge unsaved" id="autosave-badge">● Unsaved</span>
+        </div>
+        <div class="wc-hint" id="wc-hint">You need at least <strong>1,500</strong> words. Maximum is <strong>2,000</strong> words.</div>
+      </div>
+      <textarea id="essay-area"
+        placeholder="Begin typing your essay here… Press Enter once to start a new paragraph.&#10;&#10;Use Turabian parenthetical citations as you write. See the Citation Guide tab for examples."
+        oninput="onEssayInput()"
+        onpaste="blockPaste(event)"
+        ondrop="blockDrop(event)"
+        oncontextmenu="return false"
+        spellcheck="true" autocomplete="off"></textarea>
+      <div class="alert alert-danger" id="wc-over-alert" style="display:none;margin-top:10px">
+        You have exceeded the 2,000-word maximum. Please shorten your paper before proceeding.
+      </div>
+    </div>
+
+    <!-- TAB: CITATION GUIDE -->
+    <div class="tab-content" id="tab-citations">
+      <div class="cite-guide">
+        <h4>Turabian Parenthetical (Author-Date) Citation Guide</h4>
+        <p style="margin:0 0 14px;color:var(--ink-light);font-size:0.95em">Place citations directly after the information or quotation they support, before the period.</p>
+        <div class="cite-rule">
+          <span class="label">Basic format — one author</span>
+          <div class="cite-example">(Author's Last Name Year, page number)</div>
+          <div class="cite-example">(Haass 2023, 47)</div>
+        </div>
+        <div class="cite-rule">
+          <span class="label">Direct quotation</span>
+          <div class="cite-example">"Norms are the unwritten rules that fill the vast space between what the law requires and what human behavior is capable of" (Haass 2023, 112).</div>
+          <p class="cite-note">Place the citation after the closing quotation mark, before the period.</p>
+        </div>
+        <div class="cite-rule">
+          <span class="label">Paraphrase or summary</span>
+          <div class="cite-example">The collapse of Reconstruction norms demonstrates that legal rights without cultural enforcement are hollow (OpenStax, Ch. 16.3).</div>
+          <p class="cite-note">No quotation marks needed when paraphrasing — but you must still cite the source.</p>
+        </div>
+        <div class="cite-rule">
+          <span class="label">Citing Haass by chapter</span>
+          <div class="cite-example">(Haass 2023, chap. 6)</div>
+        </div>
+        <div class="cite-rule">
+          <span class="label">Citing OpenStax</span>
+          <div class="cite-example">(OpenStax, Ch. 19.2)</div>
+          <p class="cite-note">OpenStax has no page numbers — cite by chapter and section number.</p>
+        </div>
+        <div class="cite-rule">
+          <span class="label">Citing a primary source</span>
+          <div class="cite-example">(Plessy v. Ferguson 1896)</div>
+          <div class="cite-example">(King, "Letter from Birmingham Jail," 1963)</div>
+        </div>
+        <div style="background:var(--cream-dark);padding:12px 14px;border-radius:4px;margin-top:16px;font-size:0.9em">
+          <strong style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-light)">Tips</strong>
+          <ul style="margin:6px 0 0 16px;padding:0;color:var(--ink-mid)">
+            <li>Every source cited in your essay must appear in your bibliography.</li>
+            <li>Every source in your bibliography must be cited at least once in your essay.</li>
+            <li>Do not over-quote — use quotation when exact wording matters, otherwise paraphrase and cite.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: BIBLIOGRAPHY -->
+    <div class="tab-content" id="tab-bibliography">
+      <div class="bib-guide">
+        <h4>Bibliography Format (Turabian Author-Date)</h4>
+        <p style="margin:0 0 10px;color:var(--ink-light);font-size:0.92em">List all sources cited in your paper, alphabetical by author's last name.</p>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);display:block;margin-bottom:4px">Book:</span>
+        <div class="bib-example">Haass, Richard. 2023. <em>The Bill of Obligations: The Ten Habits of Good Citizens</em>. New York: Penguin Press.</div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);display:block;margin-bottom:4px;margin-top:10px">Online textbook (OpenStax):</span>
+        <div class="bib-example">Shi, David E., and George Brown Tindall. 2019. <em>US History</em>. OpenStax. https://openstax.org/books/us-history/pages/1-introduction.</div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);display:block;margin-bottom:4px;margin-top:10px">Primary source:</span>
+        <div class="bib-example">King, Martin Luther, Jr. 1963. "Letter from Birmingham Jail." April 16, 1963. https://www.africa.upenn.edu/Articles_Gen/Letter_Birmingham.html.</div>
+      </div>
+      <label for="bib-area">Your Bibliography</label>
+      <textarea id="bib-area"
+        placeholder="Type your bibliography entries here, one per line, in alphabetical order by author's last name.&#10;&#10;Example:&#10;Haass, Richard. 2023. The Bill of Obligations: The Ten Habits of Good Citizens. New York: Penguin Press."
+        oninput="scheduleSave()"
+        onpaste="blockPaste(event)"
+        ondrop="blockDrop(event)"
+        oncontextmenu="return false"
+        spellcheck="true" autocomplete="off"></textarea>
+      <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-light);margin:6px 0 0">Bibliography entries are subject to the same no-paste rule as your essay.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="downloadPDF()">↓ Download PDF Draft</button>
+      <button class="btn btn-success" id="btn-to-submit" onclick="proceedToPledge()" disabled>Continue to Pledge →</button>
+      <span class="spacer"></span>
+      <button class="btn btn-secondary" style="font-size:11px" onclick="clearDraft()">Clear Draft</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3 — ACADEMIC INTEGRITY PLEDGE ── -->
+  <div class="step-panel" id="step-pledge" style="display:none">
+    <h2>Step 3 — Academic Integrity Pledge</h2>
+    <div class="alert alert-info">
+      Before submitting your paper, read and agree to the following pledge. This confirms that the work you are submitting is your own.
+    </div>
+    <div class="pledge-box">
+      <h4>Academic Integrity Pledge — HIST 102</h4>
+      <p>Please read each statement carefully and check the box to confirm your agreement.</p>
+      <div class="pledge-check-row">
+        <input type="checkbox" id="pledge-1" onchange="checkPledge()">
+        <label for="pledge-1">I wrote this paper myself. The ideas, arguments, and writing are my own, except where I have clearly cited sources.</label>
+      </div>
+      <div class="pledge-check-row">
+        <input type="checkbox" id="pledge-2" onchange="checkPledge()">
+        <label for="pledge-2">I did not copy, paste, or directly import text from any outside source — including websites, books, or AI tools — into the submission field.</label>
+      </div>
+      <div class="pledge-check-row">
+        <input type="checkbox" id="pledge-3" onchange="checkPledge()">
+        <label for="pledge-3">I have cited all sources using Turabian Author-Date parenthetical citations, and I have included a complete bibliography.</label>
+      </div>
+      <div class="pledge-check-row">
+        <input type="checkbox" id="pledge-4" onchange="checkPledge()">
+        <label for="pledge-4">I understand that submitting another person's work as my own, or using AI to write this paper, constitutes academic dishonesty and may result in a failing grade or disciplinary action.</label>
+      </div>
+      <div class="pledge-sign-row">
+        <label for="pledge-signature">Type your full name as your digital signature:</label>
+        <input type="text" id="pledge-signature" placeholder="Your full name…" oninput="checkPledge()" style="font-style:italic">
+      </div>
+    </div>
+    <div class="alert alert-danger" id="pledge-error" style="display:none"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="backToWrite()">← Back to Paper</button>
+      <button class="btn btn-danger" id="btn-to-review" onclick="proceedToReview()" disabled>Review &amp; Submit →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4 — FINAL REVIEW & SUBMIT ── -->
+  <div class="step-panel" id="step-submit" style="display:none">
+    <h2>Step 4 — Final Review &amp; Submit</h2>
+    <div class="alert alert-warning">
+      <strong>This is your final submission.</strong> Once submitted, your paper cannot be edited. Please confirm all details below are correct before clicking Submit.
+    </div>
+    <div class="review-block">
+      <p><strong>Name</strong> &nbsp; <span id="rv-name"></span></p>
+      <p><strong>W Number</strong> &nbsp; <span id="rv-wnum"></span></p>
+      <p><strong>Prompt</strong> &nbsp; <span id="rv-prompt"></span></p>
+      <p><strong>Paper Title</strong> &nbsp; <span id="rv-title"></span></p>
+      <p><strong>Word Count</strong> &nbsp; <span id="rv-wc"></span></p>
+      <p><strong>Bibliography</strong> &nbsp; <span id="rv-bib"></span></p>
+      <p><strong>Pledge Signed</strong> &nbsp; <span id="rv-pledge" style="color:var(--sage)"></span></p>
+    </div>
+    <div class="alert alert-info">
+      By clicking Submit, you confirm that all information above is accurate and that you have agreed to the Academic Integrity Pledge.
+    </div>
+    <div style="background:var(--cream);border:1px solid var(--cream-deep);border-left:4px solid var(--gold);border-radius:4px;padding:16px 18px;margin:0 0 16px;font-size:0.93em;">
+      <strong style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);">Download before you submit</strong>
+      <p style="margin:6px 0 10px;color:var(--ink-mid);">Download a PDF copy of your paper now. After submitting here, you will need to upload that PDF to the Canvas Week 7 Assignment for grading.</p>
+      <button class="btn btn-outline" onclick="downloadFinalPDF()">↓ Download PDF for Canvas</button>
+    </div>
+    <div class="alert alert-danger" id="submit-error" style="display:none"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="backToPledge()">← Back to Pledge</button>
+      <button class="btn btn-danger" id="btn-final" onclick="submitPaper()">Submit Final Paper</button>
+    </div>
+  </div>
+
+  <!-- CONFIRMATION -->
+  <div class="step-panel" id="step-confirm" style="display:none">
+    <span class="confetti">🎉</span>
+    <h2 style="text-align:center;border-bottom:none;font-family:'Playfair Display',Georgia,serif">Submission Received</h2>
+    <div class="alert alert-success">Your paper has been successfully submitted and recorded.</div>
+    <p id="confirm-details" style="color:var(--ink-mid);line-height:1.9;margin-bottom:20px"></p>
+
+    <!-- Canvas upload instruction -->
+    <div style="background:var(--cream);border:1px solid var(--cream-deep);border-top:3px solid var(--gold);border-radius:4px;padding:20px 22px;margin-bottom:20px;">
+      <p style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;">Next Step — Submit to Canvas</p>
+      <p style="color:var(--ink-mid);margin:0 0 14px;font-size:0.97em;">Download your paper as a PDF using the button below, then upload that file to the <strong>Week 7 Research &amp; Reflection Paper</strong> assignment in Canvas. Your submission here is recorded, but the Canvas upload is required for grading.</p>
+      <ol style="margin:0 0 16px;padding-left:20px;color:var(--ink-mid);font-size:0.95em;line-height:1.8;">
+        <li>Click <strong>Download PDF for Canvas</strong> below</li>
+        <li>Open Canvas → Week 7 → Research &amp; Reflection Paper</li>
+        <li>Click <strong>Submit Assignment</strong> and upload the PDF</li>
+      </ol>
+      <button class="btn btn-primary" onclick="downloadFinalPDF()" style="font-size:13px;padding:13px 28px;">↓ Download PDF for Canvas</button>
+    </div>
+
+    <p style="color:var(--ink-light);font-size:0.9em;margin:0">Questions about your submission? Contact Prof. Hauselmann at <a href="mailto:hauselmannh@yosemite.edu" style="color:var(--canvas-blue)">hauselmannh@yosemite.edu</a>.</p>
+  </div>
+
+</div><!-- /main -->
+
+<footer>
+  <p>Prof. Hauselmann &nbsp;·&nbsp; hauselmannh@yosemite.edu &nbsp;·&nbsp; profhauselmann.org &nbsp;·&nbsp; Spring 2026</p>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  CONFIG — update Supabase credentials before deploying
+// ════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'PASTE_SUPABASE_URL_HERE';
+const SUPABASE_ANON = 'PASTE_SUPABASE_ANON_KEY_HERE';
+const TABLE         = 'paper_submissions_102';
+const MIN_WORDS     = 1500;
+const MAX_WORDS     = 2000;
+const DRAFT_KEY     = 'hist102_paper_draft';
+
+// ── DEADLINE — change this one line ──
+// Format: new Date('YYYY-MM-DDTHH:MM:00')  (local time)
+const DEADLINE = new Date('2026-04-26T23:59:00');
+
+const URGENT_MS = 60 * 60 * 1000; // 1 hour → turn red
+
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+let studentName    = '';
+let studentWnum    = '';
+let promptChoice   = '';
+let wordCount      = 0;
+let saveTimer      = null;
+let deadlinePassed = false;
+
+// ════════════════════════════════════════════════════════
+//  SUPABASE
+// ════════════════════════════════════════════════════════
+let dbClient = null;
+function getDB() {
+  if (!dbClient) dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  return dbClient;
+}
+
+// ════════════════════════════════════════════════════════
+//  COUNTDOWN
+// ════════════════════════════════════════════════════════
+function formatCountdown(ms) {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = n => String(n).padStart(2, '0');
+  if (h >= 24) {
+    const days = Math.floor(h / 24), hrs = h % 24;
+    return `${days}d ${pad(hrs)}h ${pad(m)}m`;
+  }
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+function tickCountdown() {
+  const timeEl = document.getElementById('cd-time');
+  const ms = DEADLINE - Date.now();
+  if (ms <= 0) {
+    if (!deadlinePassed) { deadlinePassed = true; lockPortal(); }
+    timeEl.textContent = 'CLOSED';
+    timeEl.className   = 'cd-time closed';
+    return;
+  }
+  timeEl.textContent = formatCountdown(ms);
+  timeEl.className   = ms <= URGENT_MS ? 'cd-time urgent' : 'cd-time';
+  setTimeout(tickCountdown, 1000);
+}
+
+function lockPortal() {
+  ['step-login','step-write','step-pledge','step-submit'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('locked-panel').style.display = 'block';
+  document.querySelector('.step-indicator').style.opacity = '0.3';
+  document.querySelector('.progress-bar-wrap').style.opacity = '0.3';
+  document.getElementById('lock-time-label').textContent =
+    'Deadline: ' + DEADLINE.toLocaleString('en-US', {
+      weekday:'long', month:'long', day:'numeric',
+      year:'numeric', hour:'numeric', minute:'2-digit'
+    });
+}
+
+// ════════════════════════════════════════════════════════
+//  PROMPT SELECTION
+// ════════════════════════════════════════════════════════
+function selectPrompt(letter) {
+  promptChoice = letter;
+  ['a','b','c','d'].forEach(l => {
+    document.getElementById('card-' + l).classList.toggle('selected', l === letter.toLowerCase());
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  STEP NAVIGATION
+// ════════════════════════════════════════════════════════
+const STEPS = ['step-login','step-write','step-pledge','step-submit','step-confirm'];
+
+function showStep(n) {
+  STEPS.forEach((id, i) => {
+    document.getElementById(id).style.display = (i + 1 === n) ? 'block' : 'none';
+  });
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    if (dot) dot.className = i < n ? 'step-dot done' : i === n ? 'step-dot active' : 'step-dot';
+  }
+  for (let i = 1; i <= 3; i++) {
+    const line = document.getElementById('line-' + i);
+    if (line) line.className = 'step-line' + (n > i ? ' done' : '');
+  }
+  const pct = { 1:12, 2:37, 3:62, 4:87, 5:100 };
+  document.getElementById('progress-fill').style.width = (pct[n] || 12) + '%';
+  window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════
+//  STEP 1 — LOGIN
+// ════════════════════════════════════════════════════════
+function proceedToWrite() {
+  if (deadlinePassed) return;
+  const name  = document.getElementById('inp-name').value.trim();
+  const wnum  = document.getElementById('inp-wnum').value.trim().toUpperCase();
+  const err   = document.getElementById('login-error');
+
+  if (!name) {
+    err.textContent = 'Please enter your full name.';
+    err.style.display = 'block'; return;
+  }
+  if (!wnum || !/^W\d{7}$/.test(wnum)) {
+    err.textContent = 'Please enter a valid W Number (format: W1234567).';
+    err.style.display = 'block'; return;
+  }
+  if (!promptChoice) {
+    err.textContent = 'Please select which prompt you are writing on.';
+    err.style.display = 'block'; return;
+  }
+  err.style.display = 'none';
+  studentName = name;
+  studentWnum = wnum;
+  loadDraft();
+  showStep(2);
+}
+
+// ════════════════════════════════════════════════════════
+//  STEP 2 → 3
+// ════════════════════════════════════════════════════════
+function proceedToPledge() {
+  if (deadlinePassed) return;
+  const title = document.getElementById('inp-title').value.trim();
+  if (!title) {
+    alert('Please enter a title for your paper.');
+    document.getElementById('inp-title').focus(); return;
+  }
+  if (wordCount < MIN_WORDS || wordCount > MAX_WORDS) return;
+  const bib = document.getElementById('bib-area').value.trim();
+  if (!bib) {
+    switchTab('bibliography', document.querySelectorAll('.tab-btn')[2]);
+    alert('Please enter your bibliography before continuing.');
+    document.getElementById('bib-area').focus(); return;
+  }
+  showStep(3);
+}
+
+function backToWrite() { showStep(2); }
+
+// ════════════════════════════════════════════════════════
+//  STEP 3 — PLEDGE
+// ════════════════════════════════════════════════════════
+function checkPledge() {
+  const allChecked = ['pledge-1','pledge-2','pledge-3','pledge-4']
+    .every(id => document.getElementById(id).checked);
+  const sig = document.getElementById('pledge-signature').value.trim();
+  document.getElementById('btn-to-review').disabled = !(allChecked && sig.length > 2);
+}
+
+function proceedToReview() {
+  if (deadlinePassed) return;
+  const allChecked = ['pledge-1','pledge-2','pledge-3','pledge-4']
+    .every(id => document.getElementById(id).checked);
+  const sig = document.getElementById('pledge-signature').value.trim();
+  const err = document.getElementById('pledge-error');
+  if (!allChecked) {
+    err.textContent = 'Please check all four boxes before continuing.';
+    err.style.display = 'block'; return;
+  }
+  if (sig.length < 3) {
+    err.textContent = 'Please type your full name as a digital signature.';
+    err.style.display = 'block'; return;
+  }
+  err.style.display = 'none';
+  const promptLabels = {
+    A: 'Option A — The Broken Obligation',
+    B: 'Option B — The Blind Spot',
+    C: 'Option C — The Crossroads Moment',
+    D: 'Option D — The Obligation That Matters Most Now'
+  };
+  const bibLines = document.getElementById('bib-area').value.split('\n').filter(l => l.trim().length > 0);
+  document.getElementById('rv-name').textContent   = studentName;
+  document.getElementById('rv-wnum').textContent   = studentWnum;
+  document.getElementById('rv-prompt').textContent = promptLabels[promptChoice] || promptChoice;
+  document.getElementById('rv-title').textContent  = document.getElementById('inp-title').value.trim();
+  document.getElementById('rv-wc').textContent     = wordCount.toLocaleString() + ' words';
+  document.getElementById('rv-bib').textContent    = bibLines.length + ' source' + (bibLines.length !== 1 ? 's' : '');
+  document.getElementById('rv-pledge').textContent = '✓ Signed by ' + sig;
+  showStep(4);
+}
+
+function backToPledge() { showStep(3); }
+
+// ════════════════════════════════════════════════════════
+//  STEP 4 — SUBMIT
+// ════════════════════════════════════════════════════════
+async function submitPaper() {
+  if (deadlinePassed) return;
+  const btn   = document.getElementById('btn-final');
+  const err   = document.getElementById('submit-error');
+  const essay = document.getElementById('essay-area').value;
+  const bib   = document.getElementById('bib-area').value;
+  const title = document.getElementById('inp-title').value.trim();
+  const sig   = document.getElementById('pledge-signature').value.trim();
+
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  err.style.display = 'none';
+
+  try {
+    btn.textContent = 'Generating PDF…';
+    let filePath = null;
+    try {
+      const pdfBlob = generatePDFBlob();
+      const lastName = studentName.split(' ').pop().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const fileName = `${lastName}_${studentWnum}_${Date.now()}.pdf`;
+      filePath = `papers/hist102/${fileName}`;
+      const { error: uploadError } = await getDB().storage
+        .from('student-submissions')
+        .upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: false });
+      if (uploadError) { console.warn('PDF upload failed:', uploadError.message); filePath = null; }
+    } catch (pdfErr) { console.warn('PDF generation failed:', pdfErr.message); }
+
+    btn.textContent = 'Submitting…';
+    const { error } = await getDB().from(TABLE).insert([{
+      student_name:    studentName,
+      student_w_num:   studentWnum,
+      prompt_choice:   promptChoice,
+      paper_title:     title,
+      paper_text:      essay,
+      bibliography:    bib,
+      word_count:      wordCount,
+      pledge_signature:sig,
+      file_path:       filePath,
+      submitted_at:    new Date().toISOString()
+    }]);
+    if (error) throw error;
+
+    localStorage.removeItem(DRAFT_KEY);
+    document.getElementById('confirm-details').innerHTML =
+      `<strong>${studentName}</strong> &nbsp;·&nbsp; ${studentWnum}<br>` +
+      `Prompt: ${promptChoice} &nbsp;·&nbsp; <em>${title}</em><br>` +
+      `${wordCount.toLocaleString()} words &nbsp;·&nbsp; Submitted: ${new Date().toLocaleString()}`;
+    for (let i = 1; i <= 4; i++) { const d = document.getElementById('dot-'+i); if (d) d.className = 'step-dot done'; }
+    for (let i = 1; i <= 3; i++) { const l = document.getElementById('line-'+i); if (l) l.className = 'step-line done'; }
+    document.getElementById('progress-fill').style.width = '100%';
+    window._submittedFilePath = filePath;
+    const dlBtn = document.getElementById('confirm-download-btn');
+    if (dlBtn && filePath) dlBtn.style.display = 'inline-block';
+    showStep(5);
+
+  } catch (e) {
+    console.error(e);
+    err.textContent = 'Submission failed: ' + (e.message || 'Unknown error. Please try again or contact Prof. Hauselmann.');
+    err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Submit Final Paper';
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  WORD COUNT
+// ════════════════════════════════════════════════════════
+function countWords(text) {
+  const t = text.trim(); return t === '' ? 0 : t.split(/\s+/).length;
+}
+function onEssayInput() { updateWordCount(); scheduleSave(); }
+
+document.getElementById('essay-area').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const el = this, start = el.selectionStart, end = el.selectionEnd;
+    el.value = el.value.substring(0, start) + '\n\n' + el.value.substring(end);
+    el.selectionStart = el.selectionEnd = start + 2;
+    onEssayInput();
+  }
+});
+
+function updateWordCount() {
+  wordCount = countWords(document.getElementById('essay-area').value);
+  const numEl  = document.getElementById('wc-number');
+  const fillEl = document.getElementById('wc-fill');
+  const hintEl = document.getElementById('wc-hint');
+  const overEl = document.getElementById('wc-over-alert');
+  const submitBtn = document.getElementById('btn-to-submit');
+  numEl.textContent = wordCount.toLocaleString() + (wordCount === 1 ? ' word' : ' words');
+  const trackMax = MAX_WORDS * 1.1;
+  document.getElementById('wc-min-marker').style.left = (MIN_WORDS / trackMax * 100).toFixed(1) + '%';
+  document.getElementById('wc-max-marker').style.left = (MAX_WORDS / trackMax * 100).toFixed(1) + '%';
+  fillEl.style.width = Math.min(wordCount / trackMax * 100, 100).toFixed(1) + '%';
+  if (wordCount < MIN_WORDS) {
+    numEl.className = 'wc-number too-few';
+    fillEl.style.background = 'var(--rust)';
+    hintEl.innerHTML = `Need <strong>${(MIN_WORDS - wordCount).toLocaleString()}</strong> more word(s) to reach the 1,500-word minimum.`;
+    overEl.style.display = 'none'; submitBtn.disabled = true;
+  } else if (wordCount <= MAX_WORDS) {
+    numEl.className = 'wc-number in-range';
+    fillEl.style.background = 'linear-gradient(90deg, var(--gold), var(--sage))';
+    hintEl.innerHTML = `✓ Word count is within range (1,500–2,000 words).`;
+    overEl.style.display = 'none'; submitBtn.disabled = false;
+  } else {
+    numEl.className = 'wc-number too-many';
+    fillEl.style.background = 'var(--gold)';
+    hintEl.innerHTML = `<strong>${(wordCount - MAX_WORDS).toLocaleString()}</strong> word(s) over the 2,000-word maximum. Please shorten your paper.`;
+    overEl.style.display = 'block'; submitBtn.disabled = true;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  DRAFT SAVE / LOAD
+// ════════════════════════════════════════════════════════
+function scheduleSave() { setBadge('saving'); clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 1500); }
+
+function saveDraft() {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      wnum:   studentWnum,
+      prompt: promptChoice,
+      title:  document.getElementById('inp-title').value,
+      essay:  document.getElementById('essay-area').value,
+      bib:    document.getElementById('bib-area').value,
+      saved:  new Date().toISOString()
+    }));
+    setBadge('saved');
+  } catch (e) { setBadge('unsaved'); }
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.wnum && d.wnum !== studentWnum) return;
+    if (d.title) document.getElementById('inp-title').value  = d.title;
+    if (d.essay) document.getElementById('essay-area').value = d.essay;
+    if (d.bib)   document.getElementById('bib-area').value   = d.bib;
+    updateWordCount(); setBadge('saved');
+  } catch (e) {}
+}
+
+function clearDraft() {
+  if (!confirm('Clear your saved draft? This cannot be undone.')) return;
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById('inp-title').value  = '';
+  document.getElementById('essay-area').value = '';
+  document.getElementById('bib-area').value   = '';
+  updateWordCount(); setBadge('unsaved');
+}
+
+function setBadge(state) {
+  const b = document.getElementById('autosave-badge');
+  b.className   = 'autosave-badge ' + state;
+  b.textContent = state === 'saved' ? '✓ Saved' : state === 'saving' ? 'Saving…' : '● Unsaved';
+}
+
+setInterval(() => {
+  if (studentWnum && document.getElementById('step-write').style.display !== 'none') saveDraft();
+}, 30000);
+
+// ════════════════════════════════════════════════════════
+//  PASTE / DROP BLOCKING
+// ════════════════════════════════════════════════════════
+function blockPaste(e) { e.preventDefault(); e.stopPropagation(); document.getElementById('paste-modal').classList.add('show'); }
+function blockDrop(e)  { e.preventDefault(); document.getElementById('paste-modal').classList.add('show'); }
+function closePasteModal() { document.getElementById('paste-modal').classList.remove('show'); }
+
+document.addEventListener('keydown', function(e) {
+  const active = document.activeElement;
+  if (!active || !['essay-area','bib-area'].includes(active.id)) return;
+  if ((e.metaKey || e.ctrlKey) && (e.key === 'v' || e.key === 'V')) {
+    e.preventDefault();
+    document.getElementById('paste-modal').classList.add('show');
+  }
+});
+
+// ════════════════════════════════════════════════════════
+//  PDF GENERATION
+// ════════════════════════════════════════════════════════
+function generatePDFBlob() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'in', format:'letter' });
+  const margin = 1, pageW = 8.5, pageH = 11, contentW = pageW - margin * 2, lh = 0.28;
+  doc.setFont('times', 'normal'); doc.setFontSize(12);
+  let y = margin;
+  const promptLabels = { A:'Option A — The Broken Obligation', B:'Option B — The Blind Spot', C:'Option C — The Crossroads Moment', D:'Option D — The Obligation That Matters Most Now' };
+  [
+    studentName || '[Name]',
+    'W Number: ' + (studentWnum || '[W Number]'),
+    'Prompt: ' + (promptLabels[promptChoice] || '[Prompt]'),
+    'HIST 102: US History After 1877 — Research & Reflection Paper',
+    'Prof. Hauselmann — Modesto Junior College',
+    new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+  ].forEach(line => { doc.text(line, margin, y); y += lh; });
+  y += lh;
+  const title = document.getElementById('inp-title').value.trim() || '(Untitled Paper)';
+  doc.setFont('times','bold'); doc.text(title, pageW/2, y, { align:'center' }); doc.setFont('times','normal');
+  y += lh * 2;
+  document.getElementById('essay-area').value.split(/\n+/).filter(p => p.trim()).forEach((para, i) => {
+    const indent = i === 0 ? 0 : 0.5;
+    doc.splitTextToSize(para.trim(), contentW - indent).forEach((line, li) => {
+      if (y > pageH - margin) { doc.addPage(); y = margin; }
+      doc.text(line, margin + (li === 0 ? indent : 0), y); y += lh;
+    }); y += lh;
+  });
+  const bibText = document.getElementById('bib-area').value.trim();
+  if (bibText) {
+    doc.addPage(); y = margin;
+    doc.setFont('times','bold'); doc.text('Bibliography', pageW/2, y, { align:'center' }); doc.setFont('times','normal');
+    y += lh * 2;
+    bibText.split('\n').filter(l => l.trim()).forEach(entry => {
+      doc.splitTextToSize(entry.trim(), contentW).forEach((line, li) => {
+        if (y > pageH - margin) { doc.addPage(); y = margin; }
+        doc.text(line, margin + (li > 0 ? 0.5 : 0), y); y += lh;
+      }); y += lh * 0.5;
+    });
+  }
+  return doc.output('blob');
+}
+
+function downloadFinalPDF() {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'in', format:'letter' });
+    const margin = 1, pageW = 8.5, pageH = 11, contentW = pageW - margin * 2, lh = 0.28;
+    const promptLabels = { A:'Option A — The Broken Obligation', B:'Option B — The Blind Spot', C:'Option C — The Crossroads Moment', D:'Option D — The Obligation That Matters Most Now' };
+    doc.setFont('times','normal'); doc.setFontSize(12);
+    let y = margin;
+    [
+      studentName || '[Name]',
+      'W Number: ' + (studentWnum || '[W#]'),
+      'Prompt: ' + (promptLabels[promptChoice] || '[Prompt]'),
+      'HIST 102: US History After 1877 — Research & Reflection Paper',
+      'Prof. Hauselmann — Modesto Junior College',
+      new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+    ].forEach(line => { doc.text(line, margin, y); y += lh; });
+    y += lh;
+    const title = document.getElementById('inp-title').value.trim() || '(Untitled Paper)';
+    doc.setFont('times','bold'); doc.text(title, pageW/2, y, { align:'center' }); doc.setFont('times','normal');
+    y += lh * 2;
+    document.getElementById('essay-area').value.split(/\n+/).filter(p => p.trim()).forEach((para, i) => {
+      const indent = i === 0 ? 0 : 0.5;
+      doc.splitTextToSize(para.trim(), contentW - indent).forEach((line, li) => {
+        if (y > pageH - margin) { doc.addPage(); y = margin; }
+        doc.text(line, margin + (li === 0 ? indent : 0), y); y += lh;
+      }); y += lh;
+    });
+    const bibText = document.getElementById('bib-area').value.trim();
+    if (bibText) {
+      doc.addPage(); y = margin;
+      doc.setFont('times','bold'); doc.text('Bibliography', pageW/2, y, { align:'center' }); doc.setFont('times','normal');
+      y += lh * 2;
+      bibText.split('\n').filter(l => l.trim()).forEach(entry => {
+        doc.splitTextToSize(entry.trim(), contentW).forEach((line, li) => {
+          if (y > pageH - margin) { doc.addPage(); y = margin; }
+          doc.text(line, margin + (li > 0 ? 0.5 : 0), y); y += lh;
+        }); y += lh * 0.5;
+      });
+    }
+    const lastName = (studentName || 'paper').split(' ').pop().toLowerCase().replace(/[^a-z0-9]/g,'');
+    doc.save(`${lastName}_${studentWnum || 'hist102'}_research_paper.pdf`);
+  } catch(e) {
+    alert('PDF generation failed. Please try the Download PDF Draft button on the writing screen, or contact Prof. Hauselmann.');
+    console.error(e);
+  }
+}
+
+
+  document.getElementById('print-name-block').innerHTML =
+    (studentName||'[Name]') + '<br>W Number: ' + (studentWnum||'[W#]') +
+    '<br>HIST 102: US History After 1877 — Research & Reflection Paper' +
+    '<br>Prof. Hauselmann — Modesto Junior College<br>' +
+    new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('print-paper-title').textContent = document.getElementById('inp-title').value.trim() || '(Untitled Paper)';
+  const bodyEl = document.getElementById('print-body'); bodyEl.innerHTML = '';
+  document.getElementById('essay-area').value.split(/\n+/).filter(p => p.trim()).forEach((p, i) => {
+    const div = document.createElement('div'); div.className = 'print-paragraph';
+    if (i === 0) div.style.textIndent = '0'; div.textContent = p.trim(); bodyEl.appendChild(div);
+  });
+  const bibText = document.getElementById('bib-area').value.trim();
+  const bibEl = document.getElementById('print-bib-section');
+  if (bibText) {
+    let h = '<div class="print-bib-heading">Bibliography</div>';
+    bibText.split('\n').filter(l => l.trim()).forEach(e => { h += `<div class="print-bib-entry">${e.trim()}</div>`; });
+    bibEl.innerHTML = h;
+  } else {
+    bibEl.innerHTML = '<div class="print-bib-heading">Bibliography</div><div class="print-bib-entry">[No bibliography entered]</div>';
+  }
+  window.print();
+}
+
+// ════════════════════════════════════════════════════════
+//  DOWNLOAD SUBMITTED PDF
+// ════════════════════════════════════════════════════════
+async function downloadSubmittedPDF() {
+  const filePath = window._submittedFilePath;
+  if (!filePath) { alert('No file path available.'); return; }
+  try {
+    const { data, error } = await getDB().storage.from('student-submissions').createSignedUrl(filePath, 3600);
+    if (error) throw error;
+    const a = document.createElement('a'); a.href = data.signedUrl;
+    a.download = filePath.split('/').pop(); document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch (e) { alert('Error downloading PDF: ' + e.message); }
+}
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+document.getElementById('cd-deadline').textContent =
+  'Due ' + DEADLINE.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+
+if (Date.now() >= DEADLINE) {
+  deadlinePassed = true; lockPortal();
+  document.getElementById('cd-time').textContent = 'CLOSED';
+  document.getElementById('cd-time').className   = 'cd-time closed';
+} else {
+  tickCountdown();
+}
+
+updateWordCount();
+</script>
+</body>
+</html>
