@@ -1,83 +1,446 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="../access-guard.js" data-week="w3" data-gate="gate.html"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Lecture — Week 3 | HIST 102</title>
+  <title>Week 3 — Video · HIST 102</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="../access-guard.js" data-week="w3" data-gate="gate.html"></script>
   <link rel="stylesheet" href="../style.css">
+  <style>
+    /* ── VIDEO WRAP ── */
+    .video-section {
+      margin: 0 0 2rem;
+    }
+    .video-outer {
+      position: relative;
+      background: #000;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(26,21,16,0.18);
+    }
+    .video-aspect {
+      position: relative;
+      padding-top: 56.25%; /* 16:9 */
+    }
+    .video-aspect iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── WATCH PROGRESS BAR ── */
+    .watch-progress-wrap {
+      background: var(--cream-dark);
+      border: 1px solid var(--cream-deep);
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .watch-progress-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      white-space: nowrap;
+    }
+    .watch-progress-bar-wrap {
+      flex: 1;
+      min-width: 140px;
+      height: 6px;
+      background: var(--cream-deep);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .watch-progress-bar {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+    .watch-progress-bar.complete {
+      background: var(--sage);
+    }
+    .watch-status {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: var(--ink-light);
+      white-space: nowrap;
+    }
+    .watch-status.done {
+      color: var(--sage);
+      font-weight: 500;
+    }
+
+    /* ── UNLOCK NOTICE ── */
+    .unlock-notice {
+      background: var(--cream-dark);
+      border: 1px solid var(--cream-deep);
+      border-left: 4px solid var(--rust);
+      border-radius: 0 4px 4px 0;
+      padding: 0.9rem 1.25rem;
+      margin: 1rem 0 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--rust);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .unlock-notice.unlocked {
+      border-left-color: var(--sage);
+      color: var(--sage);
+    }
+    .unlock-notice-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── ABOUT THE SPEAKER ── */
+    .speaker-card {
+      background: var(--cream-dark);
+      border: 1px solid var(--cream-deep);
+      border-top: 3px solid var(--gold);
+      border-radius: 0 0 4px 4px;
+      padding: 1.5rem 1.75rem;
+      margin: 2rem 0;
+    }
+    .speaker-card-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.6rem;
+    }
+    .speaker-card h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 0.5rem;
+    }
+    .speaker-card p {
+      font-size: 0.92rem;
+      color: var(--ink-mid);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* ── THINKING QUESTIONS ── */
+    .questions-section {
+      margin: 2rem 0;
+    }
+    .questions-section h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 0.35rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--cream-deep);
+    }
+    .questions-intro {
+      font-size: 0.92rem;
+      color: var(--ink-mid);
+      margin: 0.75rem 0 1.25rem;
+      line-height: 1.7;
+    }
+
+    .q-card {
+      border: 1px solid var(--cream-deep);
+      border-left: 4px solid var(--gold);
+      border-radius: 0 4px 4px 0;
+      background: #fff;
+      padding: 1.1rem 1.4rem;
+      margin: 0 0 0.85rem;
+    }
+    .q-card-timestamp {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.35rem;
+    }
+    .q-card p {
+      font-size: 0.95rem;
+      color: var(--ink-mid);
+      line-height: 1.7;
+      margin: 0;
+      font-style: italic;
+    }
+    .q-card p strong {
+      font-style: normal;
+      color: var(--ink);
+    }
+
+    /* ── LOCKED NEXT BUTTON ── */
+    .nav-btn-locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .nav-btn-locked::after {
+      content: ' 🔒';
+    }
+  </style>
 </head>
 <body>
 
+<!-- PROGRESS STRIP -->
 <nav class="progress-strip">
   <div class="progress-inner">
-    <a class="prog-step done" href="index.html"><span class="step-num">&#10003;</span> Overview</a>
+    <a class="prog-step done"   href="index.html"><span class="step-num">&#10003;</span> Overview</a>
     <a class="prog-step active" href="video.html"><span class="step-num">2</span> Video</a>
-    <a class="prog-step" href="reading-1.html"><span class="step-num">3</span> Reading 4.1</a>
-    <a class="prog-step" href="source-analysis-1.html"><span class="step-num">4</span> SA 3.1</a>
-    <a class="prog-step" href="reading-2.html"><span class="step-num">5</span> Reading 4.2</a>
-    <a class="prog-step" href="source-analysis-2.html"><span class="step-num">6</span> SA 3.2</a>
-    <a class="prog-step" href="#"><span class="step-num">7</span> Canvas</a>
+    <a class="prog-step"        href="reading-1.html"><span class="step-num">3</span> Reading 3.1</a>
+    <a class="prog-step"        href="reading-2.html"><span class="step-num">4</span> Reading 3.2</a>
+    <a class="prog-step"        href="#"><span class="step-num">5</span> Canvas: Discussion</a>
   </div>
 </nav>
 
+<!-- PAGE HEADER -->
 <header class="page-header">
   <div class="header-inner">
-    <div class="page-eyebrow">Week 3 &nbsp;&middot;&nbsp; Step 2</div>
-    <h1>Video Lecture</h1>
-    <p class="page-subtitle">The Progressive Era and Reform &mdash; Module 4</p>
+    <div class="page-eyebrow">Week 3 &nbsp;&middot;&nbsp; Step 2 of 5</div>
+    <h1>How to Hide an Empire</h1>
+    <p class="page-subtitle">Daniel Immerwahr &mdash; Northwestern University &nbsp;&middot;&nbsp; Newberry Library, Chicago</p>
     <div class="header-chips">
-      <span class="chip chip-time">30&ndash;45 min</span>
-      <span class="chip chip-site">Watch before reading</span>
+      <span class="chip chip-time">~55 min</span>
+      <span class="chip chip-site">Video + Discussion</span>
     </div>
   </div>
 </header>
 
-<div id="page-content"><main>
+<!-- MAIN CONTENT -->
+<div id="page-content">
+<main>
 
-  <div class="video-wrap">
-    <iframe src="PASTE_VIDEO_URL_HERE" frameborder="0" allowfullscreen title="Week 3 Video Lecture — The Progressive Era"></iframe>
+  <!-- VIDEO -->
+  <div class="video-section">
+    <div class="video-outer">
+      <div class="video-aspect">
+        <div id="yt-player"></div>
+      </div>
+    </div>
+
+    <!-- WATCH PROGRESS -->
+    <div class="watch-progress-wrap">
+      <span class="watch-progress-label">Watch progress</span>
+      <div class="watch-progress-bar-wrap">
+        <div class="watch-progress-bar" id="watch-bar"></div>
+      </div>
+      <span class="watch-status" id="watch-status">0% watched</span>
+    </div>
+
+    <!-- UNLOCK NOTICE -->
+    <div class="unlock-notice" id="unlock-notice">
+      <span class="unlock-notice-icon">🔒</span>
+      <span id="unlock-text">Watch at least 80% of the video to unlock the next page.</span>
+    </div>
   </div>
 
-  <div class="callout callout-note" style="margin-top:1.5rem;">
-    <strong>Lecture Slides</strong> &mdash; Download the slides to follow along or review key terms and timelines after watching.<br>
-    <a href="PASTE_SLIDES_URL_HERE" target="_blank" rel="noopener" class="chip chip-site" style="display:inline-block;margin-top:0.5rem;text-decoration:none;padding:0.4rem 0.9rem;">Download Slides &#8599;</a>
+  <!-- ABOUT THE SPEAKER -->
+  <div class="speaker-card">
+    <div class="speaker-card-label">About the Speaker</div>
+    <h3>Daniel Immerwahr &mdash; <em>How to Hide an Empire: A History of the Greater United States</em></h3>
+    <p>Daniel Immerwahr is a professor of history at Northwestern University and the author of <em>How to Hide an Empire</em> (2019). In this talk, recorded at the Newberry Library in Chicago, Immerwahr uses one of the most famous events in American history — Pearl Harbor — as a door into a story that is almost never told. On December 7th, 1941, Japan attacked not just Hawaii but also Wake Island, Guam, and the Philippines. The Philippines attack was rated by the U.S. Army's own official history as militarily equal to Pearl Harbor. Yet FDR edited the Philippines out of his "Day of Infamy" speech — and out of American memory. This talk asks why, and what it costs us not to know.</p>
   </div>
 
-  <div class="callout callout-task" style="margin-top:1rem;">
-    <span class="callout-label">What this lecture covers</span>
-    This week's lecture is organized around three questions:
-    <ol style="margin-top:0.75rem;padding-left:1.5rem;line-height:2;">
-      <li><strong>Why did the United States turn outward?</strong> &mdash; the logic of imperialism, the Spanish-American War, and the debate over empire</li>
-      <li><strong>Who were the Progressives, and what did they want?</strong> &mdash; muckrakers, settlement houses, TR's Square Deal, Wilson's New Freedom, the four reform amendments</li>
-      <li><strong>What did "progress" mean for Black Americans?</strong> &mdash; Jim Crow, the Great Migration, Washington vs. Du Bois, and the founding of the NAACP</li>
-    </ol>
+  <!-- THINKING QUESTIONS -->
+  <div class="questions-section">
+    <h2>Questions to Hold as You Watch</h2>
+    <p class="questions-intro">These are not graded. They are designed to focus your attention as you watch. Keep them in mind — they will come up again in your readings and in the Canvas discussion this week.</p>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">Opening &mdash; ~0:00–5:00</div>
+      <p>Immerwahr opens with Pearl Harbor — one of the most famous dates in American history. <strong>What do you already know about December 7th, 1941? And what does it mean that most Americans can name the day but not necessarily what else happened that same day?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">What Japan Actually Attacked &mdash; ~2:00–9:00</div>
+      <p>Within hours of Pearl Harbor, Japan also struck Wake Island, Guam, and the Philippines — all U.S. territories. The Philippines attack was rated by the U.S. Army as militarily equal to Pearl Harbor. <strong>Why do you think the Philippines has been almost entirely erased from the standard American memory of that day?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">FDR's Edits &mdash; ~6:00–12:00</div>
+      <p>Immerwahr shows us FDR's draft of the "Day of Infamy" speech, including a crossed-out line that originally mentioned both Hawaii <em>and</em> the Philippines. FDR deliberately edited the Philippines out. <strong>What does it tell us about American democracy that a president had to strategically decide which of his country's people to mention in a speech about an attack on his country?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">The Logo Map &mdash; ~15:00–21:00</div>
+      <p>Immerwahr introduces the "logo map" — the familiar lower-48 shape that most Americans think of when they picture the United States. By 1940, nearly 1 in 8 people living under U.S. jurisdiction lived in an overseas territory. <strong>What is the effect of a map that leaves out millions of a country's own people? What else might it leave out — and why?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">Europe First &mdash; ~24:00–31:00</div>
+      <p>As Japan invaded the Philippines, U.S. military strategy explicitly prioritized Europe. Philippine president Manuel Quezon said: <em>"How typical of America — to writhe in anguish at the fate of a distant cousin while a daughter is being raped in the back room."</em> Secretary of War Stimson responded to Churchill's question about the cost of this strategy with: <em>"There are times when men have to die."</em> <strong>Whose lives were being counted in that calculation — and whose weren't?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">The Retaking of Manila &mdash; ~31:00–38:00</div>
+      <p>When the U.S. military returned to liberate Manila in 1944, it switched tactics to shelling any building that might contain the enemy. The commanding general said: <em>"The loss of a single American life to save a building was unthinkable."</em> An estimated 100,000 Filipino civilians died in a single month. <strong>Who counted as "American" in that sentence? What does this episode reveal about how empire decides whose lives matter?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">The GI and Oscar &mdash; ~38:00–40:00</div>
+      <p>Immerwahr ends with a small, almost comic exchange: a U.S. soldier arriving in the Philippines who didn't know the Philippines was part of the United States — even though he'd been sent there to fight for it. A Filipino man named Oscar had to explain to him: <em>"When you colonized us, you established English as the language of instruction. That's why I speak English."</em> <strong>What does it mean that American soldiers could be sent to fight for a place their country owned without knowing they owned it?</strong></p>
+    </div>
+
+    <div class="q-card" style="border-left-color: var(--rust);">
+      <div class="q-card-timestamp" style="color: var(--rust);">The Big Question — for your readings this week</div>
+      <p>Immerwahr says he wants us to see U.S. history <strong>"not through the GI's eyes, but through Oscar's."</strong> What would change about the history you've studied so far in this course — Reconstruction, the Gilded Age — if you put the territories, and the people in them, back on the map? <strong>Whose story has been left out, and what do we lose by leaving it out?</strong></p>
+    </div>
   </div>
 
+  <!-- PAGE FOOTER -->
   <div class="page-footer">
     <a class="nav-btn nav-btn-prev" href="index.html">&larr; Overview</a>
-    <span class="footer-label">Week 3 &nbsp;&middot;&nbsp; Video</span>
-    <a class="nav-btn nav-btn-next" href="reading-1.html">Reading 4.1 &rarr;</a>
+    <span class="footer-label">Page 2 of 5 &nbsp;&middot;&nbsp; Video</span>
+    <a class="nav-btn nav-btn-next nav-btn-locked" href="reading-1.html" id="next-btn">Reading 3.1 &rarr;</a>
   </div>
 
-</main></div>
+</main>
+</div>
 
-<script src="../supabase-config.js"></script>
+<!-- YOUTUBE IFRAME API -->
 <script>
-(function logPageView() {
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+var VIDEO_ID        = 'ZaKOOqXDnqA';
+var UNLOCK_THRESHOLD = 0.80;   // 80% watched unlocks next page (~44 min of 55)
+var LS_KEY          = 'hist102_w3_video_watched';
+var POLL_INTERVAL   = 5000;    // check progress every 5 seconds
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+var player          = null;
+var maxWatched      = 0;       // highest fraction reached (0–1)
+var unlocked        = false;
+var pollTimer       = null;
+
+// ── CHECK SAVED STATE ────────────────────────────────────────────────────────
+try {
+  var saved = localStorage.getItem(LS_KEY);
+  if (saved && parseFloat(saved) >= UNLOCK_THRESHOLD) {
+    maxWatched = parseFloat(saved);
+    unlocked   = true;
+  }
+} catch(e) {}
+
+// Apply immediately if already unlocked from a previous visit
+if (unlocked) { applyUnlocked(); }
+
+// ── YOUTUBE API ──────────────────────────────────────────────────────────────
+var tag = document.createElement('script');
+tag.src = 'https://www.youtube.com/iframe_api';
+document.head.appendChild(tag);
+
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('yt-player', {
+    videoId: VIDEO_ID,
+    playerVars: {
+      rel: 0,
+      modestbranding: 1,
+      origin: window.location.origin
+    },
+    events: {
+      onReady:      onPlayerReady,
+      onStateChange: onPlayerStateChange
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  updateProgress();
+}
+
+function onPlayerStateChange(event) {
+  // YT.PlayerState.PLAYING = 1
+  if (event.data === 1) {
+    startPolling();
+  } else {
+    stopPolling();
+    updateProgress();
+  }
+}
+
+// ── POLLING ───────────────────────────────────────────────────────────────────
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(updateProgress, POLL_INTERVAL);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+// ── PROGRESS UPDATE ───────────────────────────────────────────────────────────
+function updateProgress() {
+  if (!player || typeof player.getCurrentTime !== 'function') return;
   try {
-    var token = JSON.parse(localStorage.getItem('hist102_access_w3') || '{}');
-    if (token.granted && token.name) {
-      sbInsert('page_views', {
-        student_name:  token.name,
-        student_w_num: token.wnum || '',
-        week_id:       'w3',
-        page:          'video'
-      });
+    var current  = player.getCurrentTime();
+    var duration = player.getDuration();
+    if (!duration || duration < 1) return;
+
+    var fraction = current / duration;
+    if (fraction > maxWatched) {
+      maxWatched = fraction;
+      try { localStorage.setItem(LS_KEY, String(maxWatched)); } catch(e) {}
+    }
+
+    var pct = Math.min(Math.round(maxWatched * 100), 100);
+    var bar = document.getElementById('watch-bar');
+    var status = document.getElementById('watch-status');
+    if (bar)    bar.style.width = pct + '%';
+    if (status) status.textContent = pct + '% watched';
+
+    if (!unlocked && maxWatched >= UNLOCK_THRESHOLD) {
+      unlocked = true;
+      applyUnlocked();
     }
   } catch(e) {}
-})();
+}
+
+// ── UNLOCK ────────────────────────────────────────────────────────────────────
+function applyUnlocked() {
+  // Update progress bar to full/green
+  var bar    = document.getElementById('watch-bar');
+  var status = document.getElementById('watch-status');
+  var notice = document.getElementById('unlock-notice');
+  var text   = document.getElementById('unlock-text');
+  var nextBtn = document.getElementById('next-btn');
+
+  var pct = Math.min(Math.round(maxWatched * 100), 100);
+
+  if (bar) {
+    bar.style.width = pct + '%';
+    bar.classList.add('complete');
+  }
+  if (status) {
+    status.textContent = pct + '% watched';
+    status.classList.add('done');
+  }
+  if (notice) {
+    notice.classList.add('unlocked');
+  }
+  if (text) {
+    text.textContent = '✓ Video complete — Reading 3.1 is now unlocked.';
+  }
+  if (nextBtn) {
+    nextBtn.classList.remove('nav-btn-locked');
+  }
+}
 </script>
+
 <script src="../security.js"></script>
 </body>
 </html>
