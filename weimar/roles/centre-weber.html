@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helene Weber — Weimar Germany Simulation</title>
+<link rel="stylesheet" href="../css/weimar-styles.css">
+<style>
+/* Role sheet additions — extend site styles without overriding */
+.role-header {
+  background: #1d5f8a;
+  color: #fff;
+  padding: 2em 0;
+  border-bottom: 4px solid var(--weimar-gold, #C9A84C);
+}
+.role-header .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1em;
+  align-items: start;
+}
+.role-header h1 {
+  color: #fff;
+  border: none;
+  margin: 0 0 0.25em;
+  font-size: 2.4em;
+}
+.role-header .role-party {
+  font-size: 1.05em;
+  opacity: 0.85;
+  margin: 0 0 0.15em;
+}
+.role-header .role-title {
+  font-size: 0.95em;
+  opacity: 0.75;
+  font-style: italic;
+  margin: 0;
+}
+.role-meta {
+  text-align: right;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+.role-meta .abbrev {
+  font-size: 1.6em;
+  font-weight: bold;
+  opacity: 1;
+  display: block;
+}
+.role-toc {
+  background: #d6e8f5;
+  border-left: 5px solid #1d5f8a;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 4px 4px 0;
+}
+.role-toc h3 {
+  margin: 0 0 0.5em;
+  color: #1d5f8a;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+.role-toc li {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.role-toc a {
+  color: #1d5f8a;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.role-toc a:hover { text-decoration: underline; }
+.role-toc a::before { content: "▸ "; }
+.role-content section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.role-content section:last-child { border-bottom: none; }
+.role-content h2 {
+  font-size: 1.2em;
+  margin: 1.5em 0 0.5em;
+}
+.role-content h3 {
+  font-size: 1.05em;
+  margin: 1.2em 0 0.4em;
+}
+.role-content p { line-height: 1.75; margin-bottom: 0.8em; }
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.agenda-table th {
+  background: #1d5f8a;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+}
+.agenda-table td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.agenda-table tr:nth-child(even) td { background: #f9f9f9; }
+.agenda-pass {
+  display: inline-block;
+  background: #e2efda;
+  color: #2d6a2d;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-defeat {
+  display: inline-block;
+  background: #ffe0e0;
+  color: #b82020;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-abstain {
+  display: inline-block;
+  background: #fff3cd;
+  color: #8a6a00;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.role-nb {
+  font-size: 0.9em;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.4em 0.75em;
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+}
+.role-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 0;
+  border-top: 2px solid #1d5f8a;
+  margin-top: 2em;
+  font-size: 0.95em;
+}
+.role-nav a {
+  color: #1d5f8a;
+  text-decoration: none;
+  font-weight: 600;
+}
+.role-nav a:hover { text-decoration: underline; }
+.assignment-note {
+  background: #fff8dc;
+  border: 2px dashed #C9A84C;
+  padding: 1em 1.25em;
+  margin: 1.5em 0;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .role-header .container { grid-template-columns: 1fr; }
+  .role-meta { text-align: left; }
+  .role-toc ul { columns: 1; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <h1>Democracy in Crisis</h1>
+    <p class="subtitle">Weimar Germany Simulation — Role Sheet</p>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../background/narrative.html">Historical Background</a></li>
+    <li><a href="../core-texts/index.html">Core Texts</a></li>
+    <li><a href="../game/rules.html">Game Rules</a></li>
+    <li><a href="index.html" class="active">Role Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="role-header">
+  <div class="container">
+    <div>
+      <h1>Helene Weber</h1>
+      <p class="role-party">Centre Party (Zentrum) &nbsp;·&nbsp; #6</p>
+      <p class="role-title">Member of the Reichstag</p>
+    </div>
+    <div class="role-meta">
+      <span class="abbrev">Centre</span>
+      <span>61 Reichstag mandates</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="assignment-note">
+    <strong>Course Assignment:</strong> In place of the position papers and election poster in the original game, this course uses a research paper assignment. See your <a href="../game/assignments.html">Research Paper Packet</a> for instructions, topics, and due dates.
+  </div>
+
+  <nav class="role-toc">
+    <h3>Contents</h3>
+    <ul><li><a href="#biography">Biography</a></li><li><a href="#objectives">Objectives</a></li><li><a href="#foreign-relations-foreign-ministry">Foreign Relations (Foreign Ministry)</a></li><li><a href="#military-affairs-defense-ministry">Military Affairs (Defense Ministry)</a></li><li><a href="#paramilitaries">Paramilitaries</a></li><li><a href="#eugenics-and-sexuality-justice-ministry">Eugenics and Sexuality (Justice Ministry)</a></li><li><a href="#race-and-culture-interior-ministry">Race and Culture (Interior Ministry)</a></li><li><a href="#industrial-relations-economic-ministry">Industrial Relations (Economic Ministry)</a></li><li><a href="#agricultural-affairs-food-ministry">Agricultural Affairs (Food Ministry)</a></li><li><a href="#other-issues">Other Issues</a></li><li><a href="#responsibilities">Responsibilities</a></li><li><a href="#powers">Powers</a></li><li><a href="#victory-goals-summary">Victory Goals Summary</a></li><li><a href="#factional-victory-goals">FACTIONAL VICTORY GOALS</a></li><li><a href="#mandatory-agenda-items">Mandatory Agenda Items</a></li><li><a href="#personal-victory-goals">PERSONAL VICTORY GOALS</a></li><li><a href="#discretionary-agenda-issues">Discretionary Agenda Issues</a></li></ul>
+  </nav>
+
+  <div class="role-content">
+    <section id="biography"><h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Biography</h2>
+<p>You were born in 1881 in Elberfeld, Rhine Province as one of six children born to a Dutch mother and German father. After the early death of your mother, you father (a school teacher and member of the Centre Party) chose not to remarry and to raise the family on his own. Through his political activity you were confronted with political issues from the earliest age. Like most Germans from the Catholic Rhineland, you have framed most political and social questions through the lens of the Catholic milieu. You joined the Volksverein (People’s Association for Catholic Germany) while still an adolescent, and in 1903 you were a founding member of is women’s auxiliary, the League of Catholic Women.</p>
+<p>You trained to be a teacher in Wuppertal and Aachen, finding work in Elberfeld and Aachen. But you took advantage of a gradual opening up of German universities to women after 1900. You studied history, philosophy, and romance languages in Bonn and Grenoble. At the Lyceum (an elite preparatory high school) in Bochum in 1909 you became one of the first women to pass the state exams and thus earn the right to teach middle and secondary school (previously reserved exclusively for men).</p>
+<p>This accomplishment was more than the average man could appreciate—it not only spoke of your exceptional intellectual capabilities, but also of your ability to persuade the all-male professors to even allow you to take the exams since it was still a regular practice of these professors to simply refuse to test women.</p>
+<p>Your star rose quickly after this accomplishment. As a high school teacher in Bochum and Cologne, you associated with Centre Party, including the influential mayor of Cologne Konrad Adenauer, who offered you a position as the first female director of a Lyceum but on the condition that you end your political activities; you declined the offer as a demonstrative sign of your independence.</p>
+<p>Leadership positions soon followed: the central committee of the Catholic German Federation (a Catholic trade union); head of the first school for female social workers in Cologne; first chair of the Association of Catholic Social Workers. All this Catholic work meant, however, that you had to take a permanent leave from teaching in 1916.</p>
+<p>Yet it was the events of 1918–19 and the collapse of the Hohenzollern dynasty at the end of the war that opened new horizons for you. The National Assembly allowed full women’s suffrage for the first time in the 1919 elections and it came as no surprise to the Catholic community that you were one of the thirty-six women elected.</p>
+<p>Since the founding of the Republic you have remained a moderate. As a member of the National Assembly, you were involved in the writing of the constitution. From 1921 to 1924 you were also a deputy to the Prussian Diet. Since May 1924 you belonged to the Reichstag. In 1925 you were elected to the Centre Party’s executive committee and you chair your party’s women’s committee.</p>
+<p>Despite this workload, you have continued in your activities as a social worker, only now at the national level. In 1919 you became a policy expert in the Prussian welfare ministry, and 1920 you became the first ever female Ministerialrätin (ministerial advisor), where you founded the social education department. All of this work required that you move to Berlin permanently.</p>
+<p>In a world still dominated by men, you have nonetheless reached a high degree of professional respect, publishing several works focusing on welfare, youth, and your profession: Understanding for Today’s Youth [Verständnis für die heutige Jugend], 1927; and The Profession of the Female Social Officer [Der Beruf der Sozialbeamtin], 1930. You were recently awarded an honorary doctorate by the National Faculty of the University of Münster.</p>
+<p>It is also worth remembering, that you have never married—a statement of your desire to remain independent. Some have accused you of hypocrisy as a Catholic who does not followed the basic tenant of motherhood. Your answer is clear: single Catholic women have always applied their maternal nature to helping society. You simply do this in the public sphere rather than in a convent.</p>
+<p>You admire politicians such as Adam Stegerwald who understand the need to support workers—especially Catholic women who often face discrimination on three fronts: as workers, Catholics, and women. But you have just as great respect for those who promote the social mission of Catholicism, such as Archbishop Kaas. Yet some in the Centre, such as von Papen, seem hostile to these social realities.</p>
+<p>You also have forged strong connections across political lines to every other woman in the Reichstag. After all, you agree on core principles about the inherent dignity of women and the state’s role in protecting women and children. This includes Clara Zetkin (KPD) just as it does Paula Müller-Otfried (DNVP) and everyone in between. The only party you have nothing to do with is the NSDAP—it is no wonder they have no women in the Reichstag.</p>
+<p>But all nationalistic Germans find common concern (though for different reasons) over the declining birth rate. In 1910 it was about four children per family, and now it is below two—a rate incapable of maintaining the current population. The war is partially to blame.</p>
+<p>Millions of women entered the workforce and many future fathers died or returned as invalids. Many women became and remain the primary bread winners. They have little time for large families. You support Catholic teachings on birth control, but this alone will do nothing for women.</p>
+<p>Women need to either receive family wage or the state must subsidize families—if only to protect the innocent children.</p>
+</section>
+<section id="objectives">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Objectives</h2>
+<p>The Constitution and the Republic</p>
+<p>Democracy is the only constitutional arrangement conceivable to assure both the rights of Catholics as a religious community, of Catholic workers as members of a historically abused social group, and of women.</p>
+<p>You are therefore more than just a Vernunftrepublikaner. The Republic has guaranteed what the Centre Party had been fighting for since its founding: equality for Catholics and autonomy for the Roman Catholic Church throughout Germany.</p>
+<p>Therefore, you wholeheartedly support the Republic. The paramilitary forces in the streets are a threat to democracy. The openly anti-democratic voice of the NSDAP is a threat. You must find a way to achieve a stable pro-Republic coalition of moderates.</p>
+<p>The only way to preserve Catholic workers and women in their faith and allegiance to Rome and the Centre Party is to focus on their concerns.</p>
+<p>Therefore, you aim to drive the Centre Party away from the Right and any coalition with the NSDAP) and instead emphasize a moderate coalition. Of course, the KPD is not an option given its clear anti-religion and anti-property stances—but members such as Zetkin can be worked with on specific issues. But a moderate-left coalition has proven the most stable throughout the Republic—if the only way to keep it intact is to continue working with socialists in the SPD, so be it.</p>
+<p>Any attempt to erode the basic parameters of democracy—whether that be by the Reichswehr, the paramilitaries, or even the Reich president—must be opposed. Naturally this means that any form of street violence has no role. But neither does banning political parties because they are unpopular.</p>
+<p>Regarding the NSDAP in particular, Hitler has ostensibly renounced violence and proclaimed the Legality Strategy. But isn’t the NSDAP merely using its Legality Strategy as a fig leaf to cover its real intentions of seizing power and establishing a right-wing dictatorship?</p>
+<p>The moderate parties of the right need to pull away from the NSDAP and back towards support of the Republic.</p>
+</section>
+<section id="foreign-relations-foreign-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Foreign Relations (Foreign Ministry)</h2>
+<p>Freedom Law and Young Plan</p>
+<p>There is no alternative to the Treaty of Versailles. It is not a question of supporting or opposing it in the abstract—who could support this sort of dictate? But since the military is in no position to oppose it and assert German autonomy, the Republic has no choice but to engage in a policy of fulfillment and try, with time and reasonable arguments, to ameliorate the terms. Any other policy is pure posturing and actually destructive on the international scene since it undermines attempts to renegotiate the terms as legitimate and democratic equals to the victors. Therefore, while the Freedom Law is full of good intentions, one cannot condone the violation of the treaty demanded in the Freedom Law.</p>
+<p>Germany has indeed had some notable successes in foreign policy under Stresemann. The Treaty of Locarno in 1925 saw Germany, France and Belgium renounce violence to settle their border disputes, and France agreed to eventually withdraw from the Rhineland. The resulting Spirit of Locarno has led to additional diplomatic victories:</p>
+<p>French and Belgian troops left the Ruhr in 1925.</p>
+<p>The 1926 Treaty of Berlin reinforced the Treaty of Rapallo (1922) and improved relations between the Soviet Union and Germany.</p>
+<p>In 1926 Germany was admitted to the League of Nations with a permanent spot on the governing council.</p>
+<p>The Kellogg-Briand Pact of 1928, signed by Germany and fourteen other countries, renounced wars of aggression.</p>
+<p>The Geneva Convention, regulating warfare, was ratified by the Reichstag in April 1929.</p>
+<p>The Young Plan is a similar such victory and is essential to the Centre Party policy of fulfillment. It is not that anyone in the Centre Party supports the Versailles Treaty, but only by fulfilling, in as minimal way as possible, the terms of the Treaty can the Republic be assured any chance of success. The last time Germany attempted to avoid the Treaty the French occupied the Rhineland. That humiliation combined with the disastrous nationalist policy of protesting the occupation by printing money led to the dreadful hyperinflation that ruined many Germans’ lives. That sort of military and economic disaster only plays into the hands of the fascists and communists. But some way must be found to ensure that the Young Plan is not financed on the back of the workers—there can be no talk of increasing taxes and cutting the budget to make the payments.</p>
+<p>Liquidation Treaty with Poland</p>
+<p>Regarding Poland, the Liquidation Treaty is currently being debated that would settle certain conflicts between the two states. One has to be pragmatic—the Treaty will protect Germans in Poland until such time as the border issue is resolved. However, you worry about the economic costs when Germans are being asked to tighten their belts and also the negative impact on Catholic farmers. Therefore, you oppose the treaty but with reservation—you could be persuaded by the other side.</p>
+</section>
+<section id="military-affairs-defense-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Military Affairs (Defense Ministry)</h2>
+<p>The Reichswehr has not proven itself a bulwark of the Republic. It should not be molly coddled any longer. If its officers are not loyal, they should be dismissed; if they are corrupt, they should be placed on trial. The Reichswehr should serve the interests of the Republic, not stand above it.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Naval Bill</h3>
+<p>Any talk of expanding the navy with increased spending for armored cruisers plays only into the hands of special interests. If the money were there to also provide jobs and unemployment benefits, then there would not need to be a debate. Indeed, in good times, the naval yards can employ many workers. But, this spending is not a public works project. It would not have any real impact outside of a single port and it would drain desperately needed funds for the growing army of the unemployed. You strongly oppose it.</p>
+</section>
+<section id="paramilitaries">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Paramilitaries</h2>
+<p>The paramilitaries are destabilizing the Republic. Quite frankly, they should all be banned, but starting with the SA would be a step in the right direction. You supported the ban on the KPD’s Red Front.</p>
+</section>
+<section id="eugenics-and-sexuality-justice-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Eugenics and Sexuality (Justice Ministry)</h2>
+<p>On these issues, there is perhaps more debate allowed than the Centre Party wants to admit.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Sterilization</h3>
+<p>Regarding race hygiene (eugenics), you share the concerns about degeneracy. And though the Vatican has reinforced Casti Connubii with even more conservative instructions, attacking both eugenics and sex education, you realize that working families are desperate to escape their poverty, a poverty often made worse by more children than can be feed and often invalid children. You greatly favor moral education that will promote eugenically motivated self-restraint, pleading for a sort of natural selection. But you cannot endorse sterilization any more than abortion.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Mothers’ Day</h3>
+<p>Women must embrace their divinely dictated role as mothers—the font of the moral health of the nation without which nothing can prosper. They are the natural physical and moral nurturers of the next generation and nothing should impede them in this sacred duty. They should accept this role and bear as many children as possible. The Virgin Mary stands as their model. Mothers’ Day should be a national holiday in this religious sense. However, you must publicly separate motherhood from the eugenics of the Far Right (NSDAP and DNVP)—motherhood is not a choice but a divine duty, and the state should never be allowed to determine which mothers should be allowed to have children.</p>
+</section>
+<section id="race-and-culture-interior-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Race and Culture (Interior Ministry)</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Jews (Antisemitism Option)</h3>
+<p>Jews present a complex problem. But outright bans on religious minorities will only backfire on the Centre Party, seeing as how Catholics are also a persecuted minority that suffered during the Kulturkampf of the 1870s and 1880s. Jews must be tolerated and, perhaps, eventually led to the Gospels by constant interaction with Catholics.</p>
+<p>Their small numbers mean that they are little threat for all their differences.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Censorship</h3>
+<p>For a Christian democrat, little commends All Quiet on the Western Front. It makes every effort to insult the clergy. It offers neither hope nor moral guidance. Its anti-patriotism insults the sacrifices of those who died, but perhaps more importantly its critique of established authority undermines the fabric of society. A world build just around front soldiers is nonsense, regardless of their bravery and sacrifice; instead, Paul and his comrades should recognize that society only works when every individual plays their proper role, respecting a natural hierarchy that respects all equally but does not demand that all be made equal in other aspects. With no spiritual leadership visible, is it any wonder that Remarque’s characters fall into despondence? Yet censorship is dangerous, especially since the work is not directly sacrilegious.</p>
+<p>Instead, the Reichstag could symbolically vote to condemn the work without banning it.</p>
+</section>
+<section id="industrial-relations-economic-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Industrial Relations (Economic Ministry)</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Austerity</h3>
+<p>You support greater social spending and unemployment benefits for workers. Austerity is a policy of disaster that will only alienate Catholic workers, driving them into the radical arms of the KPD and NSDAP. Already the SPD is taking a stronger stance in favor of social spending on unemployment, and the competition for members between the Christian trade unions and the socialist unions will only shift to favor the socialist if the Centre Party does not also come out strongly against austerity. If moderate taxes need to be raised, so be it.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Nationalization</h3>
+<p>Nationalization of banks is possible under extreme conditions. In the end, the economy must serve the nation; private industry usually does that best, but if it fails the state must step in.</p>
+</section>
+<section id="agricultural-affairs-food-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Agricultural Affairs (Food Ministry)</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Agrarian Tariffs</h3>
+<p>The corollary to your anti-austerity approach is strong opposition to spending on special interests such as the military budget and grain tariffs that only benefits wealthy Junkers. You also oppose tariffs on imported food since these only raise the cost of food for Catholic women and workers.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Small Farmers’ Relief</h3>
+<p>While your concern is primarily with Catholic women, the plight of the small farmers worries you too. Therefore, while not your primary economic concern, you favor some type of land reform (redistribution) and debt relief to benefit small farmers.</p>
+</section>
+<section id="other-issues">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Other Issues</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Stability Index</h3>
+<p>Desiring, as you do, to see the long-term prosperity of the Republic, the higher the Stability Index (0 or higher) the more victory points you will be awarded.</p>
+<p>Presidential Election in 1932</p>
+<p>You will support whoever you think best serves your goals—logically, this could be someone from the Centre Party, or possibly von Hindenburg.</p>
+<p>But you have flexibility.</p>
+<p>Committees of Inquiry</p>
+<p>Corruption has not place in the Republic and should be investigated.</p>
+<p>Further, the targets of assassinations have occasionally been members of the Centre Party—they certainly always seem to be those who sympathize with workers, whether Catholic or not. The parliamentary system should not allow its powers to be undermined by extra-judicial executions. Let the committee do its work.</p>
+</section>
+<section id="responsibilities">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Responsibilities</h2>
+<p>Coordinate with members of your faction to determine party positions/votes ahead of time.</p>
+<p>Defend the weakest members of society – women, children, and workers.</p>
+</section>
+<section id="powers">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Powers</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">None</h3>
+</section>
+<section id="victory-goals-summary">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Victory Goals Summary</h2>
+<p>Note: The Victory Points system is part of the full game and is not used in this course’s abridged three-session simulation.</p>
+<p class="role-nb"><em>NB: Faction and personal victory goals may conflict.</em></p>
+</section>
+<section id="factional-victory-goals">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">FACTIONAL VICTORY GOALS</h2>
+<p>Absolute Victory: Centre Party-led cabinet; moral agenda passed (sterilization defeated; All Quiet censored due to its anti-Christianity; Mothers’ Day passed without linkage to eugenics/race).</p>
+<p>Absolute Defeat: KPD is in power in any way; OR Centre ceases to exist; OR moral agenda fails (sterilization passed; censorship defeated; Mothers’ Day defeated).</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Stability Index Goal = HIGH (0 or higher)</h3>
+<p>Presidential Election = Brüning OR not NSDAP or KPD</p>
+<p>Type of Government = any government in any form that excludes KPD and NSDAP</p>
+<p>Indeterminates/Splinters = convince to join your faction</p>
+</section>
+<section id="mandatory-agenda-items">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Mandatory Agenda Items</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Freedom Law</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Young Plan</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Naval Bill</strong></td><td><span class="agenda-pass">PASS only if linked to passing Austerity (you must pass all three)</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Austerity</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Agrarian Tariffs</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Antisemitism</strong></td><td><span class="agenda-defeat">DEFEAT but explain Jews as a religion not a race</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Mothers’ Day</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+</section>
+<section id="personal-victory-goals">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">PERSONAL VICTORY GOALS</h2>
+<p>Absolute Victory: Coalition with SPD ends; Mothers’ Day passed; sterilization defeated.</p>
+<p>Absolute Defeat: Mothers’ Day defeated; OR sterilization passed; OR KPD is in cabinet or in power in any way.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Stability Index Goal = HIGH (0 or higher)</h3>
+</section>
+<section id="discretionary-agenda-issues">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Discretionary Agenda Issues</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Liquidation Treaty UNDECIDED</h3>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Paramilitaries</strong></td><td><span class="agenda-defeat">BAN all violent paramilitaries</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Sterilization</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Censorship STAUS QUO</h3>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Nationalization</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Small Farmers</strong></td><td><span class="agenda-pass">PASS land reform and debt relief</span></td></tr>
+</tbody></table>
+</section>
+  </div>
+
+  <nav class="role-nav">
+    <div><a href="centre-kaas.html">← Ludwig Kaas</a></div>
+    <a href="index.html">↑ All Roles</a>
+    <div><a href="dnvp-hugenberg.html">Alfred Hugenberg →</a></div>
+  </nav>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Democracy in Crisis: Weimar Germany Simulation | HIST 105: Western Civilization</p>
+    <p>Yosemite Community College | <a href="https://profhauselmann.org">Professor Hauselmann</a></p>
+  </div>
+</footer>
+
+<script src="../js/weimar-interactive.js"></script>
+
+</body>
+</html>

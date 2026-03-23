@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ernst Thälmann — Weimar Germany Simulation</title>
+<link rel="stylesheet" href="../css/weimar-styles.css">
+<style>
+/* Role sheet additions — extend site styles without overriding */
+.role-header {
+  background: #8b1010;
+  color: #fff;
+  padding: 2em 0;
+  border-bottom: 4px solid var(--weimar-gold, #C9A84C);
+}
+.role-header .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1em;
+  align-items: start;
+}
+.role-header h1 {
+  color: #fff;
+  border: none;
+  margin: 0 0 0.25em;
+  font-size: 2.4em;
+}
+.role-header .role-party {
+  font-size: 1.05em;
+  opacity: 0.85;
+  margin: 0 0 0.15em;
+}
+.role-header .role-title {
+  font-size: 0.95em;
+  opacity: 0.75;
+  font-style: italic;
+  margin: 0;
+}
+.role-meta {
+  text-align: right;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+.role-meta .abbrev {
+  font-size: 1.6em;
+  font-weight: bold;
+  opacity: 1;
+  display: block;
+}
+.role-toc {
+  background: #f9e0e0;
+  border-left: 5px solid #8b1010;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 4px 4px 0;
+}
+.role-toc h3 {
+  margin: 0 0 0.5em;
+  color: #8b1010;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+.role-toc li {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.role-toc a {
+  color: #8b1010;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.role-toc a:hover { text-decoration: underline; }
+.role-toc a::before { content: "▸ "; }
+.role-content section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.role-content section:last-child { border-bottom: none; }
+.role-content h2 {
+  font-size: 1.2em;
+  margin: 1.5em 0 0.5em;
+}
+.role-content h3 {
+  font-size: 1.05em;
+  margin: 1.2em 0 0.4em;
+}
+.role-content p { line-height: 1.75; margin-bottom: 0.8em; }
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.agenda-table th {
+  background: #8b1010;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+}
+.agenda-table td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.agenda-table tr:nth-child(even) td { background: #f9f9f9; }
+.agenda-pass {
+  display: inline-block;
+  background: #e2efda;
+  color: #2d6a2d;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-defeat {
+  display: inline-block;
+  background: #ffe0e0;
+  color: #b82020;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-abstain {
+  display: inline-block;
+  background: #fff3cd;
+  color: #8a6a00;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.role-nb {
+  font-size: 0.9em;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.4em 0.75em;
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+}
+.role-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 0;
+  border-top: 2px solid #8b1010;
+  margin-top: 2em;
+  font-size: 0.95em;
+}
+.role-nav a {
+  color: #8b1010;
+  text-decoration: none;
+  font-weight: 600;
+}
+.role-nav a:hover { text-decoration: underline; }
+.assignment-note {
+  background: #fff8dc;
+  border: 2px dashed #C9A84C;
+  padding: 1em 1.25em;
+  margin: 1.5em 0;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .role-header .container { grid-template-columns: 1fr; }
+  .role-meta { text-align: left; }
+  .role-toc ul { columns: 1; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <h1>Democracy in Crisis</h1>
+    <p class="subtitle">Weimar Germany Simulation — Role Sheet</p>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../background/narrative.html">Historical Background</a></li>
+    <li><a href="../core-texts/index.html">Core Texts</a></li>
+    <li><a href="../game/rules.html">Game Rules</a></li>
+    <li><a href="index.html" class="active">Role Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="role-header">
+  <div class="container">
+    <div>
+      <h1>Ernst Thälmann</h1>
+      <p class="role-party">Communist Party of Germany &nbsp;·&nbsp; #1</p>
+      <p class="role-title">Faction Leader · Paramilitary Leader (Red Front)</p>
+    </div>
+    <div class="role-meta">
+      <span class="abbrev">KPD</span>
+      <span>54 Reichstag mandates</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="assignment-note">
+    <strong>Course Assignment:</strong> In place of the position papers and election poster in the original game, this course uses a research paper assignment. See your <a href="../game/assignments.html">Research Paper Packet</a> for instructions, topics, and due dates.
+  </div>
+
+  <nav class="role-toc">
+    <h3>Contents</h3>
+    <ul><li><a href="#biography">Biography</a></li><li><a href="#objectives">Objectives</a></li><li><a href="#foreign-relations-foreign-ministry">Foreign Relations (Foreign Ministry)</a></li><li><a href="#military-affairs-defense-ministry">Military Affairs (Defense Ministry)</a></li><li><a href="#paramilitaries">Paramilitaries</a></li><li><a href="#eugenics-and-sexuality-justice-ministry">Eugenics and Sexuality (Justice Ministry)</a></li><li><a href="#race-and-culture-interior-ministry">Race and Culture (Interior Ministry)</a></li><li><a href="#industrial-relations-economic-ministry">Industrial Relations (Economic Ministry)</a></li><li><a href="#agricultural-affairs-food-ministry">Agricultural Affairs (Food Ministry)</a></li><li><a href="#other-issues">Other Issues</a></li><li><a href="#responsibilities">Responsibilities</a></li><li><a href="#powers">Powers</a></li><li><a href="#party-discipline">Party Discipline</a></li><li><a href="#victory-goals-summary">Victory Goals Summary</a></li><li><a href="#factional-victory-goals">FACTIONAL VICTORY GOALS</a></li><li><a href="#mandatory-agenda-items">Mandatory Agenda Items</a></li><li><a href="#personal-victory-goals">PERSONAL VICTORY GOALS</a></li><li><a href="#discretionary-agenda-issues">Discretionary Agenda Issues</a></li></ul>
+  </nav>
+
+  <div class="role-content">
+    <section id="biography"><h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Biography</h2>
+<p>You were born in Hamburg in 1886 the first son of delivery coachman from a rural laboring family. After your birth, your parents ran a small pub near the harbor. Life was hard, and in 1892 your parents were arrested for dealing in stolen goods and sentenced to two years prison. You and your younger sister were separated during this time to live with foster families. Upon your parents’ release, you attended the local primary school, but you had to spend all of your free time working in their shop. You dreamed of becoming a teacher or craftsman, but that was beyond your parents’ reach. After repeated clashes with your parents, who would not pay you for your work, you left home at sixteen, surviving with day jobs and living at times in a homeless shelter and in basements.</p>
+<p>You know firsthand the brutality of the capitalist system and early on you decided to fight. You joined the Social Democratic Party in 1903 as a teenager, found steady work between 1904 and 1913 as a stoker on a freighter, during which time you were drafted but discharged early because you were seen as a political agitator.</p>
+<p>In January 1915, on the day before your call-up for military service in the war, you married Rosa Koch. The war only radicalized you more.</p>
+<p>Towards the end of 1917, you became a member of the anti-war Independent Social Democratic Party (USPD) that broke with the pro-war SPD. When the USPD split over the question of whether to join the Bolshevik-allied Comintern of Lenin, you sided with the pro-Communist group, which in November 1920 merged with the new KPD. One month later, you were elected to the KPD’s central committee. In March 1921 you were fired from your job due to your political activities. That summer, you went as a representative of the KPD to the Third Congress of the Comintern in Moscow and met Vladimir Lenin. In June 1922 you survived an assassination attempt at your flat. Members of the right-wing terrorist Organization Consul threw a hand grenade into your ground floor flat.</p>
+<p>Your wife and daughter were unhurt; you came home only later. Yes, the Right will even murder women and children to defend imperialism and capitalism.</p>
+<p>But you are always willing to fight back and defend the poor and down trodden. You participated in and helped organize the Hamburg Uprising of October 1923. The insurrection failed, and you went underground for a time. After the death of Lenin in January 1924, you visited Moscow and for some time maintained a guard of honor at his bier. Since February 1924 you were deputy chair of the KPD and, from May, a Reichstag member.</p>
+<p>At the Fifth Congress of the Comintern that summer you were elected to the Comintern executive committee and a short time later to its steering committee. In February 1925 you became chair of the League of Red Front Fighters (RFB aka the Rotfront or Red Front), the paramilitary of the KPD.</p>
+<p>In October 1925 you became chair of the KPD and that year were a candidate for the German presidency. Your candidacy in the second round of the presidential election split the center-left vote and ensured that the reactionary Junker Paul von Hindenburg defeated the Centre Party’s Wilhelm Marx—not a dime’s worth of difference between the two anyway.</p>
+<p>In October 1926 you supported in person the dock workers’ strike in your home town of Hamburg. You saw this as solidarity with the British miners’ strike that had started on 1 May and had been profitable for Hamburg Docks as an alternative supplier of coal. Your argument was that German profits in Hamburg amounted to strike-breaking and had to be stopped. The point, after all, is international solidarity. Where one worker suffers, all suffer regardless of nationality. And you always put your money where your mouth is—in March, you took part in a demonstration in Berlin where you were injured by a policeman’s sword.</p>
+<p>But internal party politics can also be ruthless. In 1928 during the Wittorf Affair, you were ousted from the party central committee for trying to cover up embezzlement by a party official who was your close friend and protégé, John Wittorf—though not after convincing him to pay the money back. But Stalin intervened and had you reinstated, signaling the beginning of a purge and completing the orientation of the KPD along the lines of the Russian Communist Party, a move you fully support.</p>
+<p>Since then, you remain leery of any attempt to challenge leadership in the party.</p>
+<p>Regarding domestic politics, though, the key issue is now the struggle with the social fascists—the SPD. At the 12^(th) party congress of the KPD in June 1929 in Berlin-Wedding, you, in conformity with the position adopted by the Soviet Union under Joseph Stalin, adopted a policy of confrontation with the SPD. This followed the events of Bloody May, in which thirty-two people were killed by the Berlin police during the annual May Day events in support of workers internationally. The Berlin police are controlled by the SPD; interior minister Carl Severing (also SPD) had banned all labor demonstrations; and the SPD-led cabinet banned the Red Front, leaving workers defenseless against attacks by the Nazi’s SA. You and the KPD now fight the SPD as your main political enemy.</p>
+<p>Social Democrats have proven themselves to be “social fascists.” But some in the KPD do not understand the importance of this struggle against the SPD. You are always on the lookout for members of the KPD who deviate from correct ideology.</p>
+<p>Another aspect of this strategy is the attempt to win over the leftist elements of the NSDAP, especially the SA, who largely come from a working-class background and support socialist economic policies. And the NSDAP is such a small party that it hardly constitutes any real threat. You reserve the harshest criticism for the SPD, not the political fascists. As a result, you oppose any talk of a United Front with the SPD, whose treachery has become legendary.</p>
+<p>You have every intention to run for Reich president again in the 1932 election. You already have the slogan: “A vote for Hindenburg is a vote for Hitler; a vote for Hitler is a vote for war.”</p>
+</section>
+<section id="objectives">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Objectives</h2>
+<p>The Constitution and the Republic</p>
+<p>The government must be overthrown. It is neither democratic nor socialist but instead a veneer for the continued domination of the capitalists, the remnants of the feudal Junker class, and militarists, propped up by the SPD. There can be no alliance with the SPD—they must become communists.</p>
+<p>The goal is simple—Germany must finish what was started in November 1918. Germany must follow the example of the Russian Revolution and have a second revolution that sweeps away all of the rubbish of the old order—aristocrats, military elites, capitalists. The threat has grown more severe since the rise of fascism. Mussolini has shown in Italy what fascists do in power; this must not be repeated in Germany. Thus, your primary enemy is the NSDAP. How is this done? Every speech on every issue must serve the purpose of denouncing the NSDAP and promoting revolution. The KPD paramilitary, the recently banned Red Front, must defend itself in the street battles against the NSDAP.</p>
+<p>However, you are just as opposed to the SPD on almost every issue. After all, the SPD sided with the conservatives in 1919 to slaughter workers in the streets, including assassinating party founders Karl Liebknecht and Rosa Luxemburg. The SPD is functionally no different from the NSDAP.</p>
+<p>Instead, they are a form of social fascism—deliberately misleading workers and paving the way for compromises with capitalism that will only lead to the victory of the political fascists. Therefore, there can be no talk of an alliance with the SPD, no United Front that would only undermine the resolve of young communists. Indeed, there may even be times when you would vote with the NSDAP against the SPD; after all, the SPD is worse in its betrayal. Therefore, the NSDAP is preferable to the SPD to clear the way for true revolution.</p>
+<p>Yet the rank and file members of the SPD share the basic goals of the KPD, and even if the leadership is smitten with the allure of liberal power, the common members are still comrades who must be convinced to leave the SPD.</p>
+<p>In fact, it may be preferable to vote tactically with the NSDAP in opposing the SPD. This is not an alliance with the fascists—they will be dealt with later. But occasionally voting with them to defeat the pro-Republican forces is a means to an end—that end being the communist revolution.</p>
+<p>Some Reichstag members have been discussing the possibility of rule by presidential decree. You are aware of its inherently authoritarian nature. It would be absurd to think that a militarist Junker such as von Hindenburg can be trusted to defend the interests of workers, and no such arrangement can be tolerated. Indeed, the KPD should plan on winning the Reich presidency in the next election.</p>
+<p>Others have talked about banning a particular party; naturally banning the NSDAP would be acceptable, but what would prevent this same tactic from being turned on the KPD? After all, it was not that long ago that the German state attempted to destroy socialism with the Anti-Socialist Laws and there is little love for the KPD in any of the other parties.</p>
+<p>Of course, once in power you will not hesitate to ban any parties that oppose socialism—after all, it is not a matter of the principle of civil liberties but of the situational tactics necessary to secure the socialist revolution.</p>
+<p>Regarding the NSDAP, the NSDAP is merely using its Legality Strategy as a fig leaf to cover its real intentions of seizing power and establishing a right-wing dictatorship. That the judiciary refuses to prosecute conservatives engaged in open calls for sedition exposes the need for a thorough revolution to finish what was begun in 1918.</p>
+</section>
+<section id="foreign-relations-foreign-ministry">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Foreign Relations (Foreign Ministry)</h2>
+<p>Freedom Law and Young Plan</p>
+<p>German foreign policy today is still about imperialism. Your top priority is to defend the interests of the USSR as the only truly socialist government in the world. The KPD leadership therefore just adopted the following stance specifically in regards to the Young Plan and the Treaty of Versailles generally:</p>
+<p>“The complete annulment of all debts, the Bolshevik liquidation of the Versailles Treaty and the Young Plan through the overthrow of the bourgeois [state], the setting up of a socialist, Soviet Germany and an alliance with the Soviet Union and the revolutionary workers of all countries.”</p>
+<p>In effect, all international treaties conducted by imperialist powers are illegitimate—a revolution is the only answer.</p>
+<p>The Young Plan is nothing more than a plot to promote fascism. The SPD supports it, and that in itself reveals that it is a betrayal of the working classes. Why should workers be expected to suffer the burdens of war reparations when it was the capitalists and Junkers who caused the war? War reparations will only be paid on the backs of workers through their taxes. The Young Plan only benefits international creditors and banks. It should be defeated. However, you do not want to end up voting with the NSDAP. A boycott of the vote is therefore an option.</p>
+<p>The Treaty of Versailles embodies imperialist interests. The Young Plan is simply part of that policy.</p>
+<p>But on the Freedom Law, the matter is unclear. You should denounce the imperialist nature of Versailles but joining with a right-wing coalition to support the Freedom Law sends the wrong message. Best to abstain.</p>
+<p>Liquidation Treaty with Poland</p>
+<p>You oppose the Liquidation Treaty. There is no reason whatsoever to trust the intentions of either the current government or that in Poland.</p>
+<p>Why, in a time of austerity, should Germany pay one billion RM for citizens in another state? Further, any reconciliation between Poland and Germany only allows Germany greater freedom to try to remilitarize for another war. First must come a proletarian revolution then borders can be addressed in a spirit of proletarian solidarity.</p>
+</section>
+<section id="military-affairs-defense-ministry">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Military Affairs (Defense Ministry)</h2>
+<p>The question of the autonomy of the Reichswehr needs resolution. In order to preserve the Republic in its early years, the SPD made a compromise with the Reichswehr that the government would not interfere in the military in exchange for military support. That was a fatal decision that showed the true colors of the SPD. The Reichswehr has shown nothing but contempt for workers. It should be completely reinvented as an institution subordinate to the working class, be purged of its undemocratic officer corps, and be opened to becoming a people’s army.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Naval Bill</h3>
+<p>The proposal for naval expansion to build armored cruisers is an abomination. More money for aristocratic imperialists in the military?</p>
+<p>How absurd—especially at a time of economic disaster when the clear choice should be to spend money on the needs of citizens, not feudal elites seeking to start another war! The hypocrites in the SPD ran just one year ago in 1928 on a platform of “Food for children, not armored cruisers!” Now they talk of compromise? They are again showing how they are class traitors and social fascists—you must expose their duplicity if they support the funding now.</p>
+</section>
+<section id="paramilitaries">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Paramilitaries</h2>
+<p>The paramilitary of the NSDAP, the SA, should be banned. They are nothing more than remnants of the death squads and Freikorps that have put down every workers’ insurrection in Germany. They consist of little more than street thugs who murder workers. At the same time, the recently banned Red Front paramilitary is an essential guardian of the workers against these forces, especially given the hostility of the Reichswehr. Therefore, there should be no generalized ban on paramilitaries, just on those working against workers.</p>
+<p>Importantly, since you see the Republic as illegitimate, defending workers against SA attacks is an essential tactic to fight fascism, to show the broad base of support for your party, to win over working-class members of the passive SPD, to show that the Republic cannot or will not defend workers, and, if necessary, to fight against right-wing coup attempts and to prepare for the revolution. The Red Front must be allowed to operate and the ban lifted.</p>
+</section>
+<section id="eugenics-and-sexuality-justice-ministry">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Eugenics and Sexuality (Justice Ministry)</h2>
+<h3 style="color:#8b1010;margin-top:1.2em;">Sterilization</h3>
+<p>Regarding race hygiene (eugenics), you champion welfare for mothers and children, healthcare, and improved maternity benefits for working women, and your support of motherhood. You support increased availability of birth control options, which should be subsidized and available to all.</p>
+<p>You believe that policies should focus on improving the quality of life of working-class women and their families—and large families born into poverty only increases misery. You draw support from Principles of Communism when it rails against the capitalist use of the wife as a “mere instrument of production.” Women have a right to self-determination. You support the National Association for Birth Control and Sexual Hygiene, founded in 1928. This body sees birth control as a way of showing responsibility for the genetic soundness of the nation and the working class. The goal is healthier, sounder children and women. Lecture titles include “Race Hygiene, Eugenics, and Sterilization” and “The Extermination of Unfit Life.” However, you do not support the idea that sterilization should be mandatory under capitalism—after all, the current state would only use it to discipline and punish the working classes, whom they already deem unfit based on their class alone. Sterilization now is wrong, but perfectly acceptable in a communist state where working people will make decisions.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Mothers’ Day</h3>
+<p>Motherhood as it is currently defined embodies bourgeois exploitation of the proletariat. Motherhood under capitalism is a sham foisted upon proletarian women to force them to bear the full costs of raising the next generation of workers. It only serves to subsidize the profits of the bourgeoisie. This so-called Mothers’ Day is a con job by the florist industry to sell more flowers; it has also been hijacked by right-wing eugenicist to force women into a race-based patriarchal slavery. You oppose Mothers’ Day and support International Women’s Day.</p>
+</section>
+<section id="race-and-culture-interior-ministry">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Race and Culture (Interior Ministry)</h2>
+<h3 style="color:#8b1010;margin-top:1.2em;">Jews (Antisemitism Option)</h3>
+<p>On all matters of civil liberties, there can be no debate. Citizenship does not distinguish between races, religions, or any other characteristics except to restrict the overweening power of the capitalists. Thus, Jews must have full rights.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Censorship</h3>
+<p>Regarding All Quiet on the Western Front, as a communist, you can identify with the culture of front comradeship of Paul and his comrades within your party and paramilitary organization. But you cannot agree with Paul’s passivity. You might echo virtually every critique in the novel, but you rail against Remarque for stripping his protagonist of any political consciousness that involves action. You agree that the old elites betrayed Germany and that the war was a crime. But now the soldiers need to come home and smash that old order that had sent them to the slaughter for the interests of international capital and feudal Junkers. Because Remarque failed to take the next step and make Paul aware that the only solution was a communist revolution, the book and movie only reinforce the pacifist and compromising ideas of liberals and social democrats. Fascists and nationalists call for censorship of art.</p>
+<p>Perhaps this debate should be taken up, but turned on its head. It should be the fascists and social-fascists, with their war-mongering hate speech, who are censored!</p>
+</section>
+<section id="industrial-relations-economic-ministry">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Industrial Relations (Economic Ministry)</h2>
+<h3 style="color:#8b1010;margin-top:1.2em;">Austerity</h3>
+<p>The growing severity of the economic crisis means that austerity at the expense of social spending will only hurt German workers and their families. Instead of austerity, grain tariffs should be ended, the military budget slashed, and taxes raised on the wealthy. Under no circumstances should unemployment benefits be cut—rather, it must be expanded. No austerity—that is nothing but class warfare against workers. The coziness of the SPD leadership with business and agricultural elites is truly disturbing.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Nationalization</h3>
+<p>Nationalization of banks and key industries is necessary to place the economy in the people’s hands. Private property is the root of all economic injustice; nationalization, assuming the nation is in the hands of the people as in the USSR, is an essential step towards ending capitalism and human misery.</p>
+</section>
+<section id="agricultural-affairs-food-ministry">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Agricultural Affairs (Food Ministry)</h2>
+<p>Marxism is quite clear that feudal agrarian society is an outmoded means of production doomed to wither away with the advance of industrial capitalism. Neither the Junker elite nor the poor peasantry will shape tomorrow. They are both reactionary classes tied to the conservative past.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Agrarian Tariffs</h3>
+<p>Protectionist agrarian tariffs do nothing to address the underlying problems (Germany’s agriculture has to modernize). Further, agrarian tariffs mean higher food prices for workers. In the end, only wealthy Junkers benefit and workers’ families suffer. You oppose agrarian tariffs as a relic of the Kaiserreich and its support for the feudal elite.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Small Farmers’ Relief</h3>
+<p>As for land reform (redistribution), that can be used as a class weapon.</p>
+<p>It might bring some of the peasantry to support the KPD and create work for many of Germany’s workers. Why not throw the aristocratic Junkers off their hereditary estates and redistribute it to the working masses of the countryside? The landed exploiters have sucked the life-blood out of the peasantry long enough. You support land reform.</p>
+<p>Debt relief, on the other hand, only prolongs the inevitable decline of the agrarian classes. Agriculture has to modernize, and inefficient farms should be allowed to go under. The future will then be efficient state and collective farms rather than either small peasant holdings or exploitative large estates. You oppose debt relief.</p>
+</section>
+<section id="other-issues">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Other Issues</h2>
+<p>Special Note on Noble Names</p>
+<p>Several characters have the title of “von” or “zu” in their family names and often insist on its usage. You see no need to continue any such recognition of aristocratic privilege!</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Stability Index</h3>
+<p>Desiring, as you do, the demise of the Republic, the lower the Stability Index (-50 or lower) the more victory points you will be awarded.</p>
+<p>Presidential Election in 1932</p>
+<p>You will support yourself.</p>
+<p>Committees of Inquiry</p>
+<p>The parliamentary system is a sham in any event. Of course you should investigate corruption and violence since it is always done by the elite against the workers. Most of the victims have been Marxists, after all.</p>
+<p>The committees should be used as a forum to expose the pernicious influence of the Reichswehr and the national conservatives and their National Socialist allies who murder workers in the streets and bribe their way to power.</p>
+</section>
+<section id="responsibilities">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Responsibilities</h2>
+<p>Coordinate with members of your faction to determine party positions/votes ahead of time.</p>
+<p>Represent the interests of the Soviet Union.</p>
+<p>Denounce capitalism on every issue and link it to militarism and imperialism.</p>
+<p>Denounce the SPD as social fascists on every issue.</p>
+</section>
+<section id="powers">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Powers</h2>
+</section>
+<section id="party-discipline">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Party Discipline</h2>
+<p>The KPD is a highly organized and disciplined party. As a result, at any time you may call for a vote in the party demanding that all members vote as a block on a specific issue. A simple majority is required.</p>
+<p>If a member then votes against the party line in the Reichstag, they may face internal discipline. Such discipline is again determined by a majority vote of the party and may include any or all of the following (in increasing severity):</p>
+<p>Verbal reprimand</p>
+<p>Removal from all party offices (head of the RGO, head of the Red Front, cabinet position)</p>
+<p>Reduced influence in party (up to one third of a member’s member of the Reichstag may be removed and distributed to other members of the KPD as determined by the non-sanctioned members)</p>
+<p>Expulsion from the party</p>
+<p>Any of these options carries some danger to the party, though, in that the sanctioned member may decide to leave the party and possibly take other members with him. Expulsion will inevitably have this effect.</p>
+<p>However, the party can only operate well if loyalty to the core identity of the party is maintained.</p>
+<p>Appeal to Comintern</p>
+<p>If a member of the KPD is deviating from communist orthodoxy, you may appeal to the Comintern for intervention. You write a letter to the Comintern (the GM) explaining your concerns and requesting a course of action. The Comintern may call for any of the actions listed under Party Discipline. Keep in mind, though, that the Comintern may disagree with you and instead forward your letter to the party member you seek to discipline—giving them a chance to attack you. Nonetheless, if the party is obviously deviating from communist policies, this power can serve as the only way to correct deviationism.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Paramilitary (RFB) Leader: see addendum</h3>
+<p>Communist Revolution: see addendum</p>
+</section>
+<section id="victory-goals-summary">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Victory Goals Summary</h2>
+<p>Note: The Victory Points system is part of the full game and is not used in this course’s abridged three-session simulation.</p>
+<p class="role-nb"><em>NB: Faction and personal victory goals may conflict.</em></p>
+</section>
+<section id="factional-victory-goals">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">FACTIONAL VICTORY GOALS</h2>
+<p>Absolute Victory: The Republic is overthrown; KPD establishes a Soviet state.</p>
+<p>Absolute Defeat: SPD or NSDAP is in cabinet or in power in any way; OR KPD ceases to exist.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Stability Index Goal = LOW (-50 or lower)</h3>
+<h3 style="color:#8b1010;margin-top:1.2em;">Presidential Election = Thälmann (or highest-ranking KPD member)</h3>
+<p>Type of Government = a soviet-style workers’ state</p>
+<p>Indeterminates/Splinters = convince to join your faction</p>
+</section>
+<section id="mandatory-agenda-items">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Mandatory Agenda Items</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Freedom Law</strong></td><td><span class="agenda-abstain">ABSTAIN but denounce Versailles as imperialist</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Young Plan</strong></td><td><span class="agenda-abstain">ABSTAIN but denounce Versailles as imperialist</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Naval Bill</strong></td><td><span class="agenda-defeat">DEFEAT (you need only defeat one)</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Austerity</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Agrarian Tariffs</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Antisemitism</strong></td><td><span class="agenda-defeat">DEFEAT support full Jewish rights</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Mothers’ Day DEFEAT but</strong></td><td><span class="agenda-pass">PASS Communist International Women’s Day</span></td></tr>
+</tbody></table>
+</section>
+<section id="personal-victory-goals">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">PERSONAL VICTORY GOALS</h2>
+<p>Absolute Victory: You are head of KPD; KPD refused to cooperate with SPD; at least one member of SPD has joined KPD.</p>
+<p>Absolute Defeat: You are no longer head of KPD; OR KPD cooperates in any way with SPD.</p>
+<h3 style="color:#8b1010;margin-top:1.2em;">Stability Index Goal = LOW (-50 or lower)</h3>
+</section>
+<section id="discretionary-agenda-issues">
+<h2 style="border-left:4px solid #8b1010;padding-left:0.6em;">Discretionary Agenda Issues</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Liquidation Treaty</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Paramilitaries</strong></td><td><span class="agenda-defeat">BAN all right-wing, legalize Red Front</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Sterilization</strong></td><td><span class="agenda-pass">PASS, but only if voluntary</span></td></tr>
+</tbody></table>
+<p>Censorship No censorship</p>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Nationalization</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Small Farmers</strong></td><td><span class="agenda-pass">PASS land reform and debt relief</span></td></tr>
+</tbody></table>
+</section>
+  </div>
+
+  <nav class="role-nav">
+    <div><a href="spd-scheidemann.html">← Philipp Scheidemann</a></div>
+    <a href="index.html">↑ All Roles</a>
+    <div><a href="kpd-zetkin.html">Clara Zetkin →</a></div>
+  </nav>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Democracy in Crisis: Weimar Germany Simulation | HIST 105: Western Civilization</p>
+    <p>Yosemite Community College | <a href="https://profhauselmann.org">Professor Hauselmann</a></p>
+  </div>
+</footer>
+
+<script src="../js/weimar-interactive.js"></script>
+
+</body>
+</html>

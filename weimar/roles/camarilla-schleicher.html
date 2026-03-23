@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kurt von Schleicher — Weimar Germany Simulation</title>
+<link rel="stylesheet" href="../css/weimar-styles.css">
+<style>
+/* Role sheet additions — extend site styles without overriding */
+.role-header {
+  background: #6a5a2a;
+  color: #fff;
+  padding: 2em 0;
+  border-bottom: 4px solid var(--weimar-gold, #C9A84C);
+}
+.role-header .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1em;
+  align-items: start;
+}
+.role-header h1 {
+  color: #fff;
+  border: none;
+  margin: 0 0 0.25em;
+  font-size: 2.4em;
+}
+.role-header .role-party {
+  font-size: 1.05em;
+  opacity: 0.85;
+  margin: 0 0 0.15em;
+}
+.role-header .role-title {
+  font-size: 0.95em;
+  opacity: 0.75;
+  font-style: italic;
+  margin: 0;
+}
+.role-meta {
+  text-align: right;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+.role-meta .abbrev {
+  font-size: 1.6em;
+  font-weight: bold;
+  opacity: 1;
+  display: block;
+}
+.role-toc {
+  background: #f0ebd8;
+  border-left: 5px solid #6a5a2a;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 4px 4px 0;
+}
+.role-toc h3 {
+  margin: 0 0 0.5em;
+  color: #6a5a2a;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+.role-toc li {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.role-toc a {
+  color: #6a5a2a;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.role-toc a:hover { text-decoration: underline; }
+.role-toc a::before { content: "▸ "; }
+.role-content section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.role-content section:last-child { border-bottom: none; }
+.role-content h2 {
+  font-size: 1.2em;
+  margin: 1.5em 0 0.5em;
+}
+.role-content h3 {
+  font-size: 1.05em;
+  margin: 1.2em 0 0.4em;
+}
+.role-content p { line-height: 1.75; margin-bottom: 0.8em; }
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.agenda-table th {
+  background: #6a5a2a;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+}
+.agenda-table td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.agenda-table tr:nth-child(even) td { background: #f9f9f9; }
+.agenda-pass {
+  display: inline-block;
+  background: #e2efda;
+  color: #2d6a2d;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-defeat {
+  display: inline-block;
+  background: #ffe0e0;
+  color: #b82020;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-abstain {
+  display: inline-block;
+  background: #fff3cd;
+  color: #8a6a00;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.role-nb {
+  font-size: 0.9em;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.4em 0.75em;
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+}
+.role-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 0;
+  border-top: 2px solid #6a5a2a;
+  margin-top: 2em;
+  font-size: 0.95em;
+}
+.role-nav a {
+  color: #6a5a2a;
+  text-decoration: none;
+  font-weight: 600;
+}
+.role-nav a:hover { text-decoration: underline; }
+.assignment-note {
+  background: #fff8dc;
+  border: 2px dashed #C9A84C;
+  padding: 1em 1.25em;
+  margin: 1.5em 0;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .role-header .container { grid-template-columns: 1fr; }
+  .role-meta { text-align: left; }
+  .role-toc ul { columns: 1; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <h1>Democracy in Crisis</h1>
+    <p class="subtitle">Weimar Germany Simulation — Role Sheet</p>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../background/narrative.html">Historical Background</a></li>
+    <li><a href="../core-texts/index.html">Core Texts</a></li>
+    <li><a href="../game/rules.html">Game Rules</a></li>
+    <li><a href="index.html" class="active">Role Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="role-header">
+  <div class="container">
+    <div>
+      <h1>Kurt von Schleicher</h1>
+      <p class="role-party">Presidential Inner Circle &nbsp;·&nbsp; #2</p>
+      <p class="role-title">Defense Minister</p>
+    </div>
+    <div class="role-meta">
+      <span class="abbrev">Camarilla</span>
+      <span>No Reichstag mandates</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="assignment-note">
+    <strong>Course Assignment:</strong> In place of the position papers and election poster in the original game, this course uses a research paper assignment. See your <a href="../game/assignments.html">Research Paper Packet</a> for instructions, topics, and due dates.
+  </div>
+
+  <nav class="role-toc">
+    <h3>Contents</h3>
+    <ul><li><a href="#biography">Biography</a></li><li><a href="#foreign-relations-foreign-ministry">Foreign Relations (Foreign Ministry)</a></li><li><a href="#military-affairs-defense-ministry">Military Affairs (Defense Ministry)</a></li><li><a href="#paramilitaries">Paramilitaries</a></li><li><a href="#eugenics-and-sexuality-justice-ministry">Eugenics and Sexuality (Justice Ministry)</a></li><li><a href="#race-and-culture-interior-ministry">Race and Culture (Interior Ministry)</a></li><li><a href="#industrial-relations-economic-ministry">Industrial Relations (Economic Ministry)</a></li><li><a href="#agricultural-affairs-food-ministry">Agricultural Affairs (Food Ministry)</a></li><li><a href="#other-issues">Other Issues</a></li><li><a href="#responsibilities">Responsibilities</a></li><li><a href="#powers">Powers</a></li><li><a href="#victory-goals-summary">Victory Goals Summary</a></li><li><a href="#factional-victory-goals">FACTIONAL VICTORY GOALS</a></li><li><a href="#mandatory-agenda-items">Mandatory Agenda Items</a></li><li><a href="#personal-victory-goals">PERSONAL VICTORY GOALS</a></li><li><a href="#discretionary-agenda-issues">Discretionary Agenda Issues</a></li></ul>
+  </nav>
+
+  <div class="role-content">
+    <section id="biography"><h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Biography</h2>
+<p>You were born in Brandenburg an der Havel, the son of a Prussian officer and a ship owner’s daughter. You entered the German army in 1900 as a lieutenant after graduating from a cadet training school. Since your earliest years in the military, you have cultivated strategic friendships—including Franz von Papen, Oskar von Hindenburg (Paul von Hindenburg’s son), and Wilhelm Groener, who became your patron.</p>
+<p>Your political breakthrough came after the November Revolution of 1918, when demands to create a new army loyal to democracy threatened the Reichswehr. But Germany was descending into civil war. At a critical juncture in December 1918, the provisional government under Friedrich Ebert (SPD) came under attack from the radical left-wing People’s Marine Division. All telephone lines from the chancellor′s office to the war ministry were cut except for a secret one. When Ebert used the secret line, you took the call. You delivered an ultimatum on behalf of von Hindenburg demanding that either the provisional government allow the army to crush the Leftists or the army would act on its own. You then played a key role in negotiating the Ebert–Groener Pact: in exchange for helping the government, Ebert assented to maintain Reichswehr autonomy with no effective civilian control.</p>
+<p>When Gustav Noske (SPD) was appointed Reichswehr minister on 27 December 1918, you and your commander, Groener, established surprisingly excellent working relations. To deal with the lack of loyal troops, you helped to found the Freikorps in early 1919. That same month, the Freikorps were used to crush the Spartacus League in Berlin. The government, for its part, ended all efforts to democratize the military.</p>
+<p>Yet the military does not accept the Republic as legitimate. Under the leadership of general Hans von Seeckt, it has become a state within the state, operating largely outside of the control of politicians. Your role has been to serve as the Reichswehr’s political fixer to secure the military’s interests regardless of what the politicians or the public want. Your success meant the patronage of von Seeckt, who gave you sensitive assignments and ensured your steady promotions until you became the primary liaison between the army and government.</p>
+<p>You generally prefer to operate behind the scenes, planting stories in friendly newspapers and relying on a casual network of informers. For example, in 1921 von Seeckt created a secret group known as Sondergruppe R (Task Force R—the “R” stood for Russia) tasked with working with the Soviet Red Army against the international Versailles system. In September 1921, at a secret meeting in your apartment, you reached the details of an arrangement in which German financial and technological aid to the Soviet arms industry were exchanged for Soviet support in helping Germany circumvent the disarmament clauses of Versailles, using dummy corporations to funnel money to the Soviet arms industry for the production of aircraft, tanks, artillery shells, and poison gas. The arms contracts ensured that German military technology did not fall behind despite Versailles. Unfortunately, left-leaning journalists have begun reporting on these activities, creating the on-going scandal of the Abteilung M Affair, which you want to cover up since you are deeply implicated.</p>
+<p>At the same time, again using Sondergruppe R, you formed a liaison with leaders of the so-called Work Commandos. These were officially civilian labor battalions, but in reality they were thinly disguised soldiers to exceed the limits on troop strength. This so-called Black Reichswehr became infamous for murdering Germans suspected of working as informers for the Allied Control Commission, responsible for ensuring compliance with Versailles. You justified the killings via Femegerichte (extra-legal secret courts), in which alleged traitors were killed after being convicted in secret trials that the victim was unaware of.</p>
+<p>Several times you perjured yourself in court when you denied that the Reichswehr had anything to do with the Black Reichswehr. In a secret letter sent to the president of the German Supreme Court, von Seeckt, however, admitted that the Reichswehr controlled the Black Reichswehr and claimed that the murders were justified by the struggle against Versailles. Nonetheless, after members of the Black Reichswehr staged the failed Küstrin Putsch without Reichswehr consent in 1923 in the, it was disbanded. But you maintain connections to its former members.</p>
+<p>During the hyperinflation of 1923, the Reichswehr took over much of the administration of the country, a task in which you played a prominent role. This role in running the state has left you with a taste for power—at any price. Despite von Seeckt′s patronage, you self-servingly brought about his downfall in 1926 by leaking that he had invited the former crown prince to attend military maneuvers—a move designed to outrage the government. Since von Seeckt′s fall, you have become the de facto military-political head of the Reichswehr. Your triumph is also the triumph of the modernizing faction within the Reichswehr who favor a total war ideology and want Germany to become a dictatorship that can wage such as war.</p>
+<p>You also recently moved against your rival, general Werner von Blomberg.</p>
+<p>You leaked to the press that he had attended an armed maneuver by volunteers in Westphalia in violation of Versailles. When Blomberg was called to Berlin to explain himself, he expected you to stick to the Reichswehr policy of denying everything. You instead attacked him. As a result, Blomberg was demoted and sent to command a division in East Prussia. You won the battle, but you have made powerful enemies among some influential officers.</p>
+<p>Regardless, you are now the defense minister, and you brief President von Hindenburg on both political and military matters. You are one step away from full power.</p>
+<p>Special Note on Your Family Name</p>
+<p>While your lineage might not be as long as other ennobled officers, you are nonetheless the son of a noble family and must insist that you be addressed by your proper name with the hereditary noble title of “von” Schleicher.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">OBJECTIVES</h3>
+<p>The Constitution and the Republic</p>
+<p>Every other matter is subordinated to fixing the constitutional arrangement in Germany in order to return Germany to its pre-war position as Europe’s leading military power. This approach gives you great flexibility on all social, cultural, and economic matters.</p>
+<p>You must convince von Hindenburg to pursue a more aggressively right-wing course. Ideally, you want von Hindenburg to form an exclusively DNVP government; if not that, then von Hindenburg should “appoint a government in which he has confidence, without consulting the parties or paying attention to their wishes” and with “the order for dissolution ready to hand, give the government every constitutional opportunity to a majority in parliament.” Such a government could consist of a Reichsblock (the so-called Hindenburg Front) of all traditional conservative parties (DNVP, DVP, BVP, X). The Marxists and NSDAP must be kept out.</p>
+<p>This is the origin of the presidential government that you have developed based on the so-called 25/48/53 formula. Under a presidential government, the head of government (the chancellor), is responsible to the head of state (president), and not to the legislative body (the Reichstag). The 25/48/53 formula refers to the three articles of the constitution that could make a presidential government possible:</p>
+<p>Article 25 allows the Reich president to dissolve the Reichstag.</p>
+<p>Article 48 allows the Reich president to sign into law emergency bills without the consent of the Reichstag. However, the Reichstag could cancel any law passed by Article 48 by a simple majority within sixty days of its passage.</p>
+<p>Article 53 allows the Reich president to appoint the chancellor.</p>
+<p>Your idea is to have von Hindenburg use his powers under Article 53 to appoint a man of your choosing as chancellor, who would rule under the provisions of Article 48. Should the Reichstag threaten to annul any laws so passed, von Hindenburg could counter with the threat of dissolution. Von Hindenburg seems unenthusiastic about these plans, but you can pressure him into going along with them by stressing that the idea of a presidential government is within the letter of the constitution. You do not need to mention that it violates its spirit since the constitution explicitly states that the chancellor and his government are responsible to the Reichstag.</p>
+<p>Thus, your goal is to undermine the Grand Coalition with the support of von Hindenburg. You should maneuver to bring about a fight among the coalition members—especially easy between the SPD and the DVP. Then, you can find a candidate, perhaps in the Centre Party, whom you can inform that the current government has lost the trust of both the Reichswehr and the Reich president. Your informants tell you that there are many conservative members of the Centre Party open to such a policy. The point, of course, is to ensure that no Marxist (SPD or KPD) serve in any capacity. How do you convince von Hindenburg? Perhaps the matter of the Young Plan, which you know he opposes?</p>
+<p>You must be careful, though, to avoid provoking an insurrection. It is unclear if the Reichswehr is capable of putting down a revolution, even though loyal. The goal of a transition from parliamentary government to an authoritarian presidential regime must be carefully planned. The current crisis serves your interests since it pressures von Hindenburg to think of more dramatic options. Cultivating instability in the short run is a tactic for you to provide stability in the long run.</p>
+<p>Like the rest of the Reichswehr leadership, you see democracy as an impediment to military power, and are convinced that only a dictatorship could make Germany a great military power again. Though you sometimes claim to be a monarchist, in reality you care nothing for the House of Hohenzollern, and have often stated, “Republic or monarchy is not the question now, but rather what should the Republic look like.” You are willing to accept a republic, but are deeply hostile toward the democratic republic as it now exists, and much prefer a regime dominated by the military.</p>
+<p>It is your dream to create a totalitarian Wehrstaat (military state), in which the military reorganizes German society as part of preparations for the total war you dream of.</p>
+<p>Whatever else you do, you cannot lose the confidence of von Hindenburg.</p>
+<p>It is only through his patronage that you continue to have all of your political options open.</p>
+</section>
+<section id="foreign-relations-foreign-ministry">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Foreign Relations (Foreign Ministry)</h2>
+<p>Freedom Law and Young Plan</p>
+<p>Like all conservatives, you loathe the Treaty of Versailles and plan to find a way to dismantle it and eventually get revenge on France.</p>
+<p>However, because of your policy of Grenzschutz, you believe it is tactically essential to abide by all terms of the Versailles until Germany is militarily prepared to defend itself. Therefore, while the Freedom Law is full of good intentions, one cannot condone the violation of the treaty demanded in the Freedom Law. Best to say nothing.</p>
+<p>The Young Plan is a national humiliation, just like its predecessor the Dawes Plan. It is based on accepting Versailles. Any party that supports it denies German self-determination and is not patriotic. Every effort must be made to undermine the treaty—but not at the cost of war with the West (at least not yet).</p>
+<p>Liquidation Treaty with Poland</p>
+<p>You support the Liquidation Treaty since it protects the Germans living in Poland. Is this a final settlement? Absolutely not—but it gives the Germans in Poland the necessary breathing space until Germany is strong enough to resolve the eastern border question fully to its satisfaction without Anglo-French intervention.</p>
+</section>
+<section id="military-affairs-defense-ministry">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Military Affairs (Defense Ministry)</h2>
+<p>Defending the Reichswehr is your most important goal. You would rather resign from the cabinet than see any assault upon the Reichswehr.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Naval Bill</h3>
+<p>The military budget may not be cut but must increase; in particular, the Reichstag must vote annually to fully fund naval expansion and the armored cruisers. This is non-negotiable.</p>
+<p>No action may be taken that dishonors the military. For example, if any military officer were threatened with a legal sanction, you would immediately use your powers to grant a full presidential pardon. It does not matter if the officer were guilty or not; the point is to preserve German military honor at all costs. Similarly, no legislative action will be tolerated that attempts to limit the autonomy of the military or alter its aristocratic nature.</p>
+<p>Relatedly, the paramilitaries present a problem. Clearly, the ban on the KPD’s Red Front is justified. But the number of Germany’s experienced military reserves is decreasing owing to Part V of Versailles, which forbids conscription. An entire generation is coming of age without going through military training. You worry that unless Germany brings back conscription soon, the military basis of German power will be destroyed forever. For this reason, you and the Reichswehr are determined that Germany must put an end to Versailles in the near future.</p>
+</section>
+<section id="paramilitaries">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Paramilitaries</h2>
+<p>You see the SA and other right-wing paramilitary groups as the best substitute for conscription. With that goal in mind, you should approach the leaders of the SA and Stahlhelm in secret. You can offer them much—for example, the promise to mobilize them under Reichswehr command in the event of a communist insurrection or war with Poland, or to allow NSDAP members to serve in the military (despite the formal ban on soldiers joining any political party). No need to let the rest of the NSDAP leaders know, of course, since you hope to use the NSDAP and take advantage of the rivalries within the party. You know through your informants, for example, that Gregor Strasser is open to challenging Hitler for leadership. However, the SA must repudiate its demands that the SA replace the Reichswehr as a non-professional people’s army.</p>
+</section>
+<section id="eugenics-and-sexuality-justice-ministry">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Eugenics and Sexuality (Justice Ministry)</h2>
+<p>Although essentially a Protestant authoritarian conservative in your views on morality, you also believe that the army has a distinct moral function—unifying the diverse elements in society regardless of broader moral trends. Thus, you have a greater flexibility on moral matters than most other conservatives.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Sterilization</h3>
+<p>The declining birthrate is indeed worrisome, but for reasons of national security. The precipitous decline in national fertility and the soaring rates of men unfit for military service undermines Germany’s military capabilities. In 1924 the Task Force for the Recovery of the Volk was established as a specifically pronatalist coalition to promote national health. With them, you support rewards for large families with financial incentives such as tax reductions and rental subsidies. The large family is a healthy family, and healthy families are the foundation of the Volk. Pronatalism is thus a synthesis of nationalism, Christian morality, and an emphasis on traditional marriage. But, most importantly, it provides healthy recruits for the army. Sterilization, too, is a useful tool to ensure the health of future generations and lower social costs.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Mothers’ Day</h3>
+<p>Yes, you are conservative and harbor traditional cultural values—who would not support a national Mothers’ Day? But these matters cannot be allowed to distract you from the greater task of preparing Germany for the next war. These morality issues should be put aside for now; if they are forced to come to public debates, you see no need to take a principled stand. You may use them as bargaining chips or simply ignore these silly debates.</p>
+</section>
+<section id="race-and-culture-interior-ministry">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Race and Culture (Interior Ministry)</h2>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Jews (Antisemitism Option) (Antisemitism Option)</h3>
+<p>You agree with the DNVP and individuals such as Ludendorff about Germany being a land for full-blooded Germans. Yet, on the Jewish Question, you have no strong feelings due to tactical issues. Like von Hindenburg, you realize that Jews are not to be trusted; at the same time, many served loyally in the war. It is simply not worth pushing either way except opportunistically. Germany must await until it can defend itself before purging un-German elements.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Censorship</h3>
+<p>Naturally, censorship is a powerful tool. If necessary to promote other goals, it may be considered as a tactical weapon. If you were to achieve power, though, you would not hesitate to censor where necessary. What passes for literature and culture these days is little more than trash and pornography; some degree of censorship is necessary to protect public morality. Further, opponents of Christianity, German nationalism, and the military hide behind freedom of expression to libel these values; you adamantly oppose this erosion of German virtues and strongly support censorship.</p>
+<p>Regarding All Quiet on the Western Front, as a conservative nationalist, you can see Paul and his friends as the epitome of the German soldier’s loyalty despite all suffering and odds. With such soldiers and the might of the German industrial complex, it is inconceivable that Germany could have been defeated. As a result, the only conclusion is that Germany was stabbed in the back on the home front; the soldiers had not failed—they were betrayed. But not by the kaiser or the officers or the old elites.</p>
+<p>Instead, it was the social democrats who staged strikes, the Jews who had always wanted to destroy Germany, members of the Centre Party who had resisted integration into Germany, and of course liberal pacifists.</p>
+<p>You can see vindication in the heroic and special nature of German cultural values embodied in Remarque’s soldiers. The conclusion, though, should have been for the soldiers to return to Germany to destroy the traitors—the November criminals—and restore German unity on the basis of nationalism. Remarque has made heroes into broken victims, insulted the glory and even necessity of martial struggle, and emasculated a generation. His interpretation of the events is the same as that of the November criminals. His work must be censored as detrimental to German military values.</p>
+</section>
+<section id="industrial-relations-economic-ministry">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Industrial Relations (Economic Ministry)</h2>
+<p>In economic policy you are a relative moderate. Germany’s military strength requires social stability. Social stability requires some degree of balancing the economic needs of Germany’s classes. Therefore, you are willing to break with the narrow mindedness of Prussian aristocrats who cannot see beyond the interests of large agrarian estates.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Austerity</h3>
+<p>To draw support from trade unions, even including workers loyal to the Marxists and NSDAP, you are flexible on austerity and open to increasing social spending—never at the expense of the military budget, of course, but perhaps through increased taxes.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Nationalization</h3>
+<p>Since the goal is to coordinate the economy to serve the military needs of the state, in certain circumstances nationalization of banks may be an option to ensure production.</p>
+</section>
+<section id="agricultural-affairs-food-ministry">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Agricultural Affairs (Food Ministry)</h2>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Agrarian Tariffs</h3>
+<p>Agrarian tariffs are a central demand of large farmers. However, they are an impediment to drawing support from the urban working classes and do nothing for small farmers. These tariffs are widely hated by workers due to increased food costs, and resented by small farmers as benefiting only the Junkers. You must find a way to support tariffs but also support workers. You are opposed to policies for the bankrupt East Elbian estates of Junkers since they only alienate the masses of workers and small farmers. This is risky, given the support by von Hindenburg and other Junkers.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Small Farmers’ Relief</h3>
+<p>You want to strengthen the agrarian parties, ideally in a united Green Front, as a bastion of conservatism and to bring them into a broad national conservative alliance that can wield a majority without Hugenberg. To that end, you want to rally the masses of small farmers especially in the CNBP (Schiele) but also found in the Centre Party (Hermes), NSDAP (Willikens) and BVP. You can do this by supporting their agenda.</p>
+<p>Similar to austerity, land reform (redistribution) and debt relief can be considered to ease the small farmers’ plight. Indeed, land reform may be necessary in order to vitalize the failing agricultural sector as well as provide some relief to the rural poor at no cost to the state.</p>
+<p>In effect, you support the state buying up bankrupt Junker estates and selling them at discounted prices to poor farmers. And if state subsidies are necessary to forgive farmers’ debts and end foreclosures, that is possible, too.</p>
+</section>
+<section id="other-issues">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Other Issues</h2>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Stability Index</h3>
+<p>Desiring, as you do, the demise of the Republic, the lower the Stability Index (-50 or lower) the more victory points you will be awarded.</p>
+<p>Presidential Election in 1932</p>
+<p>You will support the candidate most likely to further your agenda. At the moment, that is Reich President von Hindenburg, without whose support your own power is in jeopardy, but you are flexible.</p>
+<p>Committees of Inquiry</p>
+<p>These are generally unnecessary meddling by the Reichstag. The investigations of corruption are simply excuses by the Left to undermine traditional elites. Further, the targets of assassinations have generally been November criminals and Marxists—you have little sympathy with them. Indeed, with your connections, you are the only one capable of ordering such an assassination. The parliamentary system should not be allowed to undermine these extra-judicial executions of traitors. You should actively work against any such committee. Firstly, you can oppose it within the cabinet by voting and lobbying against its convocation.</p>
+<p>Secondly, should a committee nonetheless convene, you should pressure the justice minister to return a report that indicates insufficient evidence to prosecute or name names. Thirdly, if the justice minister will not comply in their report to the cabinet, you should make the same demands on the cabinet. After all, exposure would deeply implicate you, potentially eliminating your political career. This is a matter of political life and death for you.</p>
+</section>
+<section id="responsibilities">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Responsibilities</h2>
+<p>Represent the interests of the Reichswehr.</p>
+<p>Serve as defense minister and make any required presentations as minster.</p>
+<p>Use your special powers to ensure that your agenda is achieved.</p>
+</section>
+<section id="powers">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Powers</h2>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Abwehr (Military Intelligence): see addendum</h3>
+<p>Assassination: see addendum</p>
+<p>Military Contract: see addendum</p>
+<p>Maintain Law and Order</p>
+<p>The defense minister may, regardless of or in accord with the wishes of the cabinet or Reichstag, mobilize local troops to put down street fighting. Conversely, the cabinet and Reichstag cannot force the minister to do so (though von Hindenburg could). This action must have the approval of the Reich president.</p>
+<p>Control of Access to von Hindenburg</p>
+<p>You have unrestricted access and in fact act as a gate keeper to President von Hindenburg, who rarely speaks to any member of the Reichstag without your approval and presence. You may limit these conversations as you choose, requiring, with the one exception of von Oldenburg (DNVP), that you be present.</p>
+<p>However, you serve in your office at the suffrage of the president. You can be fired and replaced at any time. If you are replaced by Hindenburg, you are no longer part of the camarilla and may join whatever party you desire. You switch all of your FACTIONAL VICTORY GOALS (though not your PERSONAL VICTORY GOALS) to your new party.</p>
+<p>Coup d’état: see addendum</p>
+</section>
+<section id="victory-goals-summary">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Victory Goals Summary</h2>
+<p>Note: The Victory Points system is part of the full game and is not used in this course’s abridged three-session simulation.</p>
+<p class="role-nb"><em>NB: Faction and personal victory goals may conflict.</em></p>
+</section>
+<section id="factional-victory-goals">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">FACTIONAL VICTORY GOALS</h2>
+<p>Absolute Victory: Hindenburg is president and KPD, SPD, NSDAP are not in cabinet; all naval bills passed; Reichswehr autonomy preserved; Germany has left rejected Versailles (Freedom Law passed; Young Plan defeated, Liquidation Treaty defeated; OR, left League of Nations).</p>
+<p>Absolute Defeat: Hindenburg is not president and KPD is in cabinet; OR prestige and funding of military undermined.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Stability Index Goal = NEUTRAL (-50 to +50)</h3>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Presidential Election = von Hindenburg</h3>
+<p>Type of Government = a ruling Reichsblock, aka Hindenburg Front (must include X, BVP, DVP, DNVP; must exclude SPD, KPD, and NSDAP)</p>
+<p>Indeterminates/Splinters = convince to join your faction</p>
+</section>
+<section id="mandatory-agenda-items">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Mandatory Agenda Items</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Freedom Law</strong></td><td><span class="agenda-pass">PASS without using Article 48</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Young Plan</strong></td><td><span class="agenda-defeat">DEFEAT without using Article 48</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Naval Bill</strong></td><td><span class="agenda-pass">PASS even with Article 48 (you must pass all three)</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Austerity</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Agrarian Tariffs</strong></td><td><span class="agenda-pass">PASS even with Article 48</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Antisemitism</strong></td><td><span class="agenda-defeat">DEFEAT but denounce Jews</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Mothers’ Day</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+</section>
+<section id="personal-victory-goals">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">PERSONAL VICTORY GOALS</h2>
+<p>Absolute Victory: Wehrstaat (military dictatorship) established with you in charge.</p>
+<p>Absolute Defeat: You lose control of Reichswehr; OR Reichswehr loses autonomy; OR Naval Bill defeated; OR KPD is in cabinet or in power in any way.</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Stability Index Goal = LOW (-50 OR LOWER)</h3>
+</section>
+<section id="discretionary-agenda-issues">
+<h2 style="border-left:4px solid #6a5a2a;padding-left:0.6em;">Discretionary Agenda Issues</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Liquidation Treaty</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<p>Paramilitaries SA not integrated into Reichswehr; Red Front banned</p>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Sterilization STATUS QUO</h3>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Censorship</strong></td><td><span class="agenda-defeat">BAN All Quiet</span></td></tr>
+</tbody></table>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Nationalization NEGOTIABLE</h3>
+<h3 style="color:#6a5a2a;margin-top:1.2em;">Small Farmers NEGOTIABLE</h3>
+</section>
+  </div>
+
+  <nav class="role-nav">
+    <div><a href="camarilla-hindenburg.html">← Paul von Hindenburg</a></div>
+    <a href="index.html">↑ All Roles</a>
+    <div><a href="camarilla-meissner.html">Otto Meissner →</a></div>
+  </nav>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Democracy in Crisis: Weimar Germany Simulation | HIST 105: Western Civilization</p>
+    <p>Yosemite Community College | <a href="https://profhauselmann.org">Professor Hauselmann</a></p>
+  </div>
+</footer>
+
+<script src="../js/weimar-interactive.js"></script>
+
+</body>
+</html>

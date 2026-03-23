@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gregor Strasser — Weimar Germany Simulation</title>
+<link rel="stylesheet" href="../css/weimar-styles.css">
+<style>
+/* Role sheet additions — extend site styles without overriding */
+.role-header {
+  background: #7a1010;
+  color: #fff;
+  padding: 2em 0;
+  border-bottom: 4px solid var(--weimar-gold, #C9A84C);
+}
+.role-header .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1em;
+  align-items: start;
+}
+.role-header h1 {
+  color: #fff;
+  border: none;
+  margin: 0 0 0.25em;
+  font-size: 2.4em;
+}
+.role-header .role-party {
+  font-size: 1.05em;
+  opacity: 0.85;
+  margin: 0 0 0.15em;
+}
+.role-header .role-title {
+  font-size: 0.95em;
+  opacity: 0.75;
+  font-style: italic;
+  margin: 0;
+}
+.role-meta {
+  text-align: right;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+.role-meta .abbrev {
+  font-size: 1.6em;
+  font-weight: bold;
+  opacity: 1;
+  display: block;
+}
+.role-toc {
+  background: #f2dada;
+  border-left: 5px solid #7a1010;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 4px 4px 0;
+}
+.role-toc h3 {
+  margin: 0 0 0.5em;
+  color: #7a1010;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+.role-toc li {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.role-toc a {
+  color: #7a1010;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.role-toc a:hover { text-decoration: underline; }
+.role-toc a::before { content: "▸ "; }
+.role-content section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.role-content section:last-child { border-bottom: none; }
+.role-content h2 {
+  font-size: 1.2em;
+  margin: 1.5em 0 0.5em;
+}
+.role-content h3 {
+  font-size: 1.05em;
+  margin: 1.2em 0 0.4em;
+}
+.role-content p { line-height: 1.75; margin-bottom: 0.8em; }
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.agenda-table th {
+  background: #7a1010;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+}
+.agenda-table td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.agenda-table tr:nth-child(even) td { background: #f9f9f9; }
+.agenda-pass {
+  display: inline-block;
+  background: #e2efda;
+  color: #2d6a2d;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-defeat {
+  display: inline-block;
+  background: #ffe0e0;
+  color: #b82020;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-abstain {
+  display: inline-block;
+  background: #fff3cd;
+  color: #8a6a00;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.role-nb {
+  font-size: 0.9em;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.4em 0.75em;
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+}
+.role-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 0;
+  border-top: 2px solid #7a1010;
+  margin-top: 2em;
+  font-size: 0.95em;
+}
+.role-nav a {
+  color: #7a1010;
+  text-decoration: none;
+  font-weight: 600;
+}
+.role-nav a:hover { text-decoration: underline; }
+.assignment-note {
+  background: #fff8dc;
+  border: 2px dashed #C9A84C;
+  padding: 1em 1.25em;
+  margin: 1.5em 0;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .role-header .container { grid-template-columns: 1fr; }
+  .role-meta { text-align: left; }
+  .role-toc ul { columns: 1; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <h1>Democracy in Crisis</h1>
+    <p class="subtitle">Weimar Germany Simulation — Role Sheet</p>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../background/narrative.html">Historical Background</a></li>
+    <li><a href="../core-texts/index.html">Core Texts</a></li>
+    <li><a href="../game/rules.html">Game Rules</a></li>
+    <li><a href="index.html" class="active">Role Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="role-header">
+  <div class="container">
+    <div>
+      <h1>Gregor Strasser</h1>
+      <p class="role-party">National Socialist German Workers&#x27; Party &nbsp;·&nbsp; #2</p>
+      <p class="role-title">Member of the Reichstag · Paramilitary Leader (SA)</p>
+    </div>
+    <div class="role-meta">
+      <span class="abbrev">NSDAP</span>
+      <span>12 Reichstag mandates</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="assignment-note">
+    <strong>Course Assignment:</strong> In place of the position papers and election poster in the original game, this course uses a research paper assignment. See your <a href="../game/assignments.html">Research Paper Packet</a> for instructions, topics, and due dates.
+  </div>
+
+  <nav class="role-toc">
+    <h3>Contents</h3>
+    <ul><li><a href="#biography">Biography</a></li><li><a href="#objectives">Objectives</a></li><li><a href="#foreign-relations-foreign-ministry">Foreign Relations (Foreign Ministry)</a></li><li><a href="#military-affairs-defense-ministry">Military Affairs (Defense Ministry)</a></li><li><a href="#paramilitaries">Paramilitaries</a></li><li><a href="#eugenics-and-sexuality-justice-ministry">Eugenics and Sexuality (Justice Ministry)</a></li><li><a href="#race-and-culture-interior-ministry">Race and Culture (Interior Ministry)</a></li><li><a href="#industrial-relations-economic-ministry">Industrial Relations (Economic Ministry)</a></li><li><a href="#agricultural-affairs-food-ministry">Agricultural Affairs (Food Ministry)</a></li><li><a href="#other-issues">Other Issues</a></li><li><a href="#responsibilities">Responsibilities</a></li><li><a href="#powers">Powers</a></li><li><a href="#victory-goals-summary">Victory Goals Summary</a></li><li><a href="#factional-victory-goals">FACTIONAL VICTORY GOALS</a></li><li><a href="#mandatory-agenda-items">Mandatory Agenda Items</a></li><li><a href="#personal-victory-goals">PERSONAL VICTORY GOALS</a></li><li><a href="#discretionary-agenda-issues">Discretionary Agenda Issues</a></li></ul>
+  </nav>
+
+  <div class="role-content">
+    <section id="biography"><h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Biography</h2>
+<p>You were born in 1892 into the family of a Catholic judicial officer in the Upper Bavarian market town of Geisenfeld. You attended the local Gymnasium (an elite preparatory high school) and after your final examinations apprenticed as a pharmacist in the Lower Bavarian village of Frontenhausen from 1910 to 1914.</p>
+<p>In 1914, while studying pharmacy at Ludwig Maximillian University in Munich, you volunteered for the army. You rose to first lieutenant and earned the Iron Cross First and Second Class. In 1918 you resumed your studies at Friedrich-Alexander University in Erlangen-Nuremberg, passing your state examination in 1919, and in 1920 starting work as a pharmacist in Landshut.</p>
+<p>Of course, you could not simply ignore the dramatic events unfolding. So in 1919 you and your younger brother Otto joined a Freikorps led by Franz Ritter von Epp (now in the NSDAP). You established and commanded the Storm Battalion Lower Bavaria, with young Heinrich Himmler (now in the NSDAP) as your adjutant. In March 1920 your Freikorps participated in the failed Kapp Putsch. You brother, however, had turned to the left and commanded the Rote Hundertschaft, a socialist paramilitary group, to combat the putsch. Yet you both see eye to eye on most matters—you believe that a spirit of national harmony must prevail and that the state should promote social justice. You had just, for the moment, drawn different conclusions about how best to pursue these goals.</p>
+<p>In 1921 your group joined forces with Adolph Hitler’s NSDAP, where you were appointed head of the SA in Lower Bavaria. In November 1923 you took an active part in the Munich Putsch. You were tried for high treason and in April 1924 sentenced to one and a half years of confinement in a fortress (an honorable form of detention) at Landsberg Prison. Though the NSDAP was banned, after a few weeks you were released when elected to the Bavarian Diet for far-right Völkischer Block. In December 1924, you won a Reichstag seat for the German-Völkisch Freedom Party. You remain a member of the Reichstag to this day.</p>
+<p>After the re-foundation of the NSDAP by Hitler in 1925, you became one of the first Gauleiter (party district heads) and national leader for propaganda 1926-28. In January 1928 you became leader of the NSDAP’s national organization and reorganized the party’s hierarchy along strictly centralist lines. Your changes have helped the party to make a shift from a marginal South German splinter party to a nationwide mass party. Together with your brother, who has since joined the NSDAP, you founded the Berlin Kampf-Verlag (Combat Publishing) in 1926, which publishes the programmatic weekly journal Der Nationale Sozialist [National Socialist].</p>
+<p>You and your brother rule the Berlin party organization unchallenged and have developed an independent ideological profile from the south German party wing around Hitler. You advocate an anti-capitalist social revolutionary course that is also strongly antisemitic and anti-Communist. To solidify the party left, in 1925 you founded the Working Group Northwest to enforce your sociopolitical and economic ideas. But in 1926 Hitler asserted himself against your so-called National Bolshevist faction. He disbanded the Working Group and imposed absolute leadership within the party. Your programmatic and personal rivalry with him has only worsened with time.</p>
+<p>Nonetheless, as an NSDAP leader you have one overriding goal: to seize state power and correct the course of German history, which has strayed so disastrously away from its ordained glory as the light of civilization. But you are ambitious and creative—not a sycophant to Hitler. You have been in the party since its earliest years, and you have built a separate power base. Of course you support your comrade and leader, Hitler, but the movement and your personal power are more important. This qualified loyalty and your base in Berlin allow you to see the struggle from perspectives Hitler and his loyalists do not appreciate.</p>
+<p>For example, many of your views revolve around a criticism of capitalism. The party must break the shackles of finance capital. Of course there is a form of productive capitalism, and you support capitalism as long as it supports the nation-state, but this in contrast to Jewish finance capitalism, which is merely a parasitic wing of capitalism. What is needed is a völkisch, nationalist approach that fuses socialism with production.</p>
+<p>As a result you can see that the KPD members are fellow workers who know how to fight and hate the Republic. In fact, many of your comrades have moved between the NSDAP and KPD. You have a grudging respect for them.</p>
+<p>Tactical alliances with them are therefore acceptable. Of course, they will have to embrace nationalism, too, or suffer the consequences. But for now the enemy is the Republic. Indeed, some of the November criminals are still in the Reichstag—members of the SPD, DDP, and even the leftists in the Centre Party.</p>
+<p>Hitler is of course your Führer, but he fails to grasp the full meaning of National Socialism and has wrongly denounced your vision. And the NSDAP is not one man, after all, but a movement to save Germany. Hitler must learn that it is the people who matter. He seems at times more obsessed with a cabinet seat than with the revolution.</p>
+<p>Thus you are open to alliances that could work against Hitler. In particular, your wing of the party could ally with the DNVP and pro-labor elements of other parties such as the Centre Party and SPD. To this end you are willing to challenge the Hitler devotees, but only secretly—in effect, only if guaranteed success. But if the time is right, you would openly break with the party, hopefully taking the majority with you. That time will be when:</p>
+<p>The NSDAP must be in electoral decline; any defeat at the polls indicates that Hitler’s wing of the Party is going in the wrong direction. Surely, you have a chance at convincing the majority of the Party that a new tactic and leader are needed.</p>
+<p>But you must be given assurances of a cabinet position if you are to make this challenge. Such an assurance can only come if you are able to negotiate with the DNVP, von Schleicher, and discontented workers in other parties.</p>
+</section>
+<section id="objectives">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Objectives</h2>
+<p>The Constitution and the Republic</p>
+<p>You want to destroy the Weimar Republic. The Reichstag is a Quasselbude (twaddling shop—NSDAP slang term for the Reichstag). In the end, the entire constitutional shambles of Weimar must be eradicated and replaced with a government made up exclusively of true race-conscious nationalists. That is to say, you desire a state with no political parties, just the NSDAP national movement headed by the Führer. Others may join you, but they may not lead.</p>
+<p>Is it possible to have a government operating by presidential decree?</p>
+<p>Yes, but only if the chancellor is Hitler—or possibly yourself.</p>
+<p>Ultimately, even the role of Reich president must be in the hands of the Führer—again, or possibly yourself. Thus, Hitler should run for president in the scheduled elections for 1932. However, there is a technical problem. Hitler is not a German citizen. There are ways around this, however. With the support of the leaders of the DNVP or von Schleicher, an arrangement could be made whereby Hitler is given a ceremonial post in a local government that would automatically confer citizenship.</p>
+<p>You are not opposed in principle to a putsch. However, upon Hitler’s release from prison on 20 December 1924, he convinced the Bavarian authorities to lift the ban on the NSDAP. But he reformed the party under his undisputed leadership. The new Party was no longer a paramilitary organization and officially disavowed any intention of taking power by force. The party and the SA were kept separate and the legal aspect of the party’s work was emphasized. In a sign of this, the party began to admit women. SA members had to all be regular party members. In effect, in all public statements, the official stance of the Party is the Legality Strategy. You only support this strategy if it is understood to be a ruse—a pretense of legality to prepare for the overthrow of the state. The SA is already chaffing at Hitler’s attempts to tame them, and many worry that Hitler is coddling up to the politicians and becoming soft. You might play along with this sham, but you will never disavow the SA and its dedication to Germany and the Revolution.</p>
+<p>There is occasional talk in the Reichstag of banning parties. Under no circumstances should you allow this—even against the KPD. You know that the NSDAP was banned once already and you do not want to see that fate again. You oppose all efforts to limit the freedom of parties to operate. Of course, once in power, this restriction no longer applies.</p>
+<p>Remember—you are just playing by the rules of democracy in order to abolish it in favor of a People’s State.</p>
+<p>Possible coalition partners: You must destroy the forces of Marxism from the KPD but also the SPD. These parties should be fought on every front and they have no place in Germany, let alone in government. However, any other party willing to accept Hitler as chancellor could be included in a coalition.</p>
+<p>Similarly, you must convert the forces of Marxism from the KPD but also the SPD to the nationalist cause. These parties should be fought when they adhere to Marxism, including in the streets, but they are also fellow workers and must be enticed to join forces. Simply fighting and denouncing them is not enough. Their members are potential allies.</p>
+<p>But everything hinges on one overriding goal—an anti-Weimar government must be formed that eliminates the constraints of the old constitution.</p>
+<p>If Hitler is the man for the job, so be it. But you can also imagine yourself in that position. You can also see yourself serving under Hitler in a cabinet—but also other nationalist parties as well. The key point is just as much that you are in a position of power as how you get there.</p>
+<p>Should the party ever achieve power either via a putsch or election as chancellor, you should immediately:</p>
+<p>Announce that the Reichstag has been set on fire by the KPD who are clearly planning an insurrection</p>
+<p>Ban the KPD and call for new elections</p>
+<p>Demand that the Reichstag pass an Enabling Act granting the government martial law powers</p>
+<p>You many now dictate any and all policies on any matters.</p>
+</section>
+<section id="foreign-relations-foreign-ministry">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Foreign Relations (Foreign Ministry)</h2>
+<p>Freedom Law and Young Plan</p>
+<p>Foreign policy leaves room open for the socialist and revolutionary nature of the NSDAP. An alliance with the USSR, therefore, is conceivable. But the Treaty of Versailles is an abomination. You must have the government repudiate the Versailles Treaty. Ideally, the government simply renounces the treaty in its entirety. At an extreme minimum, the most humiliating clauses must be abolished. To that end, you want to see an end to all reparations. You also want the elimination of the War Guilt Clause, Article 231. The Freedom Law must be passed.</p>
+<p>The Young Plan is a national humiliation, just like its predecessor the Dawes Plan. It is based on accepting the Versailles Treaty. Any party that supports it denies German self-determination and is not patriotic.</p>
+<p>Every effort must be made to defeat it.</p>
+<p>Liquidation Treaty with Poland</p>
+<p>You oppose the Liquidation Treaty since it insults Germany by surrendering legitimate economic claims and paying for the privilege of Poland not mistreating Germans! It also does nothing to address the real issue—the annexation of ethnic German territory as dictated by the Allies in the Treaty of Versailles. Supporting this treaty only reconfirms the Republic’s slavish devotion to the parameters determined in 1919! Poland has no right to exist let alone to enslave ethnic Germans—the same applies the Sudetenland in Czechoslovakia, Alsace and Lorraine in France, Malmedy in Belgium, and all of Austria. One must not accept any territorial borders that deny ethnic Germans statehood in Germany. Living space must be secured for the Aryan people, and Poland is the natural historical area for this expansion. As Slavs, Poles are an inferior people in any event.</p>
+</section>
+<section id="military-affairs-defense-ministry">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Military Affairs (Defense Ministry)</h2>
+<p>Germany’s future military greatness is not to be found in aristocratic privileges of the old Reichswehr. Instead, the Reichswehr should be replaced by a people’s army—one built around the core of the SA.</p>
+<p>Therefore, the autonomy of the Reichswehr must be eliminated, and one way to do that is to expose their many scandals.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Naval Bill</h3>
+<p>Your party favors construction of armored cruisers and the appropriation of the necessary funds annually.</p>
+</section>
+<section id="paramilitaries">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Paramilitaries</h2>
+<p>Violence is a legitimate means to power. Of course the party can use the Reichstag, but real power is fought in the streets. Therefore, a top priority is the absolute right of the SA to organize and demonstrate.</p>
+<p>Even your own party must accept this and not lose sight of what power is and become seduced by bourgeois democracy. Since you see Weimar as illegitimate, street fighting is an essential tactic to destabilize the hated Republic, to show the broad base of support for your movement, and to win over working-class members of the KPD and SPD. The SA must be allowed to operate. Further, the party must support the SA demand that the SA replace the Reichswehr.</p>
+</section>
+<section id="eugenics-and-sexuality-justice-ministry">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Eugenics and Sexuality (Justice Ministry)</h2>
+<h3 style="color:#7a1010;margin-top:1.2em;">Sterilization</h3>
+<p>You embrace race hygiene (eugenics) in all its aspects. The chaos and demoralization afflicting Germany as an illness of the Aryan race.</p>
+<p>Hitler wrote in Mein Kampf, “Anyone who wants to cure this era, which is inwardly sick and rotten, must first of all summon up the courage to make clear the causes of the disease.” The diagnosis to the disease is racial. The only “culture-creating” race, the Aryans, have permitted themselves to be weakened to the point of endangered survival by the “destroyers of the culture,” the Jew. The nation has become weak, corrupted by dysgenics, the infusion of degenerate elements into its bloodstream. In contrast, the ancient Greek state of Sparta is a model.</p>
+<p>It was the first völkisch state where deformed children were killed rather than allowed to live and weaken the state. For Germany, then, the path of national regeneration is clear. At the 1929 Nuremberg Party Congress, Hitler called for a program of negative eugenics that would weed out 800,000 genetically unfit children annually. You agree.</p>
+<p>Mandatory sterilization of broad categories is essential.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Mothers’ Day</h3>
+<p>Relatedly, women must embrace their biological role as mothers—the font of the racial health of the nation without which nothing can prosper.</p>
+<p>They are the natural physical nurturers of the next generation and nothing should impede them in this duty. They should accept this role and bear as many healthy children for the fatherland as possible.</p>
+<p>Mothers’ Day should be a national holiday in this racial sense.</p>
+</section>
+<section id="race-and-culture-interior-ministry">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Race and Culture (Interior Ministry)</h2>
+<h3 style="color:#7a1010;margin-top:1.2em;">Jews (Antisemitism Option)</h3>
+<p>To restore German virtue and power you must eliminate the influence of Jews in German culture, society and politics. They should be banned from all of these fields. Ideally, they would be collectively declared non-citizens. There can be no exceptions, not even for veterans.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Censorship</h3>
+<p>Censorship of anti-German Jewish-Marxist-bourgeois filth is useful.</p>
+<p>Books by Remarque, so-called art by Grosz, and Negro music all undermine the German spirit, corrupt the morals of youth, and prevent the rejuvenation of the German spirit. But at the same time, one should not focus on these distracting matters if it alienates potential supporters.</p>
+<p>Regarding All Quiet on the Western Front, as a member of the NSDAP you could read the critique of established authority and its betrayal as a justification for your revolutionary demands to create a new, integrated community that sweeps away those who threw away so many lives and replace them with the New Men hardened by the front experience. The new social model is the common bond of the front soldiers—a deep sense of loyalty beyond class, religion, and region found in the SA—unlike the old identities of the Kaiserreich. Thus, while loathing Remarque’s pacifist spin, you do not disagree with the tempering and radicalizing depiction of the soldiers—it is just that Remarque fails to politicize it properly. The soldiers are instead to be revolutionaries in a national renewal that destroys all traces of the old and corrupt world that betrayed them. As a result of Remarque’s false political conclusion, the book and movie are insulting to the sacrifices of the soldiers. Remarque has made heroes into broken victims, insulted the glory and even necessity of martial struggle, and emasculated a generation. His interpretation of the events is the same as that of the November criminals. Not only should All Quiet be banned; Remarque should be arrested as a traitor!</p>
+</section>
+<section id="industrial-relations-economic-ministry">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Industrial Relations (Economic Ministry)</h2>
+<h3 style="color:#7a1010;margin-top:1.2em;">Austerity</h3>
+<p>Economic issues are playing into your hands. The Grand Coalition is flailing over the issues of austerity—sharply divided on cutting social spending for the unemployed. The NSDAP program champions the right to employment, and calls for the institution of profit sharing, confiscation of war profits, prosecution of usurers and profiteers, nationalization of trusts, communalization of department stores, extension of the old-age pension system, creation of a national education program of all classes, prohibition of child labor, and an end to the dominance of investment capital. All of this is pro-labor.</p>
+<p>However, this must be kept in context. Germany cannot function without big business. The point is to harmonize the classes—bourgeois and proletariat—as part of a united Germany. The party program must therefore be understood more as a critique of Jewish capital. You do not want to alienate big business but must still appear to be the friend of labor. In this case, however, you must come out consistently against austerity as hurting workers and the middle classes. You support a strongly pro-labor agenda, even if it alienates big business, who are mostly Jews and war profiteers anyway.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Nationalization</h3>
+<p>Nationalization of banks makes sense, in particular as part of Aryanization (eliminating Jews from economic life). You have no principled opposition to nationalization of banks if it stabilizes the economy, ends unemployment, and strengthens military production—but the matter can only be judged on a case-by-case basis. In the end, the economy must serve the Volk. So you respect all private property—unless it is owned by Jews (who only stole it in the first place) or is used against the Volk.</p>
+</section>
+<section id="agricultural-affairs-food-ministry">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Agricultural Affairs (Food Ministry)</h2>
+<p>Until quite recently, the Party has focused on urban voters, but with disappointing results as most workers remain loyal to Marxist parties.</p>
+<p>The Party has therefore decided on a decisive shift to win over rural constituents. This shift is wrong-headed. The future of a modern Germany is with the majority of Germans who are urban and proletarian. The peasantry is a dying class. Turning away from workers will only drive them even deeper into the arms of the Marxist parties.</p>
+<p>On this issue, you increasingly sense a fundamental betrayal of NSDAP core values. The Party is not called “National SOCIALIST German WORKERS Party” for no reason. The Party must prioritize its proletarian origins.</p>
+<p>After all, the great revolutions of the modern age have all been made on the basis of proletarian support. You are not against including peasants and farmers in the national movement, but not at the expense of workers.</p>
+<p>You agree with propaganda that talks about Blut und Boden (blood and soil)—the racial connectedness to the German land. And you agree that Jewish bankers with their bloodsucking loans are driving the small farmer into penury. Agrarian anger is justly redirected against the Jews who run the banks, the bourgeois politicians whose policies crush the small farmers, and the Versailles victors who use the treaty to unfairly disadvantage the German farmer. What Germany needs is more land for its farmers—Lebensraum (living space) in the East where the inefficient and racially subordinate Poles mismanage their lands. But none of this may come at the expense of working-class Germans.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Agrarian Tariffs</h3>
+<p>You understand the arguments in favor of agrarian tariffs to protect German farmers and to promote self-sufficiency. However, these tariffs are hurting German workers by driving up food costs and only drive them to the Marxists. The NSDAP cannot become the tool or be seen as the tool of the Junkers. Therefore, you oppose agrarian tariffs.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Small Farmers’ Relief</h3>
+<p>You are not hostile to small farmers, however, and therefore you advocate land reform (redistribution) and debt relief that will protect the small farmer. The party platform addresses the matter in Point 17, and you support expropriation of land from large estates if that benefits the German farmer.</p>
+</section>
+<section id="other-issues">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Other Issues</h2>
+<h3 style="color:#7a1010;margin-top:1.2em;">Stability Index</h3>
+<p>Desiring, as you do, the demise of the Weimar Republic, the lower the Stability Index (-50 or lower) the more victory points you will be awarded.</p>
+<p>Presidential Election in 1932</p>
+<p>You will support NSDAP leader Adolf Hitler unless you have or are intending to split from the NSDAP, in which case you will pursue whatever best serves your interests.</p>
+<p>Committees of Inquiry</p>
+<p>These can be used to expose the corruption of other parties, and when so used you support them. However, the targets of assassinations have generally been November criminals and Marxists—you have little sympathy with them. Indeed, the NSDAP’s paramilitary wing is involved in street fights already. To support such a committee runs the risk of these committees being used against the SA. The parliamentary system should not be allowed to undermine these extra-judicial executions of traitors.</p>
+<p>You should actively work against any such committee.</p>
+</section>
+<section id="responsibilities">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Responsibilities</h2>
+<p>Coordinate with members of your faction to determine party positions/votes ahead of time.</p>
+<p>Ensure that the party actually exercises power by getting into the cabinet – with or without.</p>
+<p>Use the SA to undermine parliament.</p>
+</section>
+<section id="powers">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Powers</h2>
+<h3 style="color:#7a1010;margin-top:1.2em;">Paramilitary (SA) Leader: see addendum</h3>
+<p class="role-nb"><em>NB: If Reventlow (NSDAP #6) is in play, this power goes to him. Ask Göring (NSDAP #1) to give you the Paramilitary Leader Addendum if Reventlow is not in play.</em></p>
+<p>Party Split (optional rule): see addendum</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Führerprinzip</h3>
+<p>You have the right to appeal to party leader Adolf Hitler to discipline (including expulsion) discipline (including expulsion) any member at any time for any reason. You do this by writing directly to Hitler (the GM).</p>
+<p>A decision by the Führer is not subject to any review. Naturally, there is a danger in this action in that the threatened member may be informed of this letter by Hitler, opening you up to counterattacks. Nonetheless, it is a powerful tactic in order to enhance your standing in the party by removing those above you blocking your rise to power.</p>
+<p class="role-nb"><em>NB: If Goebbels (NSDAP #4) or Buch (NSDAP #8) is in play, he is the head of the powerful party Inquiry and Mediation Board (USCHLA). This commission is feared among the Party’s followers because it behaves rather like a Party secret police force. The USCHLA’s headquarters are at the Brown House in Munich—in close proximity to Hitler. The head has extreme power for settling internal party disputes. They may render judgments freely, against which there is no appeal, except by Hitler.</em></p>
+<p>Fascist Revolution: see addendum</p>
+</section>
+<section id="victory-goals-summary">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Victory Goals Summary</h2>
+<p>Note: The Victory Points system is part of the full game and is not used in this course’s abridged three-session simulation.</p>
+<p class="role-nb"><em>NB: Faction and personal victory goals may conflict.</em></p>
+</section>
+<section id="factional-victory-goals">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">FACTIONAL VICTORY GOALS</h2>
+<p>Absolute Victory: Hitler and NSDAP are rulers of a fascist state, even in a coalition.</p>
+<p>Absolute Defeat: KPD or SPD is in cabinet or in power in any way; OR NSDAP ceases to exist.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Stability Index Goal = LOW (-50 or lower)</h3>
+<h3 style="color:#7a1010;margin-top:1.2em;">Presidential Election = Hitler</h3>
+<p>Type of Government = fascist dictatorship with Hitler as chancellor or president</p>
+<p>Indeterminates/Splinters = convince to join your faction</p>
+</section>
+<section id="mandatory-agenda-items">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Mandatory Agenda Items</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Freedom Law</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Young Plan</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Naval Bill</strong></td><td><span class="agenda-pass">PASS (you must pass all three)</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Austerity</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Agrarian Tariffs</strong></td><td><span class="agenda-pass">PASS with call for autarky</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Antisemitism</strong></td><td><span class="agenda-defeat">BAN Jews based on race</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Mothers’ Day</strong></td><td><span class="agenda-pass">PASS based on national race hygiene</span></td></tr>
+</tbody></table>
+</section>
+<section id="personal-victory-goals">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">PERSONAL VICTORY GOALS</h2>
+<p>Absolute Victory: You split from NSDAP or become its leader; you are chancellor; OR either Karl Gandorfer or Adam Stegerwald is assassinated.</p>
+<p>Absolute Defeat: You split from NSDAP and are not in cabinet.</p>
+<h3 style="color:#7a1010;margin-top:1.2em;">Stability Index Goal = LOW (-50 or lower)</h3>
+</section>
+<section id="discretionary-agenda-issues">
+<h2 style="border-left:4px solid #7a1010;padding-left:0.6em;">Discretionary Agenda Issues</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Liquidation Treaty</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<h3 style="color:#7a1010;margin-top:1.2em;">Paramilitaries Integrate SA into Reichswehr</h3>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Sterilization</strong></td><td><span class="agenda-pass">PASS, but only if mandatory</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Censorship</strong></td><td><span class="agenda-defeat">BAN All Quiet and arrest Remarque</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Nationalization DEFEAT but</strong></td><td><span class="agenda-pass">PASS Aryanization</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Small Farmers</strong></td><td><span class="agenda-pass">PASS land reform and debt relief</span></td></tr>
+</tbody></table>
+<p>Special Note on Nazi Antisemitism</p>
+<p>Your character is an antisemite (one who sees Jews as a fundamentally different and destructive race). There is no way around this fact for a member of the NSDAP. As you play your character, this aspect will be uncomfortable. Yet you have the unenviable task of presenting these ideas to the class. You must do so without racial slurs or Nazi imagery, per the Gamebook guidelines.</p>
+<p>What was Nazi Antisemitism?</p>
+<p>Nazis believed that race held the key to understanding the world. They believed that one’s racial (genetic) make-up determined a person’s characteristics, attitudes, abilities, and behavior. In this völkisch thinking, all human groups carried within them traits that were immutably transmitted from one generation to the next. No individual could overcome the innate qualities of race. And all of human history could be explained in terms of racial struggle.</p>
+<p>In this ideology of race, the NSDAP drew upon social Darwinism (a pseudo-scientific interpretation of Darwinian evolution). They believed that the science of evolutionary biology proved that geographically separated “races” with distinctive characteristics had evolved. Each race’s inherited characteristics related not only to outward appearance and physical structure, but also shaped internal mental life, ways of thinking, creative and organizational abilities, intelligence, taste and appreciation of culture, physical strength, and military prowess.</p>
+<p>The NSDAP (and others) applied the idea of “survival of the fittest” to humans. For them, survival of a race depended upon its ability to reproduce and multiply, its accumulation of land to support and feed that expanding population, and its vigilance in maintaining the purity of its gene pool, thus preserving the unique “racial” characteristics with which “nature” had equipped it for success in the struggle to survive. Since each “race” sought to expand, and since the space on the earth was finite, the struggle for survival resulted “naturally” in violent conflict. Hence, war was a part of nature, a part of the human condition, and thus good.</p>
+<p>In this pseudo-science, each race possessed certain characteristics, both positive and negative, of ethnic group appearance, behavior, and culture that were unchangeable and rooted in biological inheritance, immutable throughout time and immune to changes in environment, intellectual development, or socialization. Thus, assimilation of a member of one race into another culture or ethnic group was impossible because the original inherited traits could not change: they could only degenerate through so-called race mixing. This völkisch antisemitism argued that the German race—the one that they claimed had risen to the top of culture and power—was the Aryan race. It was locked in a life and death struggle with other races considered inferior and hostile, especially Slavs, Gypsies, and above all else Jews.</p>
+<p>Therefore, hatred of Jews was not about culture or religion but race—and inevitable competition between races. For the NSDAP, this was a fact proven by biology and history. They saw Jews as responsible to some degree for every problem. Indeed, they fully believed in a global Jewish conspiracy to enslave Germany and the world. The NSDAP further believed that only the NSDAP fully recognized this reality: Jews as a race could not be German—each nation was a representation of a racially linked people—Germany for Germans, France for the French, Italy for the Italians. They claimed that Jews, since they were a single and separate people, needed to leave other lands and form their own state.</p>
+<p>Read the NSDAP documents carefully on how they articulated their antisemitism.</p>
+</section>
+  </div>
+
+  <nav class="role-nav">
+    <div><a href="nsdap-goebbels.html">← Joseph Goebbels</a></div>
+    <a href="index.html">↑ All Roles</a>
+    <div><a href="dvp-dingeldey.html">Eduard Dingeldey →</a></div>
+  </nav>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Democracy in Crisis: Weimar Germany Simulation | HIST 105: Western Civilization</p>
+    <p>Yosemite Community College | <a href="https://profhauselmann.org">Professor Hauselmann</a></p>
+  </div>
+</footer>
+
+<script src="../js/weimar-interactive.js"></script>
+
+</body>
+</html>

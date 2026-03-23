@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paul Löbe — Weimar Germany Simulation</title>
+<link rel="stylesheet" href="../css/weimar-styles.css">
+<style>
+/* Role sheet additions — extend site styles without overriding */
+.role-header {
+  background: #b83020;
+  color: #fff;
+  padding: 2em 0;
+  border-bottom: 4px solid var(--weimar-gold, #C9A84C);
+}
+.role-header .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1em;
+  align-items: start;
+}
+.role-header h1 {
+  color: #fff;
+  border: none;
+  margin: 0 0 0.25em;
+  font-size: 2.4em;
+}
+.role-header .role-party {
+  font-size: 1.05em;
+  opacity: 0.85;
+  margin: 0 0 0.15em;
+}
+.role-header .role-title {
+  font-size: 0.95em;
+  opacity: 0.75;
+  font-style: italic;
+  margin: 0;
+}
+.role-meta {
+  text-align: right;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+.role-meta .abbrev {
+  font-size: 1.6em;
+  font-weight: bold;
+  opacity: 1;
+  display: block;
+}
+.role-toc {
+  background: #fde8e4;
+  border-left: 5px solid #b83020;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 4px 4px 0;
+}
+.role-toc h3 {
+  margin: 0 0 0.5em;
+  color: #b83020;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+.role-toc li {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.role-toc a {
+  color: #b83020;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.role-toc a:hover { text-decoration: underline; }
+.role-toc a::before { content: "▸ "; }
+.role-content section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.role-content section:last-child { border-bottom: none; }
+.role-content h2 {
+  font-size: 1.2em;
+  margin: 1.5em 0 0.5em;
+}
+.role-content h3 {
+  font-size: 1.05em;
+  margin: 1.2em 0 0.4em;
+}
+.role-content p { line-height: 1.75; margin-bottom: 0.8em; }
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.agenda-table th {
+  background: #b83020;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+}
+.agenda-table td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.agenda-table tr:nth-child(even) td { background: #f9f9f9; }
+.agenda-pass {
+  display: inline-block;
+  background: #e2efda;
+  color: #2d6a2d;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-defeat {
+  display: inline-block;
+  background: #ffe0e0;
+  color: #b82020;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-abstain {
+  display: inline-block;
+  background: #fff3cd;
+  color: #8a6a00;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.role-nb {
+  font-size: 0.9em;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.4em 0.75em;
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+}
+.role-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 0;
+  border-top: 2px solid #b83020;
+  margin-top: 2em;
+  font-size: 0.95em;
+}
+.role-nav a {
+  color: #b83020;
+  text-decoration: none;
+  font-weight: 600;
+}
+.role-nav a:hover { text-decoration: underline; }
+.assignment-note {
+  background: #fff8dc;
+  border: 2px dashed #C9A84C;
+  padding: 1em 1.25em;
+  margin: 1.5em 0;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .role-header .container { grid-template-columns: 1fr; }
+  .role-meta { text-align: left; }
+  .role-toc ul { columns: 1; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <h1>Democracy in Crisis</h1>
+    <p class="subtitle">Weimar Germany Simulation — Role Sheet</p>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../background/narrative.html">Historical Background</a></li>
+    <li><a href="../core-texts/index.html">Core Texts</a></li>
+    <li><a href="../game/rules.html">Game Rules</a></li>
+    <li><a href="index.html" class="active">Role Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="role-header">
+  <div class="container">
+    <div>
+      <h1>Paul Löbe</h1>
+      <p class="role-party">Social Democratic Party &nbsp;·&nbsp; #2</p>
+      <p class="role-title">Speaker of the Reichstag</p>
+    </div>
+    <div class="role-meta">
+      <span class="abbrev">SPD</span>
+      <span>153 Reichstag mandates</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="assignment-note">
+    <strong>Course Assignment:</strong> In place of the position papers and election poster in the original game, this course uses a research paper assignment. See your <a href="../game/assignments.html">Research Paper Packet</a> for instructions, topics, and due dates.
+  </div>
+
+  <nav class="role-toc">
+    <h3>Contents</h3>
+    <ul><li><a href="#biography">Biography</a></li><li><a href="#objectives">Objectives</a></li><li><a href="#foreign-relations-foreign-ministry">Foreign Relations (Foreign Ministry)</a></li><li><a href="#military-affairs-defense-ministry">Military Affairs (Defense Ministry)</a></li><li><a href="#paramilitaries">Paramilitaries</a></li><li><a href="#eugenics-and-sexuality-justice-ministry">Eugenics and Sexuality (Justice Ministry)</a></li><li><a href="#race-and-culture-interior-ministry">Race and Culture (Interior Ministry)</a></li><li><a href="#industrial-relations-economic-ministry">Industrial Relations (Economic Ministry)</a></li><li><a href="#agricultural-affairs-food-ministry">Agricultural Affairs (Food Ministry)</a></li><li><a href="#other-issues">Other Issues</a></li><li><a href="#responsibilities">Responsibilities</a></li><li><a href="#powers">Powers</a></li><li><a href="#party-discipline">Party Discipline</a></li><li><a href="#victory-goals-summary">Victory Goals Summary</a></li><li><a href="#factional-victory-goals">FACTIONAL VICTORY GOALS</a></li><li><a href="#mandatory-agenda-items">Mandatory Agenda Items</a></li><li><a href="#personal-victory-goals">PERSONAL VICTORY GOALS</a></li><li><a href="#discretionary-agenda-issues">Discretionary Agenda Issues</a></li></ul>
+  </nav>
+
+  <div class="role-content">
+    <section id="biography"><h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Biography</h2>
+<p>You were born in Liegnitz in 1875, in the Prussian province of Silesia (renamed Lower Silesia after the war). You are the first of four children born to the carpenter Heinrich Löbe and his wife, Pauline. As a child, you had to work as a delivery boy for local newspapers and bakeries to help support the family. After graduating from a Lutheran middle school, you trained from 1890 to 1895 as a typesetter at a printing shop in Breslau, and after your journeyman years worked in that capacity in Dessau, Anhalt, and Thuringian Ilmenau. Your journeymen’s years took you to Italy, Switzerland, and Austria-Hungary.</p>
+<p>As early as 1891 you began publishing articles in the socialist newspaper Volkswacht [People’s Watch] under the pseudonym Alu Pöbel (Pöbel is a slang term for rabble), though you had not yet joined the SPD. To support your mother, you returned to Silesia in 1898, taking up a full-time job at the Volkswacht. Shortly afterwards you were appointed editor-in-chief, a post you held until 1920. Your journalistic work, however, often landed you in prison, for instance, when you called on readers to come to a demonstration to protest against the Prussian three-class franchise. Indeed, you were regularly fined for lèse-majesté (insulting the dignity of the sovereign), “incitement to class hatred,” and other reasons. Nonetheless, between prison sentences you married Clara Schaller in 1901 and have a son. You avoided conscription in the German army and did not serve in the war on account of a lung illness.</p>
+<p>Alongside your editorial work, you have also been active as an elected politician for the SPD. You joined the SPD as a young man in 1895, and in 1898 you founded the local branch of the SPD in Ilmenau. In 1899 you became party chair in Middle Silesia and were elected to Breslau’s city government in 1904. You served as a member of the Prussian provincial Silesian Diet from 1915 to 1920. During the war, you and Karl Liebknecht led the leftist opposition of the SPD against leader Friedrich Ebert and the party’s Burgfrieden (wartime truce between the political parties).</p>
+<p>During the German Revolution of 1918–1919, you declined to join the Council of the People’s Deputies and the cabinet of your comrade chancellor Philipp Scheidemann, arguing that it was little more than a right-wing compromise that would undermine the revolution. You thus stand on the left of your party and are a member of the Reichsbanner paramilitary organization. Nonetheless, you have pragmatically engaged with the Republic, becoming vice president of the constituent National Assembly, and since 1920 you have been a member of the German Reichstag, twice serving as its speaker (1920–24 and again since 1925). In 1921 you also became a member of the Prussian State Council.</p>
+<p>With your solid left-wing credentials inside the party, you played a vital role in overcoming the rift between the SPD and the more radical splinters in the Independent Social Democratic Party (USPD), ultimately bringing the left wing back into the party in 1922. Upon Ebert’s death in 1925, you refused to run as SPD candidate in the presidential election against the conservative Paul von Hindenburg since you have consistently seen your role as that of a parliamentarian, not an executive.</p>
+<p>You have built an international profile as well and became involved with politicians such as Aristide Briand, Edvard Beneš, Ignaz Seipel, and Konrad Adenauer in the Paneuropa Union, founded in 1922. At times, you have been president of the German branch of the Paneuropa Union.</p>
+<p>On behalf of the SPD, you spoke out in favor of a settlement with Poland with the Liquidation Treaty. In 1927 you traveled to Warsaw and Lodz for talks with Polish politicians. You explained that both countries should no longer “fight politically” but “work together economically.” You suggested negotiations on controversial border issues; in return, the Republic could offer commercial contracts. In Lodz, where you were invited to a jubilee celebration of the local Social Democrats, Polish nationalists demonstrated against your visit. Indeed, you are frustrated at the lack of willingness to compromise on the Polish side.</p>
+<p>You also engage with initiatives regarding Austria. Since 1921 you have been chair of the Austro-German People&#x27;s League, which advocates the voluntary annexation of Austria to Germany based on the clearly expressed will of German Austrians in their post-war plebiscite. This is a simple matter of self-determination, but you know that the Allies are strongly opposed, so official activity in this regard has remained muted.</p>
+<p>As speaker of the Reichstag, you have grown accustomed to the regular shenanigans of the extremists in the NSDAP and KPD (and increasingly from the DNVP). But you are convinced that parliamentary procedure must proceed unimpaired if the Republic is to survive, and you have met the challenges with a mixture of patience and rigor with regard to regulatory measures. Your firm and fair hand is indeed one of the most stabilizing forces in the Republic, praised even by those of other parties. One example of this has been your approach to radio. Advances in radio technology have raised the question as to the extent to which Reichstag sessions should be broadcast. In a radio address of your own, you advocated a time-delayed “occasional transmission of particularly important meetings,” for which all parliamentary group spokespersons would speak for roughly the same length of time.</p>
+<p>Regardless of you left-wing reputation in the party, you strongly support the SPD leadership under Hermann Müller. You do not envy his task of never ending compromise, and you hope that someday the SPD will win an outright majority so that it can govern without these compromises with bourgeois parties. At the same time, you have found the democratic liberals of the DDP generally reasonable, and even most members of the Centre Party, when one deals with them personally, are decent fellows.</p>
+<p>So the goal is the preservation of the Republic at all costs.</p>
+</section>
+<section id="objectives">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Objectives</h2>
+<p>The Constitution and the Republic</p>
+<p>The government must remain republican.</p>
+<p>The dangers come from the left and right. While the rank and file members of the KPD share the basic needs of the SPD, the radicals in the leadership have fallen under the spell of radical Bolshevism. They do not realize that the Soviet model would lead to civil war, economic collapse, and international isolation. Thus, the SPD must take the strongest measures possible against the incendiary rhetoric of the KPD; at the same time, though, every effort must be made to win over the membership of the KPD—which can only be done by keeping the SPD completely separate from the KPD.</p>
+<p>The real threat, though, comes from the national conservatives, especially the DNVP and their new allies in the NSDAP. These parties would impose a capitalist dictatorship on Germany that would lead the nation into the barbarism that launched the Great War. However, the fascists in the NSDAP are the main threat. Every effort must be made to isolate that party; yet its appeal to some workers has to be recognized.</p>
+<p>These workers need to be made aware that they are being duped by the same men and their interests (those of the old imperial elites) that led them to the slaughter house a year ago.</p>
+<p>The result is that the SPD must make coalitions with every possible party open to the defense of the Republic, whether those be liberals, Catholic Centrists, or even conservatives. This will require compromise, sometimes painful compromise, but the defense of the Republic must take precedence.</p>
+<p>As a result, while some discuss the possibility of rule by presidential decree, you are aware of its inherent authoritarian potential to undermine the Republic. At the same time, you could consider conditionally supporting such a regime if it prevented the collapse of the Republic. Naturally, you would never serve in such an authoritarian government, but you could tolerate it if the option was democratic collapse.</p>
+<p>Some have also discussed what stance the party should take towards a violent overthrow of the state. Any such effort must be opposed, regardless of whether it comes from the KPD, the Right, or the Reichswehr. Any such revolution or coup would undermine the very heart of democracy—the essential pre-condition for establishing socialism.</p>
+<p>There is the occasional debate about banning a particular party—some say the KPD, others the NSDAP. While this might be potentially constitutional under certain circumstances, it is dangerous. After all, it was not that long ago that the German state attempted to destroy social democracy with the Anti-Socialist Laws. And the ban on the NSDAP a few years ago only strengthened that party. If we open the door to banning unpopular groups, where does that put socialists? Social democracy is protected by civil liberties for all. Perhaps in a situation where the state is threatened by a revolution one could consider banning a party, but that is an extreme situation.</p>
+<p>Regarding the NSDAP in particular, Hitler has ostensibly renounced violence and proclaimed the Legality Strategy. But isn’t the NSDAP merely using its Legality Strategy as a fig leaf to cover its real intentions of seizing power and establishing a right-wing dictatorship?</p>
+<p>The moderate parties of the right need to pull away from the NSDAP and back towards support of the Republic.</p>
+<p>Naturally, as the largest party, you aspire to the chancellorship. The SPD has often served in that role, and it should continue to dominate pro-Republican governments. More important, though, is that the chancellorship be in the hands of anyone willing to defend the Republic.</p>
+</section>
+<section id="foreign-relations-foreign-ministry">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Foreign Relations (Foreign Ministry)</h2>
+<p>Freedom Law and Young Plan</p>
+<p>Germany has had notable successes in foreign policy under Stresemann.</p>
+<p>The Treaty of Locarno in 1925 saw Germany, France and Belgium renounce violence to settle their border disputes, and France agreed to eventually withdraw from the Rhineland. The resulting Spirit of Locarno has led to additional diplomatic victories:</p>
+<p>French and Belgian troops left the Ruhr in 1925.</p>
+<p>The 1926 Treaty of Berlin reinforced the Treaty of Rapallo (1922) and improved relations between the Soviet Union and Germany.</p>
+<p>In 1926 Germany was admitted to the League of Nations with a permanent spot on the governing council.</p>
+<p>The Kellogg-Briand Pact of 1928, signed by Germany and fourteen other countries, renounced wars of aggression.</p>
+<p>The Geneva Convention, regulating warfare, was ratified by the Reichstag in April 1929.</p>
+<p>The Young Plan is a similar such victory. It is essential to the SPD policy of fulfillment. It is not that anyone in the SPD supports the Versailles Treaty, but only by fulfilling, in as minimal way as possible, the terms of the Treaty can the Republic be assured any chance of success. The last time Germany attempted to avoid the Treaty the French occupied the Rhineland. That humiliation combined with the disastrous nationalist policy of protesting the occupation by printing money led to the dreadful hyperinflation that ruined many workers and middle-class people’s lives. That sort of military and economic disaster only plays into the hands of the fascists and communists. If one actually looks at Young Plan it actually significantly reduces reparation payments; to defeat it would simply mean to return to Dawes Plan, which requires higher payments! Opposition to the Young Plan is irrational brinkmanship. Therefore, you adamantly oppose the Freedom Law.</p>
+<p>The Treaty of Versailles can only be eliminated with careful long-term negotiations. The Young Plan is part of that policy, but so, too, is the heavy international lobbying that has been carried out, especially under Stresemann, and is slowly yielding success.</p>
+<p>Liquidation Treaty with Poland</p>
+<p>You support the Liquidation Treaty since normalizing trade will help the economy and thus workers; it will also secure the future of German settlement in the region until the border issue is settled; and a successful treaty with Warsaw also further integrates Germany into a stable international framework that sees Germany as capable of negotiating as a sovereign state. In any event, no such action should risk war.</p>
+</section>
+<section id="military-affairs-defense-ministry">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Military Affairs (Defense Ministry)</h2>
+<p>The question of the autonomy of the Reichswehr is also a nagging one. In order to preserve the Republic in its early years, the party made a compromise with the Reichswehr that the government would not interfere in the military in exchange for military support. True, the Reichswehr has at times been ambivalent, even hostile, to the Republic, but what choice is there?</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Naval Bill</h3>
+<p>The proposal for naval expansion to build armored cruisers is dreadful.</p>
+<p>There is nothing wrong with a strong German military, but at this moment in history it will only alienate the Versailles victors, undermining the cautious strategy of fulfillment. It also cannot be afforded in a period of economic crisis when instead unemployment benefits should be expanded. In fact, the SPD campaigned and won in 1928 on the slogan “Food for children, not armored cruisers!” Still, you recognize that the Reichswehr and many pro-Republican forces to the right insist upon this measure. It may be necessary to compromise.</p>
+</section>
+<section id="paramilitaries">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Paramilitaries</h2>
+<p>The paramilitary of the NSDAP, the SA, should be banned, as should all anti-Republican paramilitaries. You supported the ban on the KPD’s Red Front. They threaten the existence of the Republic. They consist of little more than street thugs who murder SPD members and pro-Republican politicians. At the same time, the Republican paramilitaries are essential guardians of the Republic against these forces, especially given the ambivalence of the Reichswehr. Therefore, there should be no generalized ban on paramilitaries, just on those working against the state.</p>
+</section>
+<section id="eugenics-and-sexuality-justice-ministry">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Eugenics and Sexuality (Justice Ministry)</h2>
+<h3 style="color:#b83020;margin-top:1.2em;">Sterilization</h3>
+<p>Regarding race hygiene (eugenics), you champion welfare for mothers and children, healthcare, and improved maternity benefits for working women, and your support of motherhood is linked closely to pacifist ideology.</p>
+<p>You generally support increased availability of birth control options.</p>
+<p>You believe that policies should focus on Mutterglück (the joy of motherhood), the highest ambition and most noble fulfillment of the female. Birth control is thus a means of improving or delaying motherhood (rather than a liberating tool for women who would choose to opt out of bearing children at all). You draw support from Principles of Communism when it rails against the capitalist use of the wife as a “mere instrument of production.” What this means for you is that women should not be working outside the home but instead be given the social support to find true happiness in the home. You support the National Association for Birth Control and Sexual Hygiene, founded in 1928. This body sees birth control as a way of showing responsibility for the genetic soundness of the nation and the working class. The goal is healthier, sounder children, and lecture titles include “Race Hygiene, Eugenics, and Sterilization” and “The Extermination of Unfit Life.” However, you do not support the idea that sterilization should be mandatory. It is only acceptable if voluntary.</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Mothers’ Day</h3>
+<p>Women are the equals of men and have the right to determine for themselves what social and familial role they wish to pursue. Naturally, the SPD fully supports motherhood. In fact, the SPD truly honors women by seeing them as men’s equals whereas conservative of all stripes treat them as children, exploit them sexually and economically, impose dangerous work conditions on them, tear their sons away from them to die in imperialist wars. This campaign for a national Mothers’ Day, linked as it is to these realities and promoted by the Right, does not properly honor women. In this context, you oppose the effort to make Mothers’ Day a national holiday. The slogan should be, “Work for the Father! Bread for the Children!” Instead, you want to pass a socialist Women’s Day.</p>
+</section>
+<section id="race-and-culture-interior-ministry">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Race and Culture (Interior Ministry)</h2>
+<h3 style="color:#b83020;margin-top:1.2em;">Jews (Antisemitism Option)</h3>
+<p>On all matters of civil liberties, there can be no debate. German citizenship does not distinguish between races, religions, or any other characteristic. Thus, Jews must have full rights.</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Censorship</h3>
+<p>As a social democrat, you have no major criticism of All Quiet on the Western Front. Indeed, it is a positive assertion of your goals. You recognize in its critique a call for a new constitutional order based on the principles of parliamentary democracy, though Paul never endorses such a goal. You further believe that such wars can best be avoided with social guarantees for the lower classes to assure peace and prosperity and thus make the causes of war redundant. And naturally, your goals of support for the League of Nations and working with the framework of international treaties flow logically from the need to prevent any future such war. The betrayal of young Germans of all classes by the old elites—officers, the kaiser, the clergy and doctors—underscores why it was necessary to sweep away the rotten old political system and create the Republic. Any talk of censorship only feeds into the hysteria of the fascists and national conservatives.</p>
+</section>
+<section id="industrial-relations-economic-ministry">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Industrial Relations (Economic Ministry)</h2>
+<h3 style="color:#b83020;margin-top:1.2em;">Austerity</h3>
+<p>If possible, the state should of course balance its budget. But the growing severity of the economic crisis means that austerity at the expense of social spending would only hurt German workers and their families—your constituents. Some compromise is possible, for example by ending grain tariffs or raising taxes on the wealthy, but not by cutting unemployment benefits. The SPD would have no reason to exist if it did so and such a course would only feed into the radicals in the KDP and NSDAP who already claim that the SPD is too cozy with the business elites in the liberal and Catholic parties.</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Nationalization</h3>
+<p>Nationalization of banks is extreme but not inconceivable. You have no principled objection to the state stepping to help regulate industry, and, in the end, the economy must serve the nation, but private industry does that best when the state balances interests in the private sector rather than replacing the private sector—unless necessary.</p>
+</section>
+<section id="agricultural-affairs-food-ministry">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Agricultural Affairs (Food Ministry)</h2>
+<p>Marxism is quite clear that the peasantry is an outmoded class doomed to wither away with the advance of industrial capitalism. However, you recognize that this withering away of the peasantry will be a long, drawn out process. In the meantime, agrarian workers are being exploited, and the small farmers are a relevant class ally against the Junkers. Thus, you and the SPD are not unsympathetic to small farmers, though any policy that benefits the wealthy Junker elite is absurd.</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Agrarian Tariffs</h3>
+<p>Until quite recently, you and the SPD have more or less consistently opposed the protectionist concessions of the right-wing governments, including agrarian tariffs. Protectionist agrarian tariffs do nothing to address the underlying problems (Germany’s agriculture has to modernize). Further, agrarian tariffs mean higher food prices for workers. And they disproportionately benefit the large estates. However, the agrarian crisis of 1927–28 has brought distress to small and large landowners alike, and the agitations of agricultural-interest organizations have obtained more and more public response. Now, you are willing to reconsider your opposition to agrarian tariffs. It may well be that these tariffs are the best defense of German farmers against international agrarian crises. As a result, the old SPD demands for land reform are being balanced by increasing support for tariffs. These ideas represent a retreat from the SPD’s traditional free-trade position, which you maintained as late as 1925 in cooperation with liberals. But pragmatism has led to your acceptance of a half-hearted tariff authorization. Thus, you may vote to support agrarian tariffs, but must still insist that this be balanced with measures to protect workers.</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Small Farmers’ Relief</h3>
+<p>Land reform (redistribution) and debt relief might address the small farmers’ plight as well as allow for work for many of Germany’s poor.</p>
+<p>Such priorities trump agrarian tariffs.</p>
+</section>
+<section id="other-issues">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Other Issues</h2>
+<h3 style="color:#b83020;margin-top:1.2em;">Stability Index</h3>
+<p>Desiring, as you do, to see the long-term prosperity of the Republic, the higher the Stability Index (0 or higher) the more victory points you will be awarded.</p>
+<p>Presidential Election in 1932</p>
+<p>You will support whoever you think best serves your goals—logically, this should be someone from the SPD. But your main goal is to preserve democracy and to prevent radicalization. You have flexibility.</p>
+<p>Committees of Inquiry</p>
+<p>The parliamentary system should not allow its powers to be undermined by corruption of the elite and extra-judicial executions. Most of the victims have been Marxists, after all. Yet be aware of the need to preserve a pro-Republic coalition. Should such a committee or its findings be allowed to destroy the Republic’s delicate balance? Probably not. Compromises need to be made and you realize that forces in the Reichswehr are openly sympathetic to (and perhaps even behind) these assassinations. The Republic cannot survive without the support of the Reichswehr. And the survival of democracy is the higher goal.</p>
+</section>
+<section id="responsibilities">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Responsibilities</h2>
+<p>Coordinate with members of your faction to determine party positions/votes ahead of time.</p>
+<p>Serve as Speaker of the Reichstag and ensure fair debate.</p>
+<p>Protect the interests of your constituency – the workers of Germany.</p>
+</section>
+<section id="powers">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Powers</h2>
+<p>Speaker of the Reichstag: see addendum</p>
+<p class="role-nb"><em>NB: Ask Müller (SPD #1) to give you the Speaker of the Reichstag addendum.</em></p>
+</section>
+<section id="party-discipline">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Party Discipline</h2>
+<p>The SPD is a highly organized and disciplined party. As a result, at any time you may call for a vote in the party demanding that all members vote as a block on a specific issue. A simple majority is required.</p>
+<p>If a member then votes against the party line in the Reichstag, they may face internal discipline. Such discipline is again determined by a majority vote of the party and may include any or all of the following (in increasing severity):</p>
+<p>Verbal reprimand</p>
+<p>Removal from all party offices (head of the Free unions, head of the Reichsbanner, cabinet position)</p>
+<p>Reduced influence in party (up to one third of a member’s member of the Reichstag may be removed and distributed to other members of the SPD as determined by the non-sanctioned members)</p>
+<p>Expulsion from the party</p>
+<p>Any of these options carries some danger to the party, though, in that the sanctioned member may decide to leave the party and possibly take other members with him. Expulsion will inevitably have this effect.</p>
+<p>However, the party can only operate well if loyalty to the core identity of the party is maintained.</p>
+</section>
+<section id="victory-goals-summary">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Victory Goals Summary</h2>
+<p>Note: The Victory Points system is part of the full game and is not used in this course’s abridged three-session simulation.</p>
+<p class="role-nb"><em>NB: Faction and personal victory goals may conflict.</em></p>
+</section>
+<section id="factional-victory-goals">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">FACTIONAL VICTORY GOALS</h2>
+<p>Absolute Victory: The Republic survives with SPD-led cabinet or presidency; austerity defeated.</p>
+<p>Absolute Defeat: The Republic ends as a parliamentary democracy; OR SPD ceases to exist as an independent party.</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Stability Index Goal = HIGH (0 or higher)</h3>
+<p>Presidential Election = Müller OR not NSDAP or KPD</p>
+<p>Type of Government = a democratic republic in form and content</p>
+<p>Indeterminates/Splinters = convince to join your faction</p>
+</section>
+<section id="mandatory-agenda-items">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Mandatory Agenda Items</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Freedom Law</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Young Plan</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Naval Bill</strong></td><td><span class="agenda-defeat">DEFEAT (you need only defeat one)</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Austerity</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Agrarian Tariffs</strong></td><td><span class="agenda-pass">PASS but with concessions for workers</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Antisemitism</strong></td><td><span class="agenda-defeat">DEFEAT support full Jewish rights</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Mothers’ Day DEFEAT but</strong></td><td><span class="agenda-pass">PASS a non-communist Women’s Day</span></td></tr>
+</tbody></table>
+</section>
+<section id="personal-victory-goals">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">PERSONAL VICTORY GOALS</h2>
+<p>Absolute Victory: You are the speaker of the Reichstag.</p>
+<p>Absolute Defeat: You are no longer speaker of the Reichstag.</p>
+<h3 style="color:#b83020;margin-top:1.2em;">Stability Index Goal = HIGH (0 or higher)</h3>
+</section>
+<section id="discretionary-agenda-issues">
+<h2 style="border-left:4px solid #b83020;padding-left:0.6em;">Discretionary Agenda Issues</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Liquidation Treaty</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Paramilitaries</strong></td><td><span class="agenda-defeat">BAN right-wing paramilitaries</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Sterilization</strong></td><td><span class="agenda-pass">PASS, but only if voluntary</span></td></tr>
+</tbody></table>
+<p>Censorship NO censorship</p>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Nationalization</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Small Farmers</strong></td><td><span class="agenda-pass">PASS land reform and debt relief</span></td></tr>
+</tbody></table>
+</section>
+  </div>
+
+  <nav class="role-nav">
+    <div><a href="spd-mueller.html">← Hermann Müller</a></div>
+    <a href="index.html">↑ All Roles</a>
+    <div><a href="spd-severing.html">Carl Severing →</a></div>
+  </nav>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Democracy in Crisis: Weimar Germany Simulation | HIST 105: Western Civilization</p>
+    <p>Yosemite Community College | <a href="https://profhauselmann.org">Professor Hauselmann</a></p>
+  </div>
+</footer>
+
+<script src="../js/weimar-interactive.js"></script>
+
+</body>
+</html>

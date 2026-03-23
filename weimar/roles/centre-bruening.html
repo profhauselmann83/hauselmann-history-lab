@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heinrich Brüning — Weimar Germany Simulation</title>
+<link rel="stylesheet" href="../css/weimar-styles.css">
+<style>
+/* Role sheet additions — extend site styles without overriding */
+.role-header {
+  background: #1d5f8a;
+  color: #fff;
+  padding: 2em 0;
+  border-bottom: 4px solid var(--weimar-gold, #C9A84C);
+}
+.role-header .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1em;
+  align-items: start;
+}
+.role-header h1 {
+  color: #fff;
+  border: none;
+  margin: 0 0 0.25em;
+  font-size: 2.4em;
+}
+.role-header .role-party {
+  font-size: 1.05em;
+  opacity: 0.85;
+  margin: 0 0 0.15em;
+}
+.role-header .role-title {
+  font-size: 0.95em;
+  opacity: 0.75;
+  font-style: italic;
+  margin: 0;
+}
+.role-meta {
+  text-align: right;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+.role-meta .abbrev {
+  font-size: 1.6em;
+  font-weight: bold;
+  opacity: 1;
+  display: block;
+}
+.role-toc {
+  background: #d6e8f5;
+  border-left: 5px solid #1d5f8a;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 4px 4px 0;
+}
+.role-toc h3 {
+  margin: 0 0 0.5em;
+  color: #1d5f8a;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+.role-toc li {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.role-toc a {
+  color: #1d5f8a;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.role-toc a:hover { text-decoration: underline; }
+.role-toc a::before { content: "▸ "; }
+.role-content section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.role-content section:last-child { border-bottom: none; }
+.role-content h2 {
+  font-size: 1.2em;
+  margin: 1.5em 0 0.5em;
+}
+.role-content h3 {
+  font-size: 1.05em;
+  margin: 1.2em 0 0.4em;
+}
+.role-content p { line-height: 1.75; margin-bottom: 0.8em; }
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.agenda-table th {
+  background: #1d5f8a;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+}
+.agenda-table td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.agenda-table tr:nth-child(even) td { background: #f9f9f9; }
+.agenda-pass {
+  display: inline-block;
+  background: #e2efda;
+  color: #2d6a2d;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-defeat {
+  display: inline-block;
+  background: #ffe0e0;
+  color: #b82020;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-abstain {
+  display: inline-block;
+  background: #fff3cd;
+  color: #8a6a00;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.role-nb {
+  font-size: 0.9em;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.4em 0.75em;
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+}
+.role-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 0;
+  border-top: 2px solid #1d5f8a;
+  margin-top: 2em;
+  font-size: 0.95em;
+}
+.role-nav a {
+  color: #1d5f8a;
+  text-decoration: none;
+  font-weight: 600;
+}
+.role-nav a:hover { text-decoration: underline; }
+.assignment-note {
+  background: #fff8dc;
+  border: 2px dashed #C9A84C;
+  padding: 1em 1.25em;
+  margin: 1.5em 0;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .role-header .container { grid-template-columns: 1fr; }
+  .role-meta { text-align: left; }
+  .role-toc ul { columns: 1; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <h1>Democracy in Crisis</h1>
+    <p class="subtitle">Weimar Germany Simulation — Role Sheet</p>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../background/narrative.html">Historical Background</a></li>
+    <li><a href="../core-texts/index.html">Core Texts</a></li>
+    <li><a href="../game/rules.html">Game Rules</a></li>
+    <li><a href="index.html" class="active">Role Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="role-header">
+  <div class="container">
+    <div>
+      <h1>Heinrich Brüning</h1>
+      <p class="role-party">Centre Party (Zentrum) &nbsp;·&nbsp; #1</p>
+      <p class="role-title">Faction Leader · Justice Minister</p>
+    </div>
+    <div class="role-meta">
+      <span class="abbrev">Centre</span>
+      <span>61 Reichstag mandates</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="assignment-note">
+    <strong>Course Assignment:</strong> In place of the position papers and election poster in the original game, this course uses a research paper assignment. See your <a href="../game/assignments.html">Research Paper Packet</a> for instructions, topics, and due dates.
+  </div>
+
+  <nav class="role-toc">
+    <h3>Contents</h3>
+    <ul><li><a href="#biography">Biography</a></li><li><a href="#objectives">Objectives</a></li><li><a href="#foreign-relations-foreign-ministry">Foreign Relations (Foreign Ministry)</a></li><li><a href="#military-affairs-defense-ministry">Military Affairs (Defense Ministry)</a></li><li><a href="#paramilitaries">Paramilitaries</a></li><li><a href="#eugenics-and-sexuality-justice-ministry">Eugenics and Sexuality (Justice Ministry)</a></li><li><a href="#race-and-culture-interior-ministry">Race and Culture (Interior Ministry)</a></li><li><a href="#industrial-relations-economic-ministry">Industrial Relations (Economic Ministry)</a></li><li><a href="#agricultural-affairs-food-ministry">Agricultural Affairs (Food Ministry)</a></li><li><a href="#other-issues">Other Issues</a></li><li><a href="#responsibilities">Responsibilities</a></li><li><a href="#powers">Powers</a></li><li><a href="#victory-goals-summary">Victory Goals Summary</a></li><li><a href="#factional-victory-goals">FACTIONAL VICTORY GOALS</a></li><li><a href="#mandatory-agenda-items">Mandatory Agenda Items</a></li><li><a href="#personal-victory-goals">PERSONAL VICTORY GOALS</a></li><li><a href="#discretionary-agenda-issues">Discretionary Agenda Issues</a></li></ul>
+  </nav>
+
+  <div class="role-content">
+    <section id="biography"><h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Biography</h2>
+<p>Born in Münster, Westphalia in 1885, you lost your father when you were one, and thus your elder brother Hermann Joseph played a major part in your upbringing. Although brought up as a devout Catholic, you have been influenced by Lutheranism’s concept of duty, since the Münster region is home to both Catholics, who form a majority, and Prussian-influenced Protestants. Since childhood, you have been known for your reclusiveness but also your intellect and determination.</p>
+<p>After graduating from the Gymnasium Paulinum (an elite preparatory high school), you first leaned towards the legal profession but then studied philosophy, history, German, and political science at Strasbourg, the London School of Economics, and Bonn, where, in 1915, you received a doctorate for your thesis on the financial, economic, and legal implications of nationalizing the British railway system. The famed historian Friedrich Meinecke, one of your professors at Strasbourg, had a major influence on you.</p>
+<p>Despite the army’s concern about your shortsightedness and physical weakness, you enlisted in the infantry during the war and served from 1915 to 1918. You rose to lieutenant in the infantry regiment Werder Graf, No. 30, and ultimately to company commander. You were cited for bravery and awarded the Iron Cross First and Second Class. Despite having been elected to a radical soldiers’ council after the 1918 armistice, you did not approve of the German Revolution of 1918–1919.</p>
+<p>Your war experience and the war’s aftermath persuaded you not to pursue an academic career. You preferred instead to help former soldiers reintegrate into civilian life by assisting them with finding employment or furthering their education. You collaborated with the social reformer Carl Sonnenschein and soon entered the Prussian welfare department, where you became a close associate of Adam Stegerwald, a Centre Party leader and head of the Christian trade unions. Stegerwald made you chief executive of the unions in 1920, a post you currently retain. As the editor of the union newspaper Der Deutsche [The German], you advocate for a Volksstaat (social people’s state) and Christian democracy, based on the ideas of Christian corporatism. In 1923 you helped organize passive resistance during the French occupation of the Ruhr district.</p>
+<p>In 1924 you were elected to the Reichstag where you quickly made a name for yourself as a financial expert by pushing through the so-called Lex Brüning (Brüning Law), which restricted income taxes on earnings over 1.2 million RM, a move that brought you positive notice from conservatives who had previously considered you a pro-labor protégée of Stegerwald. From 1928 to 1930 you also served as a member of the Prussian Diet, and in 1929 you became chair of the Centre Party’s Reichstag faction.</p>
+<p>Unlike some colleagues, perhaps because of your upbringing in Münster, you understand the need to transcend the Centre Party’s Catholic character and unite Germany’s fragmented party spectrum. You advocate the formation of a broad Christian middle-party beyond religious confessions and social classes that can push back Social Democracy’s influence while simultaneously securing the rights of Catholics as a minority religion.</p>
+<p>But economics trump politics. Germany is in the midst of a deep economic crisis. Every Reichstag decision must be approached first and foremost through this lens. Austerity is required. This means cutting social spending (especially the excessive unemployment benefits) and eliminating debt, including the burden of war reparations. Austerity, you know, requires unpopular policies, but there are no other options.</p>
+<p>Economic policy is a surgeon’s knife that needs to cut quickly and radically to prevent greater harm. The sooner austerity begins, the quicker the economy will recover, which means social tensions will not grow as severe as they otherwise might. Therefore, if austerity is implemented immediately and firmly, political radicalism can be avoided.</p>
+<p>Here, then, is your economic proposal in one package: cut state spending by reducing welfare and allow prices to rise through modest inflation to lower the value of the fixed debt</p>
+<p>And what if the measures are so unpopular that no coalition will support them? That is the dilemma you have been pondering. The economic policies needed (austerity) are clear; the political path to achieve them is not.</p>
+<p>Democracy should not be overthrown, so what choices are left? New elections might vote in a new Reichstag that understands the need for short-term austerity. The only other option might be some form of “authoritative democracy”—a government based on the cooperation of the president and the Reichstag whereby essential measures not passed by the Reichstag are promulgated by presidential decree using Article 48, thereby circumventing parliament with the informal toleration of the Reichstag majority. In effect, you can pass laws without a majority as long as the majority allows it to happen.</p>
+<p>How do you link this to foreign policy?</p>
+<p>“Successes in foreign policy can be achieved all the faster if we are able to present to the world an honest and clear balance of the German finances and the German economy….This is the strongest and most efficient weapon the Reich government has, and to forge this weapon is the task.”[1]</p>
+<p>In effect, then, concessions from the Allies depends on austerity to reveal to the world how unjust reparations are.</p>
+<p>While recognized for your expertise, your personal reserve and reluctance to speak mean that some find you difficult to deal with.</p>
+<p>However, no one doubts your sincerity, professionalism, and commitment.</p>
+<p>Indeed, your financial and economic acumen combined with your openness to social questions make you a natural leader; even your service as a front officer makes you palatable to anti-Catholic conservatives such as von Hindenburg.</p>
+</section>
+<section id="objectives">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Objectives</h2>
+<p>The Constitution and the Republic</p>
+<p>As with many in the Grand Coalition, you are a Vernunftrepublikaner. The Republic has guaranteed what the Centre Party had been fighting for since its founding: equality for Catholics and autonomy for the Roman Catholic Church throughout Germany.</p>
+<p>You have no passion for the Republic, but what choice is there?</p>
+<p>Communist revolution or a NSDAP putsch are out of the question. And a military coup would hardly be likely to bring to power men of economic understanding. As a result, any working coalition that excludes the NSDAP and KPD is acceptable—provided it acts with economic responsibility. An even better goal would be a government that has a “Hindenburg majority”—one that excludes both Marxist parties and the NSDAP. In any event, as a man of integrity, you will strive honestly to deal with all acceptable parties, including the SPD, to integrate them into a coalition.</p>
+<p>Still, there may be another option—rule by presidential decree in your vision of an authoritative democracy. Naturally, you envision yourself as chancellor in such a situation as the only man capable of understanding the policies necessary for Germany’s economic recovery.</p>
+<p>If no other option remains for stable governance, a last-ditch resort would be a restoration of the Hohenzollern monarchy. If two thirds of the Reichstag support it, it could proclaim a monarchy, with von Hindenburg as regent. Upon von Hindenburg’s death, one of Crown Prince William’s sons could be invited to assume the throne. The restored monarchy could be a British-style constitutional monarchy in which real power would rest with the legislature. While no NSDAP or KPD member would likely support this option, the other parties might. Naturally, there can be no talk of a restoration of Kaiser William II or his son since that would have been unacceptable to either the international community or the SPD.</p>
+<p>There is the occasional debate about banning a particular party—some say the KPD, others the NSDAP. While this might be potentially constitutional under certain circumstances, it is dangerous. After all, it was not that long ago that the German state attempted to destroy Catholicism in the Kulturkampf. If we open the door to banning unpopular groups, where does that put Catholics as a minority? Catholicism is protected by civil liberties for all. Perhaps in a situation where the state is threatened with collapse one could consider banning a party, but that is an extreme situation.</p>
+<p>Regarding the NSDAP in particular, Hitler has ostensibly renounced violence and proclaimed the Legality Strategy. But isn’t the NSDAP merely using its Legality Strategy as a fig leaf to cover its real intentions of seizing power and establishing a right-wing dictatorship?</p>
+<p>The moderate parties of the right need to pull away from the NSDAP and back towards support of the Republic.</p>
+</section>
+<section id="foreign-relations-foreign-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Foreign Relations (Foreign Ministry)</h2>
+<p>Freedom Law and Young Plan</p>
+<p>The Treaty of Versailles is an unavoidable reality. You loathe it but recognize that one has to work within the existing framework while attempting to end its dictates. There can be no discussion of a return to the Katastrophenpolitik of the early 1920s, as envisioned by Hugenberg. Failure to comply with the Treaty would mean a return to the military occupation of Germany’s industrial heartland and hyperinflation. Germany’s economy would collapse under those conditions.</p>
+<p>Your overriding goal is to liberate Germany from the burden of reparations in order to revitalize the economy, but this will take a government capable of patience and stability. Therefore, while the Freedom Law is full of good intentions, one cannot condone the violation of the treaty demanded in the Freedom Law.</p>
+<p>Germany has indeed had some notable successes in foreign policy under Stresemann. The Treaty of Locarno in 1925 saw Germany, France and Belgium renounce violence to settle their border disputes, and France agreed to eventually withdraw from the Rhineland. The resulting Spirit of Locarno has led to additional diplomatic victories:</p>
+<p>French and Belgian troops left the Ruhr in 1925.</p>
+<p>The 1926 Treaty of Berlin reinforced the Treaty of Rapallo (1922) and improved relations between the Soviet Union and Germany.</p>
+<p>In 1926 Germany was admitted to the League of Nations with a permanent spot on the governing council.</p>
+<p>The Kellogg-Briand Pact of 1928, signed by Germany and fourteen other countries, renounced wars of aggression.</p>
+<p>The Geneva Convention, regulating warfare, was ratified by the Reichstag in April 1929.</p>
+<p>The Young Plan is a similar such victory. The Young Plan is essential to the Centre Party policy of fulfillment. It is not that anyone in the Centre Party supports the Versailles Treaty, but only by fulfilling, in as minimal way as possible, the terms of the Treaty can the Republic be assured of any chance of success. The last time Germany attempted to avoid the Treaty the French occupied the Rhineland. That humiliation, combined with the disastrous nationalist policy of protesting the occupation by printing money, led to the dreadful hyperinflation that ruined many Germans’ lives. That sort of military and economic disaster only plays into the hands of the fascists and communists.</p>
+<p>However, you can only support the Young Plan if there is a condition that it be paid for through tax increases and budget cuts.</p>
+<p>Further, unlike most other politicians, you also understand that the reparations are really a shell game and do not truly burden the economy.</p>
+<p>In January 1921 the total sum due was initially decided by the Inter-Allied Reparations Commission and set at 132 billion gold marks.</p>
+<p>This figure was divided into three categories. The A Bonds amounted to twelve billion gold marks, and the B bonds a further thirty-eight billion marks, which equated to around 12.5 billion dollars, “an amount smaller than what Germany had recently offered to pay.”</p>
+<p>Class C bonds amounted for the remaining two-thirds of the total figure and were deliberately designed to be chimerical. Their primary function was to mislead public opinion in the receiver countries into believing that the 132–billion RM figure was being maintained. Therefore, the sum Class C bonds amounted to indefinite postponement. Germany was only obliged to pay the Class A and B bonds. The actual total payout from 1920 to now has been about twenty billion RM, worth about five billion US dollars or one billion British pounds. Of this amount, 12.5 billion was cash that came mostly from loans from New York bankers. The rest was goods such as coal and chemicals, or from assets like railway equipment.</p>
+<p>The total amount of reparations was fixed in 1921 on the basis of the German capacity to pay, not on the basis of Allied claims. The highly publicized rhetoric of 1919 about paying for all the damages and all the veterans’ benefits was irrelevant to the total, but it did affect how the recipients spent their share.</p>
+<p>Whether or not you want to share your knowledge about the true nature of the reparations is up to you.</p>
+<p>Liquidation Treaty with Poland</p>
+<p>The Liquidation Treaty would settle certain conflicts between the two states. One has to be pragmatic—the treaty will protect Germans in Poland until such time as the border issue is resolved. But the economic cost is high in a time of austerity. Therefore, you must be convinced to support the treaty.</p>
+</section>
+<section id="military-affairs-defense-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Military Affairs (Defense Ministry)</h2>
+<p>The autonomy of the Reichswehr should be preserved.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Naval Bill</h3>
+<p>Regardless of your principled support for naval expansion, there is no money in the budget for armored cruisers. But is it wise to provoke the Junker elite whose support is so vital? Probably not. You should link support for naval expansion to an agreement to support austerity.</p>
+</section>
+<section id="paramilitaries">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Paramilitaries</h2>
+<p>Paramilitaries have outlived their usefulness; in the early days of the Republic they helped to defend Germany’s eastern borders and put down Marxist rebellions. Now, while technically legal, those engaging in street fights only undermine German stability and economic recovery. A ban on disruptive paramilitaries—namely the SA—would be useful. You supported the ban on the KPD’s Red Front.</p>
+</section>
+<section id="eugenics-and-sexuality-justice-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Eugenics and Sexuality (Justice Ministry)</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Sterilization</h3>
+<p>You share the concerns about degeneracy. However, the Vatican has reinforced Casti Connubii with even more conservative instructions, attacking both eugenics and sex education, which it was feared could lead to a slackening of sexual morality. Sterilization is an attack on morality. You greatly favor moral education that will promote eugenically motivated self-restraint, pleading for a sort of natural selection. But you cannot endorse sterilization any more than abortion.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Mothers’ Day</h3>
+<p>Women must embrace their divinely dictated role as mothers—the font of the moral health of the nation without which nothing can prosper. They are the natural physical and moral nurturers of the next generation and nothing should impede them in this sacred duty. They should accept this role and bear as many children as possible. The Virgin Mary stands as their model. Mothers’ Day should be a national holiday in this religious sense. However, you must publicly separate motherhood from the eugenics of the Far Right (NSDAP and DNVP)—motherhood is not a choice but a divine duty, and the state should never be allowed to determine which mothers should be allowed to have children.</p>
+</section>
+<section id="race-and-culture-interior-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Race and Culture (Interior Ministry)</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Jews (Antisemitism Option)</h3>
+<p>Jews are not really capable of being truly German. On that there is little room for debate. At the same time, they are citizens of a religious minority. If the state were to limit the rights of Jews, what would prevent the state from once again attacking Catholics? It was not that long ago—indeed in your childhood—that Bismarck’s government launched the Kulturkampf in an effort to destroy Catholic organizational rights. Therefore, one has to defend the civil liberties of Jews in order to secure those of Catholics.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Censorship</h3>
+<p>Censorship of anti-German or anti-Christian works, while disturbing, should not be allowed to distract the government from more important matters such as economic recovery and foreign affairs. For a Christian democrat, little commends All Quiet on the Western Front. It makes every effort to insult the clergy. It offers neither hope nor moral guidance.</p>
+<p>Its anti-patriotism insults the sacrifices of those who died, but perhaps more importantly its critique of established authority undermines the fabric of society. A world build just around front soldiers is nonsense, regardless of their bravery and sacrifice; instead, Paul and his comrades should recognize that society only works when every individual plays their proper role, respecting a natural hierarchy that respects all equally but does not demand that all be made equal in other aspects. With no spiritual leadership visible, is it any wonder that Remarque’s characters fall into despondence? Yet censorship is dangerous, especially since the work is not directly sacrilegious.</p>
+<p>Instead, the Reichstag could symbolically vote to condemn the work without banning it.</p>
+</section>
+<section id="industrial-relations-economic-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Industrial Relations (Economic Ministry)</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Austerity</h3>
+<p>Economics are at the heart of your policies. To that end, you recognize that the German recovery requires austerity. There is no other path.</p>
+<p>Unemployment benefits and social spending must be cut, and the state must balance its books. Your stance on the Young Plan is linked to this notion, too. The Young Plan will only have your support if it is linked to austerity in order to pay for it.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Nationalization</h3>
+<p>Any discussion of nationalization of banks is absurd and communist. It is a fundamental violation of sacred property rights and opens the door to a Bolshevik revolution. In the end, the economy must serve the nation, but private industry does that best.</p>
+</section>
+<section id="agricultural-affairs-food-ministry">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Agricultural Affairs (Food Ministry)</h2>
+<p>You want to strengthen the Green Front as a bastion of conservatism and to bring them into a broad conservative alliance that can wield a majority without Hugenberg. To that end, you want to rally the masses of small farmers especially in the CNBP (Schiele) as well as the BVP and your own party. You can do this by supporting their agenda.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Agrarian Tariffs</h3>
+<p>Agrarian tariffs are a central demand of large farmers (Junkers).</p>
+<p>However, they are an impediment to drawing support from the urban working classes (higher food costs), small farmers (only helps large farmers), and liberals (forces higher wage demands by workers). You must find a way to support tariffs but also support workers.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Small Farmers’ Relief</h3>
+<p>Grain tariffs cost money and only support a few while indirectly hurting many. Finding money for land reform (redistribution) or debt relief may be necessary in order to vitalize the failing agricultural sector as well as provide some relief to the rural poor at no cost to the state.</p>
+<p>In effect, you support the state buying up bankrupt Junker estates and selling them at discounted prices to poor farmers or settling workers on them. And if state subsidies are necessary to forgive farmers’ debts and end foreclosures, that is possible, too, but only if there is a balanced budget.</p>
+</section>
+<section id="other-issues">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Other Issues</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Stability Index</h3>
+<p>Desiring, as you do, to see the long-term prosperity of the Republic, the higher the Stability Index (0 or higher) the more victory points you will be awarded.</p>
+<p>Presidential Election in 1932</p>
+<p>You will support whoever you think best serves your goals—logically, this could be someone from the Centre Party, or possibly von Hindenburg.</p>
+<p>But you have flexibility.</p>
+<p>Committees of Inquiry</p>
+<p>You agree that corruption should be prosecuted. Further, the targets of assassinations have occasionally been members of the Centre Party. The parliamentary system should not allow its powers to be undermined by extra-judicial executions. Let the committee do its work.</p>
+</section>
+<section id="responsibilities">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Responsibilities</h2>
+<p>Coordinate with members of your faction to determine party positions/votes ahead of time.</p>
+<p>Ensure that all discussions include economic stability.</p>
+<p>Serve as justice minister.</p>
+</section>
+<section id="powers">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Powers</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Paramilitary (Reichsbanner) Leader: see addendum</h3>
+</section>
+<section id="victory-goals-summary">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Victory Goals Summary</h2>
+<p>Note: The Victory Points system is part of the full game and is not used in this course’s abridged three-session simulation.</p>
+<p class="role-nb"><em>NB: Faction and personal victory goals may conflict.</em></p>
+</section>
+<section id="factional-victory-goals">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">FACTIONAL VICTORY GOALS</h2>
+<p>Absolute Victory: Centre Party-led cabinet; moral agenda passed (sterilization defeated; All Quiet censored due to its anti-Christianity; Mothers’ Day passed without linkage to eugenics/race).</p>
+<p>Absolute Defeat: KPD is in power in any way; OR Centre ceases to exist; OR moral agenda fails (sterilization passed; censorship defeated; Mothers’ Day defeated).</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Stability Index Goal = HIGH (0 or higher)</h3>
+<p>Presidential Election = Brüning OR not NSDAP or KPD</p>
+<p>Type of Government = any government in any form that excludes KPD and NSDAP</p>
+<p>Indeterminates/Splinters = convince to join your faction</p>
+</section>
+<section id="mandatory-agenda-items">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Mandatory Agenda Items</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Freedom Law</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Young Plan</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Naval Bill</strong></td><td><span class="agenda-pass">PASS only if linked to passing Austerity (you must pass all three)</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Austerity</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Agrarian Tariffs</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Antisemitism</strong></td><td><span class="agenda-defeat">DEFEAT but explain Jews as a religion not a race</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Mothers’ Day</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+</section>
+<section id="personal-victory-goals">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">PERSONAL VICTORY GOALS</h2>
+<p>Absolute Victory: You are chancellor; austerity passed.</p>
+<p>Absolute Defeat: Centre Party splits; OR austerity defeated; OR KPD is in the cabinet or in power in any way.</p>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Stability Index Goal = HIGH (0 or higher)</h3>
+</section>
+<section id="discretionary-agenda-issues">
+<h2 style="border-left:4px solid #1d5f8a;padding-left:0.6em;">Discretionary Agenda Issues</h2>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Liquidation Treaty UNDECIDED</h3>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Paramilitaries</strong></td><td><span class="agenda-defeat">BAN all violent paramilitaries</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Sterilization</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Censorship STATUS QUO</h3>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Nationalization</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<h3 style="color:#1d5f8a;margin-top:1.2em;">Small Farmers UNDECIDED</h3>
+</section>
+  </div>
+
+  <nav class="role-nav">
+    <div><a href="kpd-muenzenberg.html">← Willi Münzenberg</a></div>
+    <a href="index.html">↑ All Roles</a>
+    <div><a href="centre-kaas.html">Ludwig Kaas →</a></div>
+  </nav>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Democracy in Crisis: Weimar Germany Simulation | HIST 105: Western Civilization</p>
+    <p>Yosemite Community College | <a href="https://profhauselmann.org">Professor Hauselmann</a></p>
+  </div>
+</footer>
+
+<script src="../js/weimar-interactive.js"></script>
+
+</body>
+</html>

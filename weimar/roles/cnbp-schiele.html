@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Martin Luther Schiele — Weimar Germany Simulation</title>
+<link rel="stylesheet" href="../css/weimar-styles.css">
+<style>
+/* Role sheet additions — extend site styles without overriding */
+.role-header {
+  background: #7a6a3a;
+  color: #fff;
+  padding: 2em 0;
+  border-bottom: 4px solid var(--weimar-gold, #C9A84C);
+}
+.role-header .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1em;
+  align-items: start;
+}
+.role-header h1 {
+  color: #fff;
+  border: none;
+  margin: 0 0 0.25em;
+  font-size: 2.4em;
+}
+.role-header .role-party {
+  font-size: 1.05em;
+  opacity: 0.85;
+  margin: 0 0 0.15em;
+}
+.role-header .role-title {
+  font-size: 0.95em;
+  opacity: 0.75;
+  font-style: italic;
+  margin: 0;
+}
+.role-meta {
+  text-align: right;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+.role-meta .abbrev {
+  font-size: 1.6em;
+  font-weight: bold;
+  opacity: 1;
+  display: block;
+}
+.role-toc {
+  background: #ebe0d0;
+  border-left: 5px solid #7a6a3a;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  border-radius: 0 4px 4px 0;
+}
+.role-toc h3 {
+  margin: 0 0 0.5em;
+  color: #7a6a3a;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+.role-toc li {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.role-toc a {
+  color: #7a6a3a;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.role-toc a:hover { text-decoration: underline; }
+.role-toc a::before { content: "▸ "; }
+.role-content section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.role-content section:last-child { border-bottom: none; }
+.role-content h2 {
+  font-size: 1.2em;
+  margin: 1.5em 0 0.5em;
+}
+.role-content h3 {
+  font-size: 1.05em;
+  margin: 1.2em 0 0.4em;
+}
+.role-content p { line-height: 1.75; margin-bottom: 0.8em; }
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.agenda-table th {
+  background: #7a6a3a;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+}
+.agenda-table td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid #e5e5e5;
+}
+.agenda-table tr:nth-child(even) td { background: #f9f9f9; }
+.agenda-pass {
+  display: inline-block;
+  background: #e2efda;
+  color: #2d6a2d;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-defeat {
+  display: inline-block;
+  background: #ffe0e0;
+  color: #b82020;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.agenda-abstain {
+  display: inline-block;
+  background: #fff3cd;
+  color: #8a6a00;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.role-nb {
+  font-size: 0.9em;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.4em 0.75em;
+  border-left: 3px solid #ccc;
+  margin: 0.5em 0;
+}
+.role-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 0;
+  border-top: 2px solid #7a6a3a;
+  margin-top: 2em;
+  font-size: 0.95em;
+}
+.role-nav a {
+  color: #7a6a3a;
+  text-decoration: none;
+  font-weight: 600;
+}
+.role-nav a:hover { text-decoration: underline; }
+.assignment-note {
+  background: #fff8dc;
+  border: 2px dashed #C9A84C;
+  padding: 1em 1.25em;
+  margin: 1.5em 0;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .role-header .container { grid-template-columns: 1fr; }
+  .role-meta { text-align: left; }
+  .role-toc ul { columns: 1; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <h1>Democracy in Crisis</h1>
+    <p class="subtitle">Weimar Germany Simulation — Role Sheet</p>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../background/narrative.html">Historical Background</a></li>
+    <li><a href="../core-texts/index.html">Core Texts</a></li>
+    <li><a href="../game/rules.html">Game Rules</a></li>
+    <li><a href="index.html" class="active">Role Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="role-header">
+  <div class="container">
+    <div>
+      <h1>Martin Luther Schiele</h1>
+      <p class="role-party">Christian National Farmers&#x27; Party &nbsp;·&nbsp; #1</p>
+      <p class="role-title">Member of the Reichstag</p>
+    </div>
+    <div class="role-meta">
+      <span class="abbrev">CNBP</span>
+      <span>15 Reichstag mandates</span>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="assignment-note">
+    <strong>Course Assignment:</strong> In place of the position papers and election poster in the original game, this course uses a research paper assignment. See your <a href="../game/assignments.html">Research Paper Packet</a> for instructions, topics, and due dates.
+  </div>
+
+  <nav class="role-toc">
+    <h3>Contents</h3>
+    <ul><li><a href="#biography">Biography</a></li><li><a href="#objectives">Objectives</a></li><li><a href="#foreign-relations-foreign-ministry">Foreign Relations (Foreign Ministry)</a></li><li><a href="#military-affairs-defense-ministry">Military Affairs (Defense Ministry)</a></li><li><a href="#paramilitaries">Paramilitaries</a></li><li><a href="#eugenics-and-sexuality-justice-ministry">Eugenics and Sexuality (Justice Ministry)</a></li><li><a href="#race-and-culture-interior-ministry">Race and Culture (Interior Ministry)</a></li><li><a href="#industrial-relations-economic-ministry">Industrial Relations (Economic Ministry)</a></li><li><a href="#agricultural-affairs-food-ministry">Agricultural Affairs (Food Ministry)</a></li><li><a href="#other-issues">Other Issues</a></li><li><a href="#responsibilities">Responsibilities</a></li><li><a href="#powers">Powers</a></li><li><a href="#victory-goals-summary">Victory Goals Summary</a></li><li><a href="#factional-victory-goals">FACTIONAL VICTORY GOALS</a></li><li><a href="#personal-victory-goals">PERSONAL VICTORY GOALS</a></li><li><a href="#discretionary-agenda-issues">Discretionary Agenda Issues</a></li></ul>
+  </nav>
+
+  <div class="role-content">
+    <section id="biography"><h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Biography</h2>
+<p>You were born 17 January 1870 in Gross Schwarzlosen, Mecklenburg to a devoutly Lutheran family of tenant farmers. You graduated from school in Stendal and received formal agricultural training before renting land to farm in Neu Schollene. You also run a small manufactory for agricultural materials. You hold an honorary doctorate from the Agricultural University of Bonn-Poppelsdorf and are a board member of the Cereal Industry and Commission Co. in Berlin.</p>
+<p>You became actively involved in politics during the Kaiserreich as a member of the German Conservative Party. In 1897 you were a elected to the local county council. You served in the Reichstag from 1914 to 1918.</p>
+<p>Following the collapse of the Kaiserreich, you were decidedly unenthusiastic about the new Republic, and during the National Assembly from 1918 to 1919, you attempted to block its increasingly radical agenda.</p>
+<p>In 1918 you participated in the founding of the then monarchist German National People’s Party (DNVP), and during the anti-Republic Kapp Putsch in 1920 you sided with the putschists to overthrow the state. As a result, a court case was brought against you and was only dropped in 1924. In fact, as an ardent nationalist, you and other DNVP members left the government in 1925 (where you were serving as interior minister) in protest over Stresemann’s (DVP) negotiation of the Treaty of Locarno.</p>
+<p>You were disgusted at the attempt to normalize relations with the Allies who imposed the Treaty of Versailles.</p>
+<p>All of this led many to assume that you are implacably hostile to the new constitutional arrangement. However, they misunderstand your pragmatism. The era of revolution and street violence is over. You are, if nothing else, a practical man. You desire only to create the best possible situation for your Protestant rural constituency—the small German farmer. Everything you do is to protect and promote this group.</p>
+<p>And if that now means working within the Republic, so be it. You are, then, a Vernunftrepublikaner, and your unparalleled insight into the agrarian economy is universally recognized. You regularly publish on agricultural matters.</p>
+<p>In 1925 you served in the cabinet of chancellor Hans Luther as interior minister (Luther did not belong to any party, but his affinity for the liberal conservative DVP was well known). From 1927 to 1928 you were the food minister in the cabinet of chancellor Wilhelm Marx (X). During that time, you proposed the Emergency Program for Agriculture to alleviate the farmers’ situation and improve the food supply. In all cases you have advanced the interests of German agriculture primarily by advocating a stronger internal market, largely through protective tariffs and subsidies. Since 1928 you have been president of the Agrarian League (RLB), which has attempted to unite all agricultural interests, largely by allying with the DNVP.</p>
+<p>However, events have forced you to rethink your political allegiance—though not your basic policies. The farmers’ revolts of 1927 and 1928 under the Rural People’s Movement have made it clear that the DNVP is in the hands of Junker elites, only interested in promoting the policies of Prussian noble estates. Your insistence on prioritization of small famers meant that Hugenberg (DNVP) orchestrated your removal from the RLB presidency. Also, Hugenberg’s increasingly irrational opposition to the Republic at all costs is only undermining whatever influence small farmers can exercise. The Republic may not be ideal, but it is the reality, and you can work with moderates as well as conservatives as long as they bring tangible results for farmers. Having no choice, you have just left the DNVP and helped found the Christian National Farmers’ Party (CNBP).</p>
+<p>The CNBP thus emerged in 1928 as one of several splits from the DNVP.</p>
+<p>The various farming advocacy groups, frustrated at the DNVP’s subordination to big agriculture, are looking to unify with others in the DNVP who were equally frustrated with Hugenberg’s leadership. Now, formerly non-attached members of the CNBP have linked with deputies who have resigned from the DNVP parliamentary group, creating your CNBP faction in the Reichstag.</p>
+<p>The CNBP is attracting Protestant rural voters and DNVP pragmatists.</p>
+<p>Compared to the DNVP, therefore, you and your comrades are moderates, but your agrarian constituency, though influenced by Protestant democracy and conservative nationalism, is increasingly radicalized by the dire economic realities of the agrarian economy. While the terrorist tactics of the Rural People’s Movement may be extreme, this only underscores how desperate the situation truly is.</p>
+<p>Programmatically, therefore, the CNBP is a special interest agrarian party representing small and medium-sized farmers. It draws primarily from Protestant rural constituencies and has considerable support even outside of North Germany, especially in rural Protestant areas of Upper and Middle Franconia.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">On Indeterminacy</h3>
+<p>The Republic has much to offer, but it also has many shortcomings. You have not made up your mind on some of the most fundamental of issues, though. In effect, you represent large blocks of Germans who move between parties or are in smaller and often ephemeral splinter parties.</p>
+<p>Collectively, however, the number of Indeterminate mandates exceeds those of many established parties. This voting power gives you considerable influence. The problem is, just like your constituents, you are not always sure what you want or what is in Germany’s or your own best interests.</p>
+<p>In the Republic’s fragile coalition system you may well play the decisive role in shifting the balance of power based upon how you align yourself. You have the additional influence of being capable of directly altering election outcomes, as described elsewhere. To that end, you should make sure that the other parties meet your demands, either through back room deals, the appeal of their electioneering, or their Reichstag votes.</p>
+<p>Though an indeterminate, you will likely want to caucus with the other agrarian parties—the left-leaning DBP and the conservative RLB.</p>
+</section>
+<section id="objectives">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Objectives</h2>
+<p>As an indeterminate, you have great flexibility in how you view most matters. The only issues that are central to you are ones related to agriculture and a broadly conservative and Christian perspective. Here, you have thrown off the leadership of the RLB and the DNVP since they only pursued the interests of the Junker elites. Your interests are those of the smaller and middle farmers. Grain tariffs, for example, only aid the Junker class; and this same class opposes any sort of land reform (redistribution) to help small farmers. Your cultural and foreign policy views may tend to be conservative, but you have few matters of principle here. As a Protestant, you are suspicious of equality or special privileges for Catholics and Jews, but, again, these are not principles. And most importantly, you are open to the constitutional nature of Germany—it is not the form that matters in the end, but the content. At the same time, though, you are cautious about the overly liberal nature of the DBP, the smaller rival party that appeals to farmers and peasants.</p>
+<p>The Constitution and the Republic</p>
+<p>You are not sure if the Republic is the proper constitutional structure for Germany. It had its promise in the 1920s, but times are changing rapidly. The pro-Republic politicians seem more interested in protecting the interests of the urban classes—the workers (aligned with the KPD and SPD) and the industrialists (aligned with the liberals in the DDP and DVP)—at the expense of the rural economy and everyone’s well-being. As an indeterminate, you have to look for whatever political arrangement best promotes the CNBP’s interests—a center-left or a center-right coalition or something else. The KPD must never be allowed into government, of course, and the SPD must move away from its left wing.</p>
+<p>The NSDAP is radical and street oriented—at least for now not an option, but at least it is open to farmers. And the DNVP only supports the big agricultural elites not the small farmers—they have lost all credibility.</p>
+<p>There are many competing ideas about the shape of the Republic, and you have not made up your mind. To decide what tack to take, consider your views on other issues and see what course might best fulfill them. At the moment, you can work with the Grand Coalition on some issues.</p>
+<p>Perhaps there is an alternative—the creation of a new party—a large party of rural interests that can emerge from the Green Front? Perhaps such a body could draw in the agrarian interests of the Centre Party and BVP as well as the NSDAP. Such a party could seal the breach between Catholics and Protestants and unite conservatives and moderate elements.</p>
+<p>With such a foundation, even the liberal DBP could be enticed to join.</p>
+<p>Such a new party would become a new and decisive center-right core of any future German government, surely one that would have the support of von Hindenburg, could work well with the Reichswehr, and provide the bulwark against the Marxists. If you can succeed in this goal, you will likely control the future of Germany.</p>
+<p>Further, the talk about banning a particular party—some say the KPD, others the NSDAP—seems exaggerated. After all, your own movement is open to using street tactics through the Rural People’s Movement—you would not want to empower the state to repress your movement. Perhaps, though, under certain circumstance, one may have to ban the KPD. Regarding the NSDAP in particular, Hitler has ostensibly renounced violence and proclaimed the Legality Strategy. But isn’t the NSDAP merely using its Legality Strategy as a fig leaf to cover its real intentions of seizing power and establishing a right-wing dictatorship?</p>
+</section>
+<section id="foreign-relations-foreign-ministry">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Foreign Relations (Foreign Ministry)</h2>
+<p>Freedom Law and Young Plan</p>
+<p>Germany must repudiate the Versailles Treaty. Ideally, the government simply renounces the treaty in its entirety. At an extreme minimum, the most humiliating clauses must be abolished. To that end, you want to see an end to all reparations. You also demand the elimination of the War Guilt Clause, Article 231.</p>
+<p>The Young Plan is a national humiliation, just like its predecessor the Dawes Plan. It is based on accepting the Versailles Treaty. Any party that supports it denies German self-determination and is not a patriot.</p>
+<p>Every effort must be made to defeat it. You should attempt to form a majority to support an alternative, the Freedom Law. This law would renounce all reparations and make it a criminal offense for any German official to cooperate in their collection. It would also renounce the German acknowledgement of war guilt and the occupation of German territory, which were also terms of the Treaty of Versailles.</p>
+<p>Liquidation Treaty with Poland</p>
+<p>You oppose the Liquidation Treaty since it would hurt German farmers by opening up competition from cheaper Polish farm products. Of course it protects the Germans living in Poland, but what about the Germans in Germany? They cannot afford either the costs of the treaty or its consequences on farm trade.</p>
+</section>
+<section id="military-affairs-defense-ministry">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Military Affairs (Defense Ministry)</h2>
+<p>Many also argue that the Reichswehr must remain autonomous of civilian government. The Reichswehr is indeed one of the pillar institutions of Germany, and no one need ever doubt its honor.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Naval Bill</h3>
+<p>As a German nationalist you support a strong navy, and you realize that armored cruisers will enhance German power and autonomy.</p>
+</section>
+<section id="paramilitaries">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Paramilitaries</h2>
+<p>The days of popular uprisings are not over. True, you have no paramilitary, but you are not averse to using terrorism through the Rural People’s Movement. If the government will not act in farmers’ interests, then they have a right to act. As a result, the paramilitaries are not inherently bad.</p>
+</section>
+<section id="eugenics-and-sexuality-justice-ministry">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Eugenics and Sexuality (Justice Ministry)</h2>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Sterilization</h3>
+<p>Regarding race hygiene (eugenics), the declining birthrate is a sign of widespread moral decay. The masses are turning away from church teachings and traditional sexual mores, seeking material benefits and a socialist government. The symptoms of moral sickness in the national body appear everywhere: in rising rates of venereal disease, in visible prostitution, in the open sale of pornography, and especially in the decline in national fertility. These trends further undermine military preparedness as the number of recruits and their overall fitness decline. In addition to struggling for public morality, you advocate rewards for large families with financial incentives such as tax reductions and rental subsidies. The large family is a healthy family, and healthy families are the foundation of the Volk. Pronatalism is thus a synthesis of nationalism, Christian morality, and an emphasis on traditional marriage. Further, the state has every incentive and right to intervene to prevent the spread of genetic degeneracy. Euthanasia, however, is repugnant. Yet sterilization may be a useful policy. You will have to look at any eugenic proposal carefully to see if it crosses a moral line.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Mothers’ Day</h3>
+<p>Women must embrace their divinely dictated role as mothers—the font of the moral health of the nation without which nothing can prosper. They are the natural physical and moral nurturers of the next generation and nothing should impede them in this sacred duty. They should accept this role and bear as many children as possible. Mothers’ Day should be a national holiday in this religious sense.</p>
+</section>
+<section id="race-and-culture-interior-ministry">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Race and Culture (Interior Ministry)</h2>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Jews (Antisemitism Option)</h3>
+<p>Jews are not Germans and certainly not Christian, and they often exploit poor farmers in their roles as rural moneylenders. They should not be part of the German political system.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Censorship</h3>
+<p>Censorship is a possible tool to preserve traditional values, but it may be better to let the courts handle such matters rather than the Reichstag. The cities have developed into cesspools of moral decay, and their filth must not be allowed to spread to the countryside. Similarly regarding All Quiet on the Western Front, as a conservative, you have an ambivalent stance on the novel. You recognize in its critique a call for a new constitutional order. And the character of the farmer is portrayed sympathetically. However, the novel disrespects traditional elites who were only acting as good patriots to defend Germany. You have no illusions that one should blame either the front soldiers or their officers or even the kaiser—the war was lost on the home front by the November criminals.</p>
+</section>
+<section id="industrial-relations-economic-ministry">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Industrial Relations (Economic Ministry)</h2>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Austerity</h3>
+<p>On economics you are less indeterminate. In fact, it is one of your top concerns from which almost all other matters flow. You can compromise on just about any issue, but not the fundamentals of economic recovery in the agrarian sector. The basis of German economic strength is agriculture, and all your policies emphasize the needs of smaller farmers—after all, they not only employ the greatest number of people in the countryside, they also provide the basic food for everything from the military to the workers.</p>
+<p>As a result, in the current economic crisis there can be absolutely no thought of increased social spending for workers and industry or even maintaining or extending the level of unemployment benefits. The state must balance its books with a program of austerity. New taxes would only hurt the recovery. You support austerity.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Nationalization</h3>
+<p>Nationalization of banks and land is worth considering. But only if this leads to the land being redistributed to farmers and to banks offering better credit and debt relief to farmers.</p>
+</section>
+<section id="agricultural-affairs-food-ministry">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Agricultural Affairs (Food Ministry)</h2>
+<p>You are a member of the agrarian movement known as the Green Front—a loose coordinating association of often competing agrarian interests.</p>
+<p>You should caucus with other members of the Green Front and convince them to support your agrarian agenda. As a voting block under your direction, it could well be the decisive power broker. The members are: von Kalckreuth (RLB); Schiele (CNBP), von Sybel (CNBP), Gandorfer (DBB), Hermes (X), Willikens (NSDAP).</p>
+<p>Austerity cannot apply to agriculture generally.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Agrarian Tariffs</h3>
+<p>Grain tariffs must continue, even if it only benefits large farmers (Junkers). It is a necessary compromise to stabilize the entire agrarian economy. That money is ideally better spent elsewhere in the agrarian sector, but no one benefits if large estates go under. Since all farmers need protection you support agrarian tariffs to prevent unfair competition from abroad.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Small Farmers’ Relief</h3>
+<p>Land reform and debt relief for small farmers top your concerns. Small farmers must be protected at all costs; therefore, you demand policies such as debt relief to stop farm foreclosures and land reform that redistributes land to small farmers—especially land from bankrupt large Junker estates.</p>
+</section>
+<section id="other-issues">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Other Issues</h2>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Stability Index</h3>
+<p>Desiring, as you do, some decisive change, at least in agriculture, but still wanting a stable society, you want a neutral Stability Index (-50 to +50) for your personal points.</p>
+<p>Since you have a great deal of flexibility, you will receive factional points based on the Stability Index according to the faction you join at the end of the game.</p>
+<p>Presidential Election in 1932</p>
+<p>You will support whoever can best restrain the extremism of the NSDAP as well as the KPD and SPD—a man such as von Hindenburg.</p>
+<p>Committees of Inquiry</p>
+<p>Corruption is real and used against the small farmers. It should be aggressively investigated. Yet investigation of violence depends on the context—after all, your own constituents have resorted in desperation to violent acts and you support them. In such a case, you should use a committee to express the legitimate grievances of these people.</p>
+</section>
+<section id="responsibilities">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Responsibilities</h2>
+<p>Coordinate with members of your faction to determine party positions/votes ahead of time.</p>
+<p>Promote the interests of German farmers.</p>
+<p>Coordinate with members of the Green Front.</p>
+</section>
+<section id="powers">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Powers</h2>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Rural People’s Movement: see addendum</h3>
+</section>
+<section id="victory-goals-summary">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Victory Goals Summary</h2>
+<p>Note: The Victory Points system is part of the full game and is not used in this course’s abridged three-session simulation.</p>
+<p class="role-nb"><em>NB: Faction and personal victory goals may conflict.</em></p>
+</section>
+<section id="factional-victory-goals">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">FACTIONAL VICTORY GOALS</h2>
+<p>On the last day, you must pick one of the main parties (DNVP, KPD, NSDAP, SPD, X) and petition to join them in a coalition. You are not leaving your original party, just agreeing to ally with this major party. Your factional objectives become those of this party. You may demand to know what these objectives are before allying. Your PERSONAL VICTORY GOALS do not change.</p>
+</section>
+<section id="personal-victory-goals">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">PERSONAL VICTORY GOALS</h2>
+<p>Absolute Victory: You are food minister; land reform and debt relief passed; agrarian tariffs passed; censorship passed; Mothers’ Day passed.</p>
+<p>Absolute Defeat: KPD is in power or in a ruling coalition; OR land reform and debt relief defeated; agrarian tariffs defeated.</p>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Stability Index NEUTRAL (-50 to +50)</h3>
+</section>
+<section id="discretionary-agenda-issues">
+<h2 style="border-left:4px solid #7a6a3a;padding-left:0.6em;">Discretionary Agenda Issues</h2>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Liquidation Treaty</strong></td><td><span class="agenda-defeat">DEFEAT</span></td></tr>
+</tbody></table>
+<h3 style="color:#7a6a3a;margin-top:1.2em;">Paramilitaries STATUS QUO</h3>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Sterilization</strong></td><td><span class="agenda-pass">PASS</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Censorship</strong></td><td><span class="agenda-defeat">BAN All Quiet</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Nationalization</strong></td><td><span class="agenda-defeat">DEFEAT, but open to Aryanization option</span></td></tr>
+</tbody></table>
+<table class="agenda-table">
+<thead><tr><th>Debate</th><th>Your Position</th></tr></thead><tbody>
+<tr><td><strong>Small Farmers</strong></td><td><span class="agenda-pass">PASS land reform and debt relief</span></td></tr>
+</tbody></table>
+</section>
+  </div>
+
+  <nav class="role-nav">
+    <div><a href="ddp-heuss.html">← Theodor Heuss</a></div>
+    <a href="index.html">↑ All Roles</a>
+    <div><a href="wp-bredt.html">Johann Viktor Bredt →</a></div>
+  </nav>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>Democracy in Crisis: Weimar Germany Simulation | HIST 105: Western Civilization</p>
+    <p>Yosemite Community College | <a href="https://profhauselmann.org">Professor Hauselmann</a></p>
+  </div>
+</footer>
+
+<script src="../js/weimar-interactive.js"></script>
+
+</body>
+</html>
