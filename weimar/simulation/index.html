@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weimar Republic — Instructor Simulation Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0d1117;
+  --dark-bg: #0a0e14;
+  --panel: #111620;
+  --panel-mid: #161d2a;
+  --panel-light: #1c2636;
+  --border: rgba(180,150,80,0.25);
+  --gold: #c8a84b;
+  --gold-light: #e0c070;
+  --gold-dim: rgba(200,168,75,0.15);
+  --red: #9b2335;
+  --red-dim: rgba(155,35,53,0.15);
+  --red-bright: #c0392b;
+  --blue: #1a3a6e;
+  --blue-dim: rgba(26,58,110,0.2);
+  --blue-mid: #2a5298;
+  --blue-bright: #4a90d9;
+  --green: #1a4a2e;
+  --green-dim: rgba(26,74,46,0.2);
+  --green-bright: #27ae60;
+  --brown: #5c3d1e;
+  --cream: #f0e8d0;
+  --text: #d8cdb8;
+  --text-dim: #8a7f6e;
+  --shadow: rgba(0,0,0,0.6);
+  /* Faction colors */
+  --kpd: #9b2335;
+  --spd: #c0392b;
+  --zentrum: #2a5298;
+  --ddp: #27ae60;
+  --dvp: #e67e22;
+  --dnvp: #8b6914;
+  --nsdap: #c8a84b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #060a10;
+  background-image:
+    radial-gradient(ellipse at 15% 20%, rgba(155,35,53,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(26,58,110,0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(200,168,75,0.04) 0%, transparent 70%);
+  font-family: 'Crimson Pro', Georgia, serif;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 30px 20px 60px;
+}
+
+.outer-frame {
+  max-width: 1140px;
+  margin: 0 auto;
+  background: var(--panel);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  border: 1px solid var(--gold);
+  box-shadow:
+    0 0 0 1px #060a10,
+    0 0 0 7px var(--panel-mid),
+    0 0 0 8px var(--border),
+    0 30px 80px rgba(0,0,0,0.8),
+    inset 0 0 120px rgba(200,168,75,0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative corner marks */
+.corner {
+  position: absolute;
+  width: 50px; height: 50px;
+  border-color: var(--gold);
+  border-style: solid;
+  opacity: 0.45;
+  z-index: 10;
+  pointer-events: none;
+}
+.corner.tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+.corner.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+.corner.bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+.corner.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 56px 60px 38px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  background: linear-gradient(180deg, rgba(200,168,75,0.05) 0%, transparent 100%);
+}
+.header-era {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  opacity: 0.9;
+}
+.header h1 {
+  font-family: 'IM Fell English', serif;
+  font-size: clamp(26px, 3.5vw, 44px);
+  color: var(--cream);
+  line-height: 1.15;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.header h1 em {
+  color: var(--gold);
+  display: block;
+  font-size: 0.52em;
+  letter-spacing: 3px;
+  font-style: normal;
+  margin-top: 4px;
+}
+.header-bar {
+  margin: 20px auto 16px;
+  width: 240px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.header-sub {
+  font-family: 'Crimson Pro', serif;
+  font-size: 16px;
+  color: var(--text-dim);
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.3px;
+}
+
+/* Nav */
+.nav-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  background: rgba(200,168,75,0.03);
+  padding: 0 28px;
+  gap: 2px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+.nav-tab {
+  padding: 13px 16px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  position: relative;
+  top: 1px;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: var(--cream); border-bottom-color: rgba(200,168,75,0.4); }
+.nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); background: rgba(200,168,75,0.06); }
+
+/* Main content */
+.main-content { padding: 50px 60px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Section titles */
+.section-title {
+  font-family: 'IM Fell English', serif;
+  font-size: 30px;
+  color: var(--cream);
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.section-intro {
+  font-size: 17px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-bottom: 30px;
+  line-height: 1.55;
+}
+
+.rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
+  margin: 32px 0;
+}
+
+/* Cards */
+.card {
+  background: var(--panel-mid);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--gold);
+  border-radius: 3px 0 0 3px;
+}
+.card.red::before { background: var(--red); }
+.card.blue::before { background: var(--blue-mid); }
+.card.green::before { background: var(--green-bright); }
+.card.kpd::before { background: var(--kpd); }
+.card.nsdap::before { background: var(--nsdap); }
+.card-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.card p, .card li {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text);
+}
+.card ul, .card ol { padding-left: 20px; margin-top: 8px; }
+.card li { margin-bottom: 5px; }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.checklist li::before {
+  content: '☐';
+  font-size: 17px;
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Timeline */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--gold), rgba(200,168,75,0.1));
+}
+.timeline-item { position: relative; margin-bottom: 26px; }
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -23px; top: 7px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--panel);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.timeline-time {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 3px;
+}
+.timeline-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: 5px;
+}
+.timeline-body { font-size: 15px; line-height: 1.58; color: var(--text); }
+
+/* Script blocks */
+.script-you-say {
+  background: rgba(26,58,110,0.18);
+  border-left: 3px solid var(--blue-mid);
+  border-radius: 0 3px 3px 0;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text);
+}
+.script-you-say::before {
+  content: 'YOU SAY';
+  display: block;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--blue-bright);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.script-action {
+  background: rgba(200,168,75,0.07);
+  border: 1px dashed rgba(200,168,75,0.3);
+  border-radius: 3px;
+  padding: 11px 16px;
+  margin: 12px 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--gold);
+}
+.script-action::before { content: '[ '; font-style: normal; }
+.script-action::after { content: ' ]'; font-style: normal; }
+
+/* Quote blocks */
+.quote-block {
+  border-left: 2px solid var(--gold);
+  padding: 12px 18px;
+  margin: 14px 0;
+  background: rgba(200,168,75,0.05);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text);
+}
+.quote-attribution {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 7px;
+  display: block;
+  font-family: 'Libre Baskerville', serif;
+}
+
+/* Faction grid */
+.faction-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 18px 0;
+}
+@media (max-width: 720px) {
+  .faction-grid { grid-template-columns: 1fr; }
+  .main-content { padding: 28px 20px; }
+  .header { padding: 36px 20px 28px; }
+  .nav-tabs { padding: 0 8px; }
+  .nav-tab { padding: 10px 10px; font-size: 11px; }
+}
+.faction-card {
+  border-radius: 3px;
+  padding: 20px 22px;
+  border: 1px solid;
+}
+.faction-card.kpd { background: rgba(155,35,53,0.12); border-color: rgba(155,35,53,0.35); }
+.faction-card.spd { background: rgba(192,57,43,0.10); border-color: rgba(192,57,43,0.30); }
+.faction-card.zentrum { background: rgba(42,82,152,0.12); border-color: rgba(42,82,152,0.35); }
+.faction-card.ddp { background: rgba(39,174,96,0.10); border-color: rgba(39,174,96,0.30); }
+.faction-card.dvp { background: rgba(230,126,34,0.10); border-color: rgba(230,126,34,0.28); }
+.faction-card.dnvp { background: rgba(139,105,20,0.12); border-color: rgba(139,105,20,0.35); }
+.faction-card.nsdap { background: rgba(200,168,75,0.10); border-color: rgba(200,168,75,0.35); }
+.faction-card.neutral { background: var(--panel-mid); border-color: var(--border); }
+
+.faction-label {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.faction-card.kpd .faction-label { color: var(--kpd); }
+.faction-card.spd .faction-label { color: #e74c3c; }
+.faction-card.zentrum .faction-label { color: var(--blue-bright); }
+.faction-card.ddp .faction-label { color: var(--green-bright); }
+.faction-card.dvp .faction-label { color: #e67e22; }
+.faction-card.dnvp .faction-label { color: #c8a843; }
+.faction-card.nsdap .faction-label { color: var(--gold); }
+.faction-card.neutral .faction-label { color: var(--text-dim); }
+
+.faction-card ul { padding-left: 16px; margin-top: 6px; }
+.faction-card li { font-size: 15px; line-height: 1.5; margin-bottom: 4px; color: var(--text); }
+
+/* Issue accordion */
+.issue-section {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.issue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: rgba(200,168,75,0.05);
+  transition: background 0.2s;
+  user-select: none;
+}
+.issue-header:hover { background: rgba(200,168,75,0.10); }
+.issue-header-left { display: flex; align-items: center; gap: 16px; }
+.issue-number {
+  font-family: 'IM Fell English', serif;
+  font-size: 30px;
+  color: var(--gold);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+.issue-title-text {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cream);
+}
+.issue-subtitle { font-size: 13px; color: var(--text-dim); font-style: italic; margin-top: 2px; }
+.issue-toggle { font-size: 20px; color: var(--gold); transition: transform 0.3s; flex-shrink: 0; }
+.issue-header.open .issue-toggle { transform: rotate(180deg); }
+.issue-body { display: none; padding: 24px; border-top: 1px solid var(--border); }
+.issue-body.open { display: block; }
+
+/* Scorecard */
+.scorecard {
+  background: var(--panel-mid);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  padding: 28px 32px;
+  margin: 20px 0;
+  text-align: center;
+}
+.scorecard-title {
+  font-family: 'IM Fell English', serif;
+  font-size: 20px;
+  color: var(--gold);
+  margin-bottom: 22px;
+}
+
+/* Speech log */
+.speech-log-area {
+  width: 100%;
+  background: #0a0e14;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px 16px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 15px;
+  color: var(--text);
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+.speech-log-area:focus {
+  outline: none;
+  border-color: rgba(200,168,75,0.5);
+}
+.speech-log-area::placeholder { color: var(--text-dim); font-style: italic; }
+
+/* Speaker rows */
+.speaker-row {
+  display: grid;
+  grid-template-columns: 180px 90px 1fr 80px;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 10px;
+}
+.speaker-row input, .speaker-row select, .speaker-row textarea {
+  background: #0a0e14;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 10px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--text);
+  width: 100%;
+}
+.speaker-row input:focus, .speaker-row select:focus, .speaker-row textarea:focus {
+  outline: none;
+  border-color: rgba(200,168,75,0.5);
+}
+.speaker-row select option { background: #111620; color: var(--text); }
+.speaker-row textarea { resize: vertical; min-height: 54px; }
+.faction-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Points */
+.points-badge {
+  display: inline-block;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 9px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  margin: 2px 2px;
+}
+.points-badge.pos { background: rgba(39,174,96,0.15); color: var(--green-bright); border: 1px solid rgba(39,174,96,0.3); }
+.points-badge.neg { background: rgba(155,35,53,0.15); color: #e74c3c; border: 1px solid rgba(155,35,53,0.3); }
+.points-badge.gold { background: rgba(200,168,75,0.12); color: var(--gold); border: 1px solid rgba(200,168,75,0.3); }
+
+/* Score table */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  margin: 14px 0;
+}
+.score-table th {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.score-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(200,168,75,0.08);
+  color: var(--text);
+  line-height: 1.4;
+}
+.score-table tr:nth-child(even) td { background: rgba(200,168,75,0.03); }
+
+/* Live point trackers */
+.tracker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.tracker-card {
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 16px 18px;
+  text-align: center;
+}
+.tracker-name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.tracker-points {
+  font-family: 'IM Fell English', serif;
+  font-size: 42px;
+  line-height: 1;
+  margin: 8px 0;
+  transition: all 0.3s;
+}
+.tracker-btns {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.tracker-btn {
+  width: 32px; height: 32px;
+  border: 1px solid;
+  border-radius: 2px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.tracker-btn:hover { opacity: 0.8; }
+
+/* KPD tracker */
+.tracker-card.kpd { background: rgba(155,35,53,0.1); border-color: rgba(155,35,53,0.3); }
+.tracker-card.kpd .tracker-name { color: #e74c3c; }
+.tracker-card.kpd .tracker-points { color: #e74c3c; }
+.tracker-card.kpd .tracker-btn { border-color: rgba(155,35,53,0.4); color: #e74c3c; }
+.tracker-card.kpd .tracker-btn:hover { background: rgba(155,35,53,0.2); }
+
+/* SPD tracker */
+.tracker-card.spd { background: rgba(192,57,43,0.08); border-color: rgba(192,57,43,0.25); }
+.tracker-card.spd .tracker-name { color: #e67e22; }
+.tracker-card.spd .tracker-points { color: #e67e22; }
+.tracker-card.spd .tracker-btn { border-color: rgba(192,57,43,0.35); color: #e67e22; }
+.tracker-card.spd .tracker-btn:hover { background: rgba(192,57,43,0.15); }
+
+/* Zentrum tracker */
+.tracker-card.zentrum { background: rgba(42,82,152,0.1); border-color: rgba(42,82,152,0.3); }
+.tracker-card.zentrum .tracker-name { color: var(--blue-bright); }
+.tracker-card.zentrum .tracker-points { color: var(--blue-bright); }
+.tracker-card.zentrum .tracker-btn { border-color: rgba(42,82,152,0.4); color: var(--blue-bright); }
+.tracker-card.zentrum .tracker-btn:hover { background: rgba(42,82,152,0.2); }
+
+/* DDp tracker */
+.tracker-card.ddp { background: rgba(39,174,96,0.08); border-color: rgba(39,174,96,0.25); }
+.tracker-card.ddp .tracker-name { color: var(--green-bright); }
+.tracker-card.ddp .tracker-points { color: var(--green-bright); }
+.tracker-card.ddp .tracker-btn { border-color: rgba(39,174,96,0.35); color: var(--green-bright); }
+.tracker-card.ddp .tracker-btn:hover { background: rgba(39,174,96,0.15); }
+
+/* DVP tracker */
+.tracker-card.dvp { background: rgba(230,126,34,0.08); border-color: rgba(230,126,34,0.25); }
+.tracker-card.dvp .tracker-name { color: #e67e22; }
+.tracker-card.dvp .tracker-points { color: #e67e22; }
+.tracker-card.dvp .tracker-btn { border-color: rgba(230,126,34,0.35); color: #e67e22; }
+.tracker-card.dvp .tracker-btn:hover { background: rgba(230,126,34,0.15); }
+
+/* DNVP tracker */
+.tracker-card.dnvp { background: rgba(139,105,20,0.10); border-color: rgba(139,105,20,0.30); }
+.tracker-card.dnvp .tracker-name { color: #c8a843; }
+.tracker-card.dnvp .tracker-points { color: #c8a843; }
+.tracker-card.dnvp .tracker-btn { border-color: rgba(139,105,20,0.4); color: #c8a843; }
+.tracker-card.dnvp .tracker-btn:hover { background: rgba(139,105,20,0.2); }
+
+/* NSDAP tracker */
+.tracker-card.nsdap { background: rgba(200,168,75,0.08); border-color: rgba(200,168,75,0.3); }
+.tracker-card.nsdap .tracker-name { color: var(--gold); }
+.tracker-card.nsdap .tracker-points { color: var(--gold); }
+.tracker-card.nsdap .tracker-btn { border-color: rgba(200,168,75,0.4); color: var(--gold); }
+.tracker-card.nsdap .tracker-btn:hover { background: rgba(200,168,75,0.15); }
+
+/* Session outcome display */
+.outcome-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--panel-mid);
+  margin: 14px 0;
+  font-family: 'IM Fell English', serif;
+  font-size: 20px;
+}
+
+/* Rubric table */
+.rubric-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 14px 0;
+}
+.rubric-table th {
+  background: rgba(200,168,75,0.08);
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--border);
+  color: var(--gold);
+}
+.rubric-table td {
+  padding: 10px 12px;
+  border: 1px solid rgba(200,168,75,0.1);
+  vertical-align: top;
+  line-height: 1.45;
+  color: var(--text);
+}
+.rubric-table tr:nth-child(even) td { background: rgba(200,168,75,0.03); }
+
+/* Sub-headings */
+h2.sub {
+  font-family: 'IM Fell English', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--cream);
+  margin: 30px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+h2.sub::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+h3.sub3 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  margin: 22px 0 10px;
+}
+
+/* Tip/warn boxes */
+.tip-box {
+  background: rgba(39,174,96,0.06);
+  border: 1px solid rgba(39,174,96,0.2);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.tip-box strong { color: var(--green-bright); }
+.warn-box {
+  background: rgba(155,35,53,0.08);
+  border: 1px solid rgba(155,35,53,0.25);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.warn-box strong { color: #e74c3c; }
+.info-box {
+  background: rgba(26,58,110,0.12);
+  border: 1px solid rgba(42,82,152,0.3);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.info-box strong { color: var(--blue-bright); }
+
+/* Badge */
+.badge {
+  display: inline-block;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-weight: 700;
+  margin: 2px;
+}
+.badge.kpd { background: rgba(155,35,53,0.18); color: #e74c3c; }
+.badge.spd { background: rgba(192,57,43,0.15); color: #e67e22; }
+.badge.zentrum { background: rgba(42,82,152,0.18); color: var(--blue-bright); }
+.badge.ddp { background: rgba(39,174,96,0.15); color: var(--green-bright); }
+.badge.dvp { background: rgba(230,126,34,0.15); color: #e67e22; }
+.badge.dnvp { background: rgba(139,105,20,0.18); color: #c8a843; }
+.badge.nsdap { background: rgba(200,168,75,0.15); color: var(--gold); }
+
+p { font-size: 16px; line-height: 1.65; margin-bottom: 12px; }
+strong { font-weight: 700; color: var(--cream); }
+
+/* Export button */
+.export-btn {
+  margin-left: auto;
+  padding: 9px 16px;
+  background: rgba(200,168,75,0.1);
+  border: 1px solid rgba(200,168,75,0.4);
+  border-radius: 2px;
+  color: var(--gold);
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  align-self: center;
+  position: relative;
+  top: 0;
+}
+.export-btn:hover { background: rgba(200,168,75,0.18); }
+
+.export-notes-btn {
+  padding: 9px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--gold);
+  font-family: 'Libre Baskerville', serif;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 6px;
+}
+.export-notes-btn:hover { background: rgba(200,168,75,0.07); border-color: rgba(200,168,75,0.4); }
+
+.notes-export-area {
+  display: none;
+  width: 100%;
+  background: #0a0e14;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px 16px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--text);
+  resize: vertical;
+  min-height: 200px;
+  line-height: 1.6;
+  margin-top: 12px;
+}
+.notes-export-area.visible { display: block; }
+
+/* Print */
+@media print {
+  body { background: white !important; color: #111 !important; padding: 0 !important; }
+  .outer-frame {
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    max-width: 100% !important;
+  }
+  .corner { display: none; }
+  .nav-tabs { display: none !important; }
+  .export-btn { display: none !important; }
+  .del-btn { display: none !important; }
+  .add-row-btn { display: none !important; }
+  .export-notes-btn { display: none !important; }
+  .tracker-btns { display: none !important; }
+  .section { display: block !important; page-break-before: always; }
+  .section:first-of-type { page-break-before: avoid; }
+  .issue-body { display: block !important; }
+  .issue-toggle { display: none; }
+  /* Light colors for print */
+  :root {
+    --text: #111 !important;
+    --text-dim: #444 !important;
+    --cream: #111 !important;
+    --gold: #7a5c00 !important;
+    --panel: #fff !important;
+    --panel-mid: #f5f5f5 !important;
+    --border: rgba(0,0,0,0.15) !important;
+    --blue-bright: #1a3a8e !important;
+    --green-bright: #1a6a3a !important;
+  }
+  body, .outer-frame, .card, .faction-card, .issue-section,
+  .issue-header, .issue-body, .scorecard, .vote-result-display,
+  .tracker-card, .tip-box, .warn-box, .info-box {
+    background: white !important;
+    color: #111 !important;
+  }
+  .script-you-say { background: #eef2ff !important; border-left-color: #1a3a8e !important; color: #111 !important; }
+  .script-action { background: #fdf6e3 !important; color: #7a5c00 !important; border-color: #c8a84b !important; }
+  .quote-block { background: #fafaf5 !important; color: #111 !important; }
+  p, li, td, th { color: #111 !important; }
+  .header { background: white !important; border-bottom: 2px solid #c8a84b !important; }
+  h1, h2, h3 { color: #111 !important; }
+  .section-title { color: #111 !important; }
+  .timeline-title { color: #111 !important; }
+  .card-title { color: #7a5c00 !important; }
+  .header-era { color: #7a5c00 !important; }
+  .faction-label { color: #333 !important; }
+  .score-table th { color: #7a5c00 !important; }
+  .footer { color: #555 !important; }
+  .log-row input, .log-row select, .log-row textarea,
+  .speech-log-area, .score-input {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: #111 !important;
+  }
+  .notes-export-area { display: none !important; }
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 26px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* Speaker log table */
+#log-container { margin-top: 16px; }
+.log-row {
+  display: grid;
+  grid-template-columns: 160px 100px 1fr 90px 36px;
+  gap: 8px;
+  align-items: start;
+  margin-bottom: 8px;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.log-row input, .log-row select, .log-row textarea {
+  background: #0a0e14;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 7px 9px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--text);
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.log-row input:focus, .log-row select:focus, .log-row textarea:focus {
+  outline: none;
+  border-color: rgba(200,168,75,0.45);
+}
+.log-row select { cursor: pointer; }
+.log-row textarea { resize: vertical; min-height: 52px; }
+.log-row select option { background: #111620; }
+.del-btn {
+  width: 36px; height: 36px;
+  background: rgba(155,35,53,0.1);
+  border: 1px solid rgba(155,35,53,0.25);
+  border-radius: 2px;
+  color: var(--red);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.del-btn:hover { background: rgba(155,35,53,0.2); }
+.add-row-btn {
+  padding: 9px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--gold);
+  font-family: 'Libre Baskerville', serif;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 6px;
+}
+.add-row-btn:hover { background: rgba(200,168,75,0.07); border-color: rgba(200,168,75,0.4); }
+.col-header {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding-bottom: 5px;
+}
+
+/* Vote buttons */
+.vote-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.vote-btn {
+  padding: 10px 8px;
+  border: 1px solid;
+  border-radius: 3px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+  text-align: center;
+}
+.vote-result-display {
+  background: var(--panel-mid);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 18px 22px;
+  margin: 14px 0;
+  text-align: center;
+}
+.vote-result-title {
+  font-family: 'IM Fell English', serif;
+  font-size: 28px;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+.vote-result-subtitle {
+  font-size: 15px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.5;
+}
+</style>
+</head>
+<body>
+<div class="outer-frame">
+  <!-- Corner marks -->
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-era">Berlin · 1919–1933 · Three-Session Abridged Simulation</div>
+    <h1>Democracy in Crisis: The Weimar Republic
+      <em>Instructor Simulation Guide</em>
+    </h1>
+    <div class="header-bar"></div>
+    <div class="header-sub">HIST 105: Western Civilization Since 1648 &nbsp;·&nbsp; Based on Goodrich, <em>Democracy in Crisis</em> (Reacting to the Past)</div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('setup', this)">Setup</button>
+    <button class="nav-tab" onclick="showSection('session1', this)">Session 1</button>
+    <button class="nav-tab" onclick="showSection('session2', this)">Session 2</button>
+    <button class="nav-tab" onclick="showSection('session3', this)">Session 3</button>
+    <button class="nav-tab" onclick="showSection('scoreboard', this)">Live Scoreboard</button>
+    <button class="nav-tab" onclick="showSection('speakers', this)">Speaker Log</button>
+    <button class="nav-tab" onclick="showSection('outcomes', this)">Points & Outcomes</button>
+    <button class="nav-tab" onclick="showSection('debrief', this)">Debrief</button>
+    <button class="export-btn" onclick="exportPDF()" title="Print / Save as PDF">⬇ Export PDF</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+<!-- ==================== SETUP ==================== -->
+<div id="setup" class="section active">
+  <div class="section-title">Before the Simulation</div>
+  <div class="section-intro">Everything to prepare before Session 1. The abridged format runs three class periods — review this guide in full before students arrive.</div>
+
+  <div class="faction-grid">
+    <div>
+      <h2 class="sub">Print & Materials</h2>
+      <ul class="checklist">
+        <li>Role sheets (one per student — distributed before Session 1)</li>
+        <li>Student Preparation Guide (profhauselmann.org/weimar/)</li>
+        <li>Core Texts packet or confirm site access on student devices</li>
+        <li>Instructor copy: Mandatory Agenda Items (this guide)</li>
+        <li>Faction seating chart (optional but helpful)</li>
+        <li>Timer for speech rounds (phone or classroom clock)</li>
+        <li>Whiteboard space for vote tallies and point tracking</li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="sub">Canvas / LMS Setup</h2>
+      <ul class="checklist">
+        <li>Confirm Core Texts pages are accessible: communism.html, nazism.html, conservative-revolution.html, republicanism.html</li>
+        <li>Post research paper instructions and check-in schedule</li>
+        <li>Make participation rubric visible before Session 1</li>
+        <li>Post debrief reflection prompt before Session 3</li>
+      </ul>
+      <h2 class="sub" style="margin-top:20px;">Room Setup</h2>
+      <ul class="checklist">
+        <li>Arrange desks by faction (see seating map below)</li>
+        <li>Label sections: Left-wing bloc, Center bloc, Right-wing bloc</li>
+        <li>Clear front space for speakers at the podium</li>
+        <li>Reserve board space for cumulative point totals</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Faction Overview & Seating</h2>
+  <p>Assign roles before class. Distribute proportionally based on enrollment. Below is the recommended layout and each faction's core ideology.</p>
+
+  <div class="faction-grid">
+    <div class="faction-card kpd">
+      <div class="faction-label">🔴 KPD — Communist Party</div>
+      <ul>
+        <li>Seated: Far left</li>
+        <li>Goal: Overthrow Weimar, establish Soviet-style republic</li>
+        <li>Strategy: Expose SPD as "social fascists"; build worker solidarity</li>
+        <li>Win by: Revolutionary speeches, worker mobilization points, defeating budget</li>
+      </ul>
+    </div>
+    <div class="faction-card spd">
+      <div class="faction-label">🌹 SPD — Social Democrats</div>
+      <ul>
+        <li>Seated: Center-left</li>
+        <li>Goal: Defend Weimar democracy; pass social reform legislation</li>
+        <li>Strategy: Build coalitions with Center; keep KPD and NSDAP out of power</li>
+        <li>Win by: Successful coalition votes, reform bills passed, government survival</li>
+      </ul>
+    </div>
+    <div class="faction-card zentrum">
+      <div class="faction-label">✝ Zentrum — Catholic Center Party</div>
+      <ul>
+        <li>Seated: Center</li>
+        <li>Goal: Protect Catholic interests; keep government stable</li>
+        <li>Strategy: Swing bloc — may support SPD or DNVP depending on issue</li>
+        <li>Win by: Key bills that protect church/education, coalition participation</li>
+      </ul>
+    </div>
+    <div class="faction-card ddp">
+      <div class="faction-label">⚖ DDP — German Democratic Party</div>
+      <ul>
+        <li>Seated: Center</li>
+        <li>Goal: Liberal democracy, rule of law, Weimar Constitution</li>
+        <li>Strategy: Bridge left-center coalitions; defend constitutional norms</li>
+        <li>Win by: Passing liberal legislation, preventing authoritarian outcomes</li>
+      </ul>
+    </div>
+    <div class="faction-card dvp">
+      <div class="faction-label">🏛 DVP — German People's Party</div>
+      <ul>
+        <li>Seated: Center-right</li>
+        <li>Goal: Business interests, pragmatic conservatism, Stresemann's legacy</li>
+        <li>Strategy: Flexible; opposes KPD; may negotiate with SPD or DNVP</li>
+        <li>Win by: Economic policy wins, coalition participation</li>
+      </ul>
+    </div>
+    <div class="faction-card dnvp">
+      <div class="faction-label">🦅 DNVP — German Nationalists</div>
+      <ul>
+        <li>Seated: Center-right to far right</li>
+        <li>Goal: Restore conservative monarchy or authoritarian order; reverse Versailles</li>
+        <li>Strategy: Reject Weimar; may collaborate with NSDAP against Republic</li>
+        <li>Win by: Defeating government, passing nationalist legislation</li>
+      </ul>
+    </div>
+  </div>
+  <div class="faction-card nsdap" style="margin-top:0;">
+    <div class="faction-label">⚡ NSDAP — National Socialist German Workers' Party</div>
+    <ul>
+      <li>Seated: Far right — these students play the most volatile role; remind them it is a historical simulation</li>
+      <li>Goal: Destroy Weimar democracy from within; seize control of the Reichstag</li>
+      <li>Strategy: Populist speeches, emotional appeals, exploit crises (unemployment, humiliation)</li>
+      <li>Win by: Reichstag plurality, failed government formations, emergency decrees, Chancellor appointment</li>
+    </ul>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Three-Session Overview</h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-time">Session 1 — Day 1</div>
+      <div class="timeline-title">Establishing the Republic · The Stab-in-the-Back & Versailles Crisis</div>
+      <div class="timeline-body">Introduce the simulation. Characters take their seats. The Reichstag convenes. Debate the Versailles Treaty and the legitimacy of the Weimar Constitution. Mandatory agenda: opening speeches, first legislative vote (ratification of Weimar or call for revision).</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">Session 2 — Day 2</div>
+      <div class="timeline-title">Crisis & Coalition · Hyperinflation, Unemployment, the Depression</div>
+      <div class="timeline-body">The Republic faces its greatest economic tests. Budget and emergency powers debates. Coalition formation attempts. The mandatory agenda item: vote on emergency economic legislation (Article 48 trigger). Points awarded for successful coalition-building or for bringing down a government.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">Session 3 — Day 3</div>
+      <div class="timeline-title">The Final Crisis · Structured Debate & Historical Reckoning</div>
+      <div class="timeline-body">Hitler's appointment as Chancellor looms. Structured debate format: each faction makes a final argument for their vision of Germany. Vote on enabling act or final government formation. Historical outcome revealed.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Key Instructor Principles</h2>
+  <div class="info-box"><strong>Stay in the Game Master role.</strong> You are the Reichstag President (chair). You do not advocate for any faction. You enforce parliamentary procedure, award points, rule on challenges, and control the clock. If students break character badly or a debate becomes unproductive, call "out of session" and reset.</div>
+  <div class="tip-box"><strong>Tip — Let It Get Messy.</strong> The whole point is for students to experience the difficulty of coalition-building and the fragility of democratic norms under pressure. Resist the impulse to smooth things over too quickly. Chaos is pedagogically useful here.</div>
+  <div class="warn-box"><strong>NSDAP Role Sensitivity.</strong> Before Session 1, speak privately or briefly to students playing NSDAP roles. Clarify that they are playing a historical character, not expressing personal views. Remind all students that the simulation is an academic exercise in understanding how democracy failed — not an endorsement of any ideology.</div>
+</div>
+
+<!-- ==================== SESSION 1 ==================== -->
+<div id="session1" class="section">
+  <div class="section-title">Session 1 — Establishing the Republic</div>
+  <div class="section-intro">Day 1 · 50 minutes · The Reichstag convenes for the first time. Introduce the game, seat delegates, run opening speeches, and reach the first mandatory vote.</div>
+
+  <h2 class="sub">Minute-by-Minute Plan</h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-time">0:00 – 5:00</div>
+      <div class="timeline-title">Opening — Enter the Republic</div>
+      <div class="timeline-body">You assume the role of Reichstag President. Set the historical scene: November 1919. Germany has just signed the Versailles Treaty. The Kaiser is gone. What kind of Germany will this be?</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">5:00 – 20:00</div>
+      <div class="timeline-title">Opening Speeches (Mandatory Agenda Item 1)</div>
+      <div class="timeline-body">Each faction delivers a 1–2 minute opening statement. Start with SPD (defenders of the Republic), then KPD, Zentrum, DDP, DVP, DNVP, NSDAP. Award participation points as noted below.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">20:00 – 35:00</div>
+      <div class="timeline-title">Open Debate — Versailles & Weimar's Legitimacy</div>
+      <div class="timeline-body">Free debate. Factions argue their position. You moderate: call on speakers, enforce 90-second limits, award bonus points for strong historical arguments and primary source citations.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">35:00 – 45:00</div>
+      <div class="timeline-title">Mandatory Vote — Article 48 Standing Rule</div>
+      <div class="timeline-body">Vote: Should the new Weimar government retain Article 48 (presidential emergency powers) as written, or demand revision? Each faction votes; you record and announce result. Award outcome points.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">45:00 – 50:00</div>
+      <div class="timeline-title">Session Close & Prep for Session 2</div>
+      <div class="timeline-body">Record cumulative points. Announce Session 2 topic. Remind students: read their faction's core texts before next class.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Opening Script</h2>
+
+  <div class="script-action">Students enter and find faction seating. Wait for class to settle. Stand at front.</div>
+
+  <div class="script-you-say">
+    "The Reichstag is now in session."
+    <br><br>
+    "It is November 1919. The Great War is over. But the peace is bitter. The Versailles Treaty has stripped Germany of territory, imposed crushing reparations, and placed sole blame for the war on Germany's shoulders. The Kaiser has abdicated. A new republic has been declared — the Weimar Republic.
+    <br><br>
+    Is this republic legitimate? Can it survive? That is what we are here to decide — not as historians looking backward, but as the political actors who were there. You are members of the Reichstag. The fate of German democracy is literally in your hands.
+    <br><br>
+    I am the President of the Reichstag. I will recognize speakers, call votes, and maintain order. When I say the Reichstag is in session, we are in session. When I say we are out of session, we step back and I speak to you as your instructor.
+    <br><br>
+    We will begin with opening statements from each party. SPD — you have the floor."
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Debate Issue: Versailles and Weimar's Legitimacy</h2>
+
+  <div class="issue-section">
+    <div class="issue-header" onclick="toggleIssue(this)">
+      <div class="issue-header-left">
+        <div class="issue-number">1</div>
+        <div>
+          <div class="issue-title-text">Should Germany accept the Weimar Constitution?</div>
+          <div class="issue-subtitle">Opening debate · Factions argue their vision for Germany's future</div>
+        </div>
+      </div>
+      <div class="issue-toggle">▾</div>
+    </div>
+    <div class="issue-body">
+      <div class="script-action">Write on board: "Can a democracy born from defeat survive?"</div>
+      <div class="faction-grid">
+        <div class="faction-card spd">
+          <div class="faction-label">🌹 SPD Position — Defend the Republic</div>
+          <ul>
+            <li>Weimar is the legitimate government of the German people — better than monarchy, better than chaos</li>
+            <li>Versailles is unjust but we must work through legitimate channels, not revolution</li>
+            <li>Democracy is the only path to long-term German stability and recovery</li>
+          </ul>
+          <div class="quote-block">
+            Core Text: Majority Socialists on the Republic's founding<span class="quote-attribution">— SPD Core Text, republicanism.html</span>
+          </div>
+        </div>
+        <div class="faction-card kpd">
+          <div class="faction-label">🔴 KPD Position — The Republic is a Capitalist Trap</div>
+          <ul>
+            <li>Weimar democracy serves the bourgeoisie, not the workers</li>
+            <li>The SPD betrayed the revolution by signing Versailles and murdering Rosa Luxemburg</li>
+            <li>Only a Soviet-style workers' republic can deliver true liberation</li>
+          </ul>
+          <div class="quote-block">
+            Core Text: Communist critique of the SPD and Weimar<span class="quote-attribution">— KPD Core Text, communism.html</span>
+          </div>
+        </div>
+        <div class="faction-card nsdap">
+          <div class="faction-label">⚡ NSDAP Position — The Republic is a Stab in the Back</div>
+          <ul>
+            <li>Weimar was imposed by traitors who surrendered when Germany was undefeated in the field</li>
+            <li>The "November criminals" — socialists, Jews, internationalists — betrayed Germany</li>
+            <li>Versailles must be torn up and Germany restored to greatness</li>
+          </ul>
+          <div class="quote-block">
+            Core Text: Nazi critique of the Republic and Versailles<span class="quote-attribution">— NSDAP Core Text, nazism.html</span>
+          </div>
+        </div>
+        <div class="faction-card dnvp">
+          <div class="faction-label">🦅 DNVP Position — Restore Order and German Honor</div>
+          <ul>
+            <li>The Republic lacks authority and national pride</li>
+            <li>A strong conservative state, not liberal democracy, can restore Germany</li>
+            <li>Versailles is a humiliation that demands nationalist resistance</li>
+          </ul>
+          <div class="quote-block">
+            Core Text: Conservative Revolution arguments<span class="quote-attribution">— DNVP/Conservative Core Text, conservative-revolution.html</span>
+          </div>
+        </div>
+      </div>
+      <div class="tip-box"><strong>Facilitation Tip:</strong> If a faction runs out of arguments, prompt them: "What does your primary source say about this?" or "How does your faction respond to what the SPD just said?"</div>
+    </div>
+  </div>
+
+  <h2 class="sub">Mandatory Vote — Article 48</h2>
+
+  <div class="script-you-say">
+    "We come now to our first vote. The question before the Reichstag: Article 48 of the Weimar Constitution grants the President emergency powers to rule by decree if the government cannot function. Should we retain Article 48 as written — or demand it be revised or eliminated?
+    <br><br>
+    YES — Retain Article 48 as written.
+    <br>
+    NO — Revise or eliminate Article 48.
+    <br><br>
+    Each faction will declare its vote. Record on the board."
+  </div>
+
+  <div class="card">
+    <div class="card-title">Expected Faction Votes on Article 48</div>
+    <table class="score-table">
+      <tr><th>Faction</th><th>Likely Vote</th><th>Reasoning</th></tr>
+      <tr><td><span class="badge spd">SPD</span></td><td>YES (retain)</td><td>Necessary tool for government stability</td></tr>
+      <tr><td><span class="badge kpd">KPD</span></td><td>NO (revise)</td><td>Emergency powers serve the bourgeoisie</td></tr>
+      <tr><td><span class="badge zentrum">Zentrum</span></td><td>YES (retain)</td><td>Stability over ideology</td></tr>
+      <tr><td><span class="badge ddp">DDP</span></td><td>YES (retain)</td><td>Constitutional order must be preserved</td></tr>
+      <tr><td><span class="badge dvp">DVP</span></td><td>YES (retain)</td><td>Pragmatic; supports executive authority</td></tr>
+      <tr><td><span class="badge dnvp">DNVP</span></td><td>YES (retain)</td><td>Useful for future conservative government</td></tr>
+      <tr><td><span class="badge nsdap">NSDAP</span></td><td>NO (as written) / Strategic YES</td><td>May vote YES to preserve tool for later use</td></tr>
+    </table>
+    <div class="info-box" style="margin-top:12px;"><strong>Historical Note to Share After Vote:</strong> Article 48 was used over 250 times between 1919–1933. Hindenburg used it to govern by decree after 1930, effectively bypassing the Reichstag — the first step toward Hitler's appointment as Chancellor.</div>
+  </div>
+</div>
+
+<!-- ==================== SESSION 2 ==================== -->
+<div id="session2" class="section">
+  <div class="section-title">Session 2 — Crisis & Coalition</div>
+  <div class="section-intro">Day 2 · 50 minutes · The Weimar Republic faces economic catastrophe. Coalition politics, emergency legislation, and the limits of democracy under pressure.</div>
+
+  <h2 class="sub">Minute-by-Minute Plan</h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-time">0:00 – 5:00</div>
+      <div class="timeline-title">Session Open — Crisis Announcement</div>
+      <div class="timeline-body">You announce the economic crisis (hyperinflation 1923 or Depression 1930, your choice). Set the stakes. Review cumulative points from Session 1.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">5:00 – 20:00</div>
+      <div class="timeline-title">Coalition Negotiations (Mandatory Agenda Item 2)</div>
+      <div class="timeline-body">Factions have 10 minutes of "lobby time" — they can move around the room, make deals, and negotiate coalition agreements. You observe and take notes. Then reconvene for coalition announcements.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">20:00 – 35:00</div>
+      <div class="timeline-title">Legislative Debate — Emergency Economic Bill</div>
+      <div class="timeline-body">Factions debate the proposed emergency economic legislation. SPD will likely introduce it; KPD and NSDAP will likely oppose. Vote determines government survival.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">35:00 – 45:00</div>
+      <div class="timeline-title">Government Formation / No-Confidence Vote</div>
+      <div class="timeline-body">Can a majority coalition form a government? If not, the government falls. NSDAP and KPD may call for new elections. You rule on parliamentary procedure and award outcome points.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">45:00 – 50:00</div>
+      <div class="timeline-title">Session Close & Preview Session 3</div>
+      <div class="timeline-body">Record cumulative points on board. Announce: "The final crisis is coming." Preview Session 3's structured debate format.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Crisis Announcement Script</h2>
+
+  <div class="script-action">Display or announce the crisis scenario you are using this session.</div>
+
+  <div class="script-you-say">
+    "The Reichstag is now in session. I must inform the delegates of a grave development."
+  </div>
+
+  <div class="faction-grid">
+    <div class="faction-card neutral">
+      <div class="faction-label">Scenario A — Hyperinflation (1923)</div>
+      <div class="script-you-say" style="margin-top:8px;font-size:14px;">"The German mark has collapsed. This morning, a loaf of bread costs four billion marks. Workers are paid twice a day so they can spend their wages before the money becomes worthless. Foreign debt from Versailles reparations is due. The government must act — or fall."</div>
+    </div>
+    <div class="faction-card neutral">
+      <div class="faction-label">Scenario B — The Great Depression (1930)</div>
+      <div class="script-you-say" style="margin-top:8px;font-size:14px;">"Six million Germans are unemployed. Banks have collapsed. The American loans that fueled Germany's recovery are gone. The Reichstag cannot form a stable coalition. The President has already begun ruling by decree under Article 48. How long before this Republic collapses entirely?"</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Coalition Lobby Time (10 min)</h2>
+
+  <div class="script-action">Students stand and move freely. You circulate, observe negotiations, take notes for participation grades.</div>
+
+  <div class="script-you-say">
+    "You have ten minutes. The Reichstag is briefly recessed. Parties may negotiate. When we reconvene, each faction must announce whether they have joined a coalition and with whom."
+  </div>
+
+  <div class="tip-box"><strong>Watch For:</strong> SPD + Zentrum + DDP coalition (the "Weimar Coalition") is historically the Republic's survival path. DNVP + NSDAP cooperation is the path to authoritarian takeover. DVP is often the swing faction.</div>
+  <div class="warn-box"><strong>Common Problem:</strong> Students may refuse to negotiate. Prompt: "What concessions would you need to join a coalition?" or "What does your faction gain by letting the government fall?"</div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Debate Issue: Emergency Economic Legislation</h2>
+
+  <div class="issue-section">
+    <div class="issue-header" onclick="toggleIssue(this)">
+      <div class="issue-header-left">
+        <div class="issue-number">2</div>
+        <div>
+          <div class="issue-title-text">Should the Reichstag pass emergency economic legislation?</div>
+          <div class="issue-subtitle">Coalition vote · Government survival · Article 48 trigger</div>
+        </div>
+      </div>
+      <div class="issue-toggle">▾</div>
+    </div>
+    <div class="issue-body">
+      <div class="script-action">Write on board: "Can democratic institutions solve a crisis they did not create?"</div>
+
+      <div class="faction-grid">
+        <div class="faction-card spd">
+          <div class="faction-label">🌹 SPD — Pass the Bill</div>
+          <ul>
+            <li>Emergency action now or the Republic collapses and something worse takes over</li>
+            <li>Workers need relief: unemployment benefits, wage floors, public works</li>
+            <li>This is why we built the Republic — to serve the people in moments of crisis</li>
+          </ul>
+        </div>
+        <div class="faction-card kpd">
+          <div class="faction-label">🔴 KPD — Defeat the Bill</div>
+          <ul>
+            <li>This bill protects banks and bosses, not workers</li>
+            <li>The more desperate the crisis, the closer the revolution</li>
+            <li>Vote NO; let the capitalist government fall</li>
+          </ul>
+        </div>
+        <div class="faction-card nsdap">
+          <div class="faction-label">⚡ NSDAP — Defeat the Bill / Demand New Elections</div>
+          <ul>
+            <li>This Republic cannot be reformed — it must be replaced</li>
+            <li>Every failed coalition is a gift to us: the people see that democracy doesn't work</li>
+            <li>Demand elections — our numbers grow with every crisis</li>
+          </ul>
+        </div>
+        <div class="faction-card zentrum">
+          <div class="faction-label">✝ Zentrum — Negotiate Terms</div>
+          <ul>
+            <li>Will support the bill if protections for religious schools are included</li>
+            <li>Stability is a Catholic value; we do not want chaos</li>
+            <li>The swing vote — what concessions can SPD offer?</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="sub3">Moderator Prompts During Debate</h3>
+      <ul class="card" style="padding-left:40px;">
+        <li style="margin-bottom:5px;">"KPD — if this bill fails and the government falls, who benefits? Is that your goal?"</li>
+        <li style="margin-bottom:5px;">"NSDAP — what is your alternative? What would you do with emergency powers?"</li>
+        <li style="margin-bottom:5px;">"SPD — why should Zentrum trust you? What are you offering?"</li>
+        <li>"DNVP — is there any version of this bill you would support?"</li>
+      </ul>
+
+      <h3 class="sub3">Vote Outcome Consequences</h3>
+      <table class="score-table">
+        <tr><th>Result</th><th>Game Consequence</th><th>Points</th></tr>
+        <tr><td>Bill passes (majority)</td><td>Government survives; Weimar coalition strengthened</td><td>+2 SPD, +1 each coalition partner</td></tr>
+        <tr><td>Bill fails, coalition holds</td><td>Government weakened; may face no-confidence</td><td>No points, but no penalty</td></tr>
+        <tr><td>No-confidence vote succeeds</td><td>Government falls; NSDAP may demand elections</td><td>+2 NSDAP/DNVP if they led the effort</td></tr>
+        <tr><td>Article 48 invoked</td><td>President rules by decree; democracy bypassed</td><td>+1 NSDAP (weakens Republic)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SESSION 3 ==================== -->
+<div id="session3" class="section">
+  <div class="section-title">Session 3 — The Final Crisis</div>
+  <div class="section-intro">Day 3 · 50 minutes · Structured debate. Every faction makes its final case. The Republic's fate is decided. Historical truth is revealed.</div>
+
+  <div class="info-box"><strong>Format Change — Structured Debate.</strong> Session 3 uses a structured debate format rather than free parliamentary procedure. Each faction gets an equal speaking slot. This ensures every student speaks and creates a clear dramatic arc toward the final vote.</div>
+
+  <h2 class="sub">Minute-by-Minute Plan</h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-time">0:00 – 5:00</div>
+      <div class="timeline-title">Session Open — January 1933</div>
+      <div class="timeline-body">Announce the historical context. Hindenburg is President. Hitler has been appointed Chancellor this morning. What happens next is in the Reichstag's hands.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">5:00 – 30:00</div>
+      <div class="timeline-title">Structured Final Speeches (Mandatory Agenda Item 3)</div>
+      <div class="timeline-body">Each faction delivers a 3–4 minute closing argument. Order: SPD → KPD → DDP → Zentrum → DVP → DNVP → NSDAP (last). You time each speech strictly. Award points per rubric.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">30:00 – 40:00</div>
+      <div class="timeline-title">Final Vote — Enabling Act</div>
+      <div class="timeline-body">Vote on granting Hitler's government emergency powers (the historical Enabling Act). SPD opposes; everyone else historically voted yes. Watch what happens in your simulation.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">40:00 – 50:00</div>
+      <div class="timeline-title">Out of Session — Historical Reveal & Debrief Setup</div>
+      <div class="timeline-body">Step out of Reichstag President role. Share what actually happened. Announce cumulative point winners. Frame the research paper connection. Optional: show Niemöller quote.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Opening Script — January 30, 1933</h2>
+
+  <div class="script-action">Step to center front. Pause for effect. The mood should feel heavy.</div>
+
+  <div class="script-you-say">
+    "The Reichstag is in session for the last time."
+    <br><br>
+    "It is January 30, 1933. This morning, President Paul von Hindenburg appointed Adolf Hitler as Chancellor of Germany. Some of you in this chamber helped make this possible. Some of you fought against it with everything you had. All of you are now living with the consequences.
+    <br><br>
+    Before us today is one final question: the Enabling Act. If passed, it would grant Chancellor Hitler's government the power to rule by decree for four years — bypassing this Reichstag entirely. It requires a two-thirds majority.
+    <br><br>
+    Before we vote, each party will make its final statement. You have three minutes. Make your case — to history."
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Structured Debate — Final Speeches</h2>
+
+  <div class="issue-section">
+    <div class="issue-header" onclick="toggleIssue(this)">
+      <div class="issue-header-left">
+        <div class="issue-number">3</div>
+        <div>
+          <div class="issue-title-text">Why did democracy fail — or should it have been saved?</div>
+          <div class="issue-subtitle">Each faction's final argument · 3 minutes each · Strictly timed</div>
+        </div>
+      </div>
+      <div class="issue-toggle">▾</div>
+    </div>
+    <div class="issue-body">
+      <div class="script-action">Start timer for each faction. Write faction name on board when you call them. Mark ✓ when done.</div>
+
+      <div class="faction-grid">
+        <div class="faction-card spd">
+          <div class="faction-label">🌹 SPD — Final Argument</div>
+          <ul>
+            <li>We built this Republic and defended it at every turn</li>
+            <li>We are the only party in this chamber that will vote NO today</li>
+            <li>History will remember who stood with democracy and who surrendered it</li>
+            <li>Faction goal: Vote NO on Enabling Act; cite Otto Wels speech</li>
+          </ul>
+          <div class="quote-block">
+            "You can take our freedom and our lives, but you cannot take our honor."
+            <span class="quote-attribution">— Otto Wels, SPD, final speech against the Enabling Act, March 23, 1933</span>
+          </div>
+        </div>
+        <div class="faction-card nsdap">
+          <div class="faction-label">⚡ NSDAP — Final Argument</div>
+          <ul>
+            <li>The old parties failed Germany — fourteen years of humiliation, poverty, and weakness</li>
+            <li>The German people have chosen — they chose us in election after election</li>
+            <li>The Enabling Act is not the end of democracy — it is the beginning of national renewal</li>
+            <li>Faction goal: Persuade Zentrum and DVP to vote YES</li>
+          </ul>
+        </div>
+        <div class="faction-card kpd">
+          <div class="faction-label">🔴 KPD — Final Argument</div>
+          <ul>
+            <li>We warned you. The SPD made this possible by defending a capitalist republic instead of building a workers' state</li>
+            <li>Fascism is the last stage of capitalism — this was inevitable</li>
+            <li>We will not dignify this vote by participating (KPD deputies were already arrested by this date)</li>
+          </ul>
+          <div class="info-box" style="margin-top:8px;"><strong>Historical Note:</strong> By March 23, 1933, most KPD deputies had already been arrested. You may have the student deliver the speech but note this reality.</div>
+        </div>
+        <div class="faction-card zentrum">
+          <div class="faction-label">✝ Zentrum — Final Argument</div>
+          <ul>
+            <li>We received guarantees from Hitler protecting Catholic institutions</li>
+            <li>Stability for Germany required us to make difficult choices</li>
+            <li>We believe we can manage and moderate this government</li>
+            <li>Faction goal: Students must grapple with the historical Zentrum's vote YES — why?</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip-box"><strong>Pedagogical Core:</strong> The structured debate is where the simulation pays off. Students must articulate, in character, why parties that "should have known better" — Zentrum, DVP, DNVP — voted to end democracy. This is the heart of the research paper question.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Final Vote — The Enabling Act</h2>
+
+  <div class="script-you-say">
+    "The vote is called. The question: Shall Chancellor Hitler's government be granted emergency decree powers for four years under the Enabling Act?
+    <br><br>
+    YES — Grant the powers. End parliamentary governance.
+    <br>
+    NO — Refuse. Defend the Weimar Constitution.
+    <br><br>
+    A two-thirds majority is required to pass."
+  </div>
+
+  <div class="card">
+    <div class="card-title">Historical Vote Record — March 23, 1933</div>
+    <table class="score-table">
+      <tr><th>Party</th><th>Historical Vote</th><th>Notes</th></tr>
+      <tr><td><span class="badge nsdap">NSDAP</span></td><td>YES</td><td>Required; Hitler's own party</td></tr>
+      <tr><td><span class="badge dnvp">DNVP</span></td><td>YES</td><td>Papen believed he could control Hitler</td></tr>
+      <tr><td><span class="badge zentrum">Zentrum</span></td><td>YES</td><td>Received (false) guarantees re: Church</td></tr>
+      <tr><td><span class="badge dvp">DVP</span></td><td>YES</td><td>Remaining members followed coalition</td></tr>
+      <tr><td><span class="badge spd">SPD</span></td><td>NO</td><td>Only party to vote against</td></tr>
+      <tr><td><span class="badge kpd">KPD</span></td><td>Absent</td><td>Deputies already arrested</td></tr>
+    </table>
+    <div class="info-box" style="margin-top:10px;"><strong>Result:</strong> The Enabling Act passed 444–94. Weimar democracy ended. Share this after students vote, regardless of their outcome.</div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Historical Reveal Script</h2>
+  <div class="script-action">Step out of Reichstag President role. Shift to speaking as instructor.</div>
+  <div class="script-you-say">
+    "We're now out of session. You've experienced — in compressed form — fourteen years of Weimar politics."
+    <br><br>
+    "In real life: The Enabling Act passed on March 23, 1933. Only the SPD voted no. 94 deputies in a chamber of 535. Within months, all other political parties were banned. Trade unions were dissolved. The press was censored. Within a year, Germany was a one-party state.
+    <br><br>
+    The question your research paper asks is: How did this happen? Not 'why were the Nazis evil' — that's easy. The harder question is: Why did democratic parties fail to stop them? Why did coalitions collapse? Why did parties that believed in democracy vote to end it?
+    <br><br>
+    That is what you spent three sessions experiencing. Now you write about it."
+  </div>
+
+  <div class="quote-block">
+    "First they came for the Communists, and I did not speak out — because I was not a Communist. Then they came for the Social Democrats... Then they came for the Jews... Then they came for me — and there was no one left to speak for me."
+    <span class="quote-attribution">— Martin Niemöller (post-war reflection)</span>
+  </div>
+</div>
+
+<!-- ==================== SCOREBOARD ==================== -->
+<div id="scoreboard" class="section">
+  <div class="section-title">Live Scoreboard</div>
+  <div class="section-intro">Track cumulative faction points across all three sessions. Click +/− to adjust. Points reset to zero — adjust as needed before each session.</div>
+
+  <div class="tracker-grid" id="tracker-grid">
+    <!-- Populated by JS -->
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Session Point Totals</h2>
+  <table class="score-table" id="session-totals">
+    <tr>
+      <th>Faction</th>
+      <th>Session 1</th>
+      <th>Session 2</th>
+      <th>Session 3</th>
+      <th>Total</th>
+    </tr>
+    <tr><td><span class="badge kpd">KPD</span></td><td><input type="number" id="kpd-s1" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="kpd-s2" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="kpd-s3" value="0" class="score-input" oninput="updateTotals()"></td><td id="kpd-total" style="font-weight:700;color:var(--gold);">0</td></tr>
+    <tr><td><span class="badge spd">SPD</span></td><td><input type="number" id="spd-s1" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="spd-s2" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="spd-s3" value="0" class="score-input" oninput="updateTotals()"></td><td id="spd-total" style="font-weight:700;color:var(--gold);">0</td></tr>
+    <tr><td><span class="badge zentrum">Zentrum</span></td><td><input type="number" id="zen-s1" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="zen-s2" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="zen-s3" value="0" class="score-input" oninput="updateTotals()"></td><td id="zen-total" style="font-weight:700;color:var(--gold);">0</td></tr>
+    <tr><td><span class="badge ddp">DDP</span></td><td><input type="number" id="ddp-s1" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="ddp-s2" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="ddp-s3" value="0" class="score-input" oninput="updateTotals()"></td><td id="ddp-total" style="font-weight:700;color:var(--gold);">0</td></tr>
+    <tr><td><span class="badge dvp">DVP</span></td><td><input type="number" id="dvp-s1" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="dvp-s2" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="dvp-s3" value="0" class="score-input" oninput="updateTotals()"></td><td id="dvp-total" style="font-weight:700;color:var(--gold);">0</td></tr>
+    <tr><td><span class="badge dnvp">DNVP</span></td><td><input type="number" id="dnvp-s1" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="dnvp-s2" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="dnvp-s3" value="0" class="score-input" oninput="updateTotals()"></td><td id="dnvp-total" style="font-weight:700;color:var(--gold);">0</td></tr>
+    <tr><td><span class="badge nsdap">NSDAP</span></td><td><input type="number" id="nsdap-s1" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="nsdap-s2" value="0" class="score-input" oninput="updateTotals()"></td><td><input type="number" id="nsdap-s3" value="0" class="score-input" oninput="updateTotals()"></td><td id="nsdap-total" style="font-weight:700;color:var(--gold);">0</td></tr>
+  </table>
+
+  <style>
+    .score-input {
+      background: #0a0e14;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 4px 8px;
+      font-family: 'Crimson Pro', serif;
+      font-size: 15px;
+      color: var(--text);
+      width: 60px;
+    }
+    .score-input:focus { outline: none; border-color: rgba(200,168,75,0.45); }
+  </style>
+
+  <div class="rule"></div>
+  <h2 class="sub">Enabling Act Vote Tracker</h2>
+  <div class="vote-grid">
+    <button class="vote-btn" id="vote-kpd" onclick="recordVote('kpd')" style="border-color:rgba(155,35,53,0.4);color:#e74c3c;">KPD<br><small>—</small></button>
+    <button class="vote-btn" id="vote-spd" onclick="recordVote('spd')" style="border-color:rgba(192,57,43,0.35);color:#e67e22;">SPD<br><small>—</small></button>
+    <button class="vote-btn" id="vote-zen" onclick="recordVote('zen')" style="border-color:rgba(42,82,152,0.4);color:var(--blue-bright);">Zentrum<br><small>—</small></button>
+    <button class="vote-btn" id="vote-ddp" onclick="recordVote('ddp')" style="border-color:rgba(39,174,96,0.35);color:var(--green-bright);">DDP<br><small>—</small></button>
+    <button class="vote-btn" id="vote-dvp" onclick="recordVote('dvp')" style="border-color:rgba(230,126,34,0.35);color:#e67e22;">DVP<br><small>—</small></button>
+    <button class="vote-btn" id="vote-dnvp" onclick="recordVote('dnvp')" style="border-color:rgba(139,105,20,0.4);color:#c8a843;">DNVP<br><small>—</small></button>
+    <button class="vote-btn" id="vote-nsdap" onclick="recordVote('nsdap')" style="border-color:rgba(200,168,75,0.4);color:var(--gold);">NSDAP<br><small>—</small></button>
+  </div>
+  <div class="vote-result-display" id="vote-result-display">
+    <div class="vote-result-title" id="vote-title" style="color:var(--text-dim);">Awaiting votes…</div>
+    <div class="vote-result-subtitle" id="vote-subtitle">Click each faction button to cycle: YES → NO → ABSENT</div>
+  </div>
+</div>
+
+<!-- ==================== SPEAKER LOG ==================== -->
+<div id="speakers" class="section">
+  <div class="section-title">Speaker Log</div>
+  <div class="section-intro">Record who speaks, their faction, key arguments, and any points awarded. Keep this running during each session.</div>
+
+  <div style="display:grid;grid-template-columns:160px 100px 1fr 90px 36px;gap:8px;margin-bottom:6px;">
+    <div class="col-header">Student Name</div>
+    <div class="col-header">Faction</div>
+    <div class="col-header">Notes / Key Argument</div>
+    <div class="col-header">Points (+/−)</div>
+    <div></div>
+  </div>
+
+  <div id="log-container"></div>
+
+  <button class="add-row-btn" onclick="addLogRow()">+ Add Speaker</button>
+
+  <div class="rule"></div>
+  <h2 class="sub">Participation Quick Notes</h2>
+  <p>Use the fields below for rapid session notes — what worked, what didn't, who dominated, who stayed silent.</p>
+
+  <div style="margin-bottom:14px;">
+    <div class="col-header" style="margin-bottom:6px;">Session 1 Notes</div>
+    <textarea class="speech-log-area" id="notes-s1" placeholder="Notable moments, student names, debrief flags…"></textarea>
+  </div>
+  <div style="margin-bottom:14px;">
+    <div class="col-header" style="margin-bottom:6px;">Session 2 Notes</div>
+    <textarea class="speech-log-area" id="notes-s2" placeholder="Coalition deals made, who broke character, key debate moments…"></textarea>
+  </div>
+  <div>
+    <div class="col-header" style="margin-bottom:6px;">Session 3 Notes</div>
+    <textarea class="speech-log-area" id="notes-s3" placeholder="Final speech highlights, Enabling Act vote, student reactions…"></textarea>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Export Notes</h2>
+  <p>Click below to compile all speaker log entries and session notes into a single block of text you can copy, paste into a document, or print.</p>
+  <button class="export-notes-btn" onclick="compileNotes()">📋 Compile All Notes to Text</button>
+  <textarea class="notes-export-area" id="compiled-notes" readonly></textarea>
+</div>
+
+<!-- ==================== OUTCOMES ==================== -->
+<div id="outcomes" class="section">
+  <div class="section-title">Points & Outcomes Reference</div>
+  <div class="section-intro">How points are earned, how game outcomes are determined, and what each result means historically.</div>
+
+  <h2 class="sub">How Points Are Earned</h2>
+
+  <div class="card">
+    <div class="card-title">Participation Points (all factions)</div>
+    <table class="score-table">
+      <tr><th>Action</th><th>Points</th></tr>
+      <tr><td>Delivers a speech in session (any length)</td><td><span class="points-badge pos">+1</span></td></tr>
+      <tr><td>Speech includes specific historical argument from Core Texts</td><td><span class="points-badge pos">+1 bonus</span></td></tr>
+      <tr><td>Directly cites a primary source (Luxemburg, Goebbels, SPD program, etc.)</td><td><span class="points-badge pos">+1 bonus</span></td></tr>
+      <tr><td>Responds to another faction's argument (rebuttal)</td><td><span class="points-badge pos">+1</span></td></tr>
+      <tr><td>Successfully negotiates a coalition agreement</td><td><span class="points-badge pos">+2</span></td></tr>
+      <tr><td>Coalition agreement collapses due to own faction's action</td><td><span class="points-badge neg">−1</span></td></tr>
+      <tr><td>Breaking character significantly (instructor call)</td><td><span class="points-badge neg">−1</span></td></tr>
+      <tr><td>Delivers Session 3 final speech (mandatory)</td><td><span class="points-badge pos">+2</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Legislative Outcome Points</div>
+    <table class="score-table">
+      <tr><th>Outcome</th><th>Who Benefits</th><th>Points</th></tr>
+      <tr><td>Government survival vote passes (coalition holds)</td><td>SPD + coalition partners</td><td><span class="points-badge pos">+2 each</span></td></tr>
+      <tr><td>Government falls (no-confidence)</td><td>NSDAP / DNVP (if they led effort)</td><td><span class="points-badge pos">+2</span></td></tr>
+      <tr><td>Article 48 invoked</td><td>NSDAP (weakens democracy)</td><td><span class="points-badge pos">+1</span></td></tr>
+      <tr><td>Emergency economic bill passes</td><td>SPD + supporting coalition</td><td><span class="points-badge pos">+2 total split</span></td></tr>
+      <tr><td>Emergency bill defeated</td><td>KPD + NSDAP</td><td><span class="points-badge pos">+1 each</span></td></tr>
+      <tr><td>Enabling Act passes (simulation)</td><td>NSDAP wins the game</td><td><span class="points-badge gold">NSDAP Victory</span></td></tr>
+      <tr><td>Enabling Act fails (simulation)</td><td>SPD + democratic bloc</td><td><span class="points-badge gold">Republic Survives</span></td></tr>
+    </table>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Game Outcome Scenarios</h2>
+
+  <div class="info-box"><strong>Note:</strong> Unlike some Reacting to the Past games, the abridged Weimar simulation is not designed to produce a single "winner." The goal is for students to experience the process — coalition collapse, democratic erosion, competing ideologies — regardless of the final vote result. The debrief matters more than the outcome.</div>
+
+  <div class="faction-grid">
+    <div class="faction-card spd">
+      <div class="faction-label">Outcome: Republic Survives</div>
+      <p style="font-size:14px;margin-top:6px;">Democratic coalition held. Enabling Act defeated. Historical counterfactual — discuss: what would Germany have needed long-term?</p>
+    </div>
+    <div class="faction-card nsdap">
+      <div class="faction-label">Outcome: Republic Falls</div>
+      <p style="font-size:14px;margin-top:6px;">Enabling Act passes. Mirrors history. Key debrief question: Which parties enabled this? Why?</p>
+    </div>
+    <div class="faction-card kpd">
+      <div class="faction-label">Outcome: Left-Wing Collapse</div>
+      <p style="font-size:14px;margin-top:6px;">KPD and SPD failed to unite. Historical reality. Discuss: How did left-wing division contribute to Hitler's rise?</p>
+    </div>
+    <div class="faction-card neutral">
+      <div class="faction-label">Outcome: Governing Deadlock</div>
+      <p style="font-size:14px;margin-top:6px;">No majority could form. Also historically common. Discuss: How does parliamentary deadlock feed authoritarianism?</p>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Individual Grade Summary</h2>
+  <div class="card">
+    <div class="card-title">Research Paper replaces: position papers, election poster, oral participation assignment</div>
+    <table class="score-table">
+      <tr><th>Component</th><th>Points</th></tr>
+      <tr><td>Simulation participation (all 3 sessions)</td><td>Tracked via speaker log + instructor observation</td></tr>
+      <tr><td>Research Paper — Weimar section (primary case study)</td><td>30 pts (3–4 pages)</td></tr>
+      <tr><td>Research Paper — Comparative authoritarian government</td><td>15 pts (2–3 pages, independently researched)</td></tr>
+      <tr><td>Research Paper — Check-ins (Weimar-specific content)</td><td>Per schedule</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== DEBRIEF ==================== -->
+<div id="debrief" class="section">
+  <div class="section-title">Post-Simulation Debrief</div>
+  <div class="section-intro">After Session 3 · 15–20 minutes of discussion · Bridge from simulation experience to research paper analysis.</div>
+
+  <h2 class="sub">Historical Reality Check</h2>
+
+  <div class="card blue">
+    <div class="card-title">Key Facts to Share</div>
+    <table class="score-table">
+      <tr><th>Fact</th><th>Detail</th></tr>
+      <tr><td>Weimar Republic duration</td><td>1919–1933 (14 years)</td></tr>
+      <tr><td>Number of chancellors</td><td>14 chancellors in 14 years</td></tr>
+      <tr><td>Enabling Act vote</td><td>444 YES · 94 NO (SPD alone voted no)</td></tr>
+      <tr><td>NSDAP electoral peak</td><td>37.4% (July 1932) — never a majority</td></tr>
+      <tr><td>Article 48 uses</td><td>Used 250+ times, including 57 times in 1932 alone</td></tr>
+      <tr><td>KPD vs SPD hostility</td><td>KPD called SPD "social fascists" until 1934 — too late to unite</td></tr>
+      <tr><td>Hitler's appointment</td><td>Appointed by Hindenburg Jan 30, 1933 — never won a majority</td></tr>
+    </table>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Discussion Questions</h2>
+  <div class="card">
+    <ol style="padding-left:20px;">
+      <li style="margin-bottom:10px;color:var(--text);font-size:16px;line-height:1.6;"><strong>How did your faction's experience match or differ from the historical record?</strong><br><em style="color:var(--text-dim);">Look for: coalition failures, ideological rigidity, short-term thinking</em></li>
+      <li style="margin-bottom:10px;color:var(--text);font-size:16px;line-height:1.6;"><strong>Which faction do you think bears the most responsibility for democracy's collapse?</strong><br><em style="color:var(--text-dim);">Push back on easy answers — the NSDAP is obvious; what about Zentrum and DNVP?</em></li>
+      <li style="margin-bottom:10px;color:var(--text);font-size:16px;line-height:1.6;"><strong>What would it have taken to save the Republic?</strong><br><em style="color:var(--text-dim);">Requires counterfactual thinking — useful for research papers</em></li>
+      <li style="margin-bottom:10px;color:var(--text);font-size:16px;line-height:1.6;"><strong>Why did democratic parties vote for the Enabling Act?</strong><br><em style="color:var(--text-dim);">The hardest question — fear, false confidence, miscalculation, self-interest</em></li>
+      <li style="color:var(--text);font-size:16px;line-height:1.6;"><strong>What parallels, if any, do you see in contemporary democratic systems?</strong><br><em style="color:var(--text-dim);">Handle carefully — the goal is analytical comparison, not partisan commentary</em></li>
+    </ol>
+  </div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Bridge to Research Paper</h2>
+
+  <div class="script-you-say">
+    "Your research paper asks you to analyze the Weimar Republic as your primary case study — then compare it to one other authoritarian government. You've now lived in the simulation. You felt what it was like to watch coalitions collapse, to have your emergency powers used against you, to be the last faction standing.
+    <br><br>
+    The paper asks: How did authoritarianism rise? What democratic mechanisms failed? Your simulation experience gives you an inside view that your sources will now help you analyze rigorously.
+    <br><br>
+    The Weimar section is 3 to 4 pages. Your comparative government section is independently researched, 2 to 3 pages. Use your check-in schedule — do not leave this until the week it's due."
+  </div>
+
+  <div class="faction-grid">
+    <div class="tip-box">
+      <strong>Common Paper Mistake 1:</strong> Treating the NSDAP as the only cause. The paper should analyze the system — coalitions, Article 48, economic crises, the Versailles legacy — not just Hitler.
+    </div>
+    <div class="tip-box">
+      <strong>Common Paper Mistake 2:</strong> Choosing a comparative government that has nothing in common with Weimar. The comparison should illuminate something — not just describe two separate cases.
+    </div>
+  </div>
+  <div class="warn-box"><strong>Remind students:</strong> The comparative government section must be independently researched — the Weimar simulation materials do not cover it. Students choose their government; the paper requires them to find their own primary and secondary sources for that section.</div>
+
+  <div class="rule"></div>
+  <h2 class="sub">Participation Rubric — All Three Sessions</h2>
+  <div style="overflow-x:auto;">
+    <table class="rubric-table">
+      <tr>
+        <th>Criteria</th>
+        <th>Excellent</th>
+        <th>Good</th>
+        <th>Satisfactory</th>
+        <th>Needs Improvement</th>
+      </tr>
+      <tr>
+        <td><strong>Preparation</strong></td>
+        <td>Clear command of Core Texts; cited primary sources in debate</td>
+        <td>Familiar with faction's ideology; made relevant arguments</td>
+        <td>Some preparation; general participation</td>
+        <td>Little evidence of reading</td>
+      </tr>
+      <tr>
+        <td><strong>In-Character Argument</strong></td>
+        <td>Maintained character throughout; all arguments grounded in faction's actual historical position</td>
+        <td>Mostly in character; occasional lapse</td>
+        <td>Participated but arguments sometimes anachronistic</td>
+        <td>Did not maintain character</td>
+      </tr>
+      <tr>
+        <td><strong>Contribution to Debate</strong></td>
+        <td>Spoke multiple times across sessions; moved discussion forward; responded to others</td>
+        <td>Spoke at least once per session; relevant contributions</td>
+        <td>Spoke minimally; may have needed prompting</td>
+        <td>Did not speak or participate</td>
+      </tr>
+      <tr>
+        <td><strong>Coalition / Negotiation</strong></td>
+        <td>Actively negotiated; made strategic decisions consistent with faction goals</td>
+        <td>Participated in negotiations; some strategic awareness</td>
+        <td>Minimally engaged in coalition talk</td>
+        <td>Did not engage in game mechanics</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+  </div><!-- /main-content -->
+
+  <div class="footer">
+    HIST 105: Western Civilization Since 1648 &nbsp;·&nbsp; Weimar Republic Simulation &nbsp;·&nbsp; Based on Goodrich, <em>Democracy in Crisis</em> &nbsp;·&nbsp; profhauselmann.org/weimar/
+  </div>
+</div><!-- /outer-frame -->
+
+<script>
+// === Tab navigation ===
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// === Issue accordion ===
+function toggleIssue(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.issue-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.issue-header').forEach(h => h.classList.remove('open'));
+  if (!isOpen) {
+    body.classList.add('open');
+    header.classList.add('open');
+  }
+}
+
+// === Live scoreboard trackers ===
+const factions = [
+  { id: 'kpd',   label: 'KPD',     cls: 'kpd' },
+  { id: 'spd',   label: 'SPD',     cls: 'spd' },
+  { id: 'zen',   label: 'Zentrum', cls: 'zentrum' },
+  { id: 'ddp',   label: 'DDP',     cls: 'ddp' },
+  { id: 'dvp',   label: 'DVP',     cls: 'dvp' },
+  { id: 'dnvp',  label: 'DNVP',    cls: 'dnvp' },
+  { id: 'nsdap', label: 'NSDAP',   cls: 'nsdap' },
+];
+
+const points = {};
+factions.forEach(f => points[f.id] = 0);
+
+function buildTrackers() {
+  const grid = document.getElementById('tracker-grid');
+  factions.forEach(f => {
+    const card = document.createElement('div');
+    card.className = `tracker-card ${f.cls}`;
+    card.id = `tc-${f.id}`;
+    card.innerHTML = `
+      <div class="tracker-name">${f.label}</div>
+      <div class="tracker-points" id="tp-${f.id}">0</div>
+      <div class="tracker-btns">
+        <button class="tracker-btn" onclick="adj('${f.id}', -1)">−</button>
+        <button class="tracker-btn" onclick="adj('${f.id}', 1)">+</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function adj(id, delta) {
+  points[id] = (points[id] || 0) + delta;
+  document.getElementById(`tp-${id}`).textContent = points[id];
+  // Flash
+  const el = document.getElementById(`tp-${id}`);
+  el.style.transform = 'scale(1.25)';
+  el.style.transition = 'transform 0.2s';
+  setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+}
+
+// === Session totals ===
+function updateTotals() {
+  factions.forEach(f => {
+    const s1 = parseInt(document.getElementById(`${f.id}-s1`)?.value) || 0;
+    const s2 = parseInt(document.getElementById(`${f.id}-s2`)?.value) || 0;
+    const s3 = parseInt(document.getElementById(`${f.id}-s3`)?.value) || 0;
+    const tot = document.getElementById(`${f.id}-total`);
+    if (tot) tot.textContent = s1 + s2 + s3;
+  });
+}
+
+// === Vote tracker ===
+const votes = {};
+const voteStates = ['—', 'YES', 'NO', 'ABS'];
+factions.forEach(f => votes[f.id] = 0); // index into voteStates
+
+function recordVote(id) {
+  votes[id] = (votes[id] + 1) % 4;
+  const state = voteStates[votes[id]];
+  const btn = document.getElementById(`vote-${id}`);
+  btn.querySelector('small').textContent = state;
+  if (state === 'YES') btn.style.background = 'rgba(155,35,53,0.2)';
+  else if (state === 'NO') btn.style.background = 'rgba(39,174,96,0.15)';
+  else if (state === 'ABS') btn.style.background = 'rgba(200,168,75,0.08)';
+  else btn.style.background = 'transparent';
+  updateVoteResult();
+}
+
+function updateVoteResult() {
+  let yes = 0, no = 0, abs = 0, pending = 0;
+  factions.forEach(f => {
+    const s = voteStates[votes[f.id]];
+    if (s === 'YES') yes++;
+    else if (s === 'NO') no++;
+    else if (s === 'ABS') abs++;
+    else pending++;
+  });
+  const total = factions.length;
+  const voting = total - abs;
+  const needed = Math.ceil(voting * 2 / 3);
+  const title = document.getElementById('vote-title');
+  const sub = document.getElementById('vote-result-display');
+  const subtitle = document.getElementById('vote-subtitle');
+
+  if (pending > 0) {
+    title.textContent = `YES: ${yes} · NO: ${no} · ABS: ${abs}`;
+    title.style.color = 'var(--text-dim)';
+    subtitle.textContent = `${pending} faction(s) not yet voted. Need ${needed} of ${voting} voting factions for 2/3 majority.`;
+  } else {
+    const passed = yes >= needed;
+    title.textContent = passed ? '⚡ ENABLING ACT PASSES' : '✖ ENABLING ACT FAILS';
+    title.style.color = passed ? 'var(--gold)' : 'var(--green-bright)';
+    subtitle.textContent = passed
+      ? `${yes}–${no} (${abs} absent). Two-thirds achieved. Weimar democracy ends.`
+      : `${yes}–${no} (${abs} absent). Two-thirds not reached. The Republic survives — in simulation.`;
+  }
+}
+
+// === Speaker log ===
+let rowCount = 0;
+const factionOptions = `
+  <option value="">— Faction —</option>
+  <option value="kpd">KPD</option>
+  <option value="spd">SPD</option>
+  <option value="zen">Zentrum</option>
+  <option value="ddp">DDP</option>
+  <option value="dvp">DVP</option>
+  <option value="dnvp">DNVP</option>
+  <option value="nsdap">NSDAP</option>
+`;
+
+function addLogRow() {
+  rowCount++;
+  const id = `row-${rowCount}`;
+  const container = document.getElementById('log-container');
+  const row = document.createElement('div');
+  row.className = 'log-row';
+  row.id = id;
+  row.innerHTML = `
+    <input type="text" placeholder="Student name">
+    <select onchange="colorRow(this, '${id}')">${factionOptions}</select>
+    <textarea placeholder="Key argument, primary source cited, notable moment…"></textarea>
+    <input type="text" placeholder="+1 / −1 / +2">
+    <button class="del-btn" onclick="deleteRow('${id}')">✕</button>
+  `;
+  container.appendChild(row);
+}
+
+function deleteRow(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function colorRow(select, rowId) {
+  const row = document.getElementById(rowId);
+  const cls = select.value;
+  const colors = {
+    kpd: 'rgba(155,35,53,0.08)', spd: 'rgba(192,57,43,0.07)',
+    zen: 'rgba(42,82,152,0.08)', ddp: 'rgba(39,174,96,0.07)',
+    dvp: 'rgba(230,126,34,0.07)', dnvp: 'rgba(139,105,20,0.08)',
+    nsdap: 'rgba(200,168,75,0.07)'
+  };
+  if (row && colors[cls]) {
+    row.style.background = colors[cls];
+    row.style.borderRadius = '3px';
+    row.style.padding = '4px';
+  }
+}
+
+// === Export PDF ===
+function exportPDF() {
+  // Expand all sections and issue bodies for print
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'block');
+  document.querySelectorAll('.issue-body').forEach(b => b.style.display = 'block');
+  window.print();
+  // Restore after print dialog closes
+  setTimeout(() => {
+    document.querySelectorAll('.section').forEach(s => s.style.display = '');
+    document.querySelectorAll('.issue-body').forEach(b => b.style.display = '');
+    // Re-show only the active section
+    const active = document.querySelector('.nav-tab.active');
+    if (active) {
+      const id = active.getAttribute('onclick').match(/'([^']+)'/)[1];
+      document.getElementById(id).style.display = 'block';
+    }
+    document.querySelectorAll('.section.active').forEach(s => s.style.display = 'block');
+  }, 2000);
+}
+
+// === Compile Notes ===
+function compileNotes() {
+  const lines = [];
+  const now = new Date().toLocaleString();
+  lines.push('WEIMAR SIMULATION — SESSION NOTES');
+  lines.push('Exported: ' + now);
+  lines.push('='.repeat(50));
+
+  // Speaker log rows
+  lines.push('\nSPEAKER LOG\n' + '-'.repeat(40));
+  const rows = document.querySelectorAll('.log-row');
+  let hasRows = false;
+  rows.forEach(row => {
+    const name = row.querySelector('input[type="text"]')?.value?.trim();
+    const faction = row.querySelector('select')?.value || '—';
+    const notes = row.querySelector('textarea')?.value?.trim();
+    const pts = row.querySelectorAll('input[type="text"]')[1]?.value?.trim();
+    if (name || notes) {
+      hasRows = true;
+      lines.push(`[${faction.toUpperCase()}] ${name || '(unnamed)'} ${pts ? '| ' + pts + ' pts' : ''}`);
+      if (notes) lines.push('  → ' + notes);
+    }
+  });
+  if (!hasRows) lines.push('  (no entries)');
+
+  // Session notes
+  ['s1','s2','s3'].forEach((s, i) => {
+    const val = document.getElementById('notes-' + s)?.value?.trim();
+    lines.push('\nSESSION ' + (i+1) + ' NOTES\n' + '-'.repeat(40));
+    lines.push(val || '  (no notes)');
+  });
+
+  // Scoreboard
+  lines.push('\nSCOREBOARD\n' + '-'.repeat(40));
+  factions.forEach(f => {
+    const live = points[f.id] || 0;
+    const s1 = document.getElementById(`${f.id}-s1`)?.value || '0';
+    const s2 = document.getElementById(`${f.id}-s2`)?.value || '0';
+    const s3 = document.getElementById(`${f.id}-s3`)?.value || '0';
+    const total = parseInt(s1) + parseInt(s2) + parseInt(s3);
+    lines.push(`${f.label.padEnd(10)} S1:${s1}  S2:${s2}  S3:${s3}  Total:${total}  (Live tracker: ${live})`);
+  });
+
+  // Enabling Act votes
+  lines.push('\nENABLING ACT VOTES\n' + '-'.repeat(40));
+  factions.forEach(f => {
+    const state = voteStates[votes[f.id]] || '—';
+    lines.push(`${f.label.padEnd(10)}: ${state}`);
+  });
+
+  const area = document.getElementById('compiled-notes');
+  area.value = lines.join('\n');
+  area.classList.add('visible');
+  area.select();
+  try { document.execCommand('copy'); } catch(e) {}
+
+  // Scroll to it
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// === Init ===
+buildTrackers();
+addLogRow();
+addLogRow();
+addLogRow();
+</script>
+</body>
+</html>
