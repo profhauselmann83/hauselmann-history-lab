@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparedness Quiz | Weimar Simulation</title>
+
+    <!--
+    ════════════════════════════════════════════════════════════════
+    SETUP INSTRUCTIONS
+    ════════════════════════════════════════════════════════════════
+
+    1. Replace the two placeholders below with your Supabase credentials:
+       - SUPABASE_URL:  your project URL, e.g. https://xxxx.supabase.co
+       - SUPABASE_KEY:  your project anon/public key
+
+    2. In your Supabase project, run this SQL to create the responses table:
+
+       CREATE TABLE quiz_responses (
+           id              BIGSERIAL PRIMARY KEY,
+           submitted_at    TIMESTAMPTZ DEFAULT NOW(),
+           student_name    TEXT NOT NULL,
+           student_id      TEXT NOT NULL,
+           score           INTEGER NOT NULL,
+           total           INTEGER NOT NULL,
+           answers         JSONB NOT NULL
+       );
+
+       -- Optional: enable Row Level Security so only you can read results
+       ALTER TABLE quiz_responses ENABLE ROW LEVEL SECURITY;
+
+       CREATE POLICY "Allow anonymous inserts"
+           ON quiz_responses FOR INSERT
+           TO anon
+           WITH CHECK (true);
+
+       -- To read results in the Supabase dashboard, no extra policy needed.
+       -- To read via API with the anon key, add:
+       -- CREATE POLICY "Allow anon select"
+       --     ON quiz_responses FOR SELECT TO anon USING (true);
+
+    3. Place this file at: weimar/quiz/index.html
+       (or wherever you like on your site — no other files needed)
+
+    4. The quiz links back to profhauselmann.org/weimar/ automatically.
+
+    ════════════════════════════════════════════════════════════════
+    -->
+
+    <script>
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';   // ← replace
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // ← replace
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Weimar site CSS variables ───────────────────────────── */
+        :root {
+            --weimar-black:   #1a1a1a;
+            --weimar-red:     #c8102e;
+            --weimar-gold:    #d4af37;
+            --weimar-cream:   #f5f1e8;
+            --spd-red:        #e3000f;
+            --kpd-red:        #8b0000;
+            --dnvp-blue:      #003366;
+            --font-heading:   'Crimson Text', Georgia, serif;
+            --font-body:      'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+            --font-mono:      'Courier Prime', 'Courier New', monospace;
+        }
+
+        /* ── Base ────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--weimar-black);
+            background-color: var(--weimar-cream);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ── Site header (matches site exactly) ─────────────────── */
+        .site-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c1810 50%, #1a1a1a 100%);
+            padding: 2em 0;
+            border-bottom: 4px solid var(--weimar-red);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .site-header h1 {
+            font-family: var(--font-heading);
+            color: var(--weimar-gold);
+            font-size: 2.2em;
+            border: none;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            margin-bottom: 0.2em;
+        }
+        .site-header .subtitle {
+            color: rgba(245,241,232,0.9);
+            font-size: 1.1em;
+            font-style: italic;
+        }
+        .site-header .course-label {
+            color: rgba(245,241,232,0.6);
+            font-size: 0.9em;
+            margin-top: 0.3em;
+        }
+
+        /* ── Main nav (matches site exactly) ────────────────────── */
+        .main-nav {
+            background-color: #2c2c2c;
+            border-bottom: 2px solid var(--weimar-gold);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0;
+        }
+        .main-nav a {
+            display: block;
+            padding: 1em 1.4em;
+            color: var(--weimar-cream);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .main-nav a:hover { background-color: var(--weimar-red); border-bottom-color: var(--weimar-gold); }
+        .main-nav a.active { background-color: var(--weimar-red); border-bottom-color: var(--weimar-gold); }
+
+        /* ── Main content area ───────────────────────────────────── */
+        main { padding: 2.5em 0 4em; }
+
+        /* ── Key-concept box (matches .key-concept on site) ──────── */
+        .key-concept {
+            background-color: #e8f4f8;
+            border-left: 5px solid #2980b9;
+            padding: 1.5em;
+            margin: 1.5em 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .key-concept h3 { color: #2980b9; margin-top: 0; font-family: var(--font-heading); }
+
+        /* ── Warning box (matches .warning-sign on site) ─────────── */
+        .warning-sign {
+            background-color: #fef9e7;
+            border-left: 5px solid var(--weimar-gold);
+            padding: 1.5em;
+            margin: 1.5em 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .warning-sign h3 { color: #b7950b; margin-top: 0; font-family: var(--font-heading); }
+
+        /* ── Student info form ───────────────────────────────────── */
+        .student-info-card {
+            background: #fff;
+            border: 2px solid var(--weimar-gold);
+            border-radius: 8px;
+            padding: 1.8em;
+            margin-bottom: 2em;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .student-info-card h2 {
+            font-family: var(--font-heading);
+            color: var(--weimar-black);
+            border-left: 5px solid var(--weimar-gold);
+            padding-left: 14px;
+            margin-top: 0;
+            font-size: 1.6em;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2em;
+            margin-top: 1.2em;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 0.4em; }
+        .form-group label {
+            font-weight: 700;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #444;
+        }
+        .form-group input {
+            padding: 0.7em 1em;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-family: var(--font-body);
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--weimar-gold);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+        }
+        .form-group input.error { border-color: var(--weimar-red); }
+
+        /* ── Quiz question card ──────────────────────────────────── */
+        .quiz-section-label {
+            font-family: var(--font-heading);
+            font-size: 1.8em;
+            color: var(--weimar-black);
+            border-left: 5px solid var(--weimar-gold);
+            padding-left: 14px;
+            margin: 2em 0 1em;
+        }
+
+        .question-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.6em;
+            margin-bottom: 1.4em;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            transition: box-shadow 0.2s;
+        }
+        .question-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .question-card.unanswered { border-color: var(--weimar-red); }
+        .question-card.correct   { border-left: 5px solid #27ae60; }
+        .question-card.incorrect { border-left: 5px solid var(--weimar-red); }
+
+        .question-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1em;
+            margin-bottom: 1em;
+        }
+        .question-number {
+            background: var(--weimar-black);
+            color: var(--weimar-gold);
+            font-family: var(--font-heading);
+            font-size: 0.95em;
+            font-weight: 700;
+            padding: 0.25em 0.7em;
+            border-radius: 3px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .question-topic {
+            background: #f0ebe0;
+            color: #666;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.3em 0.8em;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+        .question-text {
+            font-size: 1.05em;
+            font-weight: 600;
+            line-height: 1.5;
+            color: var(--weimar-black);
+            margin-bottom: 1.1em;
+        }
+
+        /* ── Answer options ──────────────────────────────────────── */
+        .options { display: flex; flex-direction: column; gap: 0.5em; }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8em;
+            padding: 0.75em 1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 0.97em;
+            line-height: 1.5;
+        }
+        .option-label:hover { border-color: var(--weimar-gold); background: #fffdf4; }
+        .option-label input[type="radio"] { flex-shrink: 0; margin-top: 3px; accent-color: var(--weimar-red); }
+
+        /* Post-submit states */
+        .option-label.correct-answer {
+            border-color: #27ae60;
+            background: #eafaf1;
+            font-weight: 600;
+        }
+        .option-label.wrong-answer {
+            border-color: var(--weimar-red);
+            background: #fdf0f0;
+            text-decoration: line-through;
+            color: #999;
+        }
+        .option-label.selected-correct { border-color: #27ae60; background: #d5f5e3; }
+        .option-label.selected-wrong   { border-color: var(--weimar-red); background: #fce4e4; }
+
+        /* Feedback text */
+        .feedback {
+            display: none;
+            margin-top: 1em;
+            padding: 0.8em 1.1em;
+            border-radius: 4px;
+            font-size: 0.93em;
+            line-height: 1.5;
+        }
+        .feedback.correct {
+            display: block;
+            background: #eafaf1;
+            border-left: 4px solid #27ae60;
+            color: #1e6b3c;
+        }
+        .feedback.incorrect {
+            display: block;
+            background: #fef0f0;
+            border-left: 4px solid var(--weimar-red);
+            color: #7b1c1c;
+        }
+
+        /* ── Submit button ───────────────────────────────────────── */
+        .submit-area {
+            text-align: center;
+            padding: 2em 0;
+        }
+        .btn-submit {
+            background: var(--weimar-red);
+            color: #fff;
+            border: none;
+            padding: 1em 3em;
+            font-family: var(--font-body);
+            font-size: 1.1em;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 3px 8px rgba(200,16,46,0.3);
+        }
+        .btn-submit:hover { background: #a00d25; transform: translateY(-1px); }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-submit:disabled { background: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ── Score panel ─────────────────────────────────────────── */
+        .score-panel {
+            display: none;
+            background: #fff;
+            border: 3px solid var(--weimar-gold);
+            border-radius: 10px;
+            padding: 2.5em;
+            margin: 2em 0;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .score-panel.visible { display: block; }
+        .score-number {
+            font-family: var(--font-heading);
+            font-size: 5em;
+            font-weight: 700;
+            color: var(--weimar-red);
+            line-height: 1;
+        }
+        .score-label {
+            font-size: 1.2em;
+            color: #555;
+            margin: 0.3em 0 1em;
+        }
+        .score-bar-wrap {
+            background: #eee;
+            border-radius: 20px;
+            height: 14px;
+            margin: 1em auto;
+            max-width: 400px;
+            overflow: hidden;
+        }
+        .score-bar {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, var(--weimar-red), var(--weimar-gold));
+            transition: width 0.8s ease;
+            width: 0%;
+        }
+        .score-message {
+            font-family: var(--font-heading);
+            font-size: 1.4em;
+            color: var(--weimar-black);
+            margin-top: 1em;
+        }
+        .score-submitted {
+            display: inline-block;
+            background: #eafaf1;
+            border: 2px solid #27ae60;
+            color: #1e6b3c;
+            border-radius: 5px;
+            padding: 0.6em 1.4em;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-top: 1.2em;
+        }
+        .score-error {
+            display: inline-block;
+            background: #fef0f0;
+            border: 2px solid var(--weimar-red);
+            color: #7b1c1c;
+            border-radius: 5px;
+            padding: 0.6em 1.4em;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-top: 1.2em;
+        }
+
+        /* ── Spinner ─────────────────────────────────────────────── */
+        .spinner {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border: 3px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Footer (matches site) ───────────────────────────────── */
+        footer {
+            background: var(--weimar-black);
+            color: rgba(245,241,232,0.7);
+            text-align: center;
+            padding: 2em;
+            font-size: 0.9em;
+            margin-top: 4em;
+        }
+        footer a { color: var(--weimar-gold); text-decoration: none; }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .site-header h1 { font-size: 1.6em; }
+            .main-nav a { padding: 0.8em 0.9em; font-size: 0.85em; }
+            .score-number { font-size: 3.5em; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────── -->
+<header class="site-header">
+    <div class="container">
+        <h1>Democracy in Crisis</h1>
+        <p class="subtitle">Weimar Germany, 1929–1932 &nbsp;·&nbsp; Preparedness Quiz</p>
+        <p class="course-label">HIST 105: Western Civilization &nbsp;·&nbsp; Yosemite Community College</p>
+    </div>
+</header>
+
+<!-- ── NAV ─────────────────────────────────────────────────────────── -->
+<nav class="main-nav">
+    <ul>
+        <li><a href="/weimar/index.html">Introduction</a></li>
+        <li><a href="/weimar/background/narrative.html">Historical Background</a></li>
+        <li><a href="/weimar/game/rules.html">The Game</a></li>
+        <li><a href="/weimar/factions/index.html">Factions</a></li>
+        <li><a href="/weimar/core-texts/index.html">Core Texts</a></li>
+        <li><a href="/weimar/roles/index.html">Role Sheets</a></li>
+        <li><a href="/weimar/quiz/" class="active">Preparedness Quiz</a></li>
+    </ul>
+</nav>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────── -->
+<main>
+<div class="container">
+
+    <h1 style="font-family:var(--font-heading);font-size:2.4em;color:var(--weimar-black);border-bottom:3px solid var(--weimar-red);padding-bottom:0.3em;margin-bottom:0.4em;">
+        Session 1 Preparedness Quiz
+    </h1>
+    <p style="color:#555;font-size:1.05em;margin-bottom:2em;">
+        Complete before your first simulation class. 10 questions &nbsp;·&nbsp; Auto-graded &nbsp;·&nbsp; Results sent to Prof. Hauselmann automatically.
+    </p>
+
+    <div class="key-concept">
+        <h3>Before you begin</h3>
+        <p>This quiz covers your role sheet, the five Weimar crises, the party spectrum, the Freedom Law debate, and Session 1 mechanics. If you've read the preparation materials, you'll do fine. Enter your name and student ID exactly as they appear in your course records — that's how your submission will be identified.</p>
+    </div>
+
+    <!-- ── STUDENT INFO ─────────────────────────────────────────── -->
+    <div class="student-info-card">
+        <h2>Your Information</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="student-name">Full Name</label>
+                <input type="text" id="student-name" placeholder="First Last" autocomplete="name">
+            </div>
+            <div class="form-group">
+                <label for="student-id">Student ID</label>
+                <input type="text" id="student-id" placeholder="e.g. 12345678" autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <!-- ── QUIZ FORM ────────────────────────────────────────────── -->
+    <form id="quiz-form" novalidate>
+
+        <h2 class="quiz-section-label">Questions</h2>
+
+        <!-- Q1 -->
+        <div class="question-card" data-q="1" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q1</span>
+                <span class="question-topic">Role Sheet</span>
+            </div>
+            <p class="question-text">Which of the following best describes the role of the <em>Camarilla</em> in the Weimar simulation?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q1" value="A"> A far-right party with seats in the Reichstag pushing to repeal Versailles</label>
+                <label class="option-label"><input type="radio" name="q1" value="B"> Unofficial advisers around President von Hindenburg with no Reichstag seats but significant informal power</label>
+                <label class="option-label"><input type="radio" name="q1" value="C"> A centrist coalition party representing Catholic interests</label>
+                <label class="option-label"><input type="radio" name="q1" value="D"> The military high command, able to declare martial law at any time</label>
+            </div>
+            <div class="feedback" data-correct="The Camarilla holds no formal Reichstag seats but exercises significant informal influence around Hindenburg — including over who becomes chancellor." data-incorrect="The Camarilla is not a Reichstag party. They are the informal advisers and confidants around President Hindenburg — powerful but operating outside formal parliamentary channels."></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="question-card" data-q="2" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q2</span>
+                <span class="question-topic">Five Crises</span>
+            </div>
+            <p class="question-text">The "Stab-in-the-Back Myth" (Dolchstoßlegende) was significant to the Weimar Republic primarily because it:</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q2" value="A"> Provided legal justification for the use of Article 48 emergency decrees</label>
+                <label class="option-label"><input type="radio" name="q2" value="B"> Was used by the military to explain Germany's defeat and delegitimize the Republic's founders from its very beginning</label>
+                <label class="option-label"><input type="radio" name="q2" value="C"> Originated with the Communist Party as a critique of the SPD's wartime cooperation</label>
+                <label class="option-label"><input type="radio" name="q2" value="D"> Was officially endorsed by the Weimar Constitution's preamble</label>
+            </div>
+            <div class="feedback" data-correct="The myth blamed socialists and Jews for betraying the undefeated German army — and the Republic's founders were the very people accused of this betrayal, poisoning the Republic from birth." data-incorrect="The myth originated with military leaders like Ludendorff, not the KPD. It accused the Republic's founders of treason — making the new government illegitimate in the eyes of nationalists from day one."></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="question-card" data-q="3" data-correct="C">
+            <div class="question-header">
+                <span class="question-number">Q3</span>
+                <span class="question-topic">Five Crises</span>
+            </div>
+            <p class="question-text">The simulation begins in late 1929. Which economic event had just occurred that would immediately destabilize the German economy?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q3" value="A"> The French occupation of the Ruhr industrial region</label>
+                <label class="option-label"><input type="radio" name="q3" value="B"> Germany's default on reparations payments under the Dawes Plan</label>
+                <label class="option-label"><input type="radio" name="q3" value="C"> The Wall Street Crash, which caused American banks to call in short-term loans to Germany</label>
+                <label class="option-label"><input type="radio" name="q3" value="D"> Hyperinflation returning after the stabilization of the Rentenmark</label>
+            </div>
+            <div class="feedback" data-correct="The 1929 Wall Street Crash prompted American banks to call in the short-term loans that had been propping up the German economy since 1924 — triggering the Depression in Germany almost immediately." data-incorrect="The Ruhr occupation was 1923. The simulation opens in October 1929 — the month of the Wall Street Crash — which pulled the plug on American loans sustaining Germany's fragile recovery."></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="question-card" data-q="4" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q4</span>
+                <span class="question-topic">Constitutional Mechanics</span>
+            </div>
+            <p class="question-text">The "25/48/53 formula" refers to a combination of Weimar constitutional articles that together allowed:</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q4" value="A"> The Reichstag to remove a chancellor by simple majority vote at any time</label>
+                <label class="option-label"><input type="radio" name="q4" value="B"> The President to appoint a chancellor, govern by emergency decree, and dissolve the Reichstag — making it legally possible to end parliamentary democracy without a coup</label>
+                <label class="option-label"><input type="radio" name="q4" value="C"> Any party with 25% of seats to call for a national referendum on any legislation</label>
+                <label class="option-label"><input type="radio" name="q4" value="D"> The military to assume control of government during declared states of emergency</label>
+            </div>
+            <div class="feedback" data-correct="Article 53 (presidential appointment of chancellor), Article 48 (emergency decrees bypassing the Reichstag), and Article 25 (dissolution of the Reichstag) together formed a legal pathway to authoritarian rule — no coup required." data-incorrect="The formula refers to three specific constitutional articles: 53 (presidential appointment), 48 (emergency decrees), and 25 (Reichstag dissolution). Together they made legal dictatorship possible."></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="question-card" data-q="5" data-correct="C">
+            <div class="question-header">
+                <span class="question-number">Q5</span>
+                <span class="question-topic">Party Spectrum</span>
+            </div>
+            <p class="question-text">Which party referred to the SPD as "social fascists" and refused to cooperate with them against the rising Nazi threat?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q5" value="A"> DNVP</label>
+                <label class="option-label"><input type="radio" name="q5" value="B"> DVP</label>
+                <label class="option-label"><input type="radio" name="q5" value="C"> KPD</label>
+                <label class="option-label"><input type="radio" name="q5" value="D"> Centre Party</label>
+            </div>
+            <div class="feedback" data-correct="The KPD followed Comintern policy that social democrats were class traitors propping up capitalism — making them, in the KPD's view, as dangerous as fascists. This split on the left was fatal to any anti-Nazi coalition." data-incorrect="The KPD — following instructions from Moscow — labeled the SPD 'social fascists' and refused cooperation. This division on the left made it far easier for the Nazis to gain ground."></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="question-card" data-q="6" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q6</span>
+                <span class="question-topic">Freedom Law Debate</span>
+            </div>
+            <p class="question-text">The Freedom Law proposed by Hugenberg (DNVP) would have:</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q6" value="A"> Granted amnesty to political prisoners from the 1923 Beer Hall Putsch</label>
+                <label class="option-label"><input type="radio" name="q6" value="B"> Made it a criminal offense for German officials to cooperate with the terms of the Versailles Treaty</label>
+                <label class="option-label"><input type="radio" name="q6" value="C"> Established a referendum process to allow citizens to overturn Reichstag legislation</label>
+                <label class="option-label"><input type="radio" name="q6" value="D"> Removed the war guilt clause (Article 231) from German law unilaterally</label>
+            </div>
+            <div class="feedback" data-correct="Cooperation with Versailles — including signing reparations agreements or accepting foreign oversight — would be prosecutable as treason under the Freedom Law." data-incorrect="The Freedom Law would have criminalized any German official's cooperation with Versailles — making it a treasonable offense to negotiate reparations or accept Allied oversight."></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="question-card" data-q="7" data-correct="C">
+            <div class="question-header">
+                <span class="question-number">Q7</span>
+                <span class="question-topic">Freedom Law Debate</span>
+            </div>
+            <p class="question-text">Both the KPD and the SPD oppose the Freedom Law — but for different reasons. Which statement best captures the KPD's distinctive reason for opposing it?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q7" value="A"> The KPD supports the Versailles Treaty as a fair settlement that punishes German militarism</label>
+                <label class="option-label"><input type="radio" name="q7" value="B"> The KPD believes the law will destabilize diplomatic relations and trigger Allied sanctions</label>
+                <label class="option-label"><input type="radio" name="q7" value="C"> The KPD sees the Freedom Law as capitalist nationalism that distracts from the class struggle against the German ruling class</label>
+                <label class="option-label"><input type="radio" name="q7" value="D"> The KPD opposes the law because it would criminalize the SPD leadership</label>
+            </div>
+            <div class="feedback" data-correct="The KPD frames the issue in class terms, not national ones. Versailles is a capitalist settlement; the real enemy is the German ruling class. Nationalist campaigns like the Freedom Law serve capitalist interests by misdirecting workers' anger." data-incorrect="The KPD doesn't oppose Versailles on the same pragmatic grounds as the SPD. Their objection is ideological: the Freedom Law is capitalist nationalism that distracts workers from the real class struggle."></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="question-card" data-q="8" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q8</span>
+                <span class="question-topic">Core Texts</span>
+            </div>
+            <p class="question-text">Which of the following best describes the Conservative Revolution's critique of the Weimar Republic, as represented by thinkers like Carl Schmitt and Oswald Spengler?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q8" value="A"> The Republic was too monarchist and insufficiently democratic in its institutions</label>
+                <label class="option-label"><input type="radio" name="q8" value="B"> Parliamentary democracy was fundamentally illegitimate — a system of endless debate that could never produce real political decision or national will</label>
+                <label class="option-label"><input type="radio" name="q8" value="C"> The Republic's main failure was its inability to nationalize major industries and achieve socialist economic goals</label>
+                <label class="option-label"><input type="radio" name="q8" value="D"> The Republic was a foreign imposition that needed to be replaced with a Soviet-style workers' council system</label>
+            </div>
+            <div class="feedback" data-correct="Schmitt in particular argued that liberal parliamentarism had lost its intellectual foundations — it was a machine for talk, not for governing. Real political authority required decision, not deliberation." data-incorrect="The Conservative Revolution's critique was philosophical, not procedural. Schmitt and Spengler argued that parliamentary debate itself was a bankrupt idea — incapable of producing genuine political will or national leadership."></div>
+        </div>
+
+        <!-- Q9 -->
+        <div class="question-card" data-q="9" data-correct="C">
+            <div class="question-header">
+                <span class="question-number">Q9</span>
+                <span class="question-topic">Stability Index</span>
+            </div>
+            <p class="question-text">The Stability Index starts at +50 at the beginning of the simulation. What does a HIGH index (above +50) mean for pro-Republican parties?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q9" value="A"> Emergency decrees are more likely and the 25/48/53 formula becomes tempting</label>
+                <label class="option-label"><input type="radio" name="q9" value="B"> Anti-Republican parties dominate elections and insurrections become viable</label>
+                <label class="option-label"><input type="radio" name="q9" value="C"> Pro-Republican parties benefit in elections, insurrections are unlikely to succeed, and democratic norms hold</label>
+                <label class="option-label"><input type="radio" name="q9" value="D"> The Reichstag is dissolved and new elections must be called within 60 days</label>
+            </div>
+            <div class="feedback" data-correct="A high Stability Index favors the Republic's defenders — elections go their way, violent insurrections fail, and constitutional norms hold. As the index drops, each of those advantages erodes." data-incorrect="A HIGH index is good news for pro-Republican parties. It's when the index drops below zero that emergency decrees become tempting, insurrections become viable, and the 25/48/53 formula comes into play."></div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="question-card" data-q="10" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q10</span>
+                <span class="question-topic">Session 1</span>
+            </div>
+            <p class="question-text">During the character introduction round in Session 1, each student introduces themselves in character by covering three things. Which correctly lists all three?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q10" value="A"> Your character's name, your party's stance on the Young Plan, and your personal victory objective</label>
+                <label class="option-label"><input type="radio" name="q10" value="B"> Your character's name and party, your character's greatest fear for Germany, and what you want the Reichstag to do</label>
+                <label class="option-label"><input type="radio" name="q10" value="C"> Your character's biography, the primary source that best represents your ideology, and one question for another faction</label>
+                <label class="option-label"><input type="radio" name="q10" value="D"> Your character's name, your party's position on the Freedom Law, and your character's relationship to the Stab-in-the-Back myth</label>
+            </div>
+            <div class="feedback" data-correct="Name and party, Germany's greatest threat as your character sees it, and what you want this Reichstag to do. These are the three prompts for the small group character introduction round." data-incorrect="The three prompts are: (1) your name and party, (2) your character's greatest fear for Germany, and (3) what you want this Reichstag to do. Keep it simple — this is your character's introduction, not a speech."></div>
+        </div>
+
+        <!-- ── SUBMIT ──────────────────────────────────────────── -->
+        <div class="warning-sign">
+            <h3>⚠ Before you submit</h3>
+            <p>Make sure your name and student ID are filled in above. Once submitted, your answers and score are sent to Prof. Hauselmann automatically. You cannot resubmit.</p>
+        </div>
+
+        <div class="submit-area">
+            <button type="submit" class="btn-submit" id="submit-btn">Submit Quiz</button>
+        </div>
+
+    </form>
+
+    <!-- ── SCORE PANEL ──────────────────────────────────────────── -->
+    <div class="score-panel" id="score-panel">
+        <div class="score-number" id="score-display">—</div>
+        <div class="score-label">out of 10</div>
+        <div class="score-bar-wrap"><div class="score-bar" id="score-bar"></div></div>
+        <div class="score-message" id="score-message"></div>
+        <div id="submission-status"></div>
+    </div>
+
+</div>
+</main>
+
+<!-- ── FOOTER ───────────────────────────────────────────────────────── -->
+<footer>
+    <p>Democracy in Crisis: Weimar Germany Simulation &nbsp;·&nbsp; HIST 105: Western Civilization</p>
+    <p style="margin-top:0.4em;">Yosemite Community College &nbsp;·&nbsp; <a href="https://profhauselmann.org">Prof. Hauselmann</a></p>
+</footer>
+
+<!-- ── JAVASCRIPT ───────────────────────────────────────────────────── -->
+<script>
+(function () {
+    'use strict';
+
+    // ── Answer key ─────────────────────────────────────────────────
+    const ANSWERS = { q1:'B', q2:'B', q3:'C', q4:'B', q5:'C', q6:'B', q7:'C', q8:'B', q9:'C', q10:'B' };
+    const TOTAL = Object.keys(ANSWERS).length;
+
+    let submitted = false;
+
+    // ── Score messages ──────────────────────────────────────────────
+    function scoreMessage(n) {
+        if (n === 10) return 'Perfect score — you are ready for the Reichstag.';
+        if (n >= 8)  return 'Strong preparation — a few things to review before class.';
+        if (n >= 6)  return 'Solid foundation — review the questions you missed.';
+        if (n >= 4)  return 'Some preparation needed — re-read the materials before Session 1.';
+        return 'Please review the preparation guide and Freedom Law page before class.';
+    }
+
+    // ── Submit handler ──────────────────────────────────────────────
+    document.getElementById('quiz-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (submitted) return;
+
+        // Validate student info
+        const nameEl = document.getElementById('student-name');
+        const idEl   = document.getElementById('student-id');
+        const name   = nameEl.value.trim();
+        const sid    = idEl.value.trim();
+        let valid    = true;
+
+        [nameEl, idEl].forEach(el => el.classList.remove('error'));
+
+        if (!name) { nameEl.classList.add('error'); valid = false; }
+        if (!sid)  { idEl.classList.add('error');   valid = false; }
+        if (!valid) {
+            nameEl.closest('.student-info-card').scrollIntoView({ behavior:'smooth', block:'center' });
+            return;
+        }
+
+        // Validate all questions answered
+        const unanswered = [];
+        for (let i = 1; i <= TOTAL; i++) {
+            const card = document.querySelector(`.question-card[data-q="${i}"]`);
+            const selected = card.querySelector(`input[name="q${i}"]:checked`);
+            if (!selected) {
+                card.classList.add('unanswered');
+                unanswered.push(i);
+            } else {
+                card.classList.remove('unanswered');
+            }
+        }
+        if (unanswered.length) {
+            document.querySelector(`.question-card[data-q="${unanswered[0]}"]`)
+                .scrollIntoView({ behavior:'smooth', block:'center' });
+            return;
+        }
+
+        // Grade
+        const answers = {};
+        let score = 0;
+        for (let i = 1; i <= TOTAL; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`).value;
+            const correct  = ANSWERS[`q${i}`];
+            answers[`q${i}`] = selected;
+            if (selected === correct) score++;
+        }
+
+        // Show answer states on each card
+        for (let i = 1; i <= TOTAL; i++) {
+            const card     = document.querySelector(`.question-card[data-q="${i}"]`);
+            const selected = answers[`q${i}`];
+            const correct  = ANSWERS[`q${i}`];
+            const feedback = card.querySelector('.feedback');
+            const isCorrect = selected === correct;
+
+            card.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+            card.querySelectorAll('.option-label').forEach(label => {
+                const val = label.querySelector('input').value;
+                label.querySelector('input').disabled = true;
+                if (val === correct && val === selected) label.classList.add('selected-correct');
+                else if (val === correct)                label.classList.add('correct-answer');
+                else if (val === selected)               label.classList.add('selected-wrong');
+                else                                     label.classList.add('wrong-answer');
+            });
+
+            feedback.textContent = isCorrect
+                ? feedback.dataset.correct
+                : feedback.dataset.incorrect;
+            feedback.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+        }
+
+        // Show score panel
+        const pct = Math.round((score / TOTAL) * 100);
+        document.getElementById('score-display').textContent = score;
+        document.getElementById('score-message').textContent  = scoreMessage(score);
+        document.getElementById('score-bar').style.width      = pct + '%';
+
+        const panel = document.getElementById('score-panel');
+        panel.classList.add('visible');
+        panel.scrollIntoView({ behavior:'smooth', block:'center' });
+
+        // Disable submit
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Submitting…';
+        submitted = true;
+
+        // ── Supabase submission ─────────────────────────────────────
+        const statusEl = document.getElementById('submission-status');
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/quiz_responses`, {
+                method:  'POST',
+                headers: {
+                    'Content-Type':  'application/json',
+                    'apikey':        SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Prefer':        'return=minimal'
+                },
+                body: JSON.stringify({
+                    student_name: name,
+                    student_id:   sid,
+                    score:        score,
+                    total:        TOTAL,
+                    answers:      answers
+                })
+            });
+
+            if (res.ok || res.status === 201) {
+                statusEl.innerHTML = '<span class="score-submitted">✓ Results submitted to Prof. Hauselmann</span>';
+                btn.textContent = 'Submitted';
+            } else {
+                const errText = await res.text();
+                throw new Error(`${res.status}: ${errText}`);
+            }
+        } catch (err) {
+            console.error('Supabase error:', err);
+            statusEl.innerHTML = '<span class="score-error">⚠ Submission failed — please email your score to Prof. Hauselmann: ' + name + ', ID ' + sid + ', Score ' + score + '/10</span>';
+            btn.textContent = 'Submit failed';
+        }
+    });
+
+    // Remove unanswered highlight when student selects an answer
+    document.querySelectorAll('.question-card input[type="radio"]').forEach(input => {
+        input.addEventListener('change', function () {
+            this.closest('.question-card').classList.remove('unanswered');
+        });
+    });
+
+})();
+</script>
+
+</body>
+</html>
