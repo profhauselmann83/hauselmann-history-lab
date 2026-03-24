@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="../access-guard.js" data-week="w7" data-gate="gate.html"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Research &amp; Reflection Paper | HIST 102</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="../access-guard.js" data-week="w7" data-gate="gate.html"></script>
   <link rel="stylesheet" href="../style.css">
   <style>
 
@@ -743,10 +741,18 @@ function updateBars(frac) {
 <script>
 (function() {
   try {
-    var token = JSON.parse(localStorage.getItem('hist102_access_w7') || '{}');
-    if (token.granted && token.name) {
-      sbInsert('page_views', { student_name: token.name, student_w_num: token.wnum || '', week_id: 'w7', page: 'research-paper' });
+    // Try any weekly token for logging — page is publicly accessible
+    var token = {};
+    for (var w = 1; w <= 7; w++) {
+      var t = JSON.parse(localStorage.getItem('hist102_access_w' + w) || '{}');
+      if (t.granted && t.name) { token = t; break; }
     }
+    sbInsert('page_views', {
+      student_name:  token.name  || 'anonymous',
+      student_w_num: token.wnum  || '',
+      week_id:       'w7',
+      page:          'research-paper'
+    });
   } catch(e) {}
 })();
 </script>
