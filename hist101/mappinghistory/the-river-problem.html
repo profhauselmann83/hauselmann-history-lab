@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>The River Problem — HIST 101</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #f5f0e8;
+    --parchment-dark: #e8e0cc;
+    --ink: #2c2416;
+    --ink-light: #5a4e3a;
+    --river: #3a7bbf;
+    --river-light: #a8c8e8;
+    --river-dark: #1d4f80;
+    --gold: #b8860b;
+    --gold-light: #f0d080;
+    --red: #8b2020;
+    --green: #2d5a27;
+    --green-light: #c8dfc5;
+    --border: #c8b898;
+    --shadow: rgba(44,36,22,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--parchment);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ---- HEADER ---- */
+  .site-header {
+    background: #2c3e50;
+    color: #fff;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .site-header .course { font-size: 13px; opacity: 0.8; }
+  .site-header .title { font-size: 15px; font-weight: 700; }
+
+  /* ---- PROGRESS ---- */
+  .progress-wrap {
+    background: var(--parchment-dark);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .progress-track {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--river), var(--gold));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+    width: 14%;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  /* ---- SCREENS ---- */
+  .screen { display: none; padding: 0 0 80px; }
+  .screen.active { display: block; }
+
+  /* ---- HERO BANNER ---- */
+  .hero {
+    background: #2c3e50;
+    color: #fff;
+    padding: 28px 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 12px;
+    background: var(--parchment);
+    clip-path: polygon(0 100%, 5% 0, 10% 100%, 15% 0, 20% 100%, 25% 0, 30% 100%, 35% 0, 40% 100%, 45% 0, 50% 100%, 55% 0, 60% 100%, 65% 0, 70% 100%, 75% 0, 80% 100%, 85% 0, 90% 100%, 95% 0, 100% 100%);
+  }
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 6px;
+  }
+  .hero h1 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .hero p {
+    font-size: 14px;
+    opacity: 0.85;
+    line-height: 1.5;
+  }
+
+  /* ---- CONTENT BLOCKS ---- */
+  .content { padding: 20px 20px 0; }
+
+  .scenario-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .scenario-box .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .scenario-box p { font-size: 14px; line-height: 1.6; color: var(--ink); }
+  .scenario-box p + p { margin-top: 8px; }
+
+  /* ---- MAP SVG wrapper ---- */
+  .map-wrap {
+    margin: 0 20px 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .map-wrap svg { display: block; width: 100%; height: auto; }
+
+  /* ---- OBSTACLE CARDS ---- */
+  .obstacle-list { padding: 0 20px; }
+  .obs-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px var(--shadow);
+    cursor: pointer;
+  }
+  .obs-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .obs-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .obs-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .obs-sub { font-size: 12px; color: var(--ink-light); margin-top: 2px; }
+  .obs-chevron {
+    margin-left: auto;
+    width: 20px; height: 20px;
+    color: var(--ink-light);
+    flex-shrink: 0;
+    transition: transform 0.3s;
+  }
+  .obs-card.open .obs-chevron { transform: rotate(180deg); }
+  .obs-body {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--parchment-dark);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink);
+    background: #fffdf8;
+  }
+  .obs-card.open .obs-body { display: block; }
+  .obs-body p + p { margin-top: 8px; }
+  .obs-body strong { color: var(--red); }
+  .obs-body .key-fact {
+    background: var(--parchment-dark);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 13px;
+    border-left: 3px solid var(--river);
+  }
+
+  /* ---- SECTION HEADING ---- */
+  .section-head {
+    padding: 20px 20px 12px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .section-head span { color: var(--river-dark); }
+
+  /* ---- CHOICES (branching) ---- */
+  .choice-wrap { padding: 0 20px; }
+  .choice-btn {
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: left;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 6px var(--shadow);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .choice-btn:active { background: var(--parchment-dark); }
+  .choice-icon { font-size: 22px; flex-shrink: 0; }
+  .choice-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .choice-desc { font-size: 12px; color: var(--ink-light); margin-top: 2px; }
+  .choice-btn.correct { border-color: var(--green); background: #f0f8ef; }
+  .choice-btn.wrong { border-color: var(--red); background: #fdf0f0; }
+  .feedback-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 0 20px 16px;
+    display: none;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .feedback-box.show { display: block; }
+  .feedback-box.correct { border-left: 4px solid var(--green); }
+  .feedback-box.wrong { border-left: 4px solid var(--red); }
+  .feedback-box .fb-head {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .feedback-box.correct .fb-head { color: var(--green); }
+  .feedback-box.wrong .fb-head { color: var(--red); }
+  .feedback-box p { font-size: 14px; line-height: 1.6; }
+
+  /* ---- STAT CARDS ---- */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+    box-shadow: 0 1px 6px var(--shadow);
+  }
+  .stat-num {
+    font-family: 'Crimson Pro', serif;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 11px; color: var(--ink-light); line-height: 1.3; }
+
+  /* ---- CONCLUSION BOX ---- */
+  .conclusion {
+    margin: 0 20px 16px;
+    background: #2c3e50;
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 3px 12px var(--shadow);
+  }
+  .conclusion .c-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 8px;
+  }
+  .conclusion h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .conclusion p { font-size: 14px; opacity: 0.9; line-height: 1.6; }
+  .conclusion p + p { margin-top: 8px; }
+  .conclusion .highlight {
+    background: rgba(255,255,255,0.12);
+    border-left: 3px solid var(--gold-light);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 12px;
+    margin-top: 12px;
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  /* ---- DISCUSS PROMPT ---- */
+  .discuss {
+    margin: 0 20px 16px;
+    background: var(--parchment-dark);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .discuss .d-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .discuss p { font-size: 14px; line-height: 1.5; }
+
+  /* ---- NAV BUTTONS ---- */
+  .nav-wrap {
+    padding: 16px 20px 0;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .btn {
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Open Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: #2c3e50;
+    color: #fff;
+  }
+  .btn-primary:hover { background: #1a252f; }
+  .btn-secondary {
+    background: var(--parchment-dark);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+
+  /* ---- COMPLETION BADGE ---- */
+  .complete-banner {
+    margin: 0 20px 20px;
+    background: linear-gradient(135deg, var(--green) 0%, #1a3e17 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 3px 12px var(--shadow);
+  }
+  .complete-banner .trophy { font-size: 40px; margin-bottom: 8px; }
+  .complete-banner h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .complete-banner p { font-size: 13px; opacity: 0.9; }
+
+  /* ---- RIVER PATH ANIMATION ---- */
+  @keyframes flow {
+    to { stroke-dashoffset: -60; }
+  }
+  .river-flow {
+    stroke-dasharray: 8 4;
+    animation: flow 2s linear infinite;
+  }
+
+  /* ---- WHISKEY CONVERSION ---- */
+  .conversion {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 0 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 6px var(--shadow);
+  }
+  .conv-pill {
+    background: var(--green-light);
+    color: var(--green);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .conv-pill.bad { background: #ffe0b0; color: #8b4000; }
+  .conv-pill.good { background: var(--green-light); color: var(--green); }
+  .conv-arrow { color: var(--ink-light); font-size: 16px; }
+  .conv-label { font-size: 12px; color: var(--ink-light); width: 100%; margin-top: 4px; }
+
+  /* ---- TIMELINE ---- */
+  .timeline { padding: 0 20px; }
+  .tl-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 36px;
+    bottom: -16px;
+    width: 2px;
+    background: var(--border);
+  }
+  .tl-item:last-child::before { display: none; }
+  .tl-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #2c3e50;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+  }
+  .tl-dot.river { background: var(--river-dark); }
+  .tl-dot.crisis { background: var(--red); }
+  .tl-dot.solution { background: var(--green); }
+  .tl-content {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    flex: 1;
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+  .tl-year {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-light);
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+  }
+  .tl-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .tl-desc { font-size: 13px; color: var(--ink-light); line-height: 1.5; }
+
+</style>
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<div class="site-header">
+  <div>
+    <div class="course">HIST 101 — Prof. Hauselmann</div>
+    <div class="title">The River Problem</div>
+  </div>
+  <div style="font-size:11px;opacity:0.6;text-align:right">Interactive<br>Activity</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="progress-label" id="progressLabel">Step 1 of 7</div>
+</div>
+
+<!-- ===== SCREEN 1: INTRO ===== -->
+<div class="screen active" id="screen-1">
+  <div class="hero">
+    <div class="hero-label">Ohio Valley, 1785</div>
+    <h1>You grew it.<br>Now how do you sell it?</h1>
+    <p>You're a farmer in western Pennsylvania. Your barn is full. The markets in Philadelphia and New York will pay good prices — but they're hundreds of miles away, on the other side of a mountain range.</p>
+  </div>
+
+  <div class="content">
+    <div class="scenario-box">
+      <div class="label">Your Situation</div>
+      <p>You have <strong>barrels of corn, salt pork, and surplus grain</strong>. Eastern merchants want them badly. The question isn't whether to sell — it's whether getting your goods there is even <em>possible</em>.</p>
+      <p>Before you click forward, think: what obstacles might stand between your farm and those markets?</p>
+    </div>
+  </div>
+
+  <!-- MAP 1: The Problem -->
+  <div class="map-wrap">
+    <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- Background -->
+      <rect width="360" height="220" fill="#e8f4e8"/>
+      <!-- Ohio Valley -->
+      <rect x="0" y="60" width="180" height="160" fill="#d4e8c0"/>
+      <text x="60" y="82" font-family="'Open Sans',sans-serif" font-size="9" fill="#2d5a27" font-weight="600">OHIO VALLEY</text>
+      <!-- Mountains -->
+      <polygon points="180,0 220,0 240,220 160,220" fill="#c8b898" opacity="0.8"/>
+      <text x="182" y="115" font-family="'Open Sans',sans-serif" font-size="8" fill="#5a4e3a" font-weight="600" transform="rotate(-80,182,115)">APPALACHIANS</text>
+      <!-- East Coast -->
+      <rect x="240" y="0" width="120" height="220" fill="#d4e0f0"/>
+      <text x="300" y="80" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="9" fill="#1d4f80" font-weight="600">EAST COAST</text>
+      <text x="300" y="93" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#1d4f80">MARKETS</text>
+      <!-- Farm -->
+      <rect x="20" y="120" width="72" height="40" rx="5" fill="#2d5a27" opacity="0.85"/>
+      <text x="56" y="137" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="9" fill="#fff" font-weight="700">YOUR FARM</text>
+      <text x="56" y="151" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#c8dfc5">W. Pennsylvania</text>
+      <!-- Philadelphia -->
+      <rect x="266" y="60" width="76" height="36" rx="5" fill="#1d4f80" opacity="0.9"/>
+      <text x="304" y="75" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="9" fill="#fff" font-weight="700">Philadelphia</text>
+      <text x="304" y="89" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#a8c8e8">High prices $$</text>
+      <!-- Dashed route -->
+      <path d="M94,138 Q130,100 160,90 Q195,80 230,78 Q252,76 264,76" fill="none" stroke="#8b2020" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr)" opacity="0.7"/>
+      <text x="155" y="72" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#8b2020" font-weight="600">~500 miles</text>
+      <!-- Question mark on mountains -->
+      <text x="197" y="140" text-anchor="middle" font-family="'Crimson Pro',serif" font-size="36" fill="#5a4e3a" opacity="0.4">?</text>
+    </svg>
+  </div>
+
+  <div class="nav-wrap">
+    <button class="btn btn-primary" onclick="goScreen(2)">Explore the obstacles →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 2: OBSTACLES ===== -->
+<div class="screen" id="screen-2">
+  <div class="hero">
+    <div class="hero-label">The obstacles</div>
+    <h1>Every route is a problem</h1>
+    <p>Tap each obstacle to understand why getting goods east was so difficult — and so expensive.</p>
+  </div>
+
+  <div class="obstacle-list">
+
+    <div class="obs-card" onclick="toggleObs(this)">
+      <div class="obs-card-header">
+        <div class="obs-icon" style="background:#faeeda;">⛰️</div>
+        <div>
+          <div class="obs-title">The Appalachian Mountains</div>
+          <div class="obs-sub">A wall between you and the coast</div>
+        </div>
+        <svg class="obs-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="obs-body">
+        <p>Few passes existed through the Appalachians, and those that did were steep, muddy, and treacherous. A loaded wagon could travel only <strong>15–20 miles per day</strong> in good conditions — far less in bad weather.</p>
+        <p>Many wagons didn't make it at all. Broken axles, washed-out paths, and exhausted animals were routine.</p>
+        <div class="key-fact">The journey from Pittsburgh to Philadelphia overland: roughly <strong>3–4 weeks</strong> each way.</div>
+      </div>
+    </div>
+
+    <div class="obs-card" onclick="toggleObs(this)">
+      <div class="obs-card-header">
+        <div class="obs-icon" style="background:#ffe8e8;">💸</div>
+        <div>
+          <div class="obs-title">Overland freight costs</div>
+          <div class="obs-sub">Transportation could cost more than the goods</div>
+        </div>
+        <svg class="obs-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="obs-body">
+        <p>Shipping one ton of goods 30 miles by road cost roughly the same as shipping it <strong>3,000 miles by sea</strong>. Heavy, bulky farm goods — corn, grain, hay — were nearly worthless after paying wagon freight.</p>
+        <p>This is why farmers converted grain into whiskey. A bushel of corn (60 lbs) became 3 gallons of whiskey at roughly <strong>25× more value per pound</strong>.</p>
+        <div class="key-fact">The Whiskey Rebellion of 1794 grew directly from this problem: a federal tax on whiskey felt like a tax on the only way western farmers could participate in the economy.</div>
+      </div>
+    </div>
+
+    <div class="obs-card" onclick="toggleObs(this)">
+      <div class="obs-card-header">
+        <div class="obs-icon" style="background:#d4e0f0;">⚖️</div>
+        <div>
+          <div class="obs-title">No unified national market</div>
+          <div class="obs-sub">Every state taxed goods from other states</div>
+        </div>
+        <svg class="obs-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="obs-body">
+        <p>Under the Articles of Confederation, <strong>Congress had no power to regulate interstate trade</strong>. States like New York charged tariffs on goods from New Jersey. Different states used different paper money of wildly varying value.</p>
+        <p>A merchant couldn't be sure what currency — or what price — awaited at the end of a month-long journey.</p>
+        <div class="key-fact">This chaos of competing state tariffs was a major reason founders pushed for the 1787 Constitutional Convention. The Commerce Clause was a direct response.</div>
+      </div>
+    </div>
+
+    <div class="obs-card" onclick="toggleObs(this)">
+      <div class="obs-card-header">
+        <div class="obs-icon" style="background:#d4e8c0;">🌊</div>
+        <div>
+          <div class="obs-title">Rivers flow the wrong way</div>
+          <div class="obs-sub">South to New Orleans — not east to markets</div>
+        </div>
+        <svg class="obs-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="obs-body">
+        <p>The Ohio and Mississippi rivers were cheap, reliable highways — but they led <strong>south</strong>, not east. Flatboats could carry enormous loads to New Orleans at a fraction of overland costs.</p>
+        <p>There was just one problem: <strong>New Orleans was controlled by Spain</strong>. And Spain could — and did — close the port to American trade.</p>
+        <div class="key-fact">This is the key tension. The rivers were the answer to overland costs. But using them meant depending on a foreign power's permission to survive economically.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="nav-wrap">
+    <button class="btn btn-secondary" onclick="goScreen(1)">← Back</button>
+    <button class="btn btn-primary" onclick="goScreen(3)">The river solution →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 3: THE RIVER OPTION ===== -->
+<div class="screen" id="screen-3">
+  <div class="hero">
+    <div class="hero-label">The best bad option</div>
+    <h1>Go with the current — south</h1>
+    <p>Farmers figured out that rivers were the answer to crushing overland costs. But this created a new, dangerous problem.</p>
+  </div>
+
+  <!-- MAP 2: River Routes -->
+  <div class="map-wrap">
+    <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- Land -->
+      <rect width="360" height="280" fill="#e8f4e8"/>
+      <!-- Mountains blocker -->
+      <polygon points="200,0 240,0 260,280 180,280" fill="#c8b898" opacity="0.5"/>
+      <text x="212" y="140" font-family="'Open Sans',sans-serif" font-size="7" fill="#5a4e3a" font-weight="600" transform="rotate(-80,212,140)">APPALACHIANS</text>
+      <!-- Ohio River -->
+      <path d="M10,90 Q50,95 90,100 Q130,105 160,112 Q175,116 190,125" class="river-flow" fill="none" stroke="#3a7bbf" stroke-width="4" opacity="0.8"/>
+      <text x="80" y="89" font-family="'Open Sans',sans-serif" font-size="8" fill="#1d4f80" font-weight="600">Ohio River →</text>
+      <!-- Mississippi River -->
+      <path d="M150,130 Q148,160 145,200 Q142,240 138,270" class="river-flow" fill="none" stroke="#1d4f80" stroke-width="5" opacity="0.9"/>
+      <text x="100" y="200" font-family="'Open Sans',sans-serif" font-size="8" fill="#1d4f80" font-weight="700">Mississippi</text>
+      <text x="100" y="212" font-family="'Open Sans',sans-serif" font-size="8" fill="#1d4f80" font-weight="700">River ↓</text>
+      <!-- New Orleans -->
+      <rect x="110" y="248" width="80" height="28" rx="5" fill="#8b2020" opacity="0.9"/>
+      <text x="150" y="260" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="9" fill="#fff" font-weight="700">NEW ORLEANS</text>
+      <text x="150" y="272" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#ffaaaa">SPAIN 🇪🇸</text>
+      <!-- Your farm -->
+      <rect x="14" y="50" width="68" height="32" rx="4" fill="#2d5a27" opacity="0.85"/>
+      <text x="48" y="63" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#fff" font-weight="700">Your Farm</text>
+      <text x="48" y="76" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="7" fill="#c8dfc5">Ohio Valley</text>
+      <!-- East coast blocked -->
+      <rect x="270" y="80" width="80" height="32" rx="4" fill="#1d4f80" opacity="0.7"/>
+      <text x="310" y="93" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#fff" font-weight="700">Philadelphia</text>
+      <text x="310" y="106" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="7" fill="#a8c8e8">BLOCKED by mtns</text>
+      <!-- X on east route -->
+      <text x="234" y="108" font-family="'Open Sans',sans-serif" font-size="20" fill="#8b2020" font-weight="700" opacity="0.6">✕</text>
+      <!-- Arrow east blocked -->
+      <path d="M82,66 Q160,50 220,85" fill="none" stroke="#8b2020" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/>
+      <!-- Flatboat route arrow -->
+      <path d="M82,82 Q120,100 145,130" fill="none" stroke="#2d5a27" stroke-width="2" marker-end="url(#arr2)" opacity="0.8"/>
+      <text x="96" y="118" font-family="'Open Sans',sans-serif" font-size="8" fill="#2d5a27" font-weight="600">flatboat</text>
+      <!-- Gulf of Mexico -->
+      <ellipse cx="170" cy="278" rx="90" ry="18" fill="#3a7bbf" opacity="0.2"/>
+      <text x="170" y="281" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="7" fill="#1d4f80">Gulf of Mexico</text>
+    </svg>
+  </div>
+
+  <div class="content">
+    <div class="scenario-box">
+      <div class="label">The Flatboat Strategy</div>
+      <p>Farmers built flatboats and floated their goods down the Ohio into the Mississippi, arriving at New Orleans — a major port city where ships could carry goods to Atlantic markets. Flatboats could carry <strong>enormous loads</strong> for almost nothing compared to wagons.</p>
+      <p>The river route was fast, cheap, and reliable. Farmers could finally compete.</p>
+    </div>
+  </div>
+
+  <!-- Whiskey conversion -->
+  <div class="conversion">
+    <div class="conv-pill bad">1 bushel corn (60 lbs)</div>
+    <div class="conv-arrow">→</div>
+    <div class="conv-pill good">3 gal whiskey (lighter, 25× value)</div>
+    <div class="conv-label">When you must go overland: convert first. When you have the river: ship as-is.</div>
+  </div>
+
+  <div class="content">
+    <div class="scenario-box">
+      <div class="label">The Catch</div>
+      <p>New Orleans was controlled by <strong>Spain</strong>. The entire western economy now depended on Spain's permission to use their port. In 1784, Spain closed the Mississippi to American traffic.</p>
+      <p>Western farmers were furious. Some threatened to leave the United States entirely and seek alliance with Spain or Britain if Congress couldn't fix the problem.</p>
+    </div>
+  </div>
+
+  <div class="nav-wrap">
+    <button class="btn btn-secondary" onclick="goScreen(2)">← Back</button>
+    <button class="btn btn-primary" onclick="goScreen(4)">Why New Orleans matters →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 4: THE KEY QUESTION ===== -->
+<div class="screen" id="screen-4">
+  <div class="hero">
+    <div class="hero-label">Think it through</div>
+    <h1>What does the U.S. actually need?</h1>
+    <p>Based on what you've learned, what was the single most important thing the United States needed to secure western growth and economic independence?</p>
+  </div>
+
+  <div style="padding: 8px 20px 0;">
+    <p style="font-size:14px;color:var(--ink-light);margin-bottom:14px;">Choose the answer you think is most correct — then read the explanation.</p>
+  </div>
+
+  <div class="choice-wrap">
+    <button class="choice-btn" id="choice-a" onclick="checkChoice('a')">
+      <div class="choice-icon">🏗️</div>
+      <div>
+        <div class="choice-title">Build better roads over the mountains</div>
+        <div class="choice-desc">Improve overland wagon routes east</div>
+      </div>
+    </button>
+    <button class="choice-btn" id="choice-b" onclick="checkChoice('b')">
+      <div class="choice-icon">🌊</div>
+      <div>
+        <div class="choice-title">Control the Mississippi River and New Orleans</div>
+        <div class="choice-desc">Secure river access to Gulf of Mexico markets</div>
+      </div>
+    </button>
+    <button class="choice-btn" id="choice-c" onclick="checkChoice('c')">
+      <div class="choice-icon">⚖️</div>
+      <div>
+        <div class="choice-title">Negotiate better trade treaties with Spain</div>
+        <div class="choice-desc">Diplomatic solutions to port access</div>
+      </div>
+    </button>
+    <button class="choice-btn" id="choice-d" onclick="checkChoice('d')">
+      <div class="choice-icon">🏛️</div>
+      <div>
+        <div class="choice-title">Create a stronger national government</div>
+        <div class="choice-desc">Give Congress power to regulate commerce</div>
+      </div>
+    </button>
+  </div>
+
+  <div class="feedback-box" id="fb-a">
+    <div class="fb-head">Not quite — roads help, but they don't solve the core problem</div>
+    <p>Better roads would reduce costs somewhat, but even a perfect road still faces mountains, weather, and the fundamental math: overland freight in the 1780s cost 30× more than water transport. Roads couldn't compete with rivers for bulk goods. The problem wasn't road quality — it was geography.</p>
+  </div>
+
+  <div class="feedback-box correct" id="fb-b">
+    <div class="fb-head">✓ Exactly right — this is the key</div>
+    <p>The river system was the only realistic way to move bulk goods cheaply. The Ohio and Mississippi already formed a natural highway to the sea. The problem wasn't the rivers — it was who controlled the port at their mouth. Whoever held New Orleans controlled the economic lifeblood of the entire American interior.</p>
+  </div>
+
+  <div class="feedback-box" id="fb-c">
+    <div class="fb-head">Partially — but treaties are fragile</div>
+    <p>Diplomacy was tried. Jay's Treaty negotiations in 1786 actually proposed giving Spain permanent control of the Mississippi in exchange for trade rights — westerners were outraged. Relying on treaties meant the U.S. economy remained permanently hostage to Spanish goodwill. A treaty Spain could revoke wasn't real security.</p>
+  </div>
+
+  <div class="feedback-box" id="fb-d">
+    <div class="fb-head">This matters — but it's a means, not the goal</div>
+    <p>A stronger national government was crucial for regulating commerce and presenting a unified foreign policy. But it was valuable <em>because</em> it could pursue the real goal: securing river access and New Orleans. The Commerce Clause, a standing army, and foreign policy powers all aimed at controlling the transportation reality.</p>
+  </div>
+
+  <div class="nav-wrap" id="choice-nav" style="display:none;">
+    <button class="btn btn-secondary" onclick="goScreen(3)">← Back</button>
+    <button class="btn btn-primary" onclick="goScreen(5)">See why →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 5: WHY NEW ORLEANS ===== -->
+<div class="screen" id="screen-5">
+  <div class="hero">
+    <div class="hero-label">The stakes</div>
+    <h1>New Orleans wasn't just a city — it was the key to a continent</h1>
+    <p>Control of New Orleans meant control of everything that flowed into the Mississippi — which meant control of American economic growth itself.</p>
+  </div>
+
+  <!-- MAP 3: The Drainage Basin -->
+  <div class="map-wrap">
+    <svg viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- Basin fill -->
+      <rect width="360" height="260" fill="#e8f4e8"/>
+      <!-- Drainage basin shading -->
+      <polygon points="10,10 180,10 200,40 250,50 280,80 300,120 290,160 270,200 200,220 150,230 100,220 60,190 30,150 10,100" fill="#a8c8e8" opacity="0.3"/>
+      <!-- Mississippi main -->
+      <path d="M180,10 Q175,40 170,80 Q165,130 160,180 Q155,210 148,240" class="river-flow" fill="none" stroke="#1d4f80" stroke-width="5" opacity="0.9"/>
+      <!-- Ohio tributary -->
+      <path d="M20,60 Q60,65 100,75 Q130,83 162,100" class="river-flow" fill="none" stroke="#3a7bbf" stroke-width="3" opacity="0.8"/>
+      <!-- Missouri tributary -->
+      <path d="M20,40 Q70,50 120,65 Q145,73 165,85" class="river-flow" fill="none" stroke="#3a7bbf" stroke-width="2.5" opacity="0.7"/>
+      <!-- Tennessee tributary -->
+      <path d="M240,80 Q220,95 200,110 Q185,118 168,125" class="river-flow" fill="none" stroke="#3a7bbf" stroke-width="2" opacity="0.7"/>
+      <!-- Arkansas tributary -->
+      <path d="M280,120 Q250,130 210,140 Q190,145 168,148" class="river-flow" fill="none" stroke="#3a7bbf" stroke-width="2" opacity="0.6"/>
+      <!-- Labels -->
+      <text x="158" y="26" font-family="'Open Sans',sans-serif" font-size="8" fill="#1d4f80" font-weight="700">Mississippi R.</text>
+      <text x="60" y="60" font-family="'Open Sans',sans-serif" font-size="7" fill="#1d4f80">Ohio R.</text>
+      <text x="60" y="43" font-family="'Open Sans',sans-serif" font-size="7" fill="#1d4f80">Missouri R.</text>
+      <text x="218" y="88" font-family="'Open Sans',sans-serif" font-size="7" fill="#1d4f80">Tennessee R.</text>
+      <!-- New Orleans -->
+      <rect x="112" y="242" width="76" height="16" rx="4" fill="#8b2020" opacity="0.9"/>
+      <text x="150" y="254" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#fff" font-weight="700">NEW ORLEANS</text>
+      <!-- Funnel label -->
+      <text x="300" y="200" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#5a4e3a">All rivers</text>
+      <text x="300" y="212" text-anchor="middle" font-family="'Open Sans',sans-serif" font-size="8" fill="#5a4e3a">drain here ↙</text>
+      <!-- Shaded = interior of continent -->
+      <text x="60" y="160" font-family="'Open Sans',sans-serif" font-size="8" fill="#2d5a27" font-weight="600">Interior farmland</text>
+      <text x="60" y="172" font-family="'Open Sans',sans-serif" font-size="7" fill="#2d5a27">(future breadbasket)</text>
+    </svg>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--river-dark);">1.2M</div>
+      <div class="stat-label">sq miles draining into the Mississippi system</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--red);">1</div>
+      <div class="stat-label">chokepoint controlling it all: New Orleans</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--green);">$15M</div>
+      <div class="stat-label">what Jefferson paid for Louisiana Purchase, 1803</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--gold);">828K</div>
+      <div class="stat-label">sq miles acquired — doubling U.S. territory</div>
+    </div>
+  </div>
+
+  <div class="discuss">
+    <div class="d-label">Key Insight</div>
+    <p>The entire Mississippi River drainage basin — from Montana to Ohio — empties through a single point. Whoever holds that point holds the economic future of the American interior. This is why Jefferson called New Orleans <em>"the single spot on the globe whose possessor is our natural and habitual enemy."</em></p>
+  </div>
+
+  <div class="nav-wrap">
+    <button class="btn btn-secondary" onclick="goScreen(4)">← Back</button>
+    <button class="btn btn-primary" onclick="goScreen(6)">The timeline →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 6: TIMELINE ===== -->
+<div class="screen" id="screen-6">
+  <div class="hero">
+    <div class="hero-label">From crisis to solution</div>
+    <h1>Twenty years of river politics</h1>
+    <p>The transportation crisis of the 1780s drove American foreign policy for decades — and ultimately reshaped the continent.</p>
+  </div>
+
+  <div class="timeline" style="padding-top:16px">
+
+    <div class="tl-item">
+      <div class="tl-dot">1784</div>
+      <div class="tl-content">
+        <div class="tl-year">1784</div>
+        <div class="tl-title">Spain closes the Mississippi</div>
+        <div class="tl-desc">Spain shuts American access to New Orleans. Western farmers erupt. Some threaten secession or alliance with foreign powers.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot crisis">1786</div>
+      <div class="tl-content">
+        <div class="tl-year">1786</div>
+        <div class="tl-title">Jay-Gardoqui crisis</div>
+        <div class="tl-desc">Congress nearly agrees to give Spain the Mississippi permanently in exchange for trade rights. Western delegates are outraged — it nearly tears the Confederation apart.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot">1787</div>
+      <div class="tl-content">
+        <div class="tl-year">1787</div>
+        <div class="tl-title">Constitutional Convention</div>
+        <div class="tl-desc">Trade chaos and western unrest are major drivers. The Commerce Clause gives Congress power to regulate trade — and the executive branch power to conduct foreign policy to secure river access.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot crisis">1794</div>
+      <div class="tl-content">
+        <div class="tl-year">1794</div>
+        <div class="tl-title">Whiskey Rebellion</div>
+        <div class="tl-desc">Western farmers revolt against a federal whiskey tax — their only way to convert bulky grain into tradeable goods. Washington sends 13,000 troops. The new government's authority is tested.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot river">1795</div>
+      <div class="tl-content">
+        <div class="tl-year">1795</div>
+        <div class="tl-title">Pinckney's Treaty</div>
+        <div class="tl-desc">Spain grants Americans the "right of deposit" at New Orleans and free navigation of the Mississippi. A crucial victory — but still dependent on Spanish goodwill.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot crisis">1802</div>
+      <div class="tl-content">
+        <div class="tl-year">1802</div>
+        <div class="tl-title">Spain transfers Louisiana to Napoleon</div>
+        <div class="tl-desc">France — far more powerful than Spain — now controls New Orleans. Jefferson writes that this threatens to force the U.S. into alliance with Britain against France.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot solution">1803</div>
+      <div class="tl-content">
+        <div class="tl-year">1803</div>
+        <div class="tl-title">Louisiana Purchase</div>
+        <div class="tl-desc">Jefferson buys the entire territory for $15 million — not because he wanted the land, but because he needed the river. Control of New Orleans finally secured. The western economy is free.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="nav-wrap" style="padding-bottom:8px;">
+    <button class="btn btn-secondary" onclick="goScreen(5)">← Back</button>
+    <button class="btn btn-primary" onclick="goScreen(7)">Wrap up →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 7: CONCLUSION ===== -->
+<div class="screen" id="screen-7">
+  <div style="height:20px;"></div>
+
+  <div class="complete-banner">
+    <div class="trophy">🏆</div>
+    <h2>Activity Complete</h2>
+    <p>You've traced the Ohio Valley trade crisis to its continental conclusion.</p>
+  </div>
+
+  <div class="conclusion">
+    <div class="c-label">The Big Idea</div>
+    <h2>Rivers were the roads. New Orleans was the gate.</h2>
+    <p>The Ohio Valley crisis wasn't just about farmers not getting fair prices. It revealed a fundamental truth about geography and power: the natural drainage of the continent all flowed through one point.</p>
+    <p>Control New Orleans = control the economic future of the American interior. That understanding drove American foreign policy from the 1780s through the Louisiana Purchase — and shaped the Constitution itself.</p>
+    <div class="highlight">Infrastructure is politics. Transportation is power. The founders understood that democracy requires economic participation — and economic participation required the river.</div>
+  </div>
+
+  <div class="discuss">
+    <div class="d-label">Discussion Questions</div>
+    <p style="margin-bottom:8px;font-weight:600;">Bring these to class:</p>
+    <p style="margin-bottom:8px;">1. Jefferson was a strict constitutionalist — he didn't think the president had the power to purchase foreign territory. Yet he bought Louisiana anyway. What does this tell us about how geography shapes political decisions?</p>
+    <p style="margin-bottom:8px;">2. Using Haass's framework from <em>The Bill of Obligations</em>: if the government couldn't guarantee western farmers access to markets, what does that do to those farmers' obligation to support the national government?</p>
+    <p>3. The Louisiana Purchase doubled the U.S. but also doubled the problem of governing a vast, diverse republic. Was it worth it?</p>
+  </div>
+
+  <div class="nav-wrap">
+    <button class="btn btn-secondary" onclick="goScreen(1)">↺ Start over</button>
+  </div>
+  <div style="height:20px;"></div>
+</div>
+
+<script>
+const TOTAL = 7;
+
+function goScreen(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + n).classList.add('active');
+  window.scrollTo(0, 0);
+  // Update progress
+  const pct = Math.round((n / TOTAL) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = 'Step ' + n + ' of ' + TOTAL;
+}
+
+function toggleObs(card) {
+  card.classList.toggle('open');
+}
+
+let answered = false;
+function checkChoice(choice) {
+  if (answered) return;
+  answered = true;
+  // Mark choice
+  const btn = document.getElementById('choice-' + choice);
+  const correct = choice === 'b';
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) document.getElementById('choice-b').classList.add('correct');
+  // Show feedback
+  document.querySelectorAll('.feedback-box').forEach(f => f.classList.remove('show'));
+  const fb = document.getElementById('fb-' + choice);
+  fb.classList.add('show', correct ? 'correct' : 'wrong');
+  // Scroll to feedback
+  setTimeout(() => fb.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  // Show nav
+  document.getElementById('choice-nav').style.display = 'flex';
+}
+</script>
+</body>
+</html>
