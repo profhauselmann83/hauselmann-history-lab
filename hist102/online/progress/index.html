@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIST 102 — Instructor Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #1a1510;
+  --ink-mid: #3a3028;
+  --ink-light: #6b5e50;
+  --cream: #f7f2e8;
+  --cream-dark: #ede5d4;
+  --cream-deep: #e0d5be;
+  --gold: #9a6f2a;
+  --gold-light: #c8922a;
+  --rust: #8c3a1e;
+  --sage: #3d6053;
+  --canvas-blue: #1e4488;
+  --rule: rgba(26,21,16,0.12);
+  --rule-strong: rgba(26,21,16,0.22);
+}
+html { font-size: 15px; }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  background: var(--ink);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 2px solid var(--gold);
+}
+.masthead-left { display: flex; align-items: center; gap: 1.25rem; }
+.masthead-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: 0.01em;
+}
+.masthead-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+.masthead-right { display: flex; align-items: center; gap: 1rem; }
+.last-refresh {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: rgba(245,242,232,0.35);
+}
+.refresh-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(154,111,42,0.2);
+  border: 1px solid rgba(154,111,42,0.4);
+  color: var(--gold-light);
+  padding: 0.4rem 0.9rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.refresh-btn:hover { background: rgba(154,111,42,0.35); }
+
+/* ── WEEK TABS ── */
+.week-tabs {
+  background: var(--ink-mid);
+  border-bottom: 1px solid rgba(245,242,232,0.08);
+  padding: 0 2rem;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.week-tabs::-webkit-scrollbar { display: none; }
+.week-tab {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245,242,232,0.35);
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+  user-select: none;
+}
+.week-tab:hover { color: rgba(245,242,232,0.65); }
+.week-tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+
+/* ── LAYOUT ── */
+.shell { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+
+/* ── STAT CARDS ── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--rule-strong);
+  border-top: 3px solid var(--gold);
+  border-radius: 0 0 4px 4px;
+  padding: 1.1rem 1.25rem;
+}
+.stat-card.stat-blue  { border-top-color: var(--canvas-blue); }
+.stat-card.stat-sage  { border-top-color: var(--sage); }
+.stat-card.stat-rust  { border-top-color: var(--rust); }
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-bottom: 0.4rem;
+}
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+}
+.stat-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-light);
+  margin-top: 0.3rem;
+}
+
+/* ── SECTION HEADING ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+.section-head h2 {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.section-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule-strong);
+}
+
+/* ── HEATMAP TABLE ── */
+.heatmap-wrap { overflow-x: auto; }
+.heatmap {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 640px;
+}
+.heatmap th {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--rule-strong);
+  text-align: left;
+  background: var(--cream-dark);
+  white-space: nowrap;
+}
+.heatmap th.page-col { text-align: center; }
+.heatmap td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+  color: var(--ink-mid);
+}
+.heatmap tr:last-child td { border-bottom: none; }
+.heatmap tr:hover td { background: rgba(154,111,42,0.04); }
+.student-name {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.student-name:hover { color: var(--gold); text-decoration: underline; }
+.wnum {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--ink-light);
+}
+.page-cell { text-align: center; }
+.cell-hit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--sage);
+  border-radius: 3px;
+  color: #fff;
+  font-size: 0.7rem;
+}
+.cell-miss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--cream-deep);
+  border-radius: 3px;
+  color: var(--ink-light);
+  font-size: 0.7rem;
+}
+.progress-pill {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  border: 1px solid;
+}
+.pill-full  { color: var(--sage); border-color: var(--sage); background: rgba(61,96,83,0.08); }
+.pill-part  { color: var(--gold); border-color: var(--gold); background: rgba(154,111,42,0.08); }
+.pill-none  { color: var(--rust); border-color: var(--rust); background: rgba(140,58,30,0.08); }
+.last-seen-cell {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+
+/* ── ALERT TABLE ── */
+.alert-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.alert-table th {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--rule-strong);
+  text-align: left;
+  background: var(--cream-dark);
+}
+.alert-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-mid);
+}
+.alert-table tr:last-child td { border-bottom: none; }
+.alert-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.45rem;
+  border-radius: 2px;
+  border: 1px solid;
+}
+.badge-warn { color: var(--rust); border-color: var(--rust); background: rgba(140,58,30,0.07); }
+.badge-info { color: var(--gold); border-color: var(--gold); background: rgba(154,111,42,0.07); }
+
+/* ── PAGE POPULARITY ── */
+.page-bars { display: flex; flex-direction: column; gap: 0.6rem; }
+.page-bar-row { display: flex; align-items: center; gap: 0.75rem; }
+.page-bar-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-light);
+  width: 160px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.page-bar-track {
+  flex: 1;
+  height: 18px;
+  background: var(--cream-deep);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.page-bar-fill {
+  height: 100%;
+  background: var(--sage);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+  display: flex;
+  align-items: center;
+  padding-left: 0.5rem;
+}
+.page-bar-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ── STUDENT DETAIL MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,21,16,0.6);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--cream);
+  border: 1px solid var(--rule-strong);
+  border-top: 3px solid var(--gold);
+  border-radius: 0 0 6px 6px;
+  width: 560px;
+  max-width: 95vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 2rem;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--cream-dark);
+}
+.modal-close:hover { color: var(--ink); }
+.modal-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.25rem;
+}
+.modal-wnum {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--ink-light);
+  margin-bottom: 1.5rem;
+}
+.timeline-list { list-style: none; padding: 0; }
+.timeline-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: baseline;
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-page {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--sage);
+  min-width: 160px;
+  flex-shrink: 0;
+}
+.timeline-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--ink-light);
+}
+
+/* ── LOADING / EMPTY ── */
+.loading-msg {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-light);
+  text-align: center;
+  padding: 3rem;
+}
+.empty-state {
+  background: var(--cream-dark);
+  border: 1px dashed var(--rule-strong);
+  border-radius: 4px;
+  padding: 2rem;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-light);
+}
+
+/* ── CONFIG BANNER ── */
+.config-banner {
+  background: rgba(140,58,30,0.08);
+  border: 1px solid rgba(140,58,30,0.3);
+  border-left: 4px solid var(--rust);
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 2rem;
+  font-size: 0.85rem;
+  color: var(--ink-mid);
+  border-radius: 0 4px 4px 0;
+}
+.config-banner strong { color: var(--rust); }
+.config-banner code {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  background: var(--cream-deep);
+  padding: 0.1rem 0.35rem;
+  border-radius: 2px;
+}
+
+/* two-col layout for bottom section */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media(max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+.panel {
+  background: #fff;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+}
+</style>
+</head>
+<body>
+
+<!-- ── MASTHEAD ── -->
+<div class="masthead">
+  <div class="masthead-left">
+    <div>
+      <div class="masthead-title">HIST 102 &nbsp;·&nbsp; Instructor Dashboard</div>
+      <div class="masthead-sub">Student Activity &nbsp;·&nbsp; Spring 2026</div>
+    </div>
+  </div>
+  <div class="masthead-right">
+    <span class="last-refresh" id="lastRefresh">Not yet loaded</span>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+</div>
+
+<!-- ── WEEK TABS ── -->
+<div class="week-tabs">
+  <div class="week-tab active" data-week="w2" onclick="selectWeek('w2', this)">Week 2 — Gilded Age</div>
+  <div class="week-tab" data-week="w3" onclick="selectWeek('w3', this)">Week 3 — Progressive Era</div>
+  <div class="week-tab" data-week="w4" onclick="selectWeek('w4', this)">Week 4</div>
+  <div class="week-tab" data-week="w5" onclick="selectWeek('w5', this)">Week 5</div>
+  <div class="week-tab" data-week="w6" onclick="selectWeek('w6', this)">Week 6</div>
+  <div class="week-tab" data-week="w7" onclick="selectWeek('w7', this)">Week 7</div>
+</div>
+
+<!-- ── MAIN SHELL ── -->
+<div class="shell">
+
+  <!-- Config warning if placeholders still in place -->
+  <div class="config-banner" id="configBanner" style="display:none">
+    <strong>⚠ Setup required:</strong> Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> at the top of this file's script block with your actual Supabase project credentials before opening.
+  </div>
+
+  <!-- ── STAT CARDS ── -->
+  <div class="stat-row" id="statRow">
+    <div class="loading-msg">Loading data…</div>
+  </div>
+
+  <!-- ── PAGE HEATMAP ── -->
+  <div class="section-head"><h2>Page Completion — All Students</h2></div>
+  <div class="heatmap-wrap" id="heatmapWrap">
+    <div class="loading-msg">Loading…</div>
+  </div>
+
+  <!-- ── BOTTOM ROW ── -->
+  <div class="two-col" style="margin-top:2rem;">
+
+    <div class="panel">
+      <div class="section-head" style="margin-top:0;"><h2>Students Needing Attention</h2></div>
+      <div id="alertsWrap"><div class="loading-msg">Loading…</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head" style="margin-top:0;"><h2>Page Popularity</h2></div>
+      <div id="popularityWrap"><div class="loading-msg">Loading…</div></div>
+    </div>
+
+  </div>
+
+</div><!-- /shell -->
+
+<!-- ── STUDENT DETAIL MODAL ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <span class="modal-close" onclick="closeModalDirect()">✕ Close</span>
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-wnum" id="modalWnum"></div>
+    <div class="section-head" style="margin-top:0;"><h2>Activity Timeline</h2></div>
+    <ul class="timeline-list" id="modalTimeline"></ul>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CONFIGURATION — replace these two values
+// ─────────────────────────────────────────────
+var SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+var SUPABASE_KEY  = 'YOUR_SUPABASE_ANON_KEY';
+
+// Page definitions per week
+var WEEK_PAGES = {
+  w2: ['overview','video','reading-1','reading-2'],
+  w3: ['overview','video','reading-1','source-analysis-1','reading-2','source-analysis-2'],
+  w4: ['overview','video','reading-1','reading-2'],
+  w5: ['overview','video','reading-1','reading-2'],
+  w6: ['overview','video','reading-1','reading-2'],
+  w7: ['overview','video','reading-1','reading-2']
+};
+
+var PAGE_LABELS = {
+  'overview':          'Overview',
+  'video':             'Video',
+  'reading-1':         'Reading 1',
+  'source-analysis-1': 'SA 3.1',
+  'reading-2':         'Reading 2',
+  'source-analysis-2': 'SA 3.2'
+};
+
+var currentWeek = 'w2';
+
+// ─────────────────────────────────────────────
+//  SUPABASE FETCH HELPER
+// ─────────────────────────────────────────────
+async function sbQuery(table, params) {
+  var url = SUPABASE_URL + '/rest/v1/' + table + '?' + params;
+  var res = await fetch(url, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) throw new Error('Supabase error: ' + res.status);
+  return res.json();
+}
+
+// ─────────────────────────────────────────────
+//  WEEK SELECTION
+// ─────────────────────────────────────────────
+function selectWeek(week, el) {
+  currentWeek = week;
+  document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadData();
+}
+
+// ─────────────────────────────────────────────
+//  MAIN DATA LOAD
+// ─────────────────────────────────────────────
+async function loadData() {
+  // Check for placeholder credentials
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+    document.getElementById('configBanner').style.display = 'block';
+    renderDemoData();
+    return;
+  }
+
+  try {
+    var week = currentWeek;
+
+    // Fetch all three tables in parallel
+    var [pageViews, gateEntries, pdfDownloads] = await Promise.all([
+      sbQuery('page_views',   'week_id=eq.' + week + '&order=viewed_at.asc&limit=2000'),
+      sbQuery('gate_entries', 'week_id=eq.' + week + '&order=created_at.asc&limit=500'),
+      sbQuery('pdf_downloads','week_id=eq.' + week + '&order=created_at.desc&limit=500')
+    ]);
+
+    renderAll(pageViews, gateEntries, pdfDownloads, week);
+    document.getElementById('lastRefresh').textContent =
+      'Refreshed ' + new Date().toLocaleTimeString();
+
+  } catch(err) {
+    document.getElementById('statRow').innerHTML =
+      '<div class="empty-state">Error loading data: ' + err.message +
+      '<br>Check your Supabase URL and anon key.</div>';
+    console.error(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+//  RENDER ALL SECTIONS
+// ─────────────────────────────────────────────
+function renderAll(pageViews, gateEntries, pdfDownloads, week) {
+  var pages = WEEK_PAGES[week] || WEEK_PAGES['w2'];
+
+  // Build per-student page map
+  var studentMap = {};  // wnum → { name, pages: Set, times: [] }
+
+  pageViews.forEach(function(row) {
+    var key = row.student_w_num || row.student_name;
+    if (!studentMap[key]) {
+      studentMap[key] = {
+        name:  row.student_name,
+        wnum:  row.student_w_num,
+        pages: new Set(),
+        times: []
+      };
+    }
+    studentMap[key].pages.add(row.page);
+    studentMap[key].times.push({ page: row.page, at: row.viewed_at });
+  });
+
+  // Also add gate-only students (entered but never viewed a content page)
+  gateEntries.forEach(function(row) {
+    var key = row.student_w_num || row.student_name;
+    if (!studentMap[key]) {
+      studentMap[key] = {
+        name:  row.student_name,
+        wnum:  row.student_w_num,
+        pages: new Set(),
+        times: []
+      };
+    }
+  });
+
+  var students = Object.values(studentMap).sort(function(a, b) {
+    return a.name.localeCompare(b.name);
+  });
+
+  // PDF set
+  var pdfSet = new Set(pdfDownloads.map(function(r) {
+    return r.student_w_num || r.student_name;
+  }));
+
+  renderStats(students, gateEntries, pdfDownloads, pages);
+  renderHeatmap(students, pages, pdfSet);
+  renderAlerts(students, gateEntries, pages);
+  renderPopularity(pageViews, pages);
+}
+
+// ─────────────────────────────────────────────
+//  STAT CARDS
+// ─────────────────────────────────────────────
+function renderStats(students, gateEntries, pdfDownloads, pages) {
+  var totalGate  = gateEntries.length;
+  var totalPDFs  = pdfDownloads.length;
+  var fullCount  = students.filter(function(s) {
+    return pages.every(function(p) { return s.pages.has(p); });
+  }).length;
+  var noneCount  = students.filter(function(s) { return s.pages.size === 0; }).length;
+
+  document.getElementById('statRow').innerHTML =
+    statCard('Students Entered', totalGate, 'Gate entries logged', '') +
+    statCard('Completed All Pages', fullCount, 'of ' + students.length + ' enrolled', 'stat-sage') +
+    statCard('PDFs Downloaded', totalPDFs, 'Submitted to Canvas', 'stat-blue') +
+    statCard('Not Yet Started', noneCount, 'Entered gate, no pages viewed', 'stat-rust');
+}
+
+function statCard(label, value, sub, cls) {
+  return '<div class="stat-card ' + cls + '">' +
+    '<div class="stat-label">' + label + '</div>' +
+    '<div class="stat-value">' + value + '</div>' +
+    '<div class="stat-sub">' + sub + '</div>' +
+    '</div>';
+}
+
+// ─────────────────────────────────────────────
+//  HEATMAP
+// ─────────────────────────────────────────────
+function renderHeatmap(students, pages, pdfSet) {
+  if (students.length === 0) {
+    document.getElementById('heatmapWrap').innerHTML =
+      '<div class="empty-state">No student activity recorded yet for this week.</div>';
+    return;
+  }
+
+  var header = '<tr><th>Student</th><th>W Number</th>' +
+    pages.map(function(p) {
+      return '<th class="page-col">' + (PAGE_LABELS[p] || p) + '</th>';
+    }).join('') +
+    '<th>Progress</th><th>PDF</th><th>Last Seen</th></tr>';
+
+  var rows = students.map(function(s) {
+    var hitCount = pages.filter(function(p) { return s.pages.has(p); }).length;
+    var pct = pages.length > 0 ? hitCount / pages.length : 0;
+    var pillCls = pct === 1 ? 'pill-full' : pct === 0 ? 'pill-none' : 'pill-part';
+    var pillTxt = hitCount + '/' + pages.length;
+
+    var pageCells = pages.map(function(p) {
+      return '<td class="page-cell">' +
+        (s.pages.has(p)
+          ? '<span class="cell-hit">✓</span>'
+          : '<span class="cell-miss">–</span>') +
+        '</td>';
+    }).join('');
+
+    var key = s.wnum || s.name;
+    var hasPDF = pdfSet.has(key) ? '✓' : '–';
+    var pdfStyle = pdfSet.has(key) ? 'color:var(--sage);font-weight:600' : 'color:var(--ink-light)';
+
+    var lastTime = s.times.length > 0
+      ? formatTime(s.times[s.times.length - 1].at)
+      : '—';
+
+    return '<tr>' +
+      '<td><span class="student-name" onclick="openModal(\'' +
+        escHtml(s.name) + '\',\'' + escHtml(s.wnum) + '\',' +
+        JSON.stringify(s.times).replace(/'/g,"&#39;") +
+      ')">' + escHtml(s.name) + '</span></td>' +
+      '<td><span class="wnum">' + escHtml(s.wnum || '—') + '</span></td>' +
+      pageCells +
+      '<td><span class="progress-pill ' + pillCls + '">' + pillTxt + '</span></td>' +
+      '<td style="text-align:center;font-family:\'DM Mono\',monospace;font-size:0.7rem;' + pdfStyle + '">' + hasPDF + '</td>' +
+      '<td class="last-seen-cell">' + lastTime + '</td>' +
+      '</tr>';
+  }).join('');
+
+  document.getElementById('heatmapWrap').innerHTML =
+    '<table class="heatmap"><thead>' + header + '</thead><tbody>' + rows + '</tbody></table>';
+}
+
+// ─────────────────────────────────────────────
+//  ALERTS
+// ─────────────────────────────────────────────
+function renderAlerts(students, gateEntries, pages) {
+  var alerts = [];
+
+  // Students who entered gate but viewed 0 pages
+  students.forEach(function(s) {
+    if (s.pages.size === 0) {
+      alerts.push({ name: s.name, wnum: s.wnum, type: 'Not started', badge: 'badge-warn' });
+    }
+  });
+
+  // Students who started reading-1 but not reading-2
+  students.forEach(function(s) {
+    if (s.pages.has('reading-1') && !s.pages.has('reading-2')) {
+      alerts.push({ name: s.name, wnum: s.wnum, type: 'Stopped after Reading 1', badge: 'badge-info' });
+    }
+  });
+
+  // Students who did SA-1 but not SA-2 (Week 3 only)
+  students.forEach(function(s) {
+    if (s.pages.has('source-analysis-1') && !s.pages.has('source-analysis-2')) {
+      alerts.push({ name: s.name, wnum: s.wnum, type: 'Stopped after SA 3.1', badge: 'badge-info' });
+    }
+  });
+
+  if (alerts.length === 0) {
+    document.getElementById('alertsWrap').innerHTML =
+      '<div class="empty-state">No alerts — all active students are progressing.</div>';
+    return;
+  }
+
+  var rows = alerts.map(function(a) {
+    return '<tr>' +
+      '<td style="font-weight:600;font-size:0.82rem;">' + escHtml(a.name) + '</td>' +
+      '<td><span class="wnum">' + escHtml(a.wnum || '—') + '</span></td>' +
+      '<td><span class="alert-badge ' + a.badge + '">' + a.type + '</span></td>' +
+      '</tr>';
+  }).join('');
+
+  document.getElementById('alertsWrap').innerHTML =
+    '<table class="alert-table">' +
+    '<thead><tr><th>Student</th><th>W Number</th><th>Status</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>';
+}
+
+// ─────────────────────────────────────────────
+//  PAGE POPULARITY BARS
+// ─────────────────────────────────────────────
+function renderPopularity(pageViews, pages) {
+  // unique students per page
+  var pageCounts = {};
+  pages.forEach(function(p) { pageCounts[p] = new Set(); });
+
+  pageViews.forEach(function(row) {
+    if (pageCounts[row.page]) {
+      pageCounts[row.page].add(row.student_w_num || row.student_name);
+    }
+  });
+
+  var max = Math.max.apply(null, pages.map(function(p) {
+    return pageCounts[p] ? pageCounts[p].size : 0;
+  })) || 1;
+
+  var bars = pages.map(function(p) {
+    var count = pageCounts[p] ? pageCounts[p].size : 0;
+    var pct = Math.round(count / max * 100);
+    return '<div class="page-bar-row">' +
+      '<div class="page-bar-label">' + (PAGE_LABELS[p] || p) + '</div>' +
+      '<div class="page-bar-track">' +
+        '<div class="page-bar-fill" style="width:' + pct + '%">' +
+          (count > 0 ? '<span class="page-bar-count">' + count + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+
+  document.getElementById('popularityWrap').innerHTML =
+    '<div class="page-bars">' + bars + '</div>';
+}
+
+// ─────────────────────────────────────────────
+//  STUDENT DETAIL MODAL
+// ─────────────────────────────────────────────
+function openModal(name, wnum, times) {
+  document.getElementById('modalName').textContent = name;
+  document.getElementById('modalWnum').textContent = wnum || 'No W number recorded';
+
+  if (!times || times.length === 0) {
+    document.getElementById('modalTimeline').innerHTML =
+      '<li style="font-family:\'DM Mono\',monospace;font-size:0.65rem;color:var(--ink-light);padding:1rem 0;">No page views recorded yet.</li>';
+  } else {
+    var sorted = times.slice().sort(function(a, b) {
+      return new Date(a.at) - new Date(b.at);
+    });
+    document.getElementById('modalTimeline').innerHTML = sorted.map(function(t) {
+      return '<li class="timeline-item">' +
+        '<span class="timeline-page">' + (PAGE_LABELS[t.page] || t.page) + '</span>' +
+        '<span class="timeline-time">' + formatTimeFull(t.at) + '</span>' +
+        '</li>';
+    }).join('');
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ─────────────────────────────────────────────
+//  DEMO DATA (shown when credentials not set)
+// ─────────────────────────────────────────────
+function renderDemoData() {
+  var pages = WEEK_PAGES['w3'];
+  var demoStudents = [
+    { name:'Aaliyah Johnson',  wnum:'W1234501', pages: new Set(['overview','video','reading-1','source-analysis-1','reading-2','source-analysis-2']), times:[] },
+    { name:'Carlos Mendez',    wnum:'W1234502', pages: new Set(['overview','video','reading-1','source-analysis-1']), times:[] },
+    { name:'Devon Park',       wnum:'W1234503', pages: new Set(['overview','video','reading-1']), times:[] },
+    { name:'Elena Vasquez',    wnum:'W1234504', pages: new Set(['overview','video','reading-1','source-analysis-1','reading-2']), times:[] },
+    { name:'Fatima Al-Hassan', wnum:'W1234505', pages: new Set([]), times:[] },
+    { name:'George Kim',       wnum:'W1234506', pages: new Set(['overview','video','reading-1','source-analysis-1','reading-2','source-analysis-2']), times:[] },
+    { name:'Hannah Okafor',    wnum:'W1234507', pages: new Set(['overview']), times:[] },
+    { name:'Isaac Torres',     wnum:'W1234508', pages: new Set(['overview','video']), times:[] },
+  ];
+
+  var demoGate = demoStudents.map(function(s) { return { student_name: s.name, student_w_num: s.wnum }; });
+  var demoPDFs = [
+    { student_w_num: 'W1234501' },
+    { student_w_num: 'W1234504' },
+    { student_w_num: 'W1234506' }
+  ];
+
+  // flatten pageviews for popularity
+  var demoViews = [];
+  demoStudents.forEach(function(s) {
+    s.pages.forEach(function(p) {
+      demoViews.push({ page: p, student_w_num: s.wnum, viewed_at: new Date().toISOString() });
+    });
+  });
+
+  renderStats(demoStudents, demoGate, demoPDFs, pages);
+  var pdfSet = new Set(demoPDFs.map(function(r) { return r.student_w_num; }));
+  renderHeatmap(demoStudents, pages, pdfSet);
+  renderAlerts(demoStudents, demoGate, pages);
+  renderPopularity(demoViews, pages);
+
+  document.getElementById('lastRefresh').textContent = 'Demo data';
+}
+
+// ─────────────────────────────────────────────
+//  UTILITIES
+// ─────────────────────────────────────────────
+function formatTime(iso) {
+  if (!iso) return '—';
+  var d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) +
+    ' ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
+function formatTimeFull(iso) {
+  if (!iso) return '—';
+  var d = new Date(iso);
+  return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
