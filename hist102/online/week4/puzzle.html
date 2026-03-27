@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w3" data-gate="../week3/gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 4 Unlock — Progressive Era Review | HIST 102</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .puzzle-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+    /* Password letter boxes */
+    .pw-display { display: flex; gap: 10px; justify-content: center; margin: 2rem 0 0.5rem; flex-wrap: wrap; }
+    .letter-box {
+      width: 58px; height: 70px;
+      border: 2px solid var(--rule-strong);
+      border-radius: 6px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: var(--cream-dark);
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .letter-box.revealed {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .letter-box .ltr {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.9rem; font-weight: 500;
+      color: var(--cream); opacity: 0;
+      transition: opacity 0.4s; line-height: 1;
+    }
+    .letter-box.revealed .ltr { opacity: 1; }
+    .letter-box .ltr-qnum {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.1em;
+      color: var(--ink-light); margin-top: 5px;
+      text-transform: uppercase;
+    }
+    .letter-box.revealed .ltr-qnum { color: rgba(247,242,232,0.7); }
+
+    .pw-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ink-light);
+      text-align: center; margin-bottom: 2rem;
+    }
+
+    /* Question cards */
+    .q-card {
+      background: #fff;
+      border: 1px solid var(--rule-strong);
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .q-card.state-correct {
+      border-color: var(--sage);
+      box-shadow: 0 0 0 3px rgba(61,96,83,0.12);
+    }
+    .q-card.state-wrong {
+      animation: shake 0.35s ease;
+      border-color: var(--rust);
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+
+    .q-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--gold);
+      margin: 0 0 0.6rem;
+    }
+    .unlock-tag {
+      color: var(--ink-light);
+      font-size: 0.58rem;
+    }
+    .q-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 600;
+      color: var(--ink); line-height: 1.45;
+      margin: 0 0 1rem;
+    }
+    .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media(max-width: 500px){ .q-options { grid-template-columns: 1fr; } }
+
+    .opt-btn {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.88rem; font-weight: 300;
+      color: var(--ink); background: var(--cream);
+      border: 1px solid var(--rule-strong);
+      border-radius: 4px; padding: 0.65rem 1rem;
+      text-align: left; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      line-height: 1.4;
+    }
+    .opt-btn:hover { background: var(--cream-dark); border-color: var(--gold); }
+    .opt-btn.correct {
+      background: rgba(61,96,83,0.1);
+      border-color: var(--sage); color: var(--sage);
+      cursor: default;
+    }
+    .opt-btn.wrong {
+      background: rgba(140,58,30,0.07);
+      border-color: var(--rust); color: var(--rust);
+    }
+    .opt-btn:disabled { cursor: default; }
+
+    .q-feedback {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.05em;
+      margin-top: 0.75rem; min-height: 1.4em;
+      line-height: 1.5;
+    }
+    .q-feedback.correct { color: var(--sage); }
+    .q-feedback.wrong   { color: var(--rust); }
+
+    /* Progress bar */
+    .puzzle-progress {
+      background: var(--cream-dark); border: 1px solid var(--rule-strong);
+      border-radius: 4px; padding: 0.9rem 1.25rem;
+      margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+    }
+    .puzzle-progress-bar-wrap {
+      flex: 1; height: 6px; background: var(--cream-deep);
+      border-radius: 3px; overflow: hidden;
+    }
+    .puzzle-progress-bar {
+      height: 100%; background: var(--gold); border-radius: 3px;
+      width: 0%; transition: width 0.4s ease;
+    }
+    .puzzle-progress-label {
+      font-family: 'DM Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.08em; white-space: nowrap; color: var(--ink-light);
+    }
+
+    /* Victory banner */
+    .victory-banner {
+      display: none;
+      background: var(--ink); color: var(--cream);
+      border-radius: 8px; padding: 2.5rem 2rem;
+      text-align: center; margin: 2rem 0;
+    }
+    .victory-banner.show { display: block; }
+    .victory-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--gold-light, #c8922a);
+      margin-bottom: 0.75rem;
+    }
+    .victory-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem; font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .victory-code {
+      font-family: 'DM Mono', monospace;
+      font-size: 2.4rem; font-weight: 500;
+      letter-spacing: 0.25em; color: var(--gold-light, #c8922a);
+      display: block; margin: 1rem 0;
+    }
+    .victory-sub {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.9rem; color: rgba(247,242,232,0.7);
+      margin-bottom: 1.5rem;
+    }
+    .victory-cta {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem; letter-spacing: 0.08em;
+      background: var(--gold); color: var(--cream);
+      padding: 0.75rem 2rem; border-radius: 4px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .victory-cta:hover { background: var(--gold-light, #c8922a); color: var(--cream); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step active" href="puzzle.html"><span class="step-num">1</span> Unlock Week 4</a>
+    <a class="prog-step" href="gate.html"><span class="step-num">2</span> Enter Code</a>
+    <a class="prog-step" href="index.html"><span class="step-num">3</span> Overview</a>
+    <a class="prog-step" href="video.html"><span class="step-num">4</span> Video</a>
+    <a class="prog-step" href="reading-1.html"><span class="step-num">5</span> Reading 5.1</a>
+    <a class="prog-step" href="#"><span class="step-num">6</span> &hellip;</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 4 &nbsp;&middot;&nbsp; Mar 30 &ndash; Apr 5</div>
+    <h1>Unlock Week 4</h1>
+    <p class="page-subtitle">Answer all six questions correctly to reveal your access code</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~10 min</span>
+      <span class="chip chip-site">Reviews Week 3</span>
+    </div>
+  </div>
+</header>
+
+<div class="puzzle-wrap">
+
+  <div class="callout callout-note" style="margin-bottom:2rem">
+    <span class="callout-label">How this works</span>
+    Answer each question correctly to reveal one letter of your Week 4 access code. Wrong answers are shown immediately — select again until you find the right one.
+  </div>
+
+  <!-- Password display -->
+  <div class="pw-display" id="pw-display">
+    <div class="letter-box" id="lb-0"><span class="ltr">T</span><span class="ltr-qnum">Q1</span></div>
+    <div class="letter-box" id="lb-1"><span class="ltr">R</span><span class="ltr-qnum">Q2</span></div>
+    <div class="letter-box" id="lb-2"><span class="ltr">E</span><span class="ltr-qnum">Q3</span></div>
+    <div class="letter-box" id="lb-3"><span class="ltr">N</span><span class="ltr-qnum">Q4</span></div>
+    <div class="letter-box" id="lb-4"><span class="ltr">C</span><span class="ltr-qnum">Q5</span></div>
+    <div class="letter-box" id="lb-5"><span class="ltr">H</span><span class="ltr-qnum">Q6</span></div>
+  </div>
+  <p class="pw-hint">Each correct answer reveals one letter &nbsp;&middot;&nbsp; <span id="pw-progress">0 / 6 unlocked</span></p>
+
+  <!-- Progress bar -->
+  <div class="puzzle-progress">
+    <span class="puzzle-progress-label">Progress</span>
+    <div class="puzzle-progress-bar-wrap"><div class="puzzle-progress-bar" id="progressBar"></div></div>
+    <span class="puzzle-progress-label" id="progressLabel">0 of 6 correct</span>
+  </div>
+
+  <!-- Questions mount point -->
+  <div id="questions-mount"></div>
+
+  <!-- Victory banner -->
+  <div class="victory-banner" id="victory-banner">
+    <p class="victory-eyebrow">Week 4 Unlocked</p>
+    <h2 class="victory-title">Excellent work.</h2>
+    <span class="victory-code">TRENCH</span>
+    <p class="victory-sub">Your access code for Week 4 is <strong>TRENCH</strong>. Enter it on the next page along with your name and W number to begin.</p>
+    <a href="gate.html" class="victory-cta">Continue to Week 4 &rarr;</a>
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="../index.html">&larr; Course Home</a>
+    <span class="footer-label">Week 4 &nbsp;&middot;&nbsp; Unlock Puzzle</span>
+    <a class="nav-btn nav-btn-next" href="gate.html">Enter Week 4 &rarr;</a>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  var PASSWORD = 'TRENCH';
+
+  var QUESTIONS = [
+    {
+      q: 'The term "muckraker" referred to Progressive Era journalists who',
+      opts: [
+        'Advocated for municipal ownership of all public utilities',
+        'Investigated and exposed corruption, unsafe conditions, and social injustice',
+        'Wrote sensationalist stories about foreign policy to sell newspapers',
+        'Worked as undercover informants for federal regulatory agencies'
+      ],
+      correct: 1,
+      feedback: 'Correct! Muckrakers like Ida Tarbell, Upton Sinclair, and Jacob Riis used investigative journalism to force public awareness of systemic problems — the term was coined by Theodore Roosevelt from a character in Pilgrim\'s Progress.',
+      wrong: 'Not quite — try again. Muckrakers are best known for their investigative journalism exposing corruption and injustice.'
+    },
+    {
+      q: 'Jane Addams founded Hull House in Chicago in 1889 primarily to',
+      opts: [
+        'Train professional social workers for placement in state agencies',
+        'Provide a political base for the women\'s suffrage movement in Illinois',
+        'Offer education, childcare, and social services to immigrant and working-class communities',
+        'Research the causes of urban poverty and publish findings for policymakers'
+      ],
+      correct: 2,
+      feedback: 'Correct! Hull House was a settlement house — a community center embedded in a poor neighborhood, providing practical services while giving middle-class reformers direct contact with communities they sought to help.',
+      wrong: 'Not quite — try again. Think about what a "settlement house" actually provided to its neighborhood.'
+    },
+    {
+      q: 'The Seventeenth Amendment (1913) addressed a core Populist demand by',
+      opts: [
+        'Establishing a graduated federal income tax on personal income',
+        'Prohibiting the manufacture and sale of alcoholic beverages',
+        'Granting women the right to vote in all federal elections',
+        'Providing for the direct election of U.S. senators by popular vote'
+      ],
+      correct: 3,
+      feedback: 'Correct! Previously, senators were chosen by state legislatures, which Populists and Progressives argued made them accountable to wealthy interests rather than ordinary voters.',
+      wrong: 'Not quite — try again. The Seventeenth Amendment changed how senators were chosen.'
+    },
+    {
+      q: 'Theodore Roosevelt\'s "Square Deal" approach to business regulation is best described as',
+      opts: [
+        'Breaking up all large corporations regardless of how they behaved',
+        'Using federal ownership of key industries to prevent monopoly formation',
+        'Distinguishing between "good trusts" serving the public and "bad trusts" that abused power',
+        'Relying on consumer boycotts and public pressure rather than federal regulation'
+      ],
+      correct: 2,
+      feedback: 'Correct! Roosevelt believed size alone wasn\'t the problem — behavior was. He pursued corporations that used their power abusively while leaving well-managed large businesses alone.',
+      wrong: 'Not quite — try again. Roosevelt\'s approach was pragmatic: he cared about how corporations behaved, not just how big they were.'
+    },
+    {
+      q: 'The Nineteenth Amendment, ratified in 1920, was the culmination of a suffrage campaign that had begun',
+      opts: [
+        'At the Seneca Falls Convention in 1848, over seventy years earlier',
+        'With the founding of the National American Woman Suffrage Association in 1890',
+        'During Reconstruction, when women organized alongside the campaign for Black voting rights',
+        'As part of the Progressive Party platform during the 1912 presidential election'
+      ],
+      correct: 0,
+      feedback: 'Correct! The women\'s suffrage movement is one of the longest sustained reform campaigns in American history, beginning at Seneca Falls in 1848 and culminating 72 years later in the Nineteenth Amendment.',
+      wrong: 'Not quite — try again. The suffrage movement has deep roots going back to the mid-nineteenth century.'
+    },
+    {
+      q: 'Booker T. Washington and W.E.B. Du Bois disagreed most fundamentally about',
+      opts: [
+        'Whether African Americans should seek full legal and political equality immediately, or prioritize economic self-sufficiency first',
+        'Whether African Americans should emigrate to Africa or remain in the United States',
+        'Whether to seek alliances with organized labor or with the Republican Party',
+        'Whether industrial education or classical education produced better economic outcomes'
+      ],
+      correct: 0,
+      feedback: 'Correct! Washington\'s "Atlanta Compromise" urged Black Americans to accept temporary political subordination in exchange for economic opportunity. Du Bois rejected this, demanding full and immediate civil rights — a debate that defined Black political thought for generations.',
+      wrong: 'Not quite — try again. Their disagreement was about strategy: how and when to pursue equality.'
+    }
+  ];
+
+  var answered = new Array(QUESTIONS.length).fill(false);
+  var correct  = new Array(QUESTIONS.length).fill(false);
+
+  function revealLetter(qi) {
+    var box = document.getElementById('lb-' + qi);
+    if (box) box.classList.add('revealed');
+    var done = correct.filter(Boolean).length;
+    document.getElementById('pw-progress').textContent = done + ' / ' + QUESTIONS.length + ' unlocked';
+    updateProgress();
+    if (done === QUESTIONS.length) {
+      setTimeout(function(){ document.getElementById('victory-banner').classList.add('show'); }, 600);
+    }
+  }
+
+  function updateProgress() {
+    var done = correct.filter(Boolean).length;
+    var pct  = Math.round(done / QUESTIONS.length * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = done + ' of ' + QUESTIONS.length + ' correct';
+  }
+
+  function handleAnswer(qi, optIdx) {
+    if (correct[qi]) return; // already solved
+
+    var card    = document.getElementById('qcard-' + qi);
+    var optsDiv = document.getElementById('opts-' + qi);
+    var fb      = document.getElementById('fb-' + qi);
+    var q       = QUESTIONS[qi];
+    var btns    = optsDiv.querySelectorAll('.opt-btn');
+
+    if (optIdx === q.correct) {
+      // ── Correct ──
+      correct[qi] = true;
+      btns.forEach(function(b, i) {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('correct');
+      });
+      card.classList.remove('state-wrong');
+      card.classList.add('state-correct');
+      fb.className = 'q-feedback correct';
+      fb.textContent = q.feedback;
+      revealLetter(qi);
+    } else {
+      // ── Wrong ──
+      btns[optIdx].classList.add('wrong');
+      card.classList.add('state-wrong');
+      setTimeout(function(){ card.classList.remove('state-wrong'); btns[optIdx].classList.remove('wrong'); }, 700);
+      fb.className = 'q-feedback wrong';
+      fb.textContent = q.wrong;
+    }
+  }
+
+  window.handleAnswer = handleAnswer;
+
+  function buildQuestions() {
+    var mount = document.getElementById('questions-mount');
+    QUESTIONS.forEach(function(q, i) {
+      var card = document.createElement('div');
+      card.className = 'q-card';
+      card.id = 'qcard-' + i;
+
+      var eyebrow = document.createElement('p');
+      eyebrow.className = 'q-eyebrow';
+      eyebrow.innerHTML = 'Question ' + (i + 1) + ' &nbsp;&middot;&nbsp; <span class="unlock-tag">unlocks letter ' + (i + 1) + '</span>';
+
+      var qtext = document.createElement('p');
+      qtext.className = 'q-text';
+      qtext.textContent = q.q;
+
+      var optsDiv = document.createElement('div');
+      optsDiv.className = 'q-options';
+      optsDiv.id = 'opts-' + i;
+
+      q.opts.forEach(function(opt, j) {
+        var btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt;
+        btn.setAttribute('onclick', 'handleAnswer(' + i + ',' + j + ')');
+        optsDiv.appendChild(btn);
+      });
+
+      var fb = document.createElement('div');
+      fb.className = 'q-feedback';
+      fb.id = 'fb-' + i;
+
+      card.appendChild(eyebrow);
+      card.appendChild(qtext);
+      card.appendChild(optsDiv);
+      card.appendChild(fb);
+      mount.appendChild(card);
+    });
+  }
+
+  buildQuestions();
+
+})();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>

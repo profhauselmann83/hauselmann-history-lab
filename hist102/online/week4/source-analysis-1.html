@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w4" data-gate="gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Analysis 4.1 — The League of Nations | HIST 102</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .reading-nav{position:sticky;top:42px;background:var(--cream);border-bottom:1px solid var(--rule-strong);z-index:100;}
+    .reading-nav-inner{max-width:860px;margin:0 auto;padding:0 1.5rem;display:flex;overflow-x:auto;scrollbar-width:none;}
+    .reading-nav-inner::-webkit-scrollbar{display:none;}
+    .rnav-item{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);padding:0.65rem 1rem;white-space:nowrap;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;}
+    .rnav-item:hover{color:var(--ink);border-bottom-color:var(--rule-strong);text-decoration:none;}
+    /* Source document styling */
+    .source-block{background:#fff;border:1px solid var(--rule-strong);border-radius:4px;overflow:hidden;margin:2.5rem 0;}
+    .source-header{background:var(--ink);padding:1rem 1.5rem;}
+    .source-eyebrow{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-light,#c8922a);margin:0 0 0.25rem;}
+    .source-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--cream);margin:0 0 0.15rem;}
+    .source-meta{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;color:rgba(247,242,232,0.5);margin:0;}
+    .source-context{background:rgba(61,96,83,0.06);border-left:4px solid var(--sage);padding:0.9rem 1.25rem;margin:1rem 1.5rem 0;font-size:0.88rem;font-style:italic;color:var(--ink-mid);line-height:1.65;}
+    .source-text{padding:1.25rem 1.5rem;font-family:'Source Serif 4',Georgia,serif;font-size:0.96rem;font-weight:300;color:var(--ink);line-height:1.8;}
+    .source-text p{margin-bottom:1rem;}
+    .source-text p:last-child{margin-bottom:0;}
+    .source-citation{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;color:var(--ink-light);padding:0.75rem 1.5rem;border-top:1px solid var(--rule-strong);background:var(--cream-dark);}
+    /* Table within source */
+    .source-table{width:100%;border-collapse:collapse;font-family:'Source Serif 4',Georgia,serif;font-size:0.92rem;margin:0.5rem 0;}
+    .source-table th{background:var(--cream-dark);padding:0.6rem 1rem;border:1px solid var(--rule-strong);font-weight:600;text-align:center;font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;}
+    .source-table td{padding:0.6rem 1rem;border:1px solid var(--rule-strong);text-align:center;}
+    .source-table tr:nth-child(odd) td{background:var(--cream);}
+    .source-table tr:nth-child(even) td{background:#fff;}
+    /* Questions */
+    .question-block{background:var(--cream-dark);border:1px solid var(--rule-strong);border-top:3px solid var(--gold);padding:1.25rem 1.5rem;margin:0;}
+    .question-block-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+    .question-block-label::after{content:'';flex:1;height:1px;background:rgba(154,111,42,0.2);}
+    .question-item{margin-bottom:1.25rem;}
+    .question-item:last-child{margin-bottom:0;}
+    .question-text{font-family:'Playfair Display',serif;font-size:0.93rem;font-weight:600;color:var(--ink);margin-bottom:0.45rem;line-height:1.45;}
+    .answer-area{width:100%;min-height:90px;padding:0.65rem 0.9rem;border:1px solid var(--rule-strong);border-radius:3px;background:#fff;font-family:'Source Serif 4',Georgia,serif;font-size:0.9rem;font-weight:300;color:var(--ink);line-height:1.7;resize:vertical;transition:border-color .2s,box-shadow .2s;}
+    .answer-area:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(154,111,42,0.1);}
+    .answer-area::placeholder{color:var(--ink-light);opacity:0.55;font-style:italic;}
+    .answer-meta{display:flex;justify-content:space-between;align-items:center;margin-top:0.35rem;}
+    .word-count{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.06em;color:var(--ink-light);}
+    .word-count.low{color:var(--rust);}
+    .word-count.good{color:var(--sage);}
+    .save-indicator{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;color:var(--sage);opacity:0;transition:opacity .3s;}
+    .save-indicator.visible{opacity:1;}
+    /* Progress */
+    .notes-progress{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:4px;padding:0.9rem 1.25rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;}
+    .notes-progress-bar-wrap{flex:1;height:6px;background:var(--cream-deep);border-radius:3px;overflow:hidden;}
+    .notes-progress-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease;width:0%;}
+    .notes-progress-label{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;white-space:nowrap;color:var(--ink-light);}
+    /* Intro context box */
+    .sa-intro{background:rgba(61,96,83,0.06);border:1px solid rgba(61,96,83,0.2);border-left:4px solid var(--sage);border-radius:0 4px 4px 0;padding:1.1rem 1.5rem;margin-bottom:2rem;}
+    .sa-intro h3{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);margin-bottom:0.6rem;}
+    .sa-intro p{font-size:0.9rem;color:var(--ink-mid);line-height:1.65;margin:0;}
+    .hq-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--rust);background:rgba(140,58,30,0.07);border:1px solid rgba(140,58,30,0.2);border-radius:2px;padding:0.1rem 0.4rem;display:inline-block;margin-bottom:0.5rem;}
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step done" href="index.html"><span class="step-num">&#10003;</span> Overview</a>
+    <a class="prog-step done" href="video.html"><span class="step-num">&#10003;</span> Video</a>
+    <a class="prog-step done" href="reading-1.html"><span class="step-num">&#10003;</span> Reading 5.1</a>
+    <a class="prog-step active" href="source-analysis-1.html"><span class="step-num">4</span> SA 4.1</a>
+    <a class="prog-step" href="reading-2.html"><span class="step-num">5</span> Reading 5.2</a>
+    <a class="prog-step" href="source-analysis-2.html"><span class="step-num">6</span> SA 4.2</a>
+    <a class="prog-step" href="reading-3.html"><span class="step-num">7</span> Reading 5.3</a>
+    <a class="prog-step" href="#"><span class="step-num">8</span> Canvas</a>
+  </div>
+</nav>
+
+<nav class="reading-nav">
+  <div class="reading-nav-inner">
+    <a class="rnav-item" href="#doc-a">Doc A &mdash; Lodge 1919</a>
+    <a class="rnav-item" href="#doc-b">Doc B &mdash; Lodge 1915</a>
+    <a class="rnav-item" href="#doc-c">Doc C &mdash; Senate Vote</a>
+    <a class="rnav-item" href="#doc-d">Doc D &mdash; Norris</a>
+    <a class="rnav-item" href="#doc-e">Doc E &mdash; Johnson</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 4 &nbsp;&middot;&nbsp; Step 4 &nbsp;&middot;&nbsp; Source Analysis 4.1</div>
+    <h1>Why Did Senators Oppose the League of Nations?</h1>
+    <p class="page-subtitle">Five documents &mdash; Senate debates, 1919</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~60 min</span>
+
+    </div>
+  </div>
+</header>
+
+<div id="page-content"><main>
+
+  <div class="notes-progress">
+    <span class="notes-progress-label">SA 4.1 Progress</span>
+    <div class="notes-progress-bar-wrap"><div class="notes-progress-bar" id="progressBar"></div></div>
+    <span class="notes-progress-label" id="progressLabel">0 of 12 answered</span>
+  </div>
+
+  <div class="sa-intro">
+    <h3>Historical Context</h3>
+    <p>President Wilson signed the Treaty of Versailles at the Paris Peace Conference in 1919. Although Wilson was unable to convince Britain and France to implement most of his Fourteen Points, the Treaty did establish a League of Nations &mdash; the cornerstone of his vision for lasting post-war peace. Wilson returned from Paris determined to convince the Senate to ratify the treaty, but he encountered fierce resistance. Ultimately the Senate never reached the two-thirds majority needed for ratification, and the United States never joined the League of Nations.</p>
+    <p style="margin-top:0.75rem;"><strong>Guiding question for all five documents:</strong> <em>Why did senators oppose joining the League of Nations in 1919?</em></p>
+  </div>
+
+  <!-- DOCUMENT A -->
+  <div class="source-block" id="doc-a">
+    <div class="source-header">
+      <p class="source-eyebrow">Document A</p>
+      <p class="source-title">Senator Henry Cabot Lodge, Address to the Senate</p>
+      <p class="source-meta">February 28, 1919 &nbsp;&middot;&nbsp; Washington, D.C.</p>
+    </div>
+    <div class="source-context">Lodge was the Republican leader in the Senate and chairman of the Senate Foreign Relations Committee. A &ldquo;reservationist,&rdquo; he was willing to accept a modified League but opposed the treaty as written, particularly Article X, which he believed would commit the United States to defending every nation on earth.</div>
+    <div class="source-text">
+      <p>As it stands, there is serious danger that the very nations which sign the constitution of the league will quarrel about the meaning of the various articles before a twelvemonth has passed. It seems to have been very hastily drafted, and the result is crudeness and looseness of expression&hellip;</p>
+      <p>We abandon entirely by the proposed constitution the policy laid down by Washington in his Farewell Address and the Monroe Doctrine&hellip; Perhaps the time has come when the policies of Washington should be abandoned; but if we are to cast them aside I think that at least it should be done respectfully and with a sense of gratitude to the great man who formulated them&hellip;</p>
+      <p>Washington declared against permanent alliances. He did not close the door on temporary alliances for particular purpose. Our entry into the great war just closed was entirely in accord with and violated in no respect the policy laid down by Washington&hellip; Now, in the twinkling of an eye, while passion and emotion reign, the Washington policy is to be entirely laid aside and we are to enter upon a permanent and indissoluble alliance.</p>
+      <p>Under the terms of this league draft the Monroe Doctrine disappears. It involves but one essential proposition &mdash; that the Americas should be separated from the interference of Europe and that American questions in all parts of this hemisphere should be settled by Americans alone&hellip; Europe will have the right to take part in the settlement of all American questions, and we of course shall have the right to take part in the settlement of all questions in Europe and Asia and Africa.</p>
+      <p>If we guarantee any country on the earth, no matter how small or how large, in its independence or its boundaries, that guarantee we must maintain at any cost when our word is once given, and we must be in constant possession of fleets and armies capable of enforcing these guarantees at a moment&rsquo;s notice&hellip; The ranks of the armies and the fleets of the navy made necessary by such pledges are to be filled and manned by the sons, husbands, and brothers of the people of America&hellip;</p>
+      <p>We are asked also to give up in part our sovereignty and our independence and subject our own will to the will of other nations, if there is a majority against our desires. We are asked, therefore, in a large and important degree to substitute internationalism for nationalism and an international state for pure Americanism.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Address by Senator Lodge to the United States Senate, February 28, 1919; reprinted in <em>The Sun</em>, New York City.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document A</div>
+      <div class="question-item">
+        <div class="hq-label">Q A-1</div>
+        <div class="question-text">What are four reasons Lodge gives for opposing the Treaty of Versailles?</div>
+        <textarea class="answer-area" id="qa1" data-key="hist102_w4_sa1_qa1" placeholder="List and briefly explain four distinct reasons from the document."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qa1">0 words</span><span class="save-indicator" id="si_qa1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q A-2</div>
+        <div class="question-text">To what extent is Lodge&rsquo;s speech reliable evidence of the reasons why senators opposed the Treaty in 1919? Consider the source, context, and potential bias.</div>
+        <textarea class="answer-area" id="qa2" data-key="hist102_w4_sa1_qa2" placeholder="Think about who Lodge is, when he spoke, and what he might gain or lose. Is this a reliable window into senatorial opposition?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qa2">0 words</span><span class="save-indicator" id="si_qa2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT B -->
+  <div class="source-block" id="doc-b">
+    <div class="source-header">
+      <p class="source-eyebrow">Document B</p>
+      <p class="source-title">Senator Henry Cabot Lodge, Address at Union College</p>
+      <p class="source-meta">June 9, 1915 &nbsp;&middot;&nbsp; Schenectady, New York</p>
+    </div>
+    <div class="source-context">This speech was delivered four years before Document A. At the time, some Republican leaders including Theodore Roosevelt and William Howard Taft supported the idea of a league of nations. Wilson did not yet publicly support the idea, and many Democrats opposed it.</div>
+    <div class="source-text">
+      <p>The peace of the world can be maintained only, as the peace and order of a single community are maintained, as the peace of a single nation is maintained, by the force which united nations are willing to put behind the peace and order of the world. Nations must unite as men unite in order to preserve peace and order. The great nations must be so united as to be able to say to any single country, you must not go to war, and they can only say that effectively when the country desiring war knows that the force which the united nations place behind peace is irresistible.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Address by Senator Lodge at Union College, June 9, 1915.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document B</div>
+      <div class="question-item">
+        <div class="hq-label">Q B-1</div>
+        <div class="question-text">What is Lodge&rsquo;s argument in Document B? How does it compare to his position in Document A?</div>
+        <textarea class="answer-area" id="qb1" data-key="hist102_w4_sa1_qb1" placeholder="Summarize Lodge's 1915 argument in your own words, then explain how his 1919 position differs."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qb1">0 words</span><span class="save-indicator" id="si_qb1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q B-2</div>
+        <div class="question-text">Why might Lodge&rsquo;s argument be different in 1919 (Document A) than it was in 1915 (Document B)? Consider what changed politically between 1915 and 1919.</div>
+        <textarea class="answer-area" id="qb2" data-key="hist102_w4_sa1_qb2" placeholder="Think about partisan politics, the war, Wilson's role, and Lodge's relationship with Roosevelt. What changed?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qb2">0 words</span><span class="save-indicator" id="si_qb2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT C -->
+  <div class="source-block" id="doc-c">
+    <div class="source-header">
+      <p class="source-eyebrow">Document C</p>
+      <p class="source-title">Senate Vote on the Treaty of Versailles</p>
+      <p class="source-meta">November 19, 1919 &nbsp;&middot;&nbsp; Congressional Record</p>
+    </div>
+    <div class="source-context">On November 19, 1919, the Senate voted to reject the Treaty of Versailles. The table below shows the vote tally by political party.</div>
+    <div class="source-text">
+      <table class="source-table">
+        <thead>
+          <tr><th>Political Party</th><th>In Favor</th><th>Opposed</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Democratic</strong></td><td>37</td><td>7</td></tr>
+          <tr><td><strong>Republican</strong></td><td>2</td><td>46</td></tr>
+          <tr><td><strong>Total</strong></td><td>38</td><td>53</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> The Congressional Record of the Senate, November 19, 1919.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document C</div>
+      <div class="question-item">
+        <div class="hq-label">Q C-1</div>
+        <div class="question-text">What does the data in the table suggest about who supported and who opposed the Treaty of Versailles? What pattern do you notice?</div>
+        <textarea class="answer-area" id="qc1" data-key="hist102_w4_sa1_qc1" placeholder="Describe the partisan pattern in the vote. What does this suggest about the nature of the opposition?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qc1">0 words</span><span class="save-indicator" id="si_qc1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q C-2</div>
+        <div class="question-text">What might Documents C and D together suggest about why some senators opposed the Treaty? Think about what additional explanations the vote totals alone cannot tell us.</div>
+        <textarea class="answer-area" id="qc2" data-key="hist102_w4_sa1_qc2" placeholder="Think about what the numbers can and can't explain. What do you need Documents A, D, and E to understand about the 'why'?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qc2">0 words</span><span class="save-indicator" id="si_qc2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT D -->
+  <div class="source-block" id="doc-d">
+    <div class="source-header">
+      <p class="source-eyebrow">Document D</p>
+      <p class="source-title">Senator George Norris, Address to the Senate</p>
+      <p class="source-meta">November 11, 1919 &nbsp;&middot;&nbsp; Washington, D.C.</p>
+    </div>
+    <div class="source-context">Senator George Norris of Nebraska was a Republican and among the &ldquo;irreconcilables&rdquo; who opposed the Treaty of Versailles under any conditions. Unlike Lodge (a &ldquo;reservationist&rdquo;), Norris would not accept any version of the treaty.</div>
+    <div class="source-text">
+      <p>It was not to help Czechoslovakia and Jugo-Slavia and the other small nationalities that article 10 was incorporated in the treaty. The real object, the prime object, of article 10 is to maintain the world supremacy of the British Empire, and the next object is to maintain the Japanese Empire with all the territory that she acquired&hellip;</p>
+      <p>Article 10 was not put into the league covenant in order to help the weak nations. It is there to stifle the cry of freedom from Ireland; it is there to keep in subjection the 400,000,000 of people in India; article 10 is there to compel Egypt to remain as a part of the British Empire; article 10 is in the treaty in order to nail down the coffin of Korea and hold Shantung in subjection to Japan, and we are the guarantors of it all. By its terms we are bound to turn a deaf ear to the struggling cry of freedom, no matter from what part of the world it may come, and we mortgage thereby the lifeblood of unborn American boys to stifle this cry and uphold the cruel aristocratic reign of greedy kings and pagan monarchs the world over.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Speech by Senator Norris to the United States Senate, November 11, 1919.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document D</div>
+      <div class="question-item">
+        <div class="hq-label">Q D-1</div>
+        <div class="question-text">What reasons does Senator Norris give for opposing the Treaty of Versailles? How are his concerns different from Lodge&rsquo;s in Document A?</div>
+        <textarea class="answer-area" id="qd1" data-key="hist102_w4_sa1_qd1" placeholder="Identify Norris's specific objections. Note whether his concerns are about American sovereignty, imperial powers, colonized peoples, or something else."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qd1">0 words</span><span class="save-indicator" id="si_qd1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q D-2</div>
+        <div class="question-text">To what extent does Senator Norris&rsquo;s speech corroborate Lodge&rsquo;s speech in Document A? Where do they agree and where do they diverge?</div>
+        <textarea class="answer-area" id="qd2" data-key="hist102_w4_sa1_qd2" placeholder="Corroboration means comparing two sources. Identify what they share and where they part ways."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qd2">0 words</span><span class="save-indicator" id="si_qd2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT E -->
+  <div class="source-block" id="doc-e">
+    <div class="source-header">
+      <p class="source-eyebrow">Document E</p>
+      <p class="source-title">Senator Hiram Johnson, Address to the Senate</p>
+      <p class="source-meta">June 2, 1919 &nbsp;&middot;&nbsp; Washington, D.C.</p>
+    </div>
+    <div class="source-context">Senator Hiram Johnson of California was an &ldquo;irreconcilable&rdquo; who strongly opposed U.S. involvement in international organizations. California had a large Japanese immigrant population and was the center of anti-Asian agitation in American politics.</div>
+    <div class="source-text">
+      <p>The blackest page in all our history was written when our name was signed to the treaty delivering Shantung to Japan. We have not only committed the crime in the first instance, but we have guaranteed the crime for all time. We give by the peace treaty Shantung to Japan and by the league of nations, part of the same document, guarantee Shantung to Japan and guarantee with our treasure and blood.</p>
+      <p>It is absolutely clear that questions like immigration, those arising from the alien land law of California and similar matters will be within the jurisdiction of the league. Remember that there is in existence an offensive and defensive alliance between Japan and Great Britain and that when this question of Shantung recently was up, Britain very frankly said this treaty alliance still existed. As a Californian I am not willing to submit any race problems we may have to the jurisdiction of the council of the league of nations, or to the League itself.</p>
+      <p>I am unwilling that either body should pass upon possibly the gravest question that confronts us. You gentlemen from the south would resent the suggestion that a race problem of yours should be decided by nations bound to the race affected by secret treaties.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Speech by Senator Johnson reprinted in the <em>Topeka State Journal</em>, June 2, 1919.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document E</div>
+      <div class="question-item">
+        <div class="hq-label">Q E-1</div>
+        <div class="question-text">What reasons does Senator Johnson give for opposing the Treaty of Versailles?</div>
+        <textarea class="answer-area" id="qe1" data-key="hist102_w4_sa1_qe1" placeholder="Identify his specific concerns. What is he most worried about?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qe1">0 words</span><span class="save-indicator" id="si_qe1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q E-2</div>
+        <div class="question-text">What &ldquo;race issues&rdquo; was Johnson likely referring to in California and the South? Given who supported the Treaty (Document C), why might he have made this argument to appeal to Southern senators?</div>
+        <textarea class="answer-area" id="qe2" data-key="hist102_w4_sa1_qe2" placeholder="Think about California's Alien Land Laws, Japanese immigration, Jim Crow, and the partisan breakdown in Document C. Who was Johnson trying to persuade and why?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qe2">0 words</span><span class="save-indicator" id="si_qe2">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q E-3</div>
+        <div class="question-text">To what extent does Johnson&rsquo;s speech corroborate Lodge&rsquo;s speech in Document A? What does comparing these two &ldquo;reservationist&rdquo; and &ldquo;irreconcilable&rdquo; senators reveal about the breadth of the opposition?</div>
+        <textarea class="answer-area" id="qe3" data-key="hist102_w4_sa1_qe3" placeholder="Note that Lodge and Johnson opposed the treaty for partially different reasons. Does this make the opposition stronger or weaker? What does it tell us about the nature of the coalition against the League?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qe3">0 words</span><span class="save-indicator" id="si_qe3">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-task" style="margin-top:2rem">
+    <span class="callout-label">Answers Saved &mdash; Continue to Reading 5.2</span>
+    Your answers are saved automatically. When you&rsquo;re done, continue to <strong>Reading 5.2 &mdash; The Great Depression</strong>. You&rsquo;ll submit all source analysis answers through the Canvas quiz for this week.
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="reading-1.html">&larr; Reading 5.1</a>
+    <span class="footer-label">Step 4 of 8 &nbsp;&middot;&nbsp; SA 4.1</span>
+    <a class="nav-btn nav-btn-next" href="reading-2.html">Reading 5.2 &rarr;</a>
+  </div>
+</main></div>
+
+<script>
+var Q_IDS = ['qa1','qa2','qb1','qb2','qc1','qc2','qd1','qd2','qe1','qe2','qe3'];
+var TOTAL = Q_IDS.length;
+function countWords(s){return s.trim()===''?0:s.trim().split(/\s+/).length;}
+function updateWordCount(ta){var wc=countWords(ta.value);var el=document.getElementById('wc_'+ta.id);if(!el)return;el.textContent=wc+' word'+(wc!==1?'s':'');el.className='word-count '+(wc===0?'':wc<15?'low':'good');}
+function saveField(ta){try{localStorage.setItem(ta.dataset.key,ta.value);}catch(e){}var si=document.getElementById('si_'+ta.id);if(si){si.classList.add('visible');setTimeout(function(){si.classList.remove('visible');},1500);}updateProgress();}
+function loadAnswers(){document.querySelectorAll('.answer-area').forEach(function(ta){try{var v=localStorage.getItem(ta.dataset.key);if(v){ta.value=v;updateWordCount(ta);}}catch(e){}});updateProgress();}
+function updateProgress(){var answered=0;document.querySelectorAll('.answer-area').forEach(function(ta){if(countWords(ta.value)>=10)answered++;});var pct=Math.round(answered/TOTAL*100);var bar=document.getElementById('progressBar');var lbl=document.getElementById('progressLabel');if(bar)bar.style.width=pct+'%';if(lbl)lbl.textContent=answered+'/'+TOTAL+' answered';}
+document.querySelectorAll('.answer-area').forEach(function(ta){var t;ta.addEventListener('input',function(){updateWordCount(ta);clearTimeout(t);t=setTimeout(function(){saveField(ta);},800);});});
+loadAnswers();
+</script>
+<script src="../supabase-config.js"></script>
+<script>
+(function logPageView(){try{var token=JSON.parse(localStorage.getItem('hist102_access_w4')||'{}');if(token.granted&&token.name){sbInsert('page_views',{student_name:token.name,student_w_num:token.wnum||'',week_id:'w4',page:'source-analysis-1'});}}catch(e){}})();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>

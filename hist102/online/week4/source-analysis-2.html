@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w4" data-gate="gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Analysis 4.2 — The Dust Bowl | HIST 102</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .reading-nav{position:sticky;top:42px;background:var(--cream);border-bottom:1px solid var(--rule-strong);z-index:100;}
+    .reading-nav-inner{max-width:860px;margin:0 auto;padding:0 1.5rem;display:flex;overflow-x:auto;scrollbar-width:none;}
+    .reading-nav-inner::-webkit-scrollbar{display:none;}
+    .rnav-item{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);padding:0.65rem 1rem;white-space:nowrap;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;}
+    .rnav-item:hover{color:var(--ink);border-bottom-color:var(--rule-strong);text-decoration:none;}
+    .source-block{background:#fff;border:1px solid var(--rule-strong);border-radius:4px;overflow:hidden;margin:2.5rem 0;}
+    .source-header{background:var(--ink);padding:1rem 1.5rem;}
+    .source-eyebrow{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-light,#c8922a);margin:0 0 0.25rem;}
+    .source-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--cream);margin:0 0 0.15rem;}
+    .source-meta{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;color:rgba(247,242,232,0.5);margin:0;}
+    .source-context{background:rgba(61,96,83,0.06);border-left:4px solid var(--sage);padding:0.9rem 1.25rem;margin:1rem 1.5rem 0;font-size:0.88rem;font-style:italic;color:var(--ink-mid);line-height:1.65;}
+    .source-text{padding:1.25rem 1.5rem;font-family:'Source Serif 4',Georgia,serif;font-size:0.96rem;font-weight:300;color:var(--ink);line-height:1.8;}
+    .source-text p{margin-bottom:1rem;}
+    .source-text p:last-child{margin-bottom:0;}
+    .excerpt-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:0.4rem;padding-bottom:0.3rem;border-bottom:1px solid var(--rule);}
+    .source-citation{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.06em;color:var(--ink-light);padding:0.75rem 1.5rem;border-top:1px solid var(--rule-strong);background:var(--cream-dark);}
+    .question-block{background:var(--cream-dark);border:1px solid var(--rule-strong);border-top:3px solid var(--gold);padding:1.25rem 1.5rem;margin:0;}
+    .question-block-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+    .question-block-label::after{content:'';flex:1;height:1px;background:rgba(154,111,42,0.2);}
+    .question-item{margin-bottom:1.25rem;}
+    .question-item:last-child{margin-bottom:0;}
+    .question-text{font-family:'Playfair Display',serif;font-size:0.93rem;font-weight:600;color:var(--ink);margin-bottom:0.45rem;line-height:1.45;}
+    .answer-area{width:100%;min-height:90px;padding:0.65rem 0.9rem;border:1px solid var(--rule-strong);border-radius:3px;background:#fff;font-family:'Source Serif 4',Georgia,serif;font-size:0.9rem;font-weight:300;color:var(--ink);line-height:1.7;resize:vertical;transition:border-color .2s,box-shadow .2s;}
+    .answer-area:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(154,111,42,0.1);}
+    .answer-area::placeholder{color:var(--ink-light);opacity:0.55;font-style:italic;}
+    .answer-meta{display:flex;justify-content:space-between;align-items:center;margin-top:0.35rem;}
+    .word-count{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.06em;color:var(--ink-light);}
+    .word-count.low{color:var(--rust);}
+    .word-count.good{color:var(--sage);}
+    .save-indicator{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;color:var(--sage);opacity:0;transition:opacity .3s;}
+    .save-indicator.visible{opacity:1;}
+    .notes-progress{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:4px;padding:0.9rem 1.25rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;}
+    .notes-progress-bar-wrap{flex:1;height:6px;background:var(--cream-deep);border-radius:3px;overflow:hidden;}
+    .notes-progress-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease;width:0%;}
+    .notes-progress-label{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;white-space:nowrap;color:var(--ink-light);}
+    .sa-intro{background:rgba(61,96,83,0.06);border:1px solid rgba(61,96,83,0.2);border-left:4px solid var(--sage);border-radius:0 4px 4px 0;padding:1.1rem 1.5rem;margin-bottom:2rem;}
+    .sa-intro h3{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage);margin-bottom:0.6rem;}
+    .sa-intro p{font-size:0.9rem;color:var(--ink-mid);line-height:1.65;margin:0;}
+    .hq-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--rust);background:rgba(140,58,30,0.07);border:1px solid rgba(140,58,30,0.2);border-radius:2px;padding:0.1rem 0.4rem;display:inline-block;margin-bottom:0.5rem;}
+    /* Graphic organizer */
+    .graphic-organizer{background:#fff;border:1px solid var(--rule-strong);border-radius:4px;overflow:hidden;margin:2.5rem 0;}
+    .go-header{background:var(--ink);padding:1rem 1.5rem;}
+    .go-row{display:grid;grid-template-columns:160px 1fr 1fr;gap:0;border-bottom:1px solid var(--rule-strong);}
+    .go-row:last-child{border-bottom:none;}
+    .go-header-row{display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--cream-dark);border-bottom:2px solid var(--rule-strong);}
+    .go-cell{padding:0.65rem 1rem;font-family:'Source Serif 4',Georgia,serif;font-size:0.88rem;color:var(--ink);border-right:1px solid var(--rule-strong);}
+    .go-cell:last-child{border-right:none;}
+    .go-header-cell{padding:0.6rem 1rem;font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);font-weight:600;border-right:1px solid var(--rule-strong);}
+    .go-header-cell:last-child{border-right:none;}
+    .go-doc-label{font-family:'DM Mono',monospace;font-size:0.7rem;font-weight:600;color:var(--gold);display:block;margin-bottom:0.15rem;}
+    .go-textarea{width:100%;min-height:70px;padding:0.5rem 0.6rem;border:none;background:transparent;font-family:'Source Serif 4',Georgia,serif;font-size:0.85rem;font-weight:300;color:var(--ink);line-height:1.6;resize:vertical;}
+    .go-textarea:focus{outline:none;background:rgba(154,111,42,0.04);}
+    .go-textarea::placeholder{color:var(--ink-light);opacity:0.5;font-style:italic;}
+    @media(max-width:640px){.go-row,.go-header-row{grid-template-columns:1fr;}.go-cell,.go-header-cell{border-right:none;border-bottom:1px solid var(--rule-strong);}.go-cell:last-child{border-bottom:none;}}
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step done" href="index.html"><span class="step-num">&#10003;</span> Overview</a>
+    <a class="prog-step done" href="video.html"><span class="step-num">&#10003;</span> Video</a>
+    <a class="prog-step done" href="reading-1.html"><span class="step-num">&#10003;</span> Reading 5.1</a>
+    <a class="prog-step done" href="source-analysis-1.html"><span class="step-num">&#10003;</span> SA 4.1</a>
+    <a class="prog-step done" href="reading-2.html"><span class="step-num">&#10003;</span> Reading 5.2</a>
+    <a class="prog-step active" href="source-analysis-2.html"><span class="step-num">6</span> SA 4.2</a>
+    <a class="prog-step" href="reading-3.html"><span class="step-num">7</span> Reading 5.3</a>
+    <a class="prog-step" href="#"><span class="step-num">8</span> Canvas</a>
+  </div>
+</nav>
+
+<nav class="reading-nav">
+  <div class="reading-nav-inner">
+    <a class="rnav-item" href="#doc-a">Doc A &mdash; Henderson</a>
+    <a class="rnav-item" href="#doc-b">Doc B &mdash; Svobida</a>
+    <a class="rnav-item" href="#doc-c">Doc C &mdash; Gov&rsquo;t Report</a>
+    <a class="rnav-item" href="#doc-d">Doc D &mdash; Worster</a>
+    <a class="rnav-item" href="#doc-e">Doc E &mdash; Hurt</a>
+    <a class="rnav-item" href="#organizer">Graphic Organizer</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 4 &nbsp;&middot;&nbsp; Step 6 &nbsp;&middot;&nbsp; Source Analysis 4.2</div>
+    <h1>What Caused the Dust Bowl?</h1>
+    <p class="page-subtitle">Five documents &mdash; first-hand accounts, government reports, and historians debate</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~75 min</span>
+
+    </div>
+  </div>
+</header>
+
+<div id="page-content"><main>
+
+  <div class="notes-progress">
+    <span class="notes-progress-label">SA 4.2 Progress</span>
+    <div class="notes-progress-bar-wrap"><div class="notes-progress-bar" id="progressBar"></div></div>
+    <span class="notes-progress-label" id="progressLabel">0 of 18 answered</span>
+  </div>
+
+  <div class="sa-intro">
+    <h3>Historical Context</h3>
+    <p>The causes of the Dust Bowl continue to be debated among historians. At the core of the debate is a question of responsibility: was it the result of government policies that encouraged farmers to till land beyond what nature could bear, the forces of capitalism and market pressure, or the drought itself? These documents thrust you into a scholarly debate that has hardly abated since the catastrophe first unfolded.</p>
+    <p style="margin-top:0.75rem;"><strong>Guiding question for all five documents:</strong> <em>What caused the Dust Bowl?</em></p>
+  </div>
+
+  <!-- DOCUMENT A -->
+  <div class="source-block" id="doc-a">
+    <div class="source-header">
+      <p class="source-eyebrow">Document A</p>
+      <p class="source-title">Caroline Henderson, Letter to Secretary of Agriculture Henry Wallace</p>
+      <p class="source-meta">July 26, 1935 &nbsp;&middot;&nbsp; Oklahoma Panhandle</p>
+    </div>
+    <div class="source-context">Caroline Henderson started homesteading in the Oklahoma Panhandle in 1907. A published writer, she wrote for various magazines. Secretary Wallace later credited her with helping America understand farmers&rsquo; problems and the courage they exhibited.</div>
+    <div class="source-text">
+      <p>For twenty-seven years this little spot on the vast expanses of the great plains has been the center of all our thought and hope and effort. And marvelous are the changes that we have seen&hellip; The almost unbroken buffalo grass sod has given way to cultivated fields. The old trails have become wide graded highways. Automobiles and trucks, tractors and combines have revolutionized methods of farm work. The wonderful crop of 1926 when our county alone produced 10,000,000 bushels of wheat &mdash; more, it was said, than any other equal area in the world &mdash; revealed the possibilities of our productive soil. I can shut my eyes and feel yet the rush of an almost painful thankfulness when we looked out over our fields that summer and watched our ripening grain bending, rising, bending again in golden waves swept on interminably by the restless wind. It seemed as if at last our dreams were coming true&hellip;</p>
+      <p>Yet now our daily physical torture, confusion of mind, gradual wearing down of courage, seem to make that long continued hope look like a vanishing dream. For we are in the worst of the dust storm area where &ldquo;dust to eat&rdquo; is not merely a figure of speech, but the phrasing of a bitter reality, increasing in seriousness with each passing day&hellip;</p>
+      <p>The longing for rain has become almost an obsession. We remember the gentle all-night rains that used to make a grateful music on the shingles close above our heads, or the showers that came just in time to save a dying crop. But we waken to another day of wind and dust and hopes deferred, of attempts to use to the utmost every small resource&hellip;</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Caroline Henderson&rsquo;s letter to Henry A. Wallace, July 26, 1935.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document A</div>
+      <div class="question-item">
+        <div class="hq-label">Q A-1</div>
+        <div class="question-text">What type of document is this? When and why was it written? What does Henderson&rsquo;s purpose tell us about how to read the source?</div>
+        <textarea class="answer-area" id="qa1" data-key="hist102_w4_sa2_qa1" placeholder="Identify the document type, audience, and purpose. How might these shape what Henderson chose to include or leave out?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qa1">0 words</span><span class="save-indicator" id="si_qa1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q A-2</div>
+        <div class="question-text">According to Henderson, what three changes happened in Oklahoma during the 1910s and 1920s? What is her attitude about those changes?</div>
+        <textarea class="answer-area" id="qa2" data-key="hist102_w4_sa2_qa2" placeholder="List the three changes with brief descriptions. Is Henderson proud of them, ambivalent, or critical?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qa2">0 words</span><span class="save-indicator" id="si_qa2">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q A-3</div>
+        <div class="question-text">How does this document help you address the guiding question: <em>What caused the Dust Bowl?</em> Does Henderson&rsquo;s letter implicitly or explicitly suggest a cause?</div>
+        <textarea class="answer-area" id="qa3" data-key="hist102_w4_sa2_qa3" placeholder="Does Henderson blame nature, farming practices, government policy, or something else? Is she even making a causal argument?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qa3">0 words</span><span class="save-indicator" id="si_qa3">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT B -->
+  <div class="source-block" id="doc-b">
+    <div class="source-header">
+      <p class="source-eyebrow">Document B</p>
+      <p class="source-title">Lawrence Svobida, <em>Farming the Dust Bowl: A First-Hand Account from Kansas</em></p>
+      <p class="source-meta">First published 1940 &nbsp;&middot;&nbsp; Kansas</p>
+    </div>
+    <div class="source-context">Lawrence Svobida came to Oklahoma in 1929 and farmed there until 1939, suffering seven crop failures in eight years. He wrote this account after leaving, wanting to share the story of the &ldquo;average farmer without sugar coating it.&rdquo;</div>
+    <div class="source-text">
+      <span class="excerpt-label">Excerpt 1 &mdash; The wind and the crops</span>
+      <p>Most of my remaining wheat fell an easy prey to the first gales of February, and none of the wheat that was up in the region could long withstand the succeeding gales, which first chopped off the plants even with the ground, then proceeded to take the roots out. They did not stop there. They blew away the rich topsoil, leaving the subsoil exposed; and then kept sweeping away at the &ldquo;hard-pan,&rdquo; which is almost as hard as concrete.</p>
+      <p>This was something new and different from anything I had ever experienced before &mdash; a destroying force beyond my wildest imaginings. When some of my own fields started blowing, I was utterly bewildered.</p>
+
+      <span class="excerpt-label" style="margin-top:1rem;">Excerpt 2 &mdash; The deeper cause</span>
+      <p>Railroads with land grants to dispose of, states with land scrip to sell, the Federal Government with its homestead policy, speculators, and barbed wire, all combined to restrict and eventually to abolish most of the free range, but cattle and horse raising continued to be the most important industry over a large part of the Great Plains until the 1920s.</p>
+      <p>Here had been overgrazing before the coming of the settlers, but the death knell of the Plains was sounded and the birth of the Great American Desert was inaugurated with the introduction and rapid improvement of power farming. Tractors and combines made of the Great Plains region a new wheat empire, but in doing so they disturbed nature&rsquo;s balance, and nature is taking revenge.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Lawrence Svobida, <em>Farming the Dust Bowl: A First-Hand Account from Kansas</em>, first published 1940.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document B</div>
+      <div class="question-item">
+        <div class="hq-label">Q B-1</div>
+        <div class="question-text">What exactly does Svobida mean by &ldquo;power farming&rdquo;? What would be the difference between traditional farming and power farming, and why did it matter for the land?</div>
+        <textarea class="answer-area" id="qb1" data-key="hist102_w4_sa2_qb1" placeholder="Think about technology — tractors, combines, one-way disk plows. How did these change what farmers could do to the land and how fast they could do it?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qb1">0 words</span><span class="save-indicator" id="si_qb1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q B-2</div>
+        <div class="question-text">According to Svobida, what were two causes of the Dust Bowl? How is his account similar to and different from Henderson&rsquo;s?</div>
+        <textarea class="answer-area" id="qb2" data-key="hist102_w4_sa2_qb2" placeholder="Identify two distinct causes Svobida names. Then compare with Henderson — do they agree on causes, or do they emphasize different things?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qb2">0 words</span><span class="save-indicator" id="si_qb2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT C -->
+  <div class="source-block" id="doc-c">
+    <div class="source-header">
+      <p class="source-eyebrow">Document C</p>
+      <p class="source-title">Report of the Great Plains Drought Area Committee to President Roosevelt</p>
+      <p class="source-meta">August 27, 1936 &nbsp;&middot;&nbsp; Washington, D.C.</p>
+    </div>
+    <div class="source-context">This report was created by a government committee set up to analyze the causes of the Dust Bowl. Morris Cooke, Administrator of the Rural Electrification Administration, chaired it; leaders of eight federal agencies signed it.</div>
+    <div class="source-text">
+      <p>The agricultural economy of the Great Plains will become increasingly unstable and unsafe, in view of the impossibility of permanent increase in the amount of rainfall, unless over cropping, over grazing and improper farm methods are prevented. There is no reason to believe that the primary factors of climate temperature, precipitation and winds in the Great Plains region have undergone any fundamental change. The future of the region must depend, therefore, on the degree to which farming practices conform to natural conditions.</p>
+      <p>Mistaken public policies have been largely responsible for the situation now existing. That responsibility must be liquidated by new policies. The Federal Government must do its full share in remedying the damage caused by a mistaken homesteading policy, by the stimulation of war time demands which led to over cropping and over grazing, and by encouragement of a system of agriculture which could not be both permanent and prosperous.</p>
+      <p>The problem of the Great Plains is not the product of a single act of nature, of a single year or even of a series of exceptionally bad years. It has come into being over a considerable period of time, and time will be required to deal with it.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Excerpt from the Report of the Great Plains Drought Area Committee, sent to President Roosevelt, August 27, 1936.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document C</div>
+      <div class="question-item">
+        <div class="hq-label">Q C-1</div>
+        <div class="question-text">According to this report, what were three causes of the Dust Bowl? How does the report apportion blame between nature, farmers, and government?</div>
+        <textarea class="answer-area" id="qc1" data-key="hist102_w4_sa2_qc1" placeholder="List three causes and note where responsibility is placed. Does the report let anyone off the hook entirely?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qc1">0 words</span><span class="save-indicator" id="si_qc1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q C-2</div>
+        <div class="question-text">Is this a reliable account? Consider who wrote it, for what purpose, and what they might have had reasons to say or not say.</div>
+        <textarea class="answer-area" id="qc2" data-key="hist102_w4_sa2_qc2" placeholder="Think about the source: a government report written to Roosevelt recommending new federal programs. Does the committee have reasons to emphasize government responsibility? What might they understate?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qc2">0 words</span><span class="save-indicator" id="si_qc2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT D -->
+  <div class="source-block" id="doc-d">
+    <div class="source-header">
+      <p class="source-eyebrow">Document D</p>
+      <p class="source-title">Professor Donald Worster, <em>Dust Bowl: The Southern Plains in the 1930s</em></p>
+      <p class="source-meta">Published 1979 &nbsp;&middot;&nbsp; University of Kansas</p>
+    </div>
+    <div class="source-context">Donald Worster is a leader in the field of environmental history. He is a professor at the University of Kansas and has written several books on environmental topics.</div>
+    <div class="source-text">
+      <p>The Dust Bowl was the darkest moment in the twentieth-century life of the southern plains&hellip; Unlike [comparable disasters], the Dust Bowl took only 50 years to accomplish. It cannot be blamed on illiteracy or overpopulation or social disorder. It came about because the culture was operating in precisely the way it was supposed to. Americans blazed their way across a richly endowed continent with a ruthless, devastating efficiency unmatched by any people anywhere. When the white men came to the plains, they talked expansively of &ldquo;busting&rdquo; and &ldquo;breaking&rdquo; the land. And that is exactly what they did. Some environmental catastrophes are nature&rsquo;s work, others are the slowly accumulating effects of ignorance or poverty. The Dust Bowl, in contrast, was the inevitable outcome of a culture that deliberately, self-consciously, set itself the task of dominating and exploiting the land for all it was worth.</p>
+      <p>My argument is that there was in fact a close link between the Dust Bowl and the Depression &mdash; that the same society produced them, and for similar reasons. Both events revealed fundamental weaknesses in the traditional culture of America, the one in ecological terms, the other in economic. Both offered a reason, and an opportunity, for substantial reform of that culture.</p>
+      <p>What brought them [farmers and plows] to the region was a social system, a set of values, an economic order. There is no word that so fully sums up those elements as &ldquo;capitalism.&rdquo; Capitalism&hellip; has been the decisive factor in this nation&rsquo;s use of nature.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Professor Donald Worster, <em>Dust Bowl: The Southern Plains in the 1930s</em>, published 1979.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document D</div>
+      <div class="question-item">
+        <div class="hq-label">Q D-1</div>
+        <div class="question-text">What does Professor Worster identify as the primary cause of the Dust Bowl? In your own words, summarize his argument.</div>
+        <textarea class="answer-area" id="qd1" data-key="hist102_w4_sa2_qd1" placeholder="What single word does Worster use to sum up the cause? What does he mean by it? Be specific — don't just say 'capitalism.'"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qd1">0 words</span><span class="save-indicator" id="si_qd1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q D-2</div>
+        <div class="question-text">Do the other documents (A, B, C) support or challenge Worster&rsquo;s conclusion? Choose one document and explain how it relates to his argument.</div>
+        <textarea class="answer-area" id="qd2" data-key="hist102_w4_sa2_qd2" placeholder="Pick one document — does it corroborate Worster's capitalism argument, offer a different cause, or is it simply silent on the question?"></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qd2">0 words</span><span class="save-indicator" id="si_qd2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT E -->
+  <div class="source-block" id="doc-e">
+    <div class="source-header">
+      <p class="source-eyebrow">Document E</p>
+      <p class="source-title">Professor R. Douglas Hurt, <em>The Dust Bowl: An Agricultural and Social History</em></p>
+      <p class="source-meta">Published 1981 &nbsp;&middot;&nbsp; Purdue University</p>
+    </div>
+    <div class="source-context">Professor R. Douglas Hurt is head of the History Department at Purdue University and has written numerous books on agricultural history.</div>
+    <div class="source-text">
+      <p>Between 1909 and 1914, there were fifty-six reports of drifting soil in Oklahoma. Near Hooker, in 1909, some farmers lost two-thirds of their wheat crop because of wind erosion while others in western Oklahoma abandoned their lands. Dust storms in the southern Great Plains were not unique to the 1930s. Drought, lack of vegetation, and wind have caused the dust to move since the formation of the Plains&hellip; During the early nineteenth century and before, when buffalo were the primary occupants of the Plains, drought and prairie fires destroyed the native grass and exposed the soil to wind erosion. Later, however, other factors contributed to dust storms &mdash; notably man&rsquo;s inhabitation of the southern Plains and the adoption of a new agricultural technology.</p>
+      <p>Still, the wind erosion problem of the southern Great Plains did not occur because farmers grew too much wheat, but because the drought prevented them from growing hardly any wheat at all from 1932 to 1940. During years of normal precipitation, the extensive root system of wheat plants held the soil and offered excellent protection against wind erosion. In the droughty thirties, however, the inadequate moisture supply prevented a suitable growth of ground cover in the early spring &ldquo;blow season.&rdquo; The drought then began a chain of events, the first of which was crop failure. Abandonment of land without a protective soil cover in turn allowed the nearly constant winds to begin erosion.</p>
+      <p>In retrospect, many factors contributed to the creation of the Dust Bowl &mdash; soils subject to wind erosion, drought which killed the soil-holding vegetation, the incessant wind, and technological improvements which facilitated the rapid breaking of the native sod. The nature of the southern Plains soils and the periodic influence of drought could not be changed, but the technological abuse of the land could have been stopped.</p>
+    </div>
+    <div class="source-citation"><strong>Source:</strong> Professor R. Douglas Hurt, <em>The Dust Bowl: An Agricultural and Social History</em>, published 1981.</div>
+    <div class="question-block">
+      <div class="question-block-label">Guiding Questions &mdash; Document E</div>
+      <div class="question-item">
+        <div class="hq-label">Q E-1</div>
+        <div class="question-text">What four causes of the Dust Bowl does Professor Hurt identify? List them clearly.</div>
+        <textarea class="answer-area" id="qe1" data-key="hist102_w4_sa2_qe1" placeholder="Identify the four specific causal factors Hurt names. He distinguishes between factors that could and could not have been prevented — note that distinction."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qe1">0 words</span><span class="save-indicator" id="si_qe1">&#10003; Saved</span></div>
+      </div>
+      <div class="question-item">
+        <div class="hq-label">Q E-2</div>
+        <div class="question-text">In what ways are Worster&rsquo;s and Hurt&rsquo;s accounts different? Which do you find more convincing, and why?</div>
+        <textarea class="answer-area" id="qe2" data-key="hist102_w4_sa2_qe2" placeholder="Compare their arguments directly — what does Worster emphasize that Hurt downplays? What does Hurt include that Worster doesn't? Take a position on which is more persuasive."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_qe2">0 words</span><span class="save-indicator" id="si_qe2">&#10003; Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAPHIC ORGANIZER -->
+  <div class="graphic-organizer" id="organizer">
+    <div class="go-header">
+      <p class="source-eyebrow">Graphic Organizer</p>
+      <p class="source-title" style="font-size:1rem;">Complete the chart: What caused the Dust Bowl?</p>
+      <p class="source-meta">Fill in each cell based on your reading of the five documents above.</p>
+    </div>
+    <div class="go-header-row">
+      <div class="go-header-cell">Document</div>
+      <div class="go-header-cell">Cause(s) suggested</div>
+      <div class="go-header-cell">Evidence from document</div>
+    </div>
+    <div class="go-row">
+      <div class="go-cell"><span class="go-doc-label">Doc A</span>Henderson Letter</div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_a1" data-key="hist102_w4_sa2_go_a1" placeholder="What causes does Henderson suggest?"></textarea><div class="answer-meta"><span class="word-count" id="wc_go_a1">0 words</span><span class="save-indicator" id="si_go_a1">✓</span></div></div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_a2" data-key="hist102_w4_sa2_go_a2" placeholder="Quote or paraphrase key evidence."></textarea><div class="answer-meta"><span class="word-count" id="wc_go_a2">0 words</span><span class="save-indicator" id="si_go_a2">✓</span></div></div>
+    </div>
+    <div class="go-row">
+      <div class="go-cell"><span class="go-doc-label">Doc B</span>Svobida Account</div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_b1" data-key="hist102_w4_sa2_go_b1" placeholder="What causes does Svobida suggest?"></textarea><div class="answer-meta"><span class="word-count" id="wc_go_b1">0 words</span><span class="save-indicator" id="si_go_b1">✓</span></div></div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_b2" data-key="hist102_w4_sa2_go_b2" placeholder="Quote or paraphrase key evidence."></textarea><div class="answer-meta"><span class="word-count" id="wc_go_b2">0 words</span><span class="save-indicator" id="si_go_b2">✓</span></div></div>
+    </div>
+    <div class="go-row">
+      <div class="go-cell"><span class="go-doc-label">Doc C</span>Government Report</div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_c1" data-key="hist102_w4_sa2_go_c1" placeholder="What causes does the report suggest?"></textarea><div class="answer-meta"><span class="word-count" id="wc_go_c1">0 words</span><span class="save-indicator" id="si_go_c1">✓</span></div></div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_c2" data-key="hist102_w4_sa2_go_c2" placeholder="Quote or paraphrase key evidence."></textarea><div class="answer-meta"><span class="word-count" id="wc_go_c2">0 words</span><span class="save-indicator" id="si_go_c2">✓</span></div></div>
+    </div>
+    <div class="go-row">
+      <div class="go-cell"><span class="go-doc-label">Doc D</span>Worster Excerpt</div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_d1" data-key="hist102_w4_sa2_go_d1" placeholder="What causes does Worster suggest?"></textarea><div class="answer-meta"><span class="word-count" id="wc_go_d1">0 words</span><span class="save-indicator" id="si_go_d1">✓</span></div></div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_d2" data-key="hist102_w4_sa2_go_d2" placeholder="Quote or paraphrase key evidence."></textarea><div class="answer-meta"><span class="word-count" id="wc_go_d2">0 words</span><span class="save-indicator" id="si_go_d2">✓</span></div></div>
+    </div>
+    <div class="go-row">
+      <div class="go-cell"><span class="go-doc-label">Doc E</span>Hurt Excerpt</div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_e1" data-key="hist102_w4_sa2_go_e1" placeholder="What causes does Hurt suggest?"></textarea><div class="answer-meta"><span class="word-count" id="wc_go_e1">0 words</span><span class="save-indicator" id="si_go_e1">✓</span></div></div>
+      <div class="go-cell"><textarea class="go-textarea" id="go_e2" data-key="hist102_w4_sa2_go_e2" placeholder="Quote or paraphrase key evidence."></textarea><div class="answer-meta"><span class="word-count" id="wc_go_e2">0 words</span><span class="save-indicator" id="si_go_e2">✓</span></div></div>
+    </div>
+  </div>
+
+  <div class="callout callout-task" style="margin-top:2rem">
+    <span class="callout-label">Answers Saved &mdash; Continue to Reading 5.3</span>
+    Your answers are saved automatically. Continue to <strong>Reading 5.3 &mdash; World War II</strong> to complete the week&rsquo;s reading. You&rsquo;ll download your complete notes PDF at the end of Reading 5.3.
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="reading-2.html">&larr; Reading 5.2</a>
+    <span class="footer-label">Step 6 of 8 &nbsp;&middot;&nbsp; SA 4.2</span>
+    <a class="nav-btn nav-btn-next" href="reading-3.html">Reading 5.3 &rarr;</a>
+  </div>
+</main></div>
+
+<script>
+var ALL_IDS = ['qa1','qa2','qa3','qb1','qb2','qc1','qc2','qd1','qd2','qe1','qe2',
+               'go_a1','go_a2','go_b1','go_b2','go_c1','go_c2','go_d1','go_d2','go_e1','go_e2'];
+var TOTAL = ALL_IDS.length;
+function countWords(s){return s.trim()===''?0:s.trim().split(/\s+/).length;}
+function updateWordCount(ta){var wc=countWords(ta.value);var el=document.getElementById('wc_'+ta.id);if(!el)return;el.textContent=wc+' word'+(wc!==1?'s':'');el.className='word-count '+(wc===0?'':wc<10?'low':'good');}
+function saveField(ta){try{localStorage.setItem(ta.dataset.key,ta.value);}catch(e){}var si=document.getElementById('si_'+ta.id);if(si){si.classList.add('visible');setTimeout(function(){si.classList.remove('visible');},1500);}updateProgress();}
+function loadAnswers(){document.querySelectorAll('.answer-area,.go-textarea').forEach(function(ta){try{var v=localStorage.getItem(ta.dataset.key);if(v){ta.value=v;updateWordCount(ta);}}catch(e){}});updateProgress();}
+function updateProgress(){var answered=0;document.querySelectorAll('.answer-area,.go-textarea').forEach(function(ta){if(countWords(ta.value)>=5)answered++;});var pct=Math.round(answered/TOTAL*100);var bar=document.getElementById('progressBar');var lbl=document.getElementById('progressLabel');if(bar)bar.style.width=pct+'%';if(lbl)lbl.textContent=answered+'/'+TOTAL+' answered';}
+document.querySelectorAll('.answer-area,.go-textarea').forEach(function(ta){var t;ta.addEventListener('input',function(){updateWordCount(ta);clearTimeout(t);t=setTimeout(function(){saveField(ta);},800);});});
+loadAnswers();
+</script>
+<script src="../supabase-config.js"></script>
+<script>
+(function logPageView(){try{var token=JSON.parse(localStorage.getItem('hist102_access_w4')||'{}');if(token.granted&&token.name){sbInsert('page_views',{student_name:token.name,student_w_num:token.wnum||'',week_id:'w4',page:'source-analysis-2'});}}catch(e){}})();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>
