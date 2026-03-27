@@ -196,6 +196,96 @@
     .nav-btn-locked::after {
       content: ' 🔒';
     }
+
+    /* ── QUIZ ── */
+    .quiz-section {
+      background: var(--cream-dark);
+      border: 1px solid var(--cream-deep);
+      border-top: 3px solid var(--canvas-blue);
+      border-radius: 0 0 4px 4px;
+      padding: 1.75rem 2rem;
+      margin: 2rem 0;
+    }
+    .quiz-heading {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 0.35rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--cream-deep);
+    }
+    .quiz-intro {
+      font-size: 0.92rem;
+      color: var(--ink-mid);
+      margin: 0.75rem 0 1.5rem;
+      line-height: 1.7;
+    }
+    .quiz-q {
+      background: #fff;
+      border: 1px solid var(--cream-deep);
+      border-radius: 3px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .quiz-q-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--canvas-blue);
+      margin-bottom: 0.5rem;
+    }
+    .quiz-q-text {
+      font-size: 0.95rem;
+      color: var(--ink);
+      line-height: 1.65;
+      margin: 0 0 0.85rem;
+      font-weight: 600;
+    }
+    .quiz-opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      color: var(--ink-mid);
+      line-height: 1.55;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+    .quiz-opt input { flex-shrink: 0; margin-top: 3px; cursor: pointer; accent-color: var(--canvas-blue); }
+    .quiz-q.correct { border-color: var(--sage); background: rgba(61,96,83,0.05); }
+    .quiz-q.wrong   { border-color: var(--rust); background: rgba(140,58,30,0.05); }
+    .quiz-q-result  { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.06em; margin-top: 0.65rem; }
+    .quiz-q.correct .quiz-q-result { color: var(--sage); }
+    .quiz-q.wrong   .quiz-q-result { color: var(--rust); }
+    .quiz-feedback {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      padding: 0.85rem 1rem;
+      border-radius: 3px;
+      margin: 1rem 0;
+      display: none;
+    }
+    .quiz-feedback.pass { background: rgba(61,96,83,0.1); color: var(--sage); border: 1px solid rgba(61,96,83,0.3); }
+    .quiz-feedback.fail { background: rgba(140,58,30,0.08); color: var(--rust); border: 1px solid rgba(140,58,30,0.25); }
+    .quiz-submit-btn {
+      display: inline-block;
+      padding: 0.75rem 1.75rem;
+      background: var(--canvas-blue);
+      color: #fff;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .quiz-submit-btn:hover { background: #163570; }
+    .quiz-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -221,7 +311,7 @@
     <h1>Loyalty, Race, and the Constitution</h1>
     <p class="page-subtitle">Japanese American Incarceration in World War II</p>
     <div class="header-chips">
-      <span class="chip chip-time">~55 min</span>
+      <span class="chip chip-time">~46 min</span>
       <span class="chip chip-site">Video + Discussion</span>
     </div>
   </div>
@@ -251,66 +341,113 @@
     <!-- UNLOCK NOTICE -->
     <div class="unlock-notice" id="unlock-notice">
       <span class="unlock-notice-icon">🔒</span>
-      <span id="unlock-text">Watch at least 80% of the video to unlock the next page.</span>
+      <span id="unlock-text">Watch the film — a short quiz will appear once you've watched at least 80%. Pass the quiz to unlock Reading 5.1.</span>
     </div>
   </div>
 
-  <!-- ABOUT THE LECTURE -->
+  <!-- ABOUT THE DOCUMENTARY -->
   <div class="speaker-card">
-    <div class="speaker-card-label">About This Lecture</div>
-    <h3>Japanese American Incarceration in World War II</h3>
-    <p>This lecture covers the forced removal and incarceration of over 120,000 Japanese Americans following the attack on Pearl Harbor in December 1941. It traces the decades of anti-Japanese legislation that set the stage for Executive Order 9066, the bureaucratic machinery that made mass removal possible, life inside the camps, the impossible demand of the loyalty questionnaire, resistance from within, and the long road to the redress movement of the 1980s.</p>
-    <p>As you watch, keep the week's central question in mind: <em>Why did the United States government incarcerate Japanese Americans — and what does the answer reveal about democracy, race, and law in America?</em> You will be working with five primary source documents on this question in the Canvas discussion. The Munson Report, <em>The Crisis</em> editorial, the Korematsu decision, and <em>Personal Justice Denied</em> will make much more sense after you've seen this lecture.</p>
+    <div class="speaker-card-label">About This Film</div>
+    <h3>Abby Ginzberg &amp; Ken Schneider &mdash; <em>And Then They Came for Us</em> (2017)</h3>
+    <p>This award-winning documentary tells the story of the forced removal and incarceration of 120,000 Japanese Americans during World War II through the voices of survivors — including actor and activist George Takei, who was incarcerated as a child — and through newly rediscovered photographs by Dorothea Lange, many of which were suppressed by the U.S. government for decades. The film covers the decades of anti-Japanese discrimination that preceded Pearl Harbor, the signing of Executive Order 9066, life inside the camps, the loyalty questionnaire, Fred Korematsu's legal challenge, and the long road to the redress movement of the 1980s. It also connects this history to the present, following Japanese American activists speaking out against civil liberties restrictions on Muslim Americans. Winner of the American Bar Association's Silver Gavel Award.</p>
+    <p>As you watch, keep the week's central question in mind: <em>Why did the United States government incarcerate Japanese Americans — and what does the answer reveal about democracy, race, and law in America?</em> You will be working with five primary source documents on this question in the Canvas discussion. The Munson Report, <em>The Crisis</em> editorial, the Korematsu decision, and <em>Personal Justice Denied</em> will make much more sense after you've seen this film.</p>
   </div>
 
   <!-- THINKING QUESTIONS -->
   <div class="questions-section">
     <h2>Questions to Hold as You Watch</h2>
-    <p class="questions-intro">These are not graded. They are designed to focus your attention as you watch and to set up the close reading you'll do in the primary source discussion this week. Keep them in mind — they connect directly to the Munson Report, the <em>Crisis</em> editorial, Korematsu, and <em>Personal Justice Denied</em>.</p>
+    <p class="questions-intro">These are not graded. They are designed to focus your attention on key moments in the film and to set up the close reading you'll do in the primary source discussion. After the film, you'll answer a short quiz before moving on.</p>
 
     <div class="q-card">
-      <div class="q-card-timestamp">Background — Before Pearl Harbor</div>
-      <p>Japanese immigration to the U.S. began in the 1880s and faced immediate, escalating legal restriction — the Alien Land Laws, the Gentlemen's Agreement, the Immigration Act of 1924. <strong>By the time Pearl Harbor happened, Japanese Americans had been targets of legal discrimination for 60 years. How does that history change how you understand Executive Order 9066?</strong> Was it a panicked wartime decision, or the culmination of something much older?</p>
+      <div class="q-card-timestamp">~0:00–6:00 &mdash; Before Pearl Harbor</div>
+      <p>One survivor says: <em>"What happened to us didn't just suddenly happen because of Pearl Harbor. There was 40 years of anti-Japanese movement from the early 1900s."</em> The film opens with "yellow peril" — the idea that Asian people posed a threat to Western civilization. <strong>Why does it matter that incarceration had a 40-year backstory? Does that change how you understand Executive Order 9066 — was it a panicked wartime decision, or the culmination of something much older?</strong></p>
     </div>
 
     <div class="q-card">
-      <div class="q-card-timestamp">The Munson Report — November 1941</div>
-      <p>One month before Pearl Harbor, a State Department investigation concluded that Japanese Americans posed no significant security threat and that the local Japanese population was "loyal on the whole." President Roosevelt received this report — and then signed Executive Order 9066 ten weeks later. <strong>If the government's own intelligence said incarceration wasn't necessary, what does that tell us about why it happened?</strong></p>
+      <div class="q-card-timestamp">~6:00–15:00 &mdash; Registration, Removal, and Language</div>
+      <p>Notice the language the government used: "evacuation," "assembly centers," "relocation centers." One survivor pushes back directly: <em>"This euphemistic language distorted what they were doing to us. Evacuation rather than forced removal. Assembly centers rather than temporary prison camps."</em> <strong>Why does the choice of words matter? What does calling it "evacuation" instead of "forced removal" do — politically and historically?</strong></p>
     </div>
 
     <div class="q-card">
-      <div class="q-card-timestamp">The German and Italian Comparison</div>
-      <p>The United States was also at war with Germany and Italy. There were far more German Americans and Italian Americans than Japanese Americans — and some had actual documented ties to fascist organizations. Yet there was no mass incarceration of German or Italian Americans. <strong>What explains the difference? And what does the difference tell us about whether "military necessity" was the real reason?</strong></p>
+      <div class="q-card-timestamp">~15:00–28:00 &mdash; Dorothea Lange, Ansel Adams, and Government Censorship</div>
+      <p>The government hired photographers to document incarceration — then impounded photographs that showed too much reality. Lange's photos were buried in the National Archives for decades. <strong>What does it mean that the government suppressed its own photographic record? Who gets to control the historical memory of an injustice — and what happens when that record is hidden?</strong></p>
     </div>
 
     <div class="q-card">
-      <div class="q-card-timestamp">Executive Order 9066 — February 1942</div>
-      <p>Roosevelt signed EO 9066 two months after Pearl Harbor. Attorney General Francis Biddle and Secretary of War Henry Stimson both expressed reservations — Biddle called it unconstitutional. But military commanders and public pressure carried the day. Assistant Secretary of War John McCloy reportedly said: <em>"If it is a question of the safety of the country or the Constitution, why, the Constitution is just a scrap of paper to me."</em> <strong>What does it mean for democracy when elected officials can set aside constitutional rights this easily — and what, if anything, stops them?</strong></p>
+      <div class="q-card-timestamp">~28:00–34:00 &mdash; The Loyalty Questionnaire and Tule Lake</div>
+      <p>One man's father answered "no, no" to the loyalty questionnaire — refusing to swear allegiance to a country that had imprisoned him. He was sent to Tule Lake maximum security camp. His daughter says he was not disloyal: <em>"Disloyal, they weren't disloyal, they were outraged."</em> <strong>What is the loyalty questionnaire really asking? Is it possible to be both patriotic and refuse to answer it the way the government demanded?</strong></p>
     </div>
 
     <div class="q-card">
-      <div class="q-card-timestamp">Inside the Camps — Life Under Incarceration</div>
-      <p>In the camps, Japanese Americans built schools, newspapers, baseball teams, and community organizations — while surrounded by barbed wire and armed guards. In 1943, the War Relocation Authority administered a loyalty questionnaire asking incarcerated citizens to renounce allegiance to the Japanese Emperor and declare willingness to serve in the U.S. military. <strong>What is the loyalty questionnaire asking of Japanese Americans? What makes it impossible — and what does the government's demand reveal about how it understood citizenship?</strong></p>
+      <div class="q-card-timestamp">~34:00–42:00 &mdash; Korematsu and the Government's Lies</div>
+      <p>The film reveals that the government lied to the Supreme Court — fabricating evidence of Japanese American espionage and sabotage that never existed. FBI Director J. Edgar Hoover wrote that there was no illicit signaling from shore to ship. A Justice Department attorney called the government's statements "intentional falsehoods." <strong>If the Court upheld incarceration based on lies, what does that say about the reliability of "military necessity" as a justification for suspending civil rights?</strong></p>
     </div>
 
     <div class="q-card">
-      <div class="q-card-timestamp">The 442nd and the Draft Resisters</div>
-      <p>Some Nisei chose to serve in the U.S. Army — the 442nd Regimental Combat Team became the most decorated unit of its size in American military history, fighting in Europe while their families remained imprisoned in camps at home. Others, like the Fair Play Committee at Heart Mountain, refused to be drafted until their constitutional rights were restored. <strong>Both groups said they were acting out of principle. What does this split reveal about the impossible position incarceration created for Japanese Americans?</strong></p>
-    </div>
-
-    <div class="q-card">
-      <div class="q-card-timestamp">Korematsu v. United States — 1944</div>
-      <p>Fred Korematsu refused to report for removal and was convicted. The Supreme Court upheld his conviction 6–3, ruling that military necessity justified the exclusion. Justice Robert Jackson's dissent called the ruling "a loaded weapon, ready for the hand of any authority that can bring forward a plausible claim of an urgent need." <strong>Jackson was warning about the future. What did he mean — and does his warning seem prophetic to you?</strong></p>
-    </div>
-
-    <div class="q-card">
-      <div class="q-card-timestamp">The Redress Movement — 1970s–1988</div>
-      <p>It took 40 years after the war for the U.S. government to formally apologize. The Civil Liberties Act of 1988 acknowledged that incarceration had been driven by "race prejudice, war hysteria, and a failure of political leadership" — the exact same language the Commission on Wartime Relocation had used in <em>Personal Justice Denied</em> in 1983. <strong>Why did it take 40 years? And what does the redress movement tell us about how historical injustices can — and can't — be repaired?</strong></p>
+      <div class="q-card-timestamp">~42:00–48:00 &mdash; Then and Now</div>
+      <p>The film ends by connecting Japanese American incarceration to post-9/11 restrictions on Muslim Americans. George Takei says: <em>"National security was used when Pearl Harbor was bombed to incarcerate us. And national security is being brought up again."</em> One activist describes a process: <em>"They begin with the fomenting of hate... then slow targeting."</em> <strong>Is the historical parallel the film draws convincing? What are the limits of comparing these two moments?</strong></p>
     </div>
 
     <div class="q-card" style="border-left-color: var(--rust);">
       <div class="q-card-timestamp" style="color: var(--rust);">The Big Question — connecting to Haass</div>
-      <p>Richard Haass argues in Chapter 10 that citizens and leaders must "put country first" — prioritizing democratic institutions over partisan or personal interest. FDR incarcerated 120,000 Americans while citing national security. The 442nd veterans served the country that imprisoned their families. The Heart Mountain draft resisters refused to serve until their rights were restored. <strong>Who in this story was "putting country first" — and does Haass's framework help you answer that question, or does it make it harder?</strong></p>
+      <p>Richard Haass argues that citizens and leaders must "put country first." FDR cited national security when he signed EO 9066. The 442nd veterans served the country that imprisoned their families. Fred Korematsu refused to comply and spent 40 years fighting to clear his name. Karen Korematsu says her father would never accept a pardon because <em>"a pardon means that you are guilty. And he was never guilty."</em> <strong>Who in this film is "putting country first" — and does Haass's framework help you answer that, or make it harder?</strong></p>
+    </div>
+  </div>
+
+  <!-- QUIZ SECTION (unlocks after 80% watched) -->
+  <div class="quiz-section" id="quiz-section" style="display:none;">
+    <h2 class="quiz-heading">Quick Check &mdash; Before You Continue</h2>
+    <p class="quiz-intro">Answer all five questions correctly to unlock Reading 5.1. You can retry as many times as needed.</p>
+
+    <div class="quiz-form" id="quiz-form">
+
+      <div class="quiz-q" id="qq1">
+        <div class="quiz-q-label">Question 1 of 5</div>
+        <p class="quiz-q-text">According to survivors in the film, what was the government's stated justification for incarcerating Japanese Americans after Pearl Harbor?</p>
+        <label class="quiz-opt"><input type="radio" name="q1" value="a"> Economic competition with white farmers on the West Coast</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="b"> Military necessity — the threat of espionage and sabotage by Japanese Americans</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="c"> A court order from the Supreme Court requiring removal</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="d"> A vote by Congress to authorize mass incarceration</label>
+      </div>
+
+      <div class="quiz-q" id="qq2">
+        <div class="quiz-q-label">Question 2 of 5</div>
+        <p class="quiz-q-text">The film reveals that FBI Director J. Edgar Hoover wrote that regarding Japanese Americans and espionage: "In no case has there been illicit signaling from shore to ship." What does this reveal about the government's case for incarceration?</p>
+        <label class="quiz-opt"><input type="radio" name="q2" value="a"> The government had strong intelligence supporting the military necessity argument</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="b"> The government lied to the Supreme Court — the espionage threat was fabricated</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="c"> Hoover disagreed with incarceration for personal, not legal, reasons</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="d"> The FBI had jurisdiction over the camps and opposed Army control</label>
+      </div>
+
+      <div class="quiz-q" id="qq3">
+        <div class="quiz-q-label">Question 3 of 5</div>
+        <p class="quiz-q-text">What happened to many of Dorothea Lange's photographs of Japanese American incarceration?</p>
+        <label class="quiz-opt"><input type="radio" name="q3" value="a"> They were published widely in newspapers to build public sympathy</label>
+        <label class="quiz-opt"><input type="radio" name="q3" value="b"> They were destroyed by the War Relocation Authority</label>
+        <label class="quiz-opt"><input type="radio" name="q3" value="c"> They were impounded by the government and buried in the National Archives for decades</label>
+        <label class="quiz-opt"><input type="radio" name="q3" value="d"> They were given to Japanese American families as personal records</label>
+      </div>
+
+      <div class="quiz-q" id="qq4">
+        <div class="quiz-q-label">Question 4 of 5</div>
+        <p class="quiz-q-text">When the government offered Fred Korematsu a pardon after his conviction was vacated, what was his response — and why?</p>
+        <label class="quiz-opt"><input type="radio" name="q4" value="a"> He accepted it gratefully as a step toward justice</label>
+        <label class="quiz-opt"><input type="radio" name="q4" value="b"> He refused it, because accepting a pardon would imply he had been guilty</label>
+        <label class="quiz-opt"><input type="radio" name="q4" value="c"> He accepted it only after the government also issued a formal apology</label>
+        <label class="quiz-opt"><input type="radio" name="q4" value="d"> He refused it because he wanted a larger reparations payment</label>
+      </div>
+
+      <div class="quiz-q" id="qq5">
+        <div class="quiz-q-label">Question 5 of 5</div>
+        <p class="quiz-q-text">One of the film's central arguments about Dorothea Lange's photographic record is that without it, this story would be — as one interviewee puts it — "a blip in US history." What broader point does this make about the relationship between historical memory and documentation?</p>
+        <label class="quiz-opt"><input type="radio" name="q5" value="a"> Photography is more reliable than written documents as historical evidence</label>
+        <label class="quiz-opt"><input type="radio" name="q5" value="b"> Visual records created by the government are always the most trustworthy</label>
+        <label class="quiz-opt"><input type="radio" name="q5" value="c"> Who controls the documentary record shapes which injustices get remembered and which disappear</label>
+        <label class="quiz-opt"><input type="radio" name="q5" value="d"> The government's suppression of photographs ultimately had no effect on public memory</label>
+      </div>
+
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <button class="quiz-submit-btn" id="quiz-submit-btn" onclick="submitQuiz()">Check My Answers</button>
     </div>
   </div>
 
@@ -327,13 +464,13 @@
 <!-- YOUTUBE IFRAME API -->
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────────
-var VIDEO_ID         = 'PASTE_VIDEO_ID_HERE';  // replace with 11-character YouTube ID
+var VIDEO_ID         = 'TS43yfwGuuM';
 var UNLOCK_THRESHOLD = 0.80;                    // 80% watched unlocks next page
 var LS_KEY           = 'hist102_w4_video_watched';
 var POLL_INTERVAL    = 5000;                    // check every 5 seconds
 
 // ── STATE ────────────────────────────────────────────────────────────────────
-var player    = null;
+var player     = null;
 var maxWatched = 0;
 var unlocked   = false;
 var pollTimer  = null;
@@ -406,7 +543,7 @@ function updateProgress() {
       try { localStorage.setItem(LS_KEY, String(maxWatched)); } catch(e) {}
     }
 
-    var pct = Math.min(Math.round(maxWatched * 100), 100);
+    var pct    = Math.min(Math.round(maxWatched * 100), 100);
     var bar    = document.getElementById('watch-bar');
     var status = document.getElementById('watch-status');
     if (bar)    bar.style.width = pct + '%';
@@ -425,17 +562,105 @@ function applyUnlocked() {
   var status  = document.getElementById('watch-status');
   var notice  = document.getElementById('unlock-notice');
   var text    = document.getElementById('unlock-text');
-  var nextBtn = document.getElementById('next-btn');
+  var quiz    = document.getElementById('quiz-section');
 
   var pct = Math.min(Math.round(maxWatched * 100), 100);
 
   if (bar)    { bar.style.width = pct + '%'; bar.classList.add('complete'); }
   if (status) { status.textContent = pct + '% watched'; status.classList.add('done'); }
   if (notice) { notice.classList.add('unlocked'); }
-  if (text)   { text.textContent = '✓ Video complete — Reading 5.1 is now unlocked.'; }
-  if (nextBtn){ nextBtn.classList.remove('nav-btn-locked'); }
+  if (text)   { text.textContent = '\u2713 Video complete \u2014 answer the quick check below to continue.'; }
+  if (quiz)   { quiz.style.display = 'block'; quiz.scrollIntoView({behavior:'smooth', block:'start'}); }
+
+  // Also restore quiz if already passed on a prior visit
+  try {
+    if (localStorage.getItem('hist102_w4_quiz_passed') === 'yes') {
+      applyQuizPassed(true);
+    }
+  } catch(e) {}
 }
 </script>
+
+<!-- QUIZ SCRIPT -->
+<script>
+var CORRECT = { q1:'b', q2:'b', q3:'c', q4:'b', q5:'c' };
+var LS_QUIZ = 'hist102_w4_quiz_passed';
+
+// If quiz was already passed on a prior visit and video was watched, restore state
+try {
+  var savedWatch = localStorage.getItem('hist102_w4_video_watched');
+  if (savedWatch && parseFloat(savedWatch) >= 0.80 && localStorage.getItem(LS_QUIZ) === 'yes') {
+    document.addEventListener('DOMContentLoaded', function() {
+      var quiz = document.getElementById('quiz-section');
+      if (quiz) quiz.style.display = 'block';
+      applyQuizPassed(true);
+    });
+  }
+} catch(e) {}
+
+function submitQuiz() {
+  var score = 0;
+  var allAnswered = true;
+
+  Object.keys(CORRECT).forEach(function(qId) {
+    var selected = document.querySelector('input[name="' + qId + '"]:checked');
+    var block    = document.getElementById('q' + qId.slice(1));
+    // Remove existing result spans
+    var old = block ? block.querySelector('.quiz-q-result') : null;
+    if (old) old.remove();
+    if (block) { block.classList.remove('correct','wrong'); }
+
+    if (!selected) {
+      allAnswered = false;
+      return;
+    }
+
+    var resultEl = document.createElement('div');
+    resultEl.className = 'quiz-q-result';
+
+    if (selected.value === CORRECT[qId]) {
+      score++;
+      if (block) block.classList.add('correct');
+      resultEl.textContent = '\u2713 Correct';
+    } else {
+      if (block) block.classList.add('wrong');
+      // Find correct label text
+      var correctLabel = block ? block.querySelector('input[value="' + CORRECT[qId] + '"]') : null;
+      var correctText  = correctLabel ? correctLabel.parentElement.textContent.trim().replace(/^[a-d]\s*/,'') : '';
+      resultEl.textContent = '\u2717 Not quite \u2014 correct answer: ' + correctText;
+    }
+    if (block) block.appendChild(resultEl);
+  });
+
+  var fb = document.getElementById('quiz-feedback');
+  if (!allAnswered) {
+    if (fb) { fb.style.display='block'; fb.className='quiz-feedback fail'; fb.textContent='Please answer all five questions before submitting.'; }
+    return;
+  }
+
+  if (score === 5) {
+    if (fb) { fb.style.display='block'; fb.className='quiz-feedback pass'; fb.textContent='\u2713 All correct \u2014 Reading 5.1 is now unlocked. Great work!'; }
+    try { localStorage.setItem(LS_QUIZ, 'yes'); } catch(e) {}
+    applyQuizPassed(false);
+  } else {
+    if (fb) {
+      fb.style.display='block';
+      fb.className='quiz-feedback fail';
+      fb.textContent = score + '/5 correct \u2014 review the highlighted questions and try again. You can retry as many times as needed.';
+    }
+  }
+}
+
+function applyQuizPassed(silent) {
+  var btn     = document.getElementById('quiz-submit-btn');
+  var nextBtn = document.getElementById('next-btn');
+  var fb      = document.getElementById('quiz-feedback');
+  if (btn)    { btn.textContent = '\u2713 Quiz Complete'; btn.disabled = true; }
+  if (nextBtn){ nextBtn.classList.remove('nav-btn-locked'); }
+  if (!silent && fb) { fb.style.display='block'; fb.className='quiz-feedback pass'; fb.textContent='\u2713 All correct \u2014 Reading 5.1 is now unlocked. Great work!'; }
+  // Disable all radio inputs
+  document.querySelectorAll('.quiz-opt input').forEach(function(r){ r.disabled = true; });
+}
 
 <script src="../supabase-config.js"></script>
 <script>
