@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 4 — Video · HIST 102</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="../access-guard.js" data-week="w4" data-gate="gate.html"></script>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* ── VIDEO WRAP ── */
+    .video-section {
+      margin: 0 0 2rem;
+    }
+    .video-outer {
+      position: relative;
+      background: #000;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(26,21,16,0.18);
+    }
+    .video-aspect {
+      position: relative;
+      padding-top: 56.25%; /* 16:9 */
+    }
+    .video-aspect iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── WATCH PROGRESS BAR ── */
+    .watch-progress-wrap {
+      background: var(--cream-dark);
+      border: 1px solid var(--cream-deep);
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .watch-progress-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      white-space: nowrap;
+    }
+    .watch-progress-bar-wrap {
+      flex: 1;
+      min-width: 140px;
+      height: 6px;
+      background: var(--cream-deep);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .watch-progress-bar {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+    .watch-progress-bar.complete {
+      background: var(--sage);
+    }
+    .watch-status {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: var(--ink-light);
+      white-space: nowrap;
+    }
+    .watch-status.done {
+      color: var(--sage);
+      font-weight: 500;
+    }
+
+    /* ── UNLOCK NOTICE ── */
+    .unlock-notice {
+      background: var(--cream-dark);
+      border: 1px solid var(--cream-deep);
+      border-left: 4px solid var(--rust);
+      border-radius: 0 4px 4px 0;
+      padding: 0.9rem 1.25rem;
+      margin: 1rem 0 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--rust);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .unlock-notice.unlocked {
+      border-left-color: var(--sage);
+      color: var(--sage);
+    }
+    .unlock-notice-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── ABOUT THE LECTURE ── */
+    .speaker-card {
+      background: var(--cream-dark);
+      border: 1px solid var(--cream-deep);
+      border-top: 3px solid var(--gold);
+      border-radius: 0 0 4px 4px;
+      padding: 1.5rem 1.75rem;
+      margin: 2rem 0;
+    }
+    .speaker-card-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.6rem;
+    }
+    .speaker-card h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 0.5rem;
+    }
+    .speaker-card p {
+      font-size: 0.92rem;
+      color: var(--ink-mid);
+      line-height: 1.7;
+      margin: 0 0 0.75rem;
+    }
+    .speaker-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ── THINKING QUESTIONS ── */
+    .questions-section {
+      margin: 2rem 0;
+    }
+    .questions-section h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 0.35rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--cream-deep);
+    }
+    .questions-intro {
+      font-size: 0.92rem;
+      color: var(--ink-mid);
+      margin: 0.75rem 0 1.25rem;
+      line-height: 1.7;
+    }
+    .q-card {
+      border: 1px solid var(--cream-deep);
+      border-left: 4px solid var(--gold);
+      border-radius: 0 4px 4px 0;
+      background: #fff;
+      padding: 1.1rem 1.4rem;
+      margin: 0 0 0.85rem;
+    }
+    .q-card-timestamp {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.35rem;
+    }
+    .q-card p {
+      font-size: 0.95rem;
+      color: var(--ink-mid);
+      line-height: 1.7;
+      margin: 0;
+      font-style: italic;
+    }
+    .q-card p strong {
+      font-style: normal;
+      color: var(--ink);
+    }
+
+    /* ── LOCKED NEXT BUTTON ── */
+    .nav-btn-locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .nav-btn-locked::after {
+      content: ' 🔒';
+    }
+  </style>
+</head>
+<body>
+
+<!-- PROGRESS STRIP — 8 steps -->
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step done"   href="index.html"><span class="step-num">&#10003;</span> Overview</a>
+    <a class="prog-step active" href="video.html"><span class="step-num">2</span> Video</a>
+    <a class="prog-step"        href="reading-1.html"><span class="step-num">3</span> Reading 5.1</a>
+    <a class="prog-step"        href="source-analysis-1.html"><span class="step-num">4</span> SA 4.1</a>
+    <a class="prog-step"        href="reading-2.html"><span class="step-num">5</span> Reading 5.2</a>
+    <a class="prog-step"        href="source-analysis-2.html"><span class="step-num">6</span> SA 4.2</a>
+    <a class="prog-step"        href="reading-3.html"><span class="step-num">7</span> Reading 5.3</a>
+    <a class="prog-step"        href="#"><span class="step-num">8</span> Canvas: Discussion</a>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 4 &nbsp;&middot;&nbsp; Step 2 of 8</div>
+    <h1>Loyalty, Race, and the Constitution</h1>
+    <p class="page-subtitle">Japanese American Incarceration in World War II</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~55 min</span>
+      <span class="chip chip-site">Video + Discussion</span>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<div id="page-content">
+<main>
+
+  <!-- VIDEO -->
+  <div class="video-section">
+    <div class="video-outer">
+      <div class="video-aspect">
+        <div id="yt-player"></div>
+      </div>
+    </div>
+
+    <!-- WATCH PROGRESS -->
+    <div class="watch-progress-wrap">
+      <span class="watch-progress-label">Watch progress</span>
+      <div class="watch-progress-bar-wrap">
+        <div class="watch-progress-bar" id="watch-bar"></div>
+      </div>
+      <span class="watch-status" id="watch-status">0% watched</span>
+    </div>
+
+    <!-- UNLOCK NOTICE -->
+    <div class="unlock-notice" id="unlock-notice">
+      <span class="unlock-notice-icon">🔒</span>
+      <span id="unlock-text">Watch at least 80% of the video to unlock the next page.</span>
+    </div>
+  </div>
+
+  <!-- ABOUT THE LECTURE -->
+  <div class="speaker-card">
+    <div class="speaker-card-label">About This Lecture</div>
+    <h3>Japanese American Incarceration in World War II</h3>
+    <p>This lecture covers the forced removal and incarceration of over 120,000 Japanese Americans following the attack on Pearl Harbor in December 1941. It traces the decades of anti-Japanese legislation that set the stage for Executive Order 9066, the bureaucratic machinery that made mass removal possible, life inside the camps, the impossible demand of the loyalty questionnaire, resistance from within, and the long road to the redress movement of the 1980s.</p>
+    <p>As you watch, keep the week's central question in mind: <em>Why did the United States government incarcerate Japanese Americans — and what does the answer reveal about democracy, race, and law in America?</em> You will be working with five primary source documents on this question in the Canvas discussion. The Munson Report, <em>The Crisis</em> editorial, the Korematsu decision, and <em>Personal Justice Denied</em> will make much more sense after you've seen this lecture.</p>
+  </div>
+
+  <!-- THINKING QUESTIONS -->
+  <div class="questions-section">
+    <h2>Questions to Hold as You Watch</h2>
+    <p class="questions-intro">These are not graded. They are designed to focus your attention as you watch and to set up the close reading you'll do in the primary source discussion this week. Keep them in mind — they connect directly to the Munson Report, the <em>Crisis</em> editorial, Korematsu, and <em>Personal Justice Denied</em>.</p>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">Background — Before Pearl Harbor</div>
+      <p>Japanese immigration to the U.S. began in the 1880s and faced immediate, escalating legal restriction — the Alien Land Laws, the Gentlemen's Agreement, the Immigration Act of 1924. <strong>By the time Pearl Harbor happened, Japanese Americans had been targets of legal discrimination for 60 years. How does that history change how you understand Executive Order 9066?</strong> Was it a panicked wartime decision, or the culmination of something much older?</p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">The Munson Report — November 1941</div>
+      <p>One month before Pearl Harbor, a State Department investigation concluded that Japanese Americans posed no significant security threat and that the local Japanese population was "loyal on the whole." President Roosevelt received this report — and then signed Executive Order 9066 ten weeks later. <strong>If the government's own intelligence said incarceration wasn't necessary, what does that tell us about why it happened?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">The German and Italian Comparison</div>
+      <p>The United States was also at war with Germany and Italy. There were far more German Americans and Italian Americans than Japanese Americans — and some had actual documented ties to fascist organizations. Yet there was no mass incarceration of German or Italian Americans. <strong>What explains the difference? And what does the difference tell us about whether "military necessity" was the real reason?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">Executive Order 9066 — February 1942</div>
+      <p>Roosevelt signed EO 9066 two months after Pearl Harbor. Attorney General Francis Biddle and Secretary of War Henry Stimson both expressed reservations — Biddle called it unconstitutional. But military commanders and public pressure carried the day. Assistant Secretary of War John McCloy reportedly said: <em>"If it is a question of the safety of the country or the Constitution, why, the Constitution is just a scrap of paper to me."</em> <strong>What does it mean for democracy when elected officials can set aside constitutional rights this easily — and what, if anything, stops them?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">Inside the Camps — Life Under Incarceration</div>
+      <p>In the camps, Japanese Americans built schools, newspapers, baseball teams, and community organizations — while surrounded by barbed wire and armed guards. In 1943, the War Relocation Authority administered a loyalty questionnaire asking incarcerated citizens to renounce allegiance to the Japanese Emperor and declare willingness to serve in the U.S. military. <strong>What is the loyalty questionnaire asking of Japanese Americans? What makes it impossible — and what does the government's demand reveal about how it understood citizenship?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">The 442nd and the Draft Resisters</div>
+      <p>Some Nisei chose to serve in the U.S. Army — the 442nd Regimental Combat Team became the most decorated unit of its size in American military history, fighting in Europe while their families remained imprisoned in camps at home. Others, like the Fair Play Committee at Heart Mountain, refused to be drafted until their constitutional rights were restored. <strong>Both groups said they were acting out of principle. What does this split reveal about the impossible position incarceration created for Japanese Americans?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">Korematsu v. United States — 1944</div>
+      <p>Fred Korematsu refused to report for removal and was convicted. The Supreme Court upheld his conviction 6–3, ruling that military necessity justified the exclusion. Justice Robert Jackson's dissent called the ruling "a loaded weapon, ready for the hand of any authority that can bring forward a plausible claim of an urgent need." <strong>Jackson was warning about the future. What did he mean — and does his warning seem prophetic to you?</strong></p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-card-timestamp">The Redress Movement — 1970s–1988</div>
+      <p>It took 40 years after the war for the U.S. government to formally apologize. The Civil Liberties Act of 1988 acknowledged that incarceration had been driven by "race prejudice, war hysteria, and a failure of political leadership" — the exact same language the Commission on Wartime Relocation had used in <em>Personal Justice Denied</em> in 1983. <strong>Why did it take 40 years? And what does the redress movement tell us about how historical injustices can — and can't — be repaired?</strong></p>
+    </div>
+
+    <div class="q-card" style="border-left-color: var(--rust);">
+      <div class="q-card-timestamp" style="color: var(--rust);">The Big Question — connecting to Haass</div>
+      <p>Richard Haass argues in Chapter 10 that citizens and leaders must "put country first" — prioritizing democratic institutions over partisan or personal interest. FDR incarcerated 120,000 Americans while citing national security. The 442nd veterans served the country that imprisoned their families. The Heart Mountain draft resisters refused to serve until their rights were restored. <strong>Who in this story was "putting country first" — and does Haass's framework help you answer that question, or does it make it harder?</strong></p>
+    </div>
+  </div>
+
+  <!-- PAGE FOOTER -->
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="index.html">&larr; Overview</a>
+    <span class="footer-label">Page 2 of 8 &nbsp;&middot;&nbsp; Video</span>
+    <a class="nav-btn nav-btn-next nav-btn-locked" href="reading-1.html" id="next-btn">Reading 5.1 &rarr;</a>
+  </div>
+
+</main>
+</div>
+
+<!-- YOUTUBE IFRAME API -->
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+var VIDEO_ID         = 'PASTE_VIDEO_ID_HERE';  // replace with 11-character YouTube ID
+var UNLOCK_THRESHOLD = 0.80;                    // 80% watched unlocks next page
+var LS_KEY           = 'hist102_w4_video_watched';
+var POLL_INTERVAL    = 5000;                    // check every 5 seconds
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+var player    = null;
+var maxWatched = 0;
+var unlocked   = false;
+var pollTimer  = null;
+
+// ── CHECK SAVED STATE ────────────────────────────────────────────────────────
+try {
+  var saved = localStorage.getItem(LS_KEY);
+  if (saved && parseFloat(saved) >= UNLOCK_THRESHOLD) {
+    maxWatched = parseFloat(saved);
+    unlocked   = true;
+  }
+} catch(e) {}
+
+if (unlocked) { applyUnlocked(); }
+
+// ── YOUTUBE API ──────────────────────────────────────────────────────────────
+var tag = document.createElement('script');
+tag.src = 'https://www.youtube.com/iframe_api';
+document.head.appendChild(tag);
+
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('yt-player', {
+    videoId: VIDEO_ID,
+    playerVars: {
+      rel: 0,
+      modestbranding: 1,
+      origin: window.location.origin
+    },
+    events: {
+      onReady:       onPlayerReady,
+      onStateChange: onPlayerStateChange
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  updateProgress();
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === 1) {   // YT.PlayerState.PLAYING
+    startPolling();
+  } else {
+    stopPolling();
+    updateProgress();
+  }
+}
+
+// ── POLLING ───────────────────────────────────────────────────────────────────
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(updateProgress, POLL_INTERVAL);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+// ── PROGRESS UPDATE ───────────────────────────────────────────────────────────
+function updateProgress() {
+  if (!player || typeof player.getCurrentTime !== 'function') return;
+  try {
+    var current  = player.getCurrentTime();
+    var duration = player.getDuration();
+    if (!duration || duration < 1) return;
+
+    var fraction = current / duration;
+    if (fraction > maxWatched) {
+      maxWatched = fraction;
+      try { localStorage.setItem(LS_KEY, String(maxWatched)); } catch(e) {}
+    }
+
+    var pct = Math.min(Math.round(maxWatched * 100), 100);
+    var bar    = document.getElementById('watch-bar');
+    var status = document.getElementById('watch-status');
+    if (bar)    bar.style.width = pct + '%';
+    if (status) status.textContent = pct + '% watched';
+
+    if (!unlocked && maxWatched >= UNLOCK_THRESHOLD) {
+      unlocked = true;
+      applyUnlocked();
+    }
+  } catch(e) {}
+}
+
+// ── UNLOCK ────────────────────────────────────────────────────────────────────
+function applyUnlocked() {
+  var bar     = document.getElementById('watch-bar');
+  var status  = document.getElementById('watch-status');
+  var notice  = document.getElementById('unlock-notice');
+  var text    = document.getElementById('unlock-text');
+  var nextBtn = document.getElementById('next-btn');
+
+  var pct = Math.min(Math.round(maxWatched * 100), 100);
+
+  if (bar)    { bar.style.width = pct + '%'; bar.classList.add('complete'); }
+  if (status) { status.textContent = pct + '% watched'; status.classList.add('done'); }
+  if (notice) { notice.classList.add('unlocked'); }
+  if (text)   { text.textContent = '✓ Video complete — Reading 5.1 is now unlocked.'; }
+  if (nextBtn){ nextBtn.classList.remove('nav-btn-locked'); }
+}
+</script>
+
+<script src="../supabase-config.js"></script>
+<script>
+(function logPageView() {
+  try {
+    var token = JSON.parse(localStorage.getItem('hist102_access_w4') || '{}');
+    if (token.granted && token.name) {
+      sbInsert('page_views', {
+        student_name:  token.name,
+        student_w_num: token.wnum || '',
+        week_id:       'w4',
+        page:          'video'
+      });
+    }
+  } catch(e) {}
+})();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>
