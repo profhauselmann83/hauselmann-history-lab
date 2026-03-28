@@ -281,6 +281,18 @@
         .score-ok       { background: #fef3e2; color: #c07a10; }
         .score-low      { background: #fde8e8; color: #922b21; }
 
+        /* SESSION BADGE */
+        .session-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.78em;
+            font-weight: 700;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .session-s1 { background: #e8f4f8; color: #2471a3; }
+        .session-s2 { background: #fde8e8; color: #8b0000; }
+
         /* ANSWER DETAIL GRID */
         .answer-grid {
             display: flex;
@@ -917,6 +929,14 @@
                 <input type="text" id="wq-search" placeholder="Name or Student ID..." oninput="applyWeimarFilters()">
             </div>
             <div class="filter-group">
+                <label>Session</label>
+                <select id="wq-filterSession" onchange="applyWeimarFilters()">
+                    <option value="">All Sessions</option>
+                    <option value="Session 1">Session 1</option>
+                    <option value="Session 2">Session 2</option>
+                </select>
+            </div>
+            <div class="filter-group">
                 <label>Date</label>
                 <select id="wq-filterDate" onchange="applyWeimarFilters()">
                     <option value="">All Time</option>
@@ -943,6 +963,7 @@
                     <tr>
                         <th class="th-weimar">Student Name</th>
                         <th class="th-weimar">Student ID</th>
+                        <th class="th-weimar">Session</th>
                         <th class="th-weimar">Score</th>
                         <th class="th-weimar">Answers</th>
                         <th class="th-weimar">Submitted</th>
@@ -950,7 +971,7 @@
                     </tr>
                 </thead>
                 <tbody id="wq-table">
-                    <tr><td colspan="6" class="loading">Loading…</td></tr>
+                    <tr><td colspan="7" class="loading">Loading…</td></tr>
                 </tbody>
             </table>
         </div>
@@ -980,21 +1001,15 @@ let h2SelectedSet  = new Set();
 let h2Filtered     = [];
 let wqFiltered     = [];
 
-// Answer key for the quiz
-const QUIZ_ANSWERS = { q1:'B', q2:'B', q3:'C', q4:'B', q5:'C', q6:'B', q7:'C', q8:'B', q9:'C', q10:'B' };
-const QUIZ_TOPICS  = {
-    q1:  'Role Sheet',
-    q2:  'Five Crises',
-    q3:  'Five Crises',
-    q4:  'Constitutional Mechanics',
-    q5:  'Party Spectrum',
-    q6:  'Freedom Law',
-    q7:  'Freedom Law',
-    q8:  'Core Texts',
-    q9:  'Stability Index',
-    q10: 'Session 1'
+// ── QUIZ ANSWER KEYS (per session) ───────────────────────────────────────────
+const QUIZ_ANSWERS_S1 = { q1:'B', q2:'B', q3:'C', q4:'B', q5:'C', q6:'B', q7:'C', q8:'B', q9:'C', q10:'B' };
+const QUIZ_TOPICS_S1  = {
+    q1:'Role Sheet', q2:'Five Crises', q3:'Five Crises',
+    q4:'Constitutional Mechanics', q5:'Party Spectrum',
+    q6:'Freedom Law', q7:'Freedom Law', q8:'Core Texts',
+    q9:'Stability Index', q10:'Session 1'
 };
-const QUIZ_QUESTIONS = {
+const QUIZ_QUESTIONS_S1 = {
     q1:  'Which best describes the role of the Camarilla?',
     q2:  'The Stab-in-the-Back Myth was significant primarily because…',
     q3:  'Which economic event had just occurred when the simulation begins?',
@@ -1006,6 +1021,35 @@ const QUIZ_QUESTIONS = {
     q9:  'What does a HIGH Stability Index (above +50) mean for pro-Republican parties?',
     q10: 'During character introductions, each student covers three things. Which correctly lists all three?'
 };
+
+const QUIZ_ANSWERS_S2 = { q1:'C', q2:'B', q3:'D', q4:'A', q5:'B', q6:'C', q7:'A', q8:'B', q9:'D', q10:'C' };
+const QUIZ_TOPICS_S2  = {
+    q1:'Young Plan', q2:'Young Plan', q3:'Young Plan',
+    q4:'Young Plan', q5:'Young Plan',
+    q6:'Core Texts — Communism', q7:'Core Texts — Nazism',
+    q8:'Core Texts — Nazism', q9:'Core Texts — Conservative Revolution',
+    q10:'Core Texts — Republicanism'
+};
+const QUIZ_QUESTIONS_S2 = {
+    q1:  'The Young Plan (1929) was primarily a renegotiation of which aspect of Germany\'s situation under Versailles?',
+    q2:  'Beyond reducing reparations payments, the Young Plan offered Germany one significant additional concession. What was it?',
+    q3:  'The NSDAP and DNVP ran a national referendum campaign to annul the Young Plan. What was the result?',
+    q4:  'Which correctly describes how the KPD\'s opposition to the Young Plan differs from the NSDAP\'s?',
+    q5:  'The DVP supports the Young Plan. What is the basis of their support?',
+    q6:  'The KPD\'s 1930 Programme combines two elements that might seem contradictory. Which best describes that combination?',
+    q7:  'The Twenty-Five Points combine nationalist demands with economic ones that sound almost socialist. Which best captures that tension?',
+    q8:  'In "Those Damned Nazis" (1929), Goebbels argues Germany\'s crisis is caused primarily by…',
+    q9:  'Carl Schmitt\'s critique of parliamentarism rests on which central argument?',
+    q10: 'Thomas Mann\'s "On the German Republic" (1922) makes an unusual argument for democracy. Which best captures his approach?'
+};
+
+// Helper: return the correct answer key objects for a given session string
+function getQuizMeta(session) {
+    if (session === 'Session 2') {
+        return { answers: QUIZ_ANSWERS_S2, topics: QUIZ_TOPICS_S2, questions: QUIZ_QUESTIONS_S2 };
+    }
+    return { answers: QUIZ_ANSWERS_S1, topics: QUIZ_TOPICS_S1, questions: QUIZ_QUESTIONS_S1 };
+}
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 function checkPassword() {
@@ -1052,7 +1096,7 @@ async function loadAll() {
 
 async function loadWeimar() {
     document.getElementById('wq-table').innerHTML =
-        '<tr><td colspan="6" class="loading">Loading…</td></tr>';
+        '<tr><td colspan="7" class="loading">Loading…</td></tr>';
     try {
         const { data, error } = await supabaseClient
             .from('quiz_responses')
@@ -1066,7 +1110,7 @@ async function loadWeimar() {
     } catch (e) {
         showError('Error loading quiz results: ' + e.message);
         document.getElementById('wq-table').innerHTML =
-            '<tr><td colspan="6" class="no-data">Error loading data. Make sure the SELECT policy is enabled on quiz_responses.</td></tr>';
+            '<tr><td colspan="7" class="no-data">Error loading data. Make sure the SELECT policy is enabled on quiz_responses.</td></tr>';
     }
 }
 
@@ -1084,14 +1128,17 @@ function updateWeimarStats() {
 
 function applyWeimarFilters() {
     let f = allWeimar;
-    const scoreF  = document.getElementById('wq-filterScore').value;
-    const search  = document.getElementById('wq-search').value.toLowerCase();
-    const dateF   = document.getElementById('wq-filterDate').value;
+    const scoreF   = document.getElementById('wq-filterScore').value;
+    const search   = document.getElementById('wq-search').value.toLowerCase();
+    const sessionF = document.getElementById('wq-filterSession').value;
+    const dateF    = document.getElementById('wq-filterDate').value;
 
     if (scoreF === 'perfect') f = f.filter(s => s.score === 10);
     if (scoreF === 'good')    f = f.filter(s => s.score >= 8 && s.score <= 9);
     if (scoreF === 'ok')      f = f.filter(s => s.score >= 6 && s.score <= 7);
     if (scoreF === 'low')     f = f.filter(s => s.score <= 5);
+
+    if (sessionF) f = f.filter(s => s.session === sessionF);
 
     if (search) f = f.filter(s =>
         (s.student_name && s.student_name.toLowerCase().includes(search)) ||
@@ -1115,7 +1162,7 @@ function applyWeimarFilters() {
 function renderWeimarTable(rows) {
     const tbody = document.getElementById('wq-table');
     if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No quiz submissions found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">No quiz submissions found.</td></tr>';
         return;
     }
 
@@ -1123,17 +1170,19 @@ function renderWeimarTable(rows) {
         const score    = sub.score ?? 0;
         const total    = sub.total ?? 10;
         const answers  = sub.answers || {};
+        const session  = sub.session || 'Session 1';
+        const { answers: correctAnswers, topics } = getQuizMeta(session);
         const scoreClass = score === total ? 'score-perfect'
                          : score >= 8     ? 'score-good'
                          : score >= 6     ? 'score-ok'
                          :                  'score-low';
+        const sessionClass = session === 'Session 2' ? 'session-s2' : 'session-s1';
 
-        // Build compact answer chips (q1–q10)
-        const chips = Object.keys(QUIZ_ANSWERS).map(q => {
+        const chips = Object.keys(correctAnswers).map(q => {
             const given   = answers[q];
-            const correct = QUIZ_ANSWERS[q];
+            const correct = correctAnswers[q];
             const isRight = given === correct;
-            return `<span class="answer-chip ${isRight ? 'chip-correct' : 'chip-incorrect'}" title="Q${q.slice(1)}: ${QUIZ_TOPICS[q]} — answered ${given || '?'}, correct ${correct}">
+            return `<span class="answer-chip ${isRight ? 'chip-correct' : 'chip-incorrect'}" title="Q${q.slice(1)}: ${topics[q]} — answered ${given || '?'}, correct ${correct}">
                 Q${q.slice(1)}${isRight ? '✓' : '✗'}
             </span>`;
         }).join('');
@@ -1141,6 +1190,7 @@ function renderWeimarTable(rows) {
         return `<tr>
             <td><strong>${esc(sub.student_name || 'Unknown')}</strong></td>
             <td style="font-family:monospace;font-size:0.88em;color:#555">${esc(sub.student_id || '-')}</td>
+            <td><span class="session-badge ${sessionClass}">${esc(session)}</span></td>
             <td>
                 <span class="score-badge ${scoreClass}">${score}/${total}</span>
             </td>
@@ -1156,21 +1206,28 @@ function renderWeimarTable(rows) {
 }
 
 function renderMissAnalysis(rows) {
-    const panel = document.getElementById('wq-miss-analysis');
+    const panel  = document.getElementById('wq-miss-analysis');
     const barsEl = document.getElementById('wq-miss-bars');
     if (!rows.length) { panel.style.display = 'none'; return; }
 
-    // Count misses per question
-    const misses = {};
-    Object.keys(QUIZ_ANSWERS).forEach(q => misses[q] = 0);
+    // When the view is mixed sessions, use S2 key as the primary reference
+    // (most common upcoming use). Per-row correctness is always checked
+    // against the row's own session key.
+    const misses = { q1:0, q2:0, q3:0, q4:0, q5:0, q6:0, q7:0, q8:0, q9:0, q10:0 };
     rows.forEach(sub => {
-        const answers = sub.answers || {};
-        Object.keys(QUIZ_ANSWERS).forEach(q => {
-            if (answers[q] !== QUIZ_ANSWERS[q]) misses[q]++;
+        const { answers: correctAnswers, topics } = getQuizMeta(sub.session || 'Session 1');
+        const given = sub.answers || {};
+        Object.keys(correctAnswers).forEach(q => {
+            if (given[q] !== correctAnswers[q]) misses[q]++;
         });
     });
 
-    const max = Math.max(...Object.values(misses), 1);
+    // For labels, use whichever session is dominant in the filtered view
+    const s2count = rows.filter(s => s.session === 'Session 2').length;
+    const labelSession = s2count >= rows.length / 2 ? 'Session 2' : 'Session 1';
+    const { topics } = getQuizMeta(labelSession);
+
+    const max    = Math.max(...Object.values(misses), 1);
     const sorted = Object.keys(misses).sort((a,b) => misses[b] - misses[a]);
 
     barsEl.innerHTML = sorted.map(q => {
@@ -1184,7 +1241,7 @@ function renderMissAnalysis(rows) {
                 <div style="width:${w}%;background:${col};height:100%;border-radius:4px;transition:width 0.4s;"></div>
             </div>
             <div style="width:90px;color:#555">${n}/${rows.length} (${pct}%)</div>
-            <div style="color:#888;font-size:0.9em;">${QUIZ_TOPICS[q]}</div>
+            <div style="color:#888;font-size:0.9em;">${topics[q]}</div>
         </div>`;
     }).join('');
 
@@ -1197,21 +1254,23 @@ function viewWeimarDetail(id) {
     const answers = sub.answers || {};
     const score   = sub.score ?? 0;
     const total   = sub.total ?? 10;
+    const session = sub.session || 'Session 1';
+    const { answers: correctAnswers, topics, questions } = getQuizMeta(session);
 
     document.getElementById('modal-title').textContent =
-        `${sub.student_name || 'Unknown'} — Session 1 Quiz`;
+        `${sub.student_name || 'Unknown'} — ${session} Quiz`;
     document.getElementById('modal-meta').textContent  =
         `Student ID: ${sub.student_id || '-'} · Score: ${score}/${total} · ${formatDate(sub.submitted_at)}`;
 
-    const rows = Object.keys(QUIZ_ANSWERS).map(q => {
+    const rows = Object.keys(correctAnswers).map(q => {
         const given   = answers[q] || '?';
-        const correct = QUIZ_ANSWERS[q];
+        const correct = correctAnswers[q];
         const isRight = given === correct;
         return `<div class="quiz-question-row">
             <span class="quiz-q-num">Q${q.slice(1)}</span>
             <div class="quiz-q-text">
-                <div style="font-size:0.82em;color:#888;margin-bottom:2px;">${QUIZ_TOPICS[q]}</div>
-                ${esc(QUIZ_QUESTIONS[q])}
+                <div style="font-size:0.82em;color:#888;margin-bottom:2px;">${topics[q]}</div>
+                ${esc(questions[q])}
             </div>
             <div class="quiz-q-result ${isRight ? 'quiz-q-correct' : 'quiz-q-incorrect'}">
                 ${isRight ? `✓ ${given}` : `✗ ${given} (ans: ${correct})`}
@@ -1228,20 +1287,23 @@ function viewWeimarDetail(id) {
 
 function exportWeimarCSV() {
     if (!wqFiltered.length) { alert('No data to export.'); return; }
-    const headers = ['student_name','student_id','score','total','submitted_at',
-        ...Object.keys(QUIZ_ANSWERS).map(q => `${q}_given`),
-        ...Object.keys(QUIZ_ANSWERS).map(q => `${q}_correct`)
+    const qKeys = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10'];
+    const headers = ['student_name','student_id','session','score','total','submitted_at',
+        ...qKeys.map(q => `${q}_given`),
+        ...qKeys.map(q => `${q}_correct`)
     ];
     const rows = wqFiltered.map(sub => {
         const answers = sub.answers || {};
+        const { answers: correctAnswers } = getQuizMeta(sub.session || 'Session 1');
         return [
             sub.student_name || '',
             sub.student_id || '',
+            sub.session || '',
             sub.score ?? '',
             sub.total ?? 10,
             sub.submitted_at || '',
-            ...Object.keys(QUIZ_ANSWERS).map(q => answers[q] || ''),
-            ...Object.keys(QUIZ_ANSWERS).map(q => QUIZ_ANSWERS[q])
+            ...qKeys.map(q => answers[q] || ''),
+            ...qKeys.map(q => correctAnswers[q] || '')
         ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
     });
     const csv  = [headers.join(','), ...rows].join('\n');
@@ -1251,7 +1313,7 @@ function exportWeimarCSV() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  EXISTING FUNCTIONS (unchanged)
+//  WORKSHEETS
 // ══════════════════════════════════════════════════════════════════════════════
 
 async function loadWorksheets() {
@@ -1275,6 +1337,94 @@ async function loadWorksheets() {
     }
 }
 
+function updateWorksheetStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('ws-total').textContent      = allWorksheets.length;
+    document.getElementById('ws-hist101').textContent    = allWorksheets.filter(s => s.worksheet_type && s.worksheet_type.startsWith('hist101')).length;
+    document.getElementById('ws-hist107').textContent    = allWorksheets.filter(s => s.worksheet_type && s.worksheet_type.startsWith('hist107')).length;
+    document.getElementById('ws-today').textContent      = allWorksheets.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('ws-reviewed').textContent   = allWorksheets.filter(s => s.is_reviewed).length;
+    document.getElementById('ws-downloaded').textContent = allWorksheets.filter(s => s.is_downloaded).length;
+}
+
+function populateWsFilters() {
+    const sections = [...new Set(allWorksheets.map(s => s.section_number).filter(Boolean))].sort();
+    const secSel = document.getElementById('ws-filterSection');
+    const secVal = secSel.value;
+    secSel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; secSel.appendChild(o); });
+    secSel.value = secVal;
+
+    const types = [...new Set(allWorksheets.map(s => s.worksheet_type).filter(Boolean))].sort();
+    const typeSel = document.getElementById('ws-filterType');
+    const typeVal = typeSel.value;
+    typeSel.innerHTML = '<option value="">All Types</option>';
+    types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = formatWorksheetType(t); typeSel.appendChild(o); });
+    if ([...typeSel.options].some(o => o.value === typeVal)) typeSel.value = typeVal;
+}
+
+function applyWorksheetFilters() {
+    let f = allWorksheets;
+    const course     = document.getElementById('ws-filterCourse').value;
+    const type       = document.getElementById('ws-filterType').value;
+    const section    = document.getElementById('ws-filterSection').value;
+    const search     = document.getElementById('ws-search').value.toLowerCase();
+    const reviewed   = document.getElementById('ws-filterReviewed').value;
+    const downloaded = document.getElementById('ws-filterDownloaded').value;
+
+    if (course)    f = f.filter(s => s.worksheet_type && s.worksheet_type.startsWith(course));
+    if (type)      f = f.filter(s => s.worksheet_type === type);
+    if (section)   f = f.filter(s => s.section_number === section);
+    if (search)    f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
+    if (reviewed === 'reviewed')         f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed')       f = f.filter(s => !s.is_reviewed);
+    if (downloaded === 'downloaded')     f = f.filter(s => !!s.is_downloaded);
+    if (downloaded === 'not-downloaded') f = f.filter(s => !s.is_downloaded);
+
+    wsFiltered = f;
+    renderWorksheetTable(f);
+    updateWsSelectAll();
+}
+
+function renderWorksheetTable(rows) {
+    const tbody = document.getElementById('ws-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="8" class="no-data">No submissions found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed   = !!sub.is_reviewed;
+        const downloaded = !!sub.is_downloaded;
+        const selected   = wsSelected.has(sub.id);
+        const typeClass  = sub.worksheet_type && sub.worksheet_type.startsWith('hist101') ? 'type-hist101' : 'type-hist107';
+        return `<tr>
+            <td class="select-cell">
+                ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="ws-sel-${sub.id}" ${selected ? 'checked' : ''} onchange="wsToggleSelect(${sub.id})">` : ''}
+            </td>
+            <td><strong>${esc(sub.student_name || 'Unknown')}</strong></td>
+            <td>${esc(sub.section_number || '-')}</td>
+            <td><span class="worksheet-type ${typeClass}">${formatWorksheetType(sub.worksheet_type)}</span></td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell">
+                <label id="ws-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();wsToggleReviewed(${sub.id})">
+                    <input type="checkbox" id="ws-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
+                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                </label>
+            </td>
+            <td class="downloaded-cell">
+                <label id="ws-dl-${sub.id}" class="downloaded-label ${downloaded ? 'checked' : ''}" onclick="event.preventDefault();wsToggleDownloaded(${sub.id})">
+                    <input type="checkbox" id="ws-dc-${sub.id}" class="download-checkbox" ${downloaded ? 'checked' : ''}>
+                    <span>${downloaded ? 'Yes' : 'No'}</span>
+                </label>
+            </td>
+            <td>
+                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : '-'}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  RESEARCH PAPERS
+// ══════════════════════════════════════════════════════════════════════════════
+
 async function loadPapers() {
     document.getElementById('pp-table').innerHTML =
         '<tr><td colspan="10" class="loading">Loading…</td></tr>';
@@ -1296,6 +1446,79 @@ async function loadPapers() {
     }
 }
 
+function updatePaperStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('pp-total').textContent    = allPapers.length;
+    document.getElementById('pp-today').textContent    = allPapers.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('pp-reviewed').textContent = allPapers.filter(s => s.is_reviewed).length;
+    const wcs = allPapers.map(s => s.word_count).filter(Boolean);
+    document.getElementById('pp-avgwords').textContent = wcs.length ? Math.round(wcs.reduce((a,b) => a+b, 0) / wcs.length).toLocaleString() : '-';
+}
+
+function populatePpFilters() {
+    const sections = [...new Set(allPapers.map(s => s.section).filter(Boolean))].sort();
+    const sel = document.getElementById('pp-filterSection');
+    const val = sel.value;
+    sel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
+    sel.value = val;
+}
+
+function applyPaperFilters() {
+    let f = allPapers;
+    const section  = document.getElementById('pp-filterSection').value;
+    const search   = document.getElementById('pp-search').value.toLowerCase();
+    const reviewed = document.getElementById('pp-filterReviewed').value;
+
+    if (section)  f = f.filter(s => s.section === section);
+    if (search)   f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
+    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
+
+    ppFiltered = f;
+    renderPaperTable(f);
+    updatePpSelectAll();
+}
+
+function renderPaperTable(rows) {
+    const tbody = document.getElementById('pp-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="no-data">No papers found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed = !!sub.is_reviewed;
+        const wc       = sub.word_count || 0;
+        const wcClass  = wc >= 1500 && wc <= 2000 ? 'wc-ok' : 'wc-low';
+        const bibLines = sub.bibliography ? sub.bibliography.split('\n').filter(l => l.trim()).length : 0;
+        const ppSelected = ppSelectedSet.has(sub.id);
+        return `<tr>
+            <td class="select-cell">
+                ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="pp-sel-${sub.id}" ${ppSelected ? 'checked' : ''} onchange="ppToggleSelect(${sub.id})">` : ''}
+            </td>
+            <td><strong>${esc(sub.student_name || 'Unknown')}</strong><br>
+                <span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id || '-')}</span></td>
+            <td>Section ${esc(sub.section || '-')}</td>
+            <td><em>${esc(sub.paper_title || '(Untitled)')}</em></td>
+            <td><span class="wc-pill ${wcClass}">${wc.toLocaleString()}</span></td>
+            <td style="color:#555;font-size:0.88em">${bibLines} source${bibLines !== 1 ? 's' : ''}</td>
+            <td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature || '-')}</td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell">
+                <label id="pp-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();ppToggleReviewed(${sub.id})">
+                    <input type="checkbox" id="pp-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
+                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                </label>
+            </td>
+            <td>
+                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : ''}
+                <button class="view-btn" onclick="viewPaper(${sub.id})">👁 View</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  INTERVIEWS
+// ══════════════════════════════════════════════════════════════════════════════
+
 async function loadInterviews() {
     document.getElementById('iv-table').innerHTML =
         '<tr><td colspan="9" class="loading">Loading…</td></tr>';
@@ -1316,6 +1539,78 @@ async function loadInterviews() {
             '<tr><td colspan="9" class="no-data">Error loading data.</td></tr>';
     }
 }
+
+function updateInterviewStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('iv-total').textContent    = allInterviews.length;
+    document.getElementById('iv-today').textContent    = allInterviews.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('iv-uploads').textContent  = allInterviews.filter(s => s.audio_method === 'upload').length;
+    document.getElementById('iv-links').textContent    = allInterviews.filter(s => s.audio_method === 'link').length;
+    document.getElementById('iv-reviewed').textContent = allInterviews.filter(s => s.is_reviewed).length;
+}
+
+function populateIvFilters() {
+    const sections = [...new Set(allInterviews.map(s => s.section).filter(Boolean))].sort();
+    const sel = document.getElementById('iv-filterSection');
+    const val = sel.value;
+    sel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
+    sel.value = val;
+}
+
+function applyInterviewFilters() {
+    let f = allInterviews;
+    const section  = document.getElementById('iv-filterSection').value;
+    const search   = document.getElementById('iv-search').value.toLowerCase();
+    const method   = document.getElementById('iv-filterMethod').value;
+    const reviewed = document.getElementById('iv-filterReviewed').value;
+
+    if (section)  f = f.filter(s => s.section === section);
+    if (search)   f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
+    if (method)   f = f.filter(s => s.audio_method === method);
+    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
+
+    renderInterviewTable(f);
+}
+
+function renderInterviewTable(rows) {
+    const tbody = document.getElementById('iv-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="no-data">No interviews found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed = !!sub.is_reviewed;
+        const audioCell = sub.audio_method === 'upload'
+            ? `<button class="download-btn" onclick="downloadAudio('${esc(sub.audio_path || '')}')">⬇ Audio</button>`
+            : sub.audio_link
+                ? `<a href="${esc(sub.audio_link)}" target="_blank" class="audio-link-btn">🔗 Link</a>`
+                : '-';
+        return `<tr>
+            <td><strong>${esc(sub.student_name || 'Unknown')}</strong><br>
+                <span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id || '-')}</span></td>
+            <td>Section ${esc(sub.section || '-')}</td>
+            <td>${esc(sub.interviewee || '-')}<br>
+                <span style="font-size:0.8em;color:#888">${esc(sub.interviewee_role || '')}</span></td>
+            <td style="font-size:0.88em">${esc(sub.democratic_norm || '-')}</td>
+            <td style="font-size:0.88em">${esc(sub.interview_date || '-')}</td>
+            <td>${audioCell}</td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell">
+                <label id="iv-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();ivToggleReviewed(${sub.id})">
+                    <input type="checkbox" id="iv-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
+                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
+                </label>
+            </td>
+            <td>
+                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : ''}
+                <button class="view-btn" onclick="viewTranscript(${sub.id})">👁 Transcript</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  HIST 102 PAPERS
+// ══════════════════════════════════════════════════════════════════════════════
 
 async function loadHist102() {
     document.getElementById('h2-table').innerHTML =
@@ -1505,247 +1800,9 @@ function viewHist102Paper(id) {
     document.getElementById('text-modal').classList.add('show');
 }
 
-async function loadWorksheets() {
-    document.getElementById('ws-table').innerHTML =
-        '<tr><td colspan="8" class="loading">Loading…</td></tr>';
-    try {
-        const { data, error } = await supabaseClient
-            .from('worksheet_submissions')
-            .select('*')
-            .order('submitted_at', { ascending: false });
-        if (error) throw error;
-        allWorksheets = data || [];
-        updateWorksheetStats();
-        populateWsFilters();
-        applyWorksheetFilters();
-        document.getElementById('count-worksheets').textContent = allWorksheets.length;
-    } catch (e) {
-        showError('Error loading worksheets: ' + e.message);
-        document.getElementById('ws-table').innerHTML =
-            '<tr><td colspan="8" class="no-data">Error loading data.</td></tr>';
-    }
-}
-
-function updateWorksheetStats() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('ws-total').textContent      = allWorksheets.length;
-    document.getElementById('ws-hist101').textContent    = allWorksheets.filter(s => s.worksheet_type && s.worksheet_type.startsWith('hist101')).length;
-    document.getElementById('ws-hist107').textContent    = allWorksheets.filter(s => s.worksheet_type && s.worksheet_type.startsWith('hist107')).length;
-    document.getElementById('ws-today').textContent      = allWorksheets.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
-    document.getElementById('ws-reviewed').textContent   = allWorksheets.filter(s => s.is_reviewed).length;
-    document.getElementById('ws-downloaded').textContent = allWorksheets.filter(s => s.is_downloaded).length;
-}
-
-function populateWsFilters() {
-    const sections = [...new Set(allWorksheets.map(s => s.section_number).filter(Boolean))].sort();
-    const secSel = document.getElementById('ws-filterSection');
-    const secVal = secSel.value;
-    secSel.innerHTML = '<option value="">All Sections</option>';
-    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; secSel.appendChild(o); });
-    secSel.value = secVal;
-
-    const types = [...new Set(allWorksheets.map(s => s.worksheet_type).filter(Boolean))].sort();
-    const typeSel = document.getElementById('ws-filterType');
-    const typeVal = typeSel.value;
-    typeSel.innerHTML = '<option value="">All Types</option>';
-    types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = formatWorksheetType(t); typeSel.appendChild(o); });
-    if ([...typeSel.options].some(o => o.value === typeVal)) typeSel.value = typeVal;
-}
-
-function applyWorksheetFilters() {
-    let f = allWorksheets;
-    const course     = document.getElementById('ws-filterCourse').value;
-    const type       = document.getElementById('ws-filterType').value;
-    const section    = document.getElementById('ws-filterSection').value;
-    const search     = document.getElementById('ws-search').value.toLowerCase();
-    const reviewed   = document.getElementById('ws-filterReviewed').value;
-    const downloaded = document.getElementById('ws-filterDownloaded').value;
-
-    if (course)    f = f.filter(s => s.worksheet_type && s.worksheet_type.startsWith(course));
-    if (type)      f = f.filter(s => s.worksheet_type === type);
-    if (section)   f = f.filter(s => s.section_number === section);
-    if (search)    f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
-    if (reviewed === 'reviewed')         f = f.filter(s => !!s.is_reviewed);
-    if (reviewed === 'unreviewed')       f = f.filter(s => !s.is_reviewed);
-    if (downloaded === 'downloaded')     f = f.filter(s => !!s.is_downloaded);
-    if (downloaded === 'not-downloaded') f = f.filter(s => !s.is_downloaded);
-
-    wsFiltered = f;
-    renderWorksheetTable(f);
-    updateWsSelectAll();
-}
-
-function renderWorksheetTable(rows) {
-    const tbody = document.getElementById('ws-table');
-    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="8" class="no-data">No submissions found.</td></tr>'; return; }
-    tbody.innerHTML = rows.map(sub => {
-        const reviewed   = !!sub.is_reviewed;
-        const downloaded = !!sub.is_downloaded;
-        const selected   = wsSelected.has(sub.id);
-        const typeClass  = sub.worksheet_type && sub.worksheet_type.startsWith('hist101') ? 'type-hist101' : 'type-hist107';
-        return `<tr>
-            <td class="select-cell">
-                ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="ws-sel-${sub.id}" ${selected ? 'checked' : ''} onchange="wsToggleSelect(${sub.id})">` : ''}
-            </td>
-            <td><strong>${esc(sub.student_name || 'Unknown')}</strong></td>
-            <td>${esc(sub.section_number || '-')}</td>
-            <td><span class="worksheet-type ${typeClass}">${formatWorksheetType(sub.worksheet_type)}</span></td>
-            <td>${formatDate(sub.submitted_at)}</td>
-            <td class="reviewed-cell">
-                <label id="ws-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();wsToggleReviewed(${sub.id})">
-                    <input type="checkbox" id="ws-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
-                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
-                </label>
-            </td>
-            <td class="downloaded-cell">
-                <label id="ws-dl-${sub.id}" class="downloaded-label ${downloaded ? 'checked' : ''}" onclick="event.preventDefault();wsToggleDownloaded(${sub.id})">
-                    <input type="checkbox" id="ws-dc-${sub.id}" class="download-checkbox" ${downloaded ? 'checked' : ''}>
-                    <span>${downloaded ? 'Yes' : 'No'}</span>
-                </label>
-            </td>
-            <td>
-                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : '-'}
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function updatePaperStats() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('pp-total').textContent    = allPapers.length;
-    document.getElementById('pp-today').textContent    = allPapers.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
-    document.getElementById('pp-reviewed').textContent = allPapers.filter(s => s.is_reviewed).length;
-    const wcs = allPapers.map(s => s.word_count).filter(Boolean);
-    document.getElementById('pp-avgwords').textContent = wcs.length ? Math.round(wcs.reduce((a,b) => a+b, 0) / wcs.length).toLocaleString() : '-';
-}
-
-function populatePpFilters() {
-    const sections = [...new Set(allPapers.map(s => s.section).filter(Boolean))].sort();
-    const sel = document.getElementById('pp-filterSection');
-    const val = sel.value;
-    sel.innerHTML = '<option value="">All Sections</option>';
-    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
-    sel.value = val;
-}
-
-function applyPaperFilters() {
-    let f = allPapers;
-    const section  = document.getElementById('pp-filterSection').value;
-    const search   = document.getElementById('pp-search').value.toLowerCase();
-    const reviewed = document.getElementById('pp-filterReviewed').value;
-
-    if (section)  f = f.filter(s => s.section === section);
-    if (search)   f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
-    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
-    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
-
-    ppFiltered = f;
-    renderPaperTable(f);
-    updatePpSelectAll();
-}
-
-function renderPaperTable(rows) {
-    const tbody = document.getElementById('pp-table');
-    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="no-data">No papers found.</td></tr>'; return; }
-    tbody.innerHTML = rows.map(sub => {
-        const reviewed = !!sub.is_reviewed;
-        const wc       = sub.word_count || 0;
-        const wcClass  = wc >= 1500 && wc <= 2000 ? 'wc-ok' : 'wc-low';
-        const bibLines = sub.bibliography ? sub.bibliography.split('\n').filter(l => l.trim()).length : 0;
-        const ppSelected = ppSelectedSet.has(sub.id);
-        return `<tr>
-            <td class="select-cell">
-                ${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="pp-sel-${sub.id}" ${ppSelected ? 'checked' : ''} onchange="ppToggleSelect(${sub.id})">` : ''}
-            </td>
-            <td><strong>${esc(sub.student_name || 'Unknown')}</strong><br>
-                <span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id || '-')}</span></td>
-            <td>Section ${esc(sub.section || '-')}</td>
-            <td><em>${esc(sub.paper_title || '(Untitled)')}</em></td>
-            <td><span class="wc-pill ${wcClass}">${wc.toLocaleString()}</span></td>
-            <td style="color:#555;font-size:0.88em">${bibLines} source${bibLines !== 1 ? 's' : ''}</td>
-            <td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature || '-')}</td>
-            <td>${formatDate(sub.submitted_at)}</td>
-            <td class="reviewed-cell">
-                <label id="pp-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();ppToggleReviewed(${sub.id})">
-                    <input type="checkbox" id="pp-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
-                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
-                </label>
-            </td>
-            <td>
-                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : ''}
-                <button class="view-btn" onclick="viewPaper(${sub.id})">👁 View</button>
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function updateInterviewStats() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('iv-total').textContent    = allInterviews.length;
-    document.getElementById('iv-today').textContent    = allInterviews.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
-    document.getElementById('iv-uploads').textContent  = allInterviews.filter(s => s.audio_method === 'upload').length;
-    document.getElementById('iv-links').textContent    = allInterviews.filter(s => s.audio_method === 'link').length;
-    document.getElementById('iv-reviewed').textContent = allInterviews.filter(s => s.is_reviewed).length;
-}
-
-function populateIvFilters() {
-    const sections = [...new Set(allInterviews.map(s => s.section).filter(Boolean))].sort();
-    const sel = document.getElementById('iv-filterSection');
-    const val = sel.value;
-    sel.innerHTML = '<option value="">All Sections</option>';
-    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
-    sel.value = val;
-}
-
-function applyInterviewFilters() {
-    let f = allInterviews;
-    const section  = document.getElementById('iv-filterSection').value;
-    const search   = document.getElementById('iv-search').value.toLowerCase();
-    const method   = document.getElementById('iv-filterMethod').value;
-    const reviewed = document.getElementById('iv-filterReviewed').value;
-
-    if (section)  f = f.filter(s => s.section === section);
-    if (search)   f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
-    if (method)   f = f.filter(s => s.audio_method === method);
-    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
-    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
-
-    renderInterviewTable(f);
-}
-
-function renderInterviewTable(rows) {
-    const tbody = document.getElementById('iv-table');
-    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="no-data">No interviews found.</td></tr>'; return; }
-    tbody.innerHTML = rows.map(sub => {
-        const reviewed = !!sub.is_reviewed;
-        const audioCell = sub.audio_method === 'upload'
-            ? `<button class="download-btn" onclick="downloadAudio('${esc(sub.audio_path || '')}')">⬇ Audio</button>`
-            : sub.audio_link
-                ? `<a href="${esc(sub.audio_link)}" target="_blank" class="audio-link-btn">🔗 Link</a>`
-                : '-';
-        return `<tr>
-            <td><strong>${esc(sub.student_name || 'Unknown')}</strong><br>
-                <span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id || '-')}</span></td>
-            <td>Section ${esc(sub.section || '-')}</td>
-            <td>${esc(sub.interviewee || '-')}<br>
-                <span style="font-size:0.8em;color:#888">${esc(sub.interviewee_role || '')}</span></td>
-            <td style="font-size:0.88em">${esc(sub.democratic_norm || '-')}</td>
-            <td style="font-size:0.88em">${esc(sub.interview_date || '-')}</td>
-            <td>${audioCell}</td>
-            <td>${formatDate(sub.submitted_at)}</td>
-            <td class="reviewed-cell">
-                <label id="iv-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();ivToggleReviewed(${sub.id})">
-                    <input type="checkbox" id="iv-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}>
-                    <span>${reviewed ? 'Reviewed' : 'Mark'}</span>
-                </label>
-            </td>
-            <td>
-                ${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : ''}
-                <button class="view-btn" onclick="viewTranscript(${sub.id})">👁 Transcript</button>
-            </td>
-        </tr>`;
-    }).join('');
-}
+// ══════════════════════════════════════════════════════════════════════════════
+//  SHARED UTILITIES
+// ══════════════════════════════════════════════════════════════════════════════
 
 function ppToggleSelect(id) {
     ppSelectedSet.has(id) ? ppSelectedSet.delete(id) : ppSelectedSet.add(id);
