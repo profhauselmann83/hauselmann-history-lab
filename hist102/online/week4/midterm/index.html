@@ -1454,16 +1454,28 @@ function updateProgress() {
   });
 }
 function previewJump(n) {
-  if (n>0 && !startTime) {
-    if (!document.getElementById('s-first').value) {
-      document.getElementById('s-first').value = 'PREVIEW';
-      document.getElementById('s-last').value  = 'Hauselmann';
-      document.getElementById('s-wnum').value  = 'W0000000';
-      document.getElementById('s-section').value = '9994';
-    }
+  // Always ensure student fields are populated so nothing downstream breaks
+  if (!document.getElementById('s-first').value) {
+    document.getElementById('s-first').value   = 'PREVIEW';
+    document.getElementById('s-last').value    = 'Hauselmann';
+    document.getElementById('s-wnum').value    = 'W0000000';
+    document.getElementById('s-section').value = '9994';
+  }
+  if (n > 0 && !startTime) {
     startTimer();
   }
-  if (n===5){ endTime=new Date(); buildSummary(); }
+  // Jumping back to 0: reset timer so it can restart on next jump
+  if (n === 0) {
+    clearInterval(timerInt);
+    timerInt = null;
+    startTime = null;
+  }
+  // Build summary and unlock steps when jumping to submit page
+  if (n === 5) {
+    if (!endTime) endTime = new Date();
+    buildSummary();
+    unlockSubmitSteps();
+  }
   document.getElementById(`phase${phase}`).classList.remove('active');
   document.getElementById(`phase${n}`).classList.add('active');
   phase = n;
