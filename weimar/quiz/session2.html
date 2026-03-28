@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 2 Preparedness Quiz | Weimar Simulation</title>
+
+    <!--
+    ════════════════════════════════════════════════════════════════
+    SETUP INSTRUCTIONS
+    ════════════════════════════════════════════════════════════════
+
+    1. Your Supabase credentials are already filled in below from
+       the Session 1 quiz. Verify they are still correct.
+
+    2. This quiz posts to the SAME quiz_responses table as Session 1.
+       Responses are distinguished by the session field in the payload.
+       If you want a separate table, create one with the same schema:
+
+       CREATE TABLE quiz_responses_s2 (
+           id              BIGSERIAL PRIMARY KEY,
+           submitted_at    TIMESTAMPTZ DEFAULT NOW(),
+           student_name    TEXT NOT NULL,
+           student_id      TEXT NOT NULL,
+           score           INTEGER NOT NULL,
+           total           INTEGER NOT NULL,
+           session         TEXT NOT NULL,
+           answers         JSONB NOT NULL
+       );
+
+    3. Place this file at: weimar/quiz/session2/index.html
+
+    4. The Session 1 quiz is at: weimar/quiz/index.html
+
+    ════════════════════════════════════════════════════════════════
+    -->
+
+    <script>
+        const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --weimar-black:  #1a1a1a;
+            --weimar-red:    #c8102e;
+            --weimar-gold:   #d4af37;
+            --weimar-cream:  #f5f1e8;
+            --font-heading:  'Crimson Text', Georgia, serif;
+            --font-body:     'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--weimar-black);
+            background-color: var(--weimar-cream);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+        /* ── Header ─────────────────────────────────────────────── */
+        .site-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c1810 50%, #1a1a1a 100%);
+            padding: 2em 0;
+            border-bottom: 4px solid var(--weimar-red);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .site-header h1 {
+            font-family: var(--font-heading);
+            color: var(--weimar-gold);
+            font-size: 2.2em;
+            border: none;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            margin-bottom: 0.2em;
+        }
+        .site-header .subtitle  { color: rgba(245,241,232,0.9); font-size: 1.1em; font-style: italic; }
+        .site-header .course-label { color: rgba(245,241,232,0.6); font-size: 0.9em; margin-top: 0.3em; }
+
+        /* ── Nav ────────────────────────────────────────────────── */
+        .main-nav {
+            background-color: #2c2c2c;
+            border-bottom: 2px solid var(--weimar-gold);
+            position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .main-nav ul { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; padding: 0; }
+        .main-nav a {
+            display: block; padding: 1em 1.4em;
+            color: var(--weimar-cream); text-decoration: none;
+            font-weight: 600; font-size: 0.95em;
+            border-bottom: 3px solid transparent; transition: all 0.2s ease;
+        }
+        .main-nav a:hover, .main-nav a.active {
+            background-color: var(--weimar-red);
+            border-bottom-color: var(--weimar-gold);
+        }
+
+        /* ── Main ───────────────────────────────────────────────── */
+        main { padding: 2.5em 0 4em; }
+
+        .key-concept {
+            background-color: #e8f4f8; border-left: 5px solid #2980b9;
+            padding: 1.5em; margin: 1.5em 0; border-radius: 0 4px 4px 0;
+        }
+        .key-concept h3 { color: #2980b9; margin-top: 0; font-family: var(--font-heading); }
+
+        .warning-sign {
+            background-color: #fef9e7; border-left: 5px solid var(--weimar-gold);
+            padding: 1.5em; margin: 1.5em 0; border-radius: 0 4px 4px 0;
+        }
+        .warning-sign h3 { color: #b7950b; margin-top: 0; font-family: var(--font-heading); }
+
+        /* ── Student info ───────────────────────────────────────── */
+        .student-info-card {
+            background: #fff; border: 2px solid var(--weimar-gold);
+            border-radius: 8px; padding: 1.8em; margin-bottom: 2em;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .student-info-card h2 {
+            font-family: var(--font-heading); color: var(--weimar-black);
+            border-left: 5px solid var(--weimar-gold); padding-left: 14px;
+            margin-top: 0; font-size: 1.6em;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; margin-top: 1.2em; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4em; }
+        .form-group label {
+            font-weight: 700; font-size: 0.9em;
+            text-transform: uppercase; letter-spacing: 0.04em; color: #444;
+        }
+        .form-group input {
+            padding: 0.7em 1em; border: 2px solid #ccc; border-radius: 4px;
+            font-family: var(--font-body); font-size: 1em; transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            outline: none; border-color: var(--weimar-gold);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+        }
+        .form-group input.error { border-color: var(--weimar-red); }
+
+        /* ── Questions ──────────────────────────────────────────── */
+        .quiz-section-label {
+            font-family: var(--font-heading); font-size: 1.8em;
+            color: var(--weimar-black); border-left: 5px solid var(--weimar-gold);
+            padding-left: 14px; margin: 2em 0 1em;
+        }
+
+        .question-card {
+            background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            padding: 1.6em; margin-bottom: 1.4em;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: box-shadow 0.2s;
+        }
+        .question-card:hover        { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .question-card.unanswered   { border-color: var(--weimar-red); }
+        .question-card.correct      { border-left: 5px solid #27ae60; }
+        .question-card.incorrect    { border-left: 5px solid var(--weimar-red); }
+
+        .question-header { display: flex; align-items: flex-start; gap: 1em; margin-bottom: 1em; }
+        .question-number {
+            background: var(--weimar-black); color: var(--weimar-gold);
+            font-family: var(--font-heading); font-size: 0.95em; font-weight: 700;
+            padding: 0.25em 0.7em; border-radius: 3px; white-space: nowrap; flex-shrink: 0;
+        }
+        .question-topic {
+            background: #f0ebe0; color: #666; font-size: 0.8em; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 0.3em 0.8em; border-radius: 20px; flex-shrink: 0;
+        }
+        .question-text { font-size: 1.05em; font-weight: 600; line-height: 1.5; color: var(--weimar-black); margin-bottom: 1.1em; }
+
+        .options { display: flex; flex-direction: column; gap: 0.5em; }
+        .option-label {
+            display: flex; align-items: flex-start; gap: 0.8em;
+            padding: 0.75em 1em; border: 2px solid #e0e0e0; border-radius: 5px;
+            cursor: pointer; transition: all 0.15s ease; font-size: 0.97em; line-height: 1.5;
+        }
+        .option-label:hover { border-color: var(--weimar-gold); background: #fffdf4; }
+        .option-label input[type="radio"] { flex-shrink: 0; margin-top: 3px; accent-color: var(--weimar-red); }
+
+        .option-label.correct-answer  { border-color: #27ae60; background: #eafaf1; font-weight: 600; }
+        .option-label.wrong-answer    { border-color: var(--weimar-red); background: #fdf0f0; text-decoration: line-through; color: #999; }
+        .option-label.selected-correct { border-color: #27ae60; background: #d5f5e3; }
+        .option-label.selected-wrong   { border-color: var(--weimar-red); background: #fce4e4; }
+
+        .feedback {
+            display: none; margin-top: 1em; padding: 0.8em 1.1em;
+            border-radius: 4px; font-size: 0.93em; line-height: 1.5;
+        }
+        .feedback.correct   { display: block; background: #eafaf1; border-left: 4px solid #27ae60; color: #1e6b3c; }
+        .feedback.incorrect { display: block; background: #fef0f0; border-left: 4px solid var(--weimar-red); color: #7b1c1c; }
+
+        /* ── Submit ─────────────────────────────────────────────── */
+        .submit-area { text-align: center; padding: 2em 0; }
+        .btn-submit {
+            background: var(--weimar-red); color: #fff; border: none;
+            padding: 1em 3em; font-family: var(--font-body); font-size: 1.1em;
+            font-weight: 700; letter-spacing: 0.03em; border-radius: 5px;
+            cursor: pointer; transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 3px 8px rgba(200,16,46,0.3);
+        }
+        .btn-submit:hover    { background: #a00d25; transform: translateY(-1px); }
+        .btn-submit:active   { transform: translateY(0); }
+        .btn-submit:disabled { background: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ── Score panel ────────────────────────────────────────── */
+        .score-panel {
+            display: none; background: #fff; border: 3px solid var(--weimar-gold);
+            border-radius: 10px; padding: 2.5em; margin: 2em 0;
+            text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .score-panel.visible { display: block; }
+        .score-number { font-family: var(--font-heading); font-size: 5em; font-weight: 700; color: var(--weimar-red); line-height: 1; }
+        .score-label  { font-size: 1.2em; color: #555; margin: 0.3em 0 1em; }
+        .score-bar-wrap { background: #eee; border-radius: 20px; height: 14px; margin: 1em auto; max-width: 400px; overflow: hidden; }
+        .score-bar { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--weimar-red), var(--weimar-gold)); transition: width 0.8s ease; width: 0%; }
+        .score-message { font-family: var(--font-heading); font-size: 1.4em; color: var(--weimar-black); margin-top: 1em; }
+        .score-submitted { display: inline-block; background: #eafaf1; border: 2px solid #27ae60; color: #1e6b3c; border-radius: 5px; padding: 0.6em 1.4em; font-weight: 600; font-size: 0.95em; margin-top: 1.2em; }
+        .score-error     { display: inline-block; background: #fef0f0; border: 2px solid var(--weimar-red); color: #7b1c1c; border-radius: 5px; padding: 0.6em 1.4em; font-weight: 600; font-size: 0.95em; margin-top: 1.2em; }
+
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Footer ─────────────────────────────────────────────── */
+        footer { background: var(--weimar-black); color: rgba(245,241,232,0.7); text-align: center; padding: 2em; font-size: 0.9em; margin-top: 4em; }
+        footer a { color: var(--weimar-gold); text-decoration: none; }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .site-header h1 { font-size: 1.6em; }
+            .main-nav a { padding: 0.8em 0.9em; font-size: 0.85em; }
+            .score-number { font-size: 3.5em; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────── -->
+<header class="site-header">
+    <div class="container">
+        <h1>Democracy in Crisis</h1>
+        <p class="subtitle">Weimar Germany, 1929–1932 &nbsp;·&nbsp; Session 2 Preparedness Quiz</p>
+        <p class="course-label">HIST 105: Western Civilization &nbsp;·&nbsp; Yosemite Community College</p>
+    </div>
+</header>
+
+<!-- ── NAV ─────────────────────────────────────────────────────────── -->
+<nav class="main-nav">
+    <ul>
+        <li><a href="/weimar/index.html">Introduction</a></li>
+        <li><a href="/weimar/background/narrative.html">Historical Background</a></li>
+        <li><a href="/weimar/game/rules.html">The Game</a></li>
+        <li><a href="/weimar/factions/index.html">Factions</a></li>
+        <li><a href="/weimar/core-texts/index.html">Core Texts</a></li>
+        <li><a href="/weimar/roles/index.html">Role Sheets</a></li>
+        <li><a href="/weimar/quiz/session2/" class="active">Session 2 Quiz</a></li>
+    </ul>
+</nav>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────── -->
+<main>
+<div class="container">
+
+    <h1 style="font-family:var(--font-heading);font-size:2.4em;color:var(--weimar-black);border-bottom:3px solid var(--weimar-red);padding-bottom:0.3em;margin-bottom:0.4em;">
+        Session 2 Preparedness Quiz
+    </h1>
+    <p style="color:#555;font-size:1.05em;margin-bottom:2em;">
+        Complete before Session 2. 10 questions &nbsp;·&nbsp; Auto-graded &nbsp;·&nbsp; Results sent to Prof. Hauselmann automatically.
+    </p>
+
+    <div class="key-concept">
+        <h3>Before you begin</h3>
+        <p>This quiz covers the Young Plan debate and the Core Texts ideology pages. You should have read your assigned expert ideology page thoroughly and reviewed the Young Plan debate materials on Canvas before taking it. Enter your name and student ID exactly as they appear in your course records.</p>
+    </div>
+
+    <!-- ── STUDENT INFO ─────────────────────────────────────────── -->
+    <div class="student-info-card">
+        <h2>Your Information</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="student-name">Full Name</label>
+                <input type="text" id="student-name" placeholder="First Last" autocomplete="name">
+            </div>
+            <div class="form-group">
+                <label for="student-id">Student ID</label>
+                <input type="text" id="student-id" placeholder="e.g. 12345678" autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <!-- ── QUIZ FORM ────────────────────────────────────────────── -->
+    <form id="quiz-form" novalidate>
+
+        <h2 class="quiz-section-label">Questions</h2>
+
+        <!-- Q1 ── Young Plan basics -->
+        <div class="question-card" data-q="1" data-correct="C">
+            <div class="question-header">
+                <span class="question-number">Q1</span>
+                <span class="question-topic">Young Plan</span>
+            </div>
+            <p class="question-text">The Young Plan (1929) was primarily a renegotiation of which aspect of Germany's situation under Versailles?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q1" value="A"> Germany's eastern border with Poland, including the Polish Corridor</label>
+                <label class="option-label"><input type="radio" name="q1" value="B"> The size and structure of the German military under Allied supervision</label>
+                <label class="option-label"><input type="radio" name="q1" value="C"> Germany's reparations payments — reducing the total owed and extending the payment schedule</label>
+                <label class="option-label"><input type="radio" name="q1" value="D"> The terms of the League of Nations mandate over Germany's former colonies</label>
+            </div>
+            <div class="feedback"
+                data-correct="The Young Plan reduced Germany's total reparations obligation from 132 billion gold marks to approximately 112 billion and extended the payment schedule to 1988. It also removed Allied financial supervision of Germany and accelerated the French withdrawal from the Rhineland."
+                data-incorrect="The Young Plan was a reparations deal, not a territorial or military arrangement. It was named after American banker Owen D. Young, who chaired the committee that negotiated it."
+                data-review="Review: The Young Plan explainer page on Canvas and the Historical Background section on the simulation site.">
+            </div>
+        </div>
+
+        <!-- Q2 ── Young Plan Rhineland -->
+        <div class="question-card" data-q="2" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q2</span>
+                <span class="question-topic">Young Plan</span>
+            </div>
+            <p class="question-text">Beyond reducing reparations payments, the Young Plan offered Germany one significant additional concession. What was it?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q2" value="A"> Germany would be admitted to the League of Nations with permanent council membership</label>
+                <label class="option-label"><input type="radio" name="q2" value="B"> The French military occupation of the Rhineland would end five years ahead of schedule</label>
+                <label class="option-label"><input type="radio" name="q2" value="C"> The War Guilt Clause (Article 231) would be formally removed from the Versailles Treaty</label>
+                <label class="option-label"><input type="radio" name="q2" value="D"> Germany would regain control of the Saarland immediately rather than waiting for a plebiscite</label>
+            </div>
+            <div class="feedback"
+                data-correct="The Young Plan accelerated the French withdrawal from the Rhineland, ending the military occupation years ahead of the original Versailles timetable. For the Centre Party in particular, whose Catholic constituents had lived under French occupation, this was the plan's most tangible benefit."
+                data-incorrect="The Young Plan did not touch the War Guilt Clause or League membership — those were separate matters. Its major non-financial concession was ending the Rhineland occupation early."
+                data-review="Review: The Young Plan debate page on Canvas and the Before Session 2 checklist.">
+            </div>
+        </div>
+
+        <!-- Q3 ── Young Plan opposition -->
+        <div class="question-card" data-q="3" data-correct="D">
+            <div class="question-header">
+                <span class="question-number">Q3</span>
+                <span class="question-topic">Young Plan</span>
+            </div>
+            <p class="question-text">The NSDAP and DNVP ran a national referendum campaign to annul the Young Plan after it passed. Historically, what was the result of that campaign?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q3" value="A"> The referendum succeeded — the Young Plan was annulled and Germany defaulted on its payments</label>
+                <label class="option-label"><input type="radio" name="q3" value="B"> The referendum failed to reach the ballot after collecting insufficient petition signatures</label>
+                <label class="option-label"><input type="radio" name="q3" value="C"> The referendum passed but was overturned by President Hindenburg using Article 48</label>
+                <label class="option-label"><input type="radio" name="q3" value="D"> The referendum reached the ballot but received only about 14% of the vote — it failed, but the campaign made Hitler a national figure for the first time</label>
+            </div>
+            <div class="feedback"
+                data-correct="The referendum received roughly 13.8% of the vote and collapsed. But the campaign gave Hitler access to Hugenberg's national media networks and introduced him to middle-class nationalist audiences that had previously dismissed him. Historians generally regard it as the moment Hitler became a mass-politics figure."
+                data-incorrect="The referendum did reach the ballot but was decisively defeated. Its lasting significance was not its outcome but what it did for Hitler's national profile — giving him media access and respectability through his alliance with the DNVP."
+                data-review="Review: The Young Plan explainer page on Canvas and the Historical Note in the Young Plan instructor script.">
+            </div>
+        </div>
+
+        <!-- Q4 ── Young Plan faction positions -->
+        <div class="question-card" data-q="4" data-correct="A">
+            <div class="question-header">
+                <span class="question-number">Q4</span>
+                <span class="question-topic">Young Plan</span>
+            </div>
+            <p class="question-text">Which of the following correctly describes how the KPD's opposition to the Young Plan differs from the NSDAP's opposition?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q4" value="A"> The KPD opposes it as an instrument of international finance capital that exploits the working class; the NSDAP opposes it as a national humiliation and continuation of war guilt</label>
+                <label class="option-label"><input type="radio" name="q4" value="B"> The KPD opposes it because it benefits large German industrialists; the NSDAP supports it privately while opposing it publicly</label>
+                <label class="option-label"><input type="radio" name="q4" value="C"> The KPD and NSDAP oppose it for identical reasons — both see it as a betrayal of German sovereignty</label>
+                <label class="option-label"><input type="radio" name="q4" value="D"> The KPD supports the Young Plan reluctantly because it stabilizes the economy; the NSDAP opposes it on nationalist grounds</label>
+            </div>
+            <div class="feedback"
+                data-correct="The KPD frames the Young Plan as a capitalist settlement — it chains the German working class to international finance for another generation. The NSDAP frames it as national humiliation — Germany formally accepting war guilt and paying tribute to its enemies. They arrive at the same no vote from opposite ideological directions."
+                data-incorrect="The KPD and NSDAP oppose the plan for fundamentally different reasons — this distinction is one of the key pedagogical points of the Session 2 debate. The KPD uses class analysis; the NSDAP uses nationalist grievance."
+                data-review="Review: The Young Plan speaker cheat sheet on Canvas — KPD and NSDAP sections. Also the KPD 1930 programme on the Communism page of the simulation site.">
+            </div>
+        </div>
+
+        <!-- Q5 ── Young Plan DVP -->
+        <div class="question-card" data-q="5" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q5</span>
+                <span class="question-topic">Young Plan</span>
+            </div>
+            <p class="question-text">The DVP (German People's Party) supports the Young Plan. What is the basis of their support?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q5" value="A"> The DVP supports the plan because it formally ends the War Guilt Clause that has damaged Germany's reputation</label>
+                <label class="option-label"><input type="radio" name="q5" value="B"> The DVP negotiated the plan as an extension of Stresemann's diplomatic approach — pragmatic revision of Versailles through negotiation rather than confrontation</label>
+                <label class="option-label"><input type="radio" name="q5" value="C"> The DVP supports the plan because American loans attached to it will fund German rearmament</label>
+                <label class="option-label"><input type="radio" name="q5" value="D"> The DVP supports the plan reluctantly, under pressure from its coalition partners in the SPD</label>
+            </div>
+            <div class="feedback"
+                data-correct="The DVP owns this plan — it represents Stresemann's approach made concrete. Stresemann spent eight years restoring Germany's international standing through patient diplomacy, and the Young Plan is the application of that policy to reparations. German industry needs stable credit and predictable international relations; the plan provides both."
+                data-incorrect="The DVP's support is not reluctant — they negotiated this deal. It is Stresemann's diplomatic legacy. The plan does not end the War Guilt Clause or fund rearmament; it renegotiates the payment schedule."
+                data-review="Review: The Young Plan speaker cheat sheet on Canvas — DVP section. Also the DDP Platform on the Republicanism page of the simulation site.">
+            </div>
+        </div>
+
+        <!-- Q6 ── KPD Core Texts -->
+        <div class="question-card" data-q="6" data-correct="C">
+            <div class="question-header">
+                <span class="question-number">Q6</span>
+                <span class="question-topic">Core Texts — Communism</span>
+            </div>
+            <p class="question-text">The KPD's 1930 Programme for National and Social Liberation combines two elements that might seem contradictory. Which of the following best describes that combination?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q6" value="A"> It combines support for the Weimar Republic with demands for Soviet-style economic policy</label>
+                <label class="option-label"><input type="radio" name="q6" value="B"> It combines pacifism and internationalism with demands for German rearmament</label>
+                <label class="option-label"><input type="radio" name="q6" value="C"> It combines Marxist class struggle language with nationalist anti-Versailles demands, arguing that only the KPD can achieve true national liberation</label>
+                <label class="option-label"><input type="radio" name="q6" value="D"> It combines revolutionary socialism with support for parliamentary coalition-building through the SPD</label>
+            </div>
+            <div class="feedback"
+                data-correct="The 1930 programme explicitly sought to prove to German workers that the KPD — not the NSDAP — could deliver genuine national liberation. It promises to tear up Versailles and the Young Plan, restore German territory, and end Allied financial control — all while grounding these demands in Marxist class analysis rather than racial nationalism."
+                data-incorrect="The KPD's 1930 programme is striking precisely because it adopted nationalist anti-Versailles language while maintaining its Marxist class framework — an attempt to compete with the NSDAP for working-class voters by offering the same national demands with a socialist rather than racial solution."
+                data-review="Review: The KPD 1930 programme on the Communism page at profhauselmann.org/weimar/core-texts/communism.html">
+            </div>
+        </div>
+
+        <!-- Q7 ── NSDAP Core Texts -->
+        <div class="question-card" data-q="7" data-correct="A">
+            <div class="question-header">
+                <span class="question-number">Q7</span>
+                <span class="question-topic">Core Texts — Nazism</span>
+            </div>
+            <p class="question-text">The Twenty-Five Points (1920) combine nationalist demands with economic ones that sound almost socialist. Which of the following best captures that tension?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q7" value="A"> The program demands an end to "the slavery of interest" and the abolition of unearned income — but ties these economic demands to racial citizenship, excluding Jews from benefiting</label>
+                <label class="option-label"><input type="radio" name="q7" value="B"> The program supports free market capitalism as the engine of German national revival, combined with strict ethnic immigration controls</label>
+                <label class="option-label"><input type="radio" name="q7" value="C"> The program calls for nationalization of all industry in the Marxist tradition, but restricts ownership to ethnic Germans rather than the international proletariat</label>
+                <label class="option-label"><input type="radio" name="q7" value="D"> The economic demands are purely symbolic — the party leadership made clear in private that they would not be implemented</label>
+            </div>
+            <div class="feedback"
+                data-correct="Points like 11 (abolition of unearned income), 12 (confiscation of war profits), and 13 (nationalization of trusts) sound socialist — but Point 4 makes clear that only racial Germans can be citizens, meaning these economic benefits flow only to the Volksgemeinschaft. The socialism is ethnic, not universal."
+                data-incorrect="The Twenty-Five Points genuinely contains socialist-sounding economic demands alongside its nationalism and antisemitism — the tension between them was real and would cause conflicts within the party throughout the 1920s and 30s."
+                data-review="Review: The Twenty-Five Points on the Nazism page at profhauselmann.org/weimar/core-texts/nazism.html — especially points 4, 11, 12, and 13.">
+            </div>
+        </div>
+
+        <!-- Q8 ── Goebbels -->
+        <div class="question-card" data-q="8" data-correct="B">
+            <div class="question-header">
+                <span class="question-number">Q8</span>
+                <span class="question-topic">Core Texts — Nazism</span>
+            </div>
+            <p class="question-text">In "Those Damned Nazis" (1929), Goebbels argues that Germany's crisis is caused primarily by:</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q8" value="A"> The military's failure to defend Germany adequately during World War I</label>
+                <label class="option-label"><input type="radio" name="q8" value="B"> The division of national energy between a corrupt right and a foreign-influenced left, leaving Germany a "world pariah" unable to resist its enemies</label>
+                <label class="option-label"><input type="radio" name="q8" value="C"> The Weimar Constitution's structural flaws, particularly proportional representation and Article 48</label>
+                <label class="option-label"><input type="radio" name="q8" value="D"> The economic incompetence of the SPD-led government in managing the effects of the Versailles reparations</label>
+            </div>
+            <div class="feedback"
+                data-correct="Goebbels writes: 'We are the world's pariah not because we do not have the courage to resist, but rather because our entire national energy is wasted in eternal and unproductive squabbling between the Right and the Left.' The NSDAP presents itself as the force that will end this division and unite Germany."
+                data-incorrect="Goebbels' pamphlet focuses on national division as Germany's core problem — the squabbling between a bourgeois right and a Marxist left that prevents Germany from asserting itself. The solution the NSDAP offers is national unity under their leadership."
+                data-review="Review: The Goebbels section on the Nazism page at profhauselmann.org/weimar/core-texts/nazism.html">
+            </div>
+        </div>
+
+        <!-- Q9 ── Conservative Revolution -->
+        <div class="question-card" data-q="9" data-correct="D">
+            <div class="question-header">
+                <span class="question-number">Q9</span>
+                <span class="question-topic">Core Texts — Conservative Revolution</span>
+            </div>
+            <p class="question-text">Carl Schmitt's critique of parliamentarism in <em>The Crisis of Parliamentary Democracy</em> (1926) rests on which central argument?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q9" value="A"> Parliamentary systems are too easily corrupted by special interests and require independent oversight commissions to function properly</label>
+                <label class="option-label"><input type="radio" name="q9" value="B"> Democracy and parliamentarism are incompatible because true democracy requires direct rule by the people, not representative deliberation</label>
+                <label class="option-label"><input type="radio" name="q9" value="C"> The Weimar Constitution gives too much power to the President and not enough to the Reichstag, creating an inherently unstable system</label>
+                <label class="option-label"><input type="radio" name="q9" value="D"> Parliamentary debate has become an empty formality — parties no longer exchange arguments but calculate interests, making genuine political decision impossible</label>
+            </div>
+            <div class="feedback"
+                data-correct="Schmitt writes: 'The situation of parliamentarism is critical today because the development of modern mass democracy has made public discussion an empty formality… The parties do not face each other today discussing opinions, but as social or economic power groups calculating their mutual interests.' This is the foundation of his argument that liberal parliamentarism has lost its intellectual legitimacy."
+                data-incorrect="Schmitt's argument is philosophical rather than institutional. He is not proposing reforms to parliament — he is arguing that the idea of parliamentary deliberation has become meaningless, because parties no longer argue to persuade but to calculate power."
+                data-review="Review: The Schmitt section on the Conservative Revolution page at profhauselmann.org/weimar/core-texts/conservative-revolution.html">
+            </div>
+        </div>
+
+        <!-- Q10 ── Republicanism -->
+        <div class="question-card" data-q="10" data-correct="C">
+            <div class="question-header">
+                <span class="question-number">Q10</span>
+                <span class="question-topic">Core Texts — Republicanism</span>
+            </div>
+            <p class="question-text">Thomas Mann's "On the German Republic" (1922) makes an unusual argument for democracy. Which of the following best captures his approach?</p>
+            <div class="options">
+                <label class="option-label"><input type="radio" name="q10" value="A"> Mann argues that democracy is the only system compatible with Germany's Christian heritage and should be embraced on religious grounds</label>
+                <label class="option-label"><input type="radio" name="q10" value="B"> Mann argues that democracy is the most efficient form of government for industrial economies and should be embraced on practical grounds</label>
+                <label class="option-label"><input type="radio" name="q10" value="C"> Mann argues that democracy is not a foreign imposition but deeply compatible with German culture and humanity, calling on youth to embrace the Republic as a positive choice rather than a resignation</label>
+                <label class="option-label"><input type="radio" name="q10" value="D"> Mann argues that Germany should accept democracy temporarily while rebuilding its strength, then transition to a more appropriate form of government</label>
+            </div>
+            <div class="feedback"
+                data-correct="Mann writes: 'The republic is reasonable, and reason is republican… I call upon the German youth to embrace the republic — not as a resignation, but as a decision.' His argument is cultural and humanistic — democracy is not un-German, it is an expression of Germany's deepest values. This is a direct rebuttal of Conservative Revolution thinkers who framed democracy as a Western imposition alien to the German spirit."
+                data-incorrect="Mann's argument is cultural and humanistic, not religious or economic. He is writing against the Conservative Revolution's claim that democracy is foreign to Germany — arguing instead that it is genuinely German and should be chosen actively, not merely tolerated."
+                data-review="Review: The Thomas Mann section on the Republicanism page at profhauselmann.org/weimar/core-texts/republicanism.html">
+            </div>
+        </div>
+
+        <!-- ── SUBMIT ──────────────────────────────────────────── -->
+        <div class="warning-sign">
+            <h3>⚠ Before you submit</h3>
+            <p>Make sure your name and student ID are filled in above. Once submitted, your answers and score are sent to Prof. Hauselmann automatically. You cannot resubmit.</p>
+        </div>
+
+        <div class="submit-area">
+            <button type="submit" class="btn-submit" id="submit-btn">Submit Quiz</button>
+        </div>
+
+    </form>
+
+    <!-- ── SCORE PANEL ──────────────────────────────────────────── -->
+    <div class="score-panel" id="score-panel">
+        <div class="score-number" id="score-display">—</div>
+        <div class="score-label">out of 10</div>
+        <div class="score-bar-wrap"><div class="score-bar" id="score-bar"></div></div>
+        <div class="score-message" id="score-message"></div>
+        <div id="submission-status"></div>
+    </div>
+
+</div>
+</main>
+
+<!-- ── FOOTER ───────────────────────────────────────────────────────── -->
+<footer>
+    <p>Democracy in Crisis: Weimar Germany Simulation &nbsp;·&nbsp; HIST 105: Western Civilization</p>
+    <p style="margin-top:0.4em;">Yosemite Community College &nbsp;·&nbsp; <a href="https://profhauselmann.org">Prof. Hauselmann</a></p>
+</footer>
+
+<!-- ── JAVASCRIPT ───────────────────────────────────────────────────── -->
+<script>
+(function () {
+    'use strict';
+
+    const ANSWERS = { q1:'C', q2:'B', q3:'D', q4:'A', q5:'B', q6:'C', q7:'A', q8:'B', q9:'D', q10:'C' };
+    const TOTAL   = Object.keys(ANSWERS).length;
+    let submitted = false;
+
+    function scoreMessage(n) {
+        if (n === 10) return 'Perfect score — you are ready for Session 2.';
+        if (n >= 8)  return 'Strong preparation — review the questions you missed before class.';
+        if (n >= 6)  return 'Solid foundation — re-read the Core Texts pages you are less sure about.';
+        if (n >= 4)  return 'Some preparation needed — review the Young Plan and Core Texts pages before Session 2.';
+        return 'Please review the Session 2 preparation materials on Canvas and the simulation site before class.';
+    }
+
+    document.getElementById('quiz-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (submitted) return;
+
+        const nameEl = document.getElementById('student-name');
+        const idEl   = document.getElementById('student-id');
+        const name   = nameEl.value.trim();
+        const sid    = idEl.value.trim();
+        let valid    = true;
+
+        [nameEl, idEl].forEach(el => el.classList.remove('error'));
+        if (!name) { nameEl.classList.add('error'); valid = false; }
+        if (!sid)  { idEl.classList.add('error');   valid = false; }
+        if (!valid) {
+            nameEl.closest('.student-info-card').scrollIntoView({ behavior:'smooth', block:'center' });
+            return;
+        }
+
+        const unanswered = [];
+        for (let i = 1; i <= TOTAL; i++) {
+            const card     = document.querySelector(`.question-card[data-q="${i}"]`);
+            const selected = card.querySelector(`input[name="q${i}"]:checked`);
+            if (!selected) { card.classList.add('unanswered'); unanswered.push(i); }
+            else           { card.classList.remove('unanswered'); }
+        }
+        if (unanswered.length) {
+            document.querySelector(`.question-card[data-q="${unanswered[0]}"]`)
+                .scrollIntoView({ behavior:'smooth', block:'center' });
+            return;
+        }
+
+        const answers = {};
+        let score = 0;
+        for (let i = 1; i <= TOTAL; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`).value;
+            const correct  = ANSWERS[`q${i}`];
+            answers[`q${i}`] = selected;
+            if (selected === correct) score++;
+        }
+
+        // Show results on each card
+        for (let i = 1; i <= TOTAL; i++) {
+            const card      = document.querySelector(`.question-card[data-q="${i}"]`);
+            const selected  = answers[`q${i}`];
+            const correct   = ANSWERS[`q${i}`];
+            const feedback  = card.querySelector('.feedback');
+            const isCorrect = selected === correct;
+
+            card.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+            card.querySelectorAll('.option-label').forEach(label => {
+                const val = label.querySelector('input').value;
+                label.querySelector('input').disabled = true;
+                if      (val === correct && val === selected) label.classList.add('selected-correct');
+                else if (val === correct)                     label.classList.add('correct-answer');
+                else if (val === selected)                    label.classList.add('selected-wrong');
+                else                                          label.classList.add('wrong-answer');
+            });
+
+            if (isCorrect) {
+                feedback.textContent = feedback.dataset.correct;
+            } else {
+                feedback.innerHTML =
+                    '<span>' + feedback.dataset.incorrect + '</span>' +
+                    '<span style="display:block;margin-top:8px;padding-top:8px;border-top:1px solid rgba(200,16,46,0.2);font-size:0.9em;color:#7b1c1c;">' +
+                    '<strong style="text-transform:uppercase;letter-spacing:.03em;font-size:11px;">Where to review: </strong>' +
+                    feedback.dataset.review +
+                    '</span>';
+            }
+            feedback.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+        }
+
+        const pct = Math.round((score / TOTAL) * 100);
+        document.getElementById('score-display').textContent = score;
+        document.getElementById('score-message').textContent  = scoreMessage(score);
+        document.getElementById('score-bar').style.width      = pct + '%';
+
+        const panel = document.getElementById('score-panel');
+        panel.classList.add('visible');
+        panel.scrollIntoView({ behavior:'smooth', block:'center' });
+
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Submitting…';
+        submitted = true;
+
+        const statusEl = document.getElementById('submission-status');
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/quiz_responses`, {
+                method:  'POST',
+                headers: {
+                    'Content-Type':  'application/json',
+                    'apikey':        SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Prefer':        'return=minimal'
+                },
+                body: JSON.stringify({
+                    student_name: name,
+                    student_id:   sid,
+                    score:        score,
+                    total:        TOTAL,
+                    session:      'Session 2',
+                    answers:      answers
+                })
+            });
+
+            if (res.ok || res.status === 201) {
+                statusEl.innerHTML = '<span class="score-submitted">✓ Results submitted to Prof. Hauselmann</span>';
+                btn.textContent = 'Submitted';
+            } else {
+                const errText = await res.text();
+                throw new Error(`${res.status}: ${errText}`);
+            }
+        } catch (err) {
+            console.error('Supabase error:', err);
+            statusEl.innerHTML = '<span class="score-error">⚠ Submission failed — please email your score to Prof. Hauselmann: ' + name + ', ID ' + sid + ', Score ' + score + '/10</span>';
+            btn.textContent = 'Submit failed';
+        }
+    });
+
+    document.querySelectorAll('.question-card input[type="radio"]').forEach(input => {
+        input.addEventListener('change', function () {
+            this.closest('.question-card').classList.remove('unanswered');
+        });
+    });
+
+})();
+</script>
+
+</body>
+</html>
