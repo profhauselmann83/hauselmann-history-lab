@@ -586,17 +586,17 @@ function applyUnlocked() {
 var CORRECT = { q1:'b', q2:'b', q3:'c', q4:'b', q5:'c' };
 var LS_QUIZ = 'hist102_w4_quiz_passed';
 
-// If quiz was already passed on a prior visit and video was watched, restore state
-try {
-  var savedWatch = localStorage.getItem('hist102_w4_video_watched');
-  if (savedWatch && parseFloat(savedWatch) >= 0.80 && localStorage.getItem(LS_QUIZ) === 'yes') {
-    document.addEventListener('DOMContentLoaded', function() {
+// Restore quiz-passed state after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    var savedWatch = localStorage.getItem('hist102_w4_video_watched');
+    if (savedWatch && parseFloat(savedWatch) >= 0.80 && localStorage.getItem(LS_QUIZ) === 'yes') {
       var quiz = document.getElementById('quiz-section');
       if (quiz) quiz.style.display = 'block';
       applyQuizPassed(true);
-    });
-  }
-} catch(e) {}
+    }
+  } catch(e) {}
+});
 
 function submitQuiz() {
   var score = 0;
@@ -605,7 +605,6 @@ function submitQuiz() {
   Object.keys(CORRECT).forEach(function(qId) {
     var selected = document.querySelector('input[name="' + qId + '"]:checked');
     var block    = document.getElementById('q' + qId.slice(1));
-    // Remove existing result spans
     var old = block ? block.querySelector('.quiz-q-result') : null;
     if (old) old.remove();
     if (block) { block.classList.remove('correct','wrong'); }
@@ -624,7 +623,6 @@ function submitQuiz() {
       resultEl.textContent = '\u2713 Correct';
     } else {
       if (block) block.classList.add('wrong');
-      // Find correct label text
       var correctLabel = block ? block.querySelector('input[value="' + CORRECT[qId] + '"]') : null;
       var correctText  = correctLabel ? correctLabel.parentElement.textContent.trim().replace(/^[a-d]\s*/,'') : '';
       resultEl.textContent = '\u2717 Not quite \u2014 correct answer: ' + correctText;
@@ -658,9 +656,9 @@ function applyQuizPassed(silent) {
   if (btn)    { btn.textContent = '\u2713 Quiz Complete'; btn.disabled = true; }
   if (nextBtn){ nextBtn.classList.remove('nav-btn-locked'); }
   if (!silent && fb) { fb.style.display='block'; fb.className='quiz-feedback pass'; fb.textContent='\u2713 All correct \u2014 Reading 5.1 is now unlocked. Great work!'; }
-  // Disable all radio inputs
   document.querySelectorAll('.quiz-opt input').forEach(function(r){ r.disabled = true; });
 }
+</script>
 
 <script src="../supabase-config.js"></script>
 <script>
