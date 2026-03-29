@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Group Accountability Form | HIST 107 Group Project</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        header h1 { margin: 0 0 10px 0; font-size: 2em; }
+        header p { margin: 0; font-size: 1.1em; opacity: 0.9; }
+        nav {
+            background-color: #34495e;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .breadcrumb {
+            background-color: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .breadcrumb a { color: #3498db; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .progress-bar {
+            background-color: #ecf0f1;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background-color: #27ae60;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 5px;
+        }
+        .section {
+            background-color: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h3 { color: #2c3e50; margin-top: 20px; }
+        .info-box {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        .info-box strong { color: #2c3e50; }
+        .warning-box {
+            background-color: #fff3cd;
+            padding: 20px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        .form-group { margin-bottom: 22px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        .form-group select,
+        .form-group textarea,
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Open Sans', sans-serif;
+            transition: border-color 0.3s;
+        }
+        .form-group select:focus,
+        .form-group textarea:focus,
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-group textarea.short { min-height: 80px; }
+        .help-text {
+            font-size: 0.88em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Rating scale */
+        .rating-scale {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .rating-option {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            user-select: none;
+        }
+        .rating-option:hover { border-color: #3498db; background: #f0f9ff; }
+        .rating-option.selected { border-color: #27ae60; background: #d4edda; }
+        .rating-option input[type="radio"] { display: none; }
+        .rating-option .rating-num {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .rating-option .rating-label {
+            font-size: 0.78em;
+            color: #555;
+            line-height: 1.3;
+        }
+        .rating-option.selected .rating-num { color: #155724; }
+        .rating-option.selected .rating-label { color: #155724; }
+
+        /* Peer assessment table */
+        .peer-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .peer-table th {
+            background: #34495e;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .peer-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #ecf0f1;
+            vertical-align: top;
+        }
+        .peer-table tr:nth-child(even) td { background: #f8f9fa; }
+        .peer-table input[type="text"],
+        .peer-table select,
+        .peer-table textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.9em;
+        }
+        .peer-table textarea { min-height: 60px; resize: vertical; }
+
+        /* Skill chips */
+        .skill-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .skill-chip {
+            padding: 8px 16px;
+            border: 2px solid #bdc3c7;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.88em;
+            font-weight: 600;
+            transition: all 0.2s;
+            background: white;
+            user-select: none;
+        }
+        .skill-chip:hover { border-color: #3498db; background: #f0f9ff; }
+        .skill-chip.selected { border-color: #3498db; background: #3498db; color: white; }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-success { background-color: #27ae60; color: white; }
+        .btn-success:hover { background-color: #229954; }
+        .btn-secondary { background-color: #34495e; color: white; }
+        .btn-secondary:hover { background-color: #2c3e50; }
+        .alert {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; border-left: 4px solid #27ae60; }
+        .alert-error   { background-color: #f8d7da; color: #721c24; border-left: 4px solid #e74c3c; }
+
+        .section-number-label {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95em;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .section-heading-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        .section-heading-row h2 {
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            header { padding: 20px; }
+            .section { padding: 15px; }
+            .button-group { flex-direction: column; }
+            .btn { width: 100%; text-align: center; }
+            .rating-scale { flex-direction: column; }
+            .rating-option { min-width: unset; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📋 Group Accountability & Participation Form</h1>
+    <p>HIST 107 Group Project | Submitted Individually · Confidential</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI & Learning</a>
+</nav>
+
+<div class="breadcrumb">
+    <a href="research-hist107.html">← Back to HIST 107 Research Guide</a>
+</div>
+
+<div class="warning-box">
+    <strong>⚠️ This form is confidential.</strong> Your responses are submitted directly to Prof. Hauselmann and are not visible to your group members. Be honest — vague or exclusively positive responses are not useful for assessment. Submit this form individually, even if your group is submitting other components together.
+</div>
+
+<!-- STUDENT INFO -->
+<div class="section" style="background-color: #f0f9ff; border-left: 4px solid #3498db;">
+    <h2 style="border-bottom-color: #3498db;">Student Information</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label for="student-name">Your Name:</label>
+            <input type="text" id="student-name" placeholder="First and last name">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label for="section-number">Section Number:</label>
+            <input type="text" id="section-number" placeholder="e.g., 107-01">
+        </div>
+    </div>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label for="commodity-name">Your Commodity:</label>
+            <input type="text" id="commodity-name" placeholder="e.g., Sugar, Coffee, Rubber">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label for="analytical-lens">Your Analytical Lens:</label>
+            <select id="analytical-lens">
+                <option value="">-- Select your lens --</option>
+                <option value="Production & Environment">Production & Environment</option>
+                <option value="Labor & Coercion">Labor & Coercion</option>
+                <option value="Empire, State & Corporations">Empire, State & Corporations</option>
+                <option value="Circulation & Consumption">Circulation & Consumption</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="group-members">Group Members (all names, including yourself):</label>
+        <textarea id="group-members" class="short" placeholder="List all group members, one per line"></textarea>
+    </div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div id="status-message"></div>
+
+<!-- SECTION 1: YOUR OWN CONTRIBUTION -->
+<div class="section">
+    <div class="section-heading-row">
+        <span class="section-number-label">1</span>
+        <h2>Your Own Contribution</h2>
+    </div>
+
+    <div class="form-group">
+        <label for="primary-contribution">In 2–4 sentences, describe your primary contribution to the group project. Be specific.</label>
+        <textarea id="primary-contribution" placeholder="What did you actually do? Which parts of the project were yours to lead or complete?"></textarea>
+        <div class="help-text">Specific examples are more useful than general statements. Instead of "I helped with sources," write "I found and annotated four primary sources on labor conditions in the rubber plantations of the Belgian Congo."</div>
+    </div>
+
+    <div class="form-group">
+        <label for="challenges">What did you find most difficult about your role? What would you do differently?</label>
+        <textarea id="challenges" class="short" placeholder="Be honest — what was hard, confusing, or where did you fall short?"></textarea>
+    </div>
+</div>
+
+<!-- SECTION 2: GROUP DYNAMICS -->
+<div class="section">
+    <div class="section-heading-row">
+        <span class="section-number-label">2</span>
+        <h2>Group Dynamics</h2>
+    </div>
+
+    <div class="form-group">
+        <label>Rate the overall effectiveness of your group's collaboration:</label>
+        <div class="rating-scale" id="collab-rating">
+            <label class="rating-option" onclick="setRating('collab', 1, this)">
+                <input type="radio" name="collab-rating" value="1">
+                <span class="rating-num">1</span>
+                <span class="rating-label">Did not function as a group</span>
+            </label>
+            <label class="rating-option" onclick="setRating('collab', 2, this)">
+                <input type="radio" name="collab-rating" value="2">
+                <span class="rating-num">2</span>
+                <span class="rating-label">Struggled significantly</span>
+            </label>
+            <label class="rating-option" onclick="setRating('collab', 3, this)">
+                <input type="radio" name="collab-rating" value="3">
+                <span class="rating-num">3</span>
+                <span class="rating-label">Worked adequately</span>
+            </label>
+            <label class="rating-option" onclick="setRating('collab', 4, this)">
+                <input type="radio" name="collab-rating" value="4">
+                <span class="rating-num">4</span>
+                <span class="rating-label">Collaborated well</span>
+            </label>
+            <label class="rating-option" onclick="setRating('collab', 5, this)">
+                <input type="radio" name="collab-rating" value="5">
+                <span class="rating-num">5</span>
+                <span class="rating-label">Exceptionally collaborative</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="labor-division">Did your group divide labor evenly, or did some members contribute more than others? Explain.</label>
+        <textarea id="labor-division" placeholder="Who did what? Was the workload balanced? If not, what happened?"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="productive-disagreement">Did your group engage in productive disagreement about sources or interpretations? Give an example if possible.</label>
+        <textarea id="productive-disagreement" class="short" placeholder="Describe a moment of genuine intellectual disagreement — or explain why there wasn't one."></textarea>
+    </div>
+</div>
+
+<!-- SECTION 3: PEER ASSESSMENT -->
+<div class="section">
+    <div class="section-heading-row">
+        <span class="section-number-label">3</span>
+        <h2>Peer Assessment</h2>
+    </div>
+
+    <div class="info-box">
+        <strong>Confidential:</strong> For each group member (not yourself), rate their participation on a 1–5 scale and describe their contribution. Be specific — general praise is not useful. Your ratings will not be shared with your peers.
+    </div>
+
+    <table class="peer-table">
+        <thead>
+            <tr>
+                <th style="width: 28%;">Group Member Name</th>
+                <th style="width: 14%;">Rating (1–5)</th>
+                <th>Description of Contribution (be specific)</th>
+            </tr>
+        </thead>
+        <tbody id="peer-rows">
+            <!-- Rows injected by JS -->
+        </tbody>
+    </table>
+    <div class="help-text" style="margin-top: 10px;">1 = Did not contribute · 2 = Minimal contribution · 3 = Adequate · 4 = Strong · 5 = Outstanding</div>
+</div>
+
+<!-- SECTION 4: HISTORICAL THINKING REFLECTION -->
+<div class="section">
+    <div class="section-heading-row">
+        <span class="section-number-label">4</span>
+        <h2>Reflection on Historical Thinking</h2>
+    </div>
+
+    <div class="form-group">
+        <label>Which historical thinking skill did this project develop most for you? (Select one)</label>
+        <div class="skill-options" id="skill-options">
+            <label class="skill-chip" onclick="selectSkill(this)"><input type="radio" name="skill" value="Causality" style="display:none"> Causality</label>
+            <label class="skill-chip" onclick="selectSkill(this)"><input type="radio" name="skill" value="Contingency" style="display:none"> Contingency</label>
+            <label class="skill-chip" onclick="selectSkill(this)"><input type="radio" name="skill" value="Sourcing" style="display:none"> Sourcing</label>
+            <label class="skill-chip" onclick="selectSkill(this)"><input type="radio" name="skill" value="Contextualization" style="display:none"> Contextualization</label>
+            <label class="skill-chip" onclick="selectSkill(this)"><input type="radio" name="skill" value="Corroboration" style="display:none"> Corroboration</label>
+            <label class="skill-chip" onclick="selectSkill(this)"><input type="radio" name="skill" value="Historical Interpretation" style="display:none"> Historical Interpretation</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="skill-explanation">How did this project develop that skill for you?</label>
+        <textarea id="skill-explanation" placeholder="Explain specifically how the research process developed the skill you selected..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="changed-thinking">What is one thing this project changed or complicated in how you think about the commodity you studied?</label>
+        <textarea id="changed-thinking" placeholder="What surprised you? What did you think before that you now see differently?"></textarea>
+    </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="section">
+    <div class="button-group">
+        <button class="btn btn-success" type="button" onclick="saveWork()">💾 Save Progress</button>
+        <button class="btn btn-secondary" type="button" onclick="exportPDF()">📄 Export as PDF</button>
+        <button class="btn btn-primary" type="button" onclick="submitForm()" id="submitBtn">📤 Submit to Professor</button>
+    </div>
+    <div id="submitMessage"></div>
+</div>
+
+<footer>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    const SUPABASE_URL      = 'https://bqrluqymscucvbiaaeai.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+    const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    const SUBMISSION_CUTOFF = null
+    let currentUser  = null
+    let collabRating = null
+    let selectedSkill = null
+    const NUM_PEERS  = 3   // rows in peer assessment table
+
+    // ── Build peer rows ─────────────────────────────────────
+    function buildPeerRows() {
+        const tbody = document.getElementById('peer-rows')
+        for (let i = 1; i <= NUM_PEERS; i++) {
+            tbody.innerHTML += `
+                <tr>
+                    <td><input type="text" id="peer-name-${i}" placeholder="Group member name"></td>
+                    <td>
+                        <select id="peer-rating-${i}">
+                            <option value="">—</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </td>
+                    <td><textarea id="peer-desc-${i}" placeholder="Describe their specific contribution..."></textarea></td>
+                </tr>`
+        }
+    }
+
+    // ── Rating scale ────────────────────────────────────────
+    function setRating(type, value, el) {
+        collabRating = value
+        document.querySelectorAll('#collab-rating .rating-option').forEach(o => o.classList.remove('selected'))
+        el.classList.add('selected')
+        updateProgress()
+    }
+
+    // ── Skill chips ──────────────────────────────────────────
+    function selectSkill(el) {
+        document.querySelectorAll('.skill-chip').forEach(c => c.classList.remove('selected'))
+        el.classList.add('selected')
+        selectedSkill = el.querySelector('input[type="radio"]').value
+        updateProgress()
+    }
+
+    // ── Progress ─────────────────────────────────────────────
+    function updateProgress() {
+        const checks = [
+            document.getElementById('student-name').value.trim(),
+            document.getElementById('section-number').value.trim(),
+            document.getElementById('commodity-name').value.trim(),
+            document.getElementById('analytical-lens').value,
+            document.getElementById('group-members').value.trim(),
+            document.getElementById('primary-contribution').value.trim(),
+            document.getElementById('challenges').value.trim(),
+            collabRating,
+            document.getElementById('labor-division').value.trim(),
+            selectedSkill,
+            document.getElementById('skill-explanation').value.trim(),
+            document.getElementById('changed-thinking').value.trim(),
+        ]
+        const completed = checks.filter(v => v && v !== '').length
+        document.getElementById('progressFill').style.width = ((completed / checks.length) * 100) + '%'
+    }
+
+    // ── Collect / populate ───────────────────────────────────
+    function collectData() {
+        const peers = []
+        for (let i = 1; i <= NUM_PEERS; i++) {
+            peers.push({
+                name:   document.getElementById(`peer-name-${i}`).value,
+                rating: document.getElementById(`peer-rating-${i}`).value,
+                desc:   document.getElementById(`peer-desc-${i}`).value
+            })
+        }
+        return {
+            student_name:            document.getElementById('student-name').value,
+            section_number:          document.getElementById('section-number').value,
+            commodity_name:          document.getElementById('commodity-name').value,
+            analytical_lens:         document.getElementById('analytical-lens').value,
+            group_members:           document.getElementById('group-members').value,
+            primary_contribution:    document.getElementById('primary-contribution').value,
+            challenges:              document.getElementById('challenges').value,
+            collab_rating:           collabRating,
+            labor_division:          document.getElementById('labor-division').value,
+            productive_disagreement: document.getElementById('productive-disagreement').value,
+            peers:                   peers,
+            historical_skill:        selectedSkill,
+            skill_explanation:       document.getElementById('skill-explanation').value,
+            changed_thinking:        document.getElementById('changed-thinking').value,
+        }
+    }
+
+    function populateForm(d) {
+        if (!d) return
+        document.getElementById('student-name').value    = d.student_name    || ''
+        document.getElementById('section-number').value  = d.section_number  || ''
+        document.getElementById('commodity-name').value  = d.commodity_name  || ''
+        document.getElementById('analytical-lens').value = d.analytical_lens || ''
+        document.getElementById('group-members').value   = d.group_members   || ''
+        document.getElementById('primary-contribution').value    = d.primary_contribution    || ''
+        document.getElementById('challenges').value              = d.challenges              || ''
+        document.getElementById('labor-division').value          = d.labor_division          || ''
+        document.getElementById('productive-disagreement').value = d.productive_disagreement || ''
+        document.getElementById('skill-explanation').value       = d.skill_explanation       || ''
+        document.getElementById('changed-thinking').value        = d.changed_thinking        || ''
+
+        // Rating
+        if (d.collab_rating) {
+            collabRating = d.collab_rating
+            const opt = document.querySelector(`#collab-rating .rating-option:nth-child(${d.collab_rating})`)
+            if (opt) opt.classList.add('selected')
+        }
+
+        // Skill
+        if (d.historical_skill) {
+            selectedSkill = d.historical_skill
+            document.querySelectorAll('.skill-chip').forEach(chip => {
+                if (chip.querySelector('input').value === d.historical_skill) chip.classList.add('selected')
+            })
+        }
+
+        // Peers
+        if (d.peers) {
+            d.peers.forEach((peer, i) => {
+                const n = i + 1
+                const nameEl   = document.getElementById(`peer-name-${n}`)
+                const ratingEl = document.getElementById(`peer-rating-${n}`)
+                const descEl   = document.getElementById(`peer-desc-${n}`)
+                if (nameEl)   nameEl.value   = peer.name   || ''
+                if (ratingEl) ratingEl.value = peer.rating || ''
+                if (descEl)   descEl.value   = peer.desc   || ''
+            })
+        }
+        updateProgress()
+    }
+
+    // ── Auth ─────────────────────────────────────────────────
+    async function checkAuth() {
+        const { data: { user } } = await supabaseClient.auth.getUser()
+        if (user) {
+            currentUser = { id: user.id, email: user.email }
+        } else {
+            const returnTo = window.location.pathname.split('/').pop()
+            window.location.href = `hist107-student-login.html?return=${encodeURIComponent(returnTo)}`
+            return
+        }
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('input', updateProgress)
+            el.addEventListener('change', updateProgress)
+        })
+        await loadWork()
+        updateProgress()
+    }
+
+    // ── Save / Load ──────────────────────────────────────────
+    async function saveWork(silent = false) {
+        const data = collectData()
+        if (!currentUser) {
+            localStorage.setItem('hist107_accountability', JSON.stringify(data))
+            if (!silent) showMessage('✅ Progress saved locally in this browser.', 'success')
+            return
+        }
+        const { error } = await supabaseClient
+            .from('hist107_accountability')
+            .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
+        if (!silent) {
+            error ? showMessage('Error saving: ' + error.message, 'error')
+                  : showMessage('✅ Progress saved successfully!', 'success')
+        }
+    }
+
+    async function loadWork() {
+        if (!currentUser) {
+            const saved = localStorage.getItem('hist107_accountability')
+            if (saved) populateForm(JSON.parse(saved))
+            return
+        }
+        const { data, error } = await supabaseClient
+            .from('hist107_accountability')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single()
+        if (!error && data) populateForm(data)
+    }
+
+    // ── PDF generation ───────────────────────────────────────
+    function buildPDFContent(doc) {
+        const lh = 7, pw = 170, ph = 280
+        let y = 20
+
+        function checkPage(n = 15) { if (y + n > ph) { doc.addPage(); y = 20 } }
+        function wrap(text, x, maxW) {
+            doc.splitTextToSize(text || '[Not completed]', maxW).forEach(line => {
+                if (y + lh > ph) { doc.addPage(); y = 20 }
+                doc.text(line, x, y); y += lh
+            })
+        }
+        function sectionTitle(title) {
+            checkPage(20)
+            doc.setFontSize(13); doc.setFont(undefined, 'bold')
+            doc.text(title, 20, y); y += 10
+            doc.setFontSize(10); doc.setFont(undefined, 'normal')
+        }
+        function field(label, value, indent = 25) {
+            checkPage(12)
+            doc.setFont(undefined, 'bold'); doc.text(label + ':', 20, y); y += 7
+            doc.setFont(undefined, 'normal'); wrap(value, indent, pw - (indent - 20)); y += 6
+        }
+
+        const d = collectData()
+
+        doc.setFontSize(16); doc.setFont(undefined, 'bold')
+        doc.text('HIST 107 — Group Accountability & Participation Form', 105, y, { align: 'center' }); y += 9
+        doc.setFontSize(10); doc.setFont(undefined, 'normal')
+        doc.text('Confidential — Submitted Individually', 105, y, { align: 'center' }); y += 14
+
+        // Info block
+        ;[['Student', d.student_name], ['Section', d.section_number],
+          ['Commodity', d.commodity_name], ['Analytical Lens', d.analytical_lens]].forEach(([lbl, val]) => {
+            if (val) { doc.text(`${lbl}: ${val}`, 20, y); y += 7 }
+        })
+        if (d.group_members) { doc.text('Group Members:', 20, y); y += 7; wrap(d.group_members, 25, pw); y += 4 }
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y); y += 14
+
+        sectionTitle('Section 1 — Your Own Contribution')
+        field('Primary Contribution', d.primary_contribution)
+        field('Challenges & What You Would Do Differently', d.challenges)
+
+        sectionTitle('Section 2 — Group Dynamics')
+        field('Collaboration Rating', d.collab_rating ? `${d.collab_rating} / 5` : 'Not rated')
+        field('Labor Division', d.labor_division)
+        field('Productive Disagreement', d.productive_disagreement)
+
+        sectionTitle('Section 3 — Peer Assessment')
+        d.peers.forEach((peer, i) => {
+            if (!peer.name && !peer.desc) return
+            checkPage(20)
+            doc.setFont(undefined, 'bold')
+            doc.text(`Peer ${i + 1}: ${peer.name || 'Not named'} — Rating: ${peer.rating || '—'} / 5`, 20, y); y += 7
+            doc.setFont(undefined, 'normal'); wrap(peer.desc, 25, pw); y += 5
+        })
+
+        sectionTitle('Section 4 — Historical Thinking Reflection')
+        field('Skill Developed', d.historical_skill)
+        field('How It Was Developed', d.skill_explanation)
+        field('What Changed or Complicated Your Thinking', d.changed_thinking)
+
+        return d.student_name
+    }
+
+    function exportPDF() {
+        const { jsPDF } = window.jspdf
+        const doc = new jsPDF()
+        const name = buildPDFContent(doc)
+        doc.save(`HIST107_Accountability_${name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`)
+        showMessage('PDF exported successfully!', 'success')
+    }
+
+    function generatePDFBlob() {
+        return new Promise(resolve => {
+            const { jsPDF } = window.jspdf
+            const doc = new jsPDF()
+            buildPDFContent(doc)
+            resolve(doc.output('blob'))
+        })
+    }
+
+    // ── Submit ───────────────────────────────────────────────
+    async function submitForm() {
+        if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
+            alert('The submission deadline has passed. Please contact your professor if you need an extension.')
+            return
+        }
+
+        const studentName   = document.getElementById('student-name').value.trim()
+        const sectionNumber = document.getElementById('section-number').value.trim()
+
+        if (!studentName)   { alert('Please enter your name before submitting.'); document.getElementById('student-name').focus(); return }
+        if (!sectionNumber) { alert('Please enter your section number.'); document.getElementById('section-number').focus(); return }
+        if (!currentUser)   {
+            document.getElementById('submitMessage').innerHTML =
+                `<div class="alert alert-error">❌ Please log in before submitting. <a href="hist107-student-login.html">Log in here</a> and return to submit.</div>`
+            return
+        }
+
+        const submitBtn = document.getElementById('submitBtn')
+        const msgDiv    = document.getElementById('submitMessage')
+        submitBtn.disabled = true
+        submitBtn.textContent = '⏳ Submitting...'
+        msgDiv.innerHTML = '<div class="alert" style="background:#fff3cd;color:#856404;border-left:4px solid #ffc107;">Generating and uploading your form...</div>'
+
+        try {
+            let fileUrl = null, fileName = null
+            try {
+                const pdfBlob   = await generatePDFBlob()
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+                const safeName  = studentName.replace(/[^a-zA-Z0-9]/g, '_')
+                fileName = `hist107-accountability/${sectionNumber}/${safeName}_${timestamp}.pdf`
+
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false })
+
+                if (uploadError) { console.warn('PDF upload skipped:', uploadError.message); fileName = null }
+                else {
+                    const { data: urlData } = supabaseClient.storage.from('student-submissions').getPublicUrl(fileName)
+                    fileUrl = urlData.publicUrl
+                }
+            } catch (pdfErr) { console.warn('PDF generation skipped:', pdfErr.message) }
+
+            const formData = collectData()
+
+            if (fileName) {
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name:    studentName,
+                        section_number:  sectionNumber,
+                        worksheet_type:  'hist107-accountability',
+                        file_path:       fileName,
+                        file_url:        fileUrl,
+                        form_data:       formData,
+                        submitted_at:    new Date().toISOString()
+                    })
+                if (dbError) console.warn('Metadata save warning:', dbError.message)
+            }
+
+            // Also upsert to the dedicated table
+            await supabaseClient
+                .from('hist107_accountability')
+                .upsert({ ...formData, user_id: currentUser.id, submitted: true }, { onConflict: 'user_id' })
+
+            msgDiv.innerHTML  = '<div class="alert alert-success">✅ Successfully submitted! Your accountability form has been sent to Prof. Hauselmann.</div>'
+            submitBtn.textContent = '✓ Submitted'
+
+        } catch (err) {
+            console.error('Submission error:', err)
+            msgDiv.innerHTML = `<div class="alert alert-error">❌ Submission failed: ${err.message}. Please try again or export the PDF and email it to your professor.</div>`
+            submitBtn.disabled    = false
+            submitBtn.textContent = '📤 Submit to Professor'
+        }
+    }
+
+    function showMessage(msg, type) {
+        document.getElementById('status-message').innerHTML =
+            `<div class="alert alert-${type === 'success' ? 'success' : 'error'}">${msg}</div>`
+    }
+
+    // ── Init ─────────────────────────────────────────────────
+    buildPeerRows()
+    checkAuth()
+</script>
+</body>
+</html>
