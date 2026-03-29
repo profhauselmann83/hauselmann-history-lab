@@ -436,9 +436,132 @@ input[type=text]:focus { outline: none; border-color: var(--canvas-blue); backgr
   .timer-bar { flex-direction: column; align-items: flex-start; }
   .prog-step { font-size: 0.55em; min-width: 40px; }
 }
+
+/* ════════════════════════════════════════════
+   EXAM SECURITY — CSS LAYER
+   Blocks selection, drag, print, and provides
+   screenshot blur overlay
+════════════════════════════════════════════ */
+
+/* Block all text selection everywhere except answer textareas */
+* {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Re-enable selection ONLY inside answer textareas and text inputs */
+textarea,
+input[type=text],
+input[type=email] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Block image drag */
+img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+
+/* Block print */
+@media print {
+  body * { display: none !important; visibility: hidden !important; }
+  body::before {
+    display: block !important;
+    visibility: visible !important;
+    content: "This examination is not available for printing.";
+    font-family: Georgia, serif;
+    font-size: 1.2rem;
+    color: #1a1510;
+    text-align: center;
+    padding: 6rem 2rem;
+    position: absolute;
+    inset: 0;
+  }
+}
+
+/* Screenshot blur overlay — shown when visibility is hidden (tab switch / screen capture on some platforms) */
+#screenshotShield {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: var(--cream);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+#screenshotShield.active { display: flex; }
+#screenshotShield .shield-msg {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85em;
+  letter-spacing: 2px;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.8;
+}
+#screenshotShield .shield-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4em;
+  color: var(--rust);
+  text-align: center;
+}
+
+/* Blur page content when shield is active */
+body.exam-shielded .page-wrap {
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+/* DevTools detection overlay */
+#devtoolsShield {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99997;
+  background: var(--cream);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+#devtoolsShield.active { display: flex; }
+#devtoolsShield .shield-msg {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85em;
+  letter-spacing: 2px;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 360px;
+  line-height: 1.8;
+}
+#devtoolsShield .shield-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4em;
+  color: var(--rust);
+  text-align: center;
+}
+
 </style>
 </head>
 <body>
+
+<!-- SCREENSHOT / VISIBILITY SHIELD -->
+<div id="screenshotShield">
+  <div class="shield-title">⚠ Exam Paused</div>
+  <div class="shield-msg">This exam cannot be viewed when the window is not active.<br>Return to this window to continue.</div>
+</div>
+
+<!-- DEVTOOLS SHIELD -->
+<div id="devtoolsShield">
+  <div class="shield-title">⚠ Developer Tools Detected</div>
+  <div class="shield-msg">Developer tools are not permitted during this examination.<br>Please close developer tools and reload the page to continue.</div>
+</div>
+
 
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
@@ -584,7 +707,7 @@ input[type=text]:focus { outline: none; border-color: var(--canvas-blue); backgr
   <div class="exam-title-area">
     <div class="exam-eyebrow">Midterm Examination · Weeks 1–4</div>
     <h1><span>HIST 102</span> Midterm Examination</h1>
-    <p class="exam-subtitle">Reconstruction through the World Wars · Open Book · 2 Hours</p>
+    <p class="exam-subtitle">Reconstruction through the World Wars · Open Book · 2 Hours · 100 Points</p>
   </div>
   <div class="timer-bar">
     <div class="timer-left">
@@ -621,7 +744,7 @@ input[type=text]:focus { outline: none; border-color: var(--canvas-blue); backgr
       <table style="width:100%;border-collapse:collapse;font-size:0.92em;">
         <tr style="border-bottom:1px solid var(--cream-deep);">
           <td style="padding:7px 10px;font-weight:700;">Part I — Multiple Choice</td>
-          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">20 questions · 40 pts</td>
+          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">20 questions · 20 pts</td>
         </tr>
         <tr style="border-bottom:1px solid var(--cream-deep);">
           <td style="padding:7px 10px;font-weight:700;">Part II — Timeline Sequencing</td>
@@ -633,11 +756,11 @@ input[type=text]:focus { outline: none; border-color: var(--canvas-blue); backgr
         </tr>
         <tr>
           <td style="padding:7px 10px;font-weight:700;">Part IV — Turning Point Essay</td>
-          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">1 essay · 60 pts</td>
+          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">1 essay · 30 pts</td>
         </tr>
         <tr style="border-top:2px solid var(--ink-mid);background:var(--cream-dark);">
           <td style="padding:9px 10px;font-weight:700;">Total</td>
-          <td style="padding:9px 10px;font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);text-align:right;">150 points</td>
+          <td style="padding:9px 10px;font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);text-align:right;">100 points</td>
         </tr>
       </table>
     </div>
@@ -689,10 +812,10 @@ input[type=text]:focus { outline: none; border-color: var(--canvas-blue); backgr
 ══════════════════════════════════════════════════ -->
 <div class="panel" id="phase1">
   <div class="card">
-    <div class="phase-banner pb-mc">Part I — Multiple Choice · 40 Points</div>
-    <div class="card-eyebrow">20 Questions · 2 pts each</div>
+    <div class="phase-banner pb-mc">Part I — Multiple Choice · 20 Points</div>
+    <div class="card-eyebrow">20 Questions · 1 pt each</div>
     <h2>Multiple Choice</h2>
-    <p>Choose the best answer for each question. You may use your notes and textbook. Each question is worth 2 points.</p>
+    <p>Choose the best answer for each question. You may use your notes and textbook. Each question is worth 1 point.</p>
     <div class="notice">Select your answer for each question before advancing to Part II. You cannot return to this section once you move on.</div>
 
     <!-- Q1 -->
@@ -1089,8 +1212,8 @@ input[type=text]:focus { outline: none; border-color: var(--canvas-blue); backgr
 ══════════════════════════════════════════════════ -->
 <div class="panel" id="phase4">
   <div class="card">
-    <div class="phase-banner pb-essay">Part IV — Turning Point Essay · 60 Points</div>
-    <div class="card-eyebrow">250–500 words · Open Book</div>
+    <div class="phase-banner pb-essay">Part IV — Turning Point Essay · 30 Points</div>
+    <div class="card-eyebrow">250–500 words · Open Book · 30 pts</div>
     <h2>The Turning Point Essay</h2>
 
     <div style="background:var(--canvas-blue);color:#f0e8d8;padding:18px 22px;margin:16px 0;">
@@ -1151,12 +1274,12 @@ input[type=text]:focus { outline: none; border-color: var(--canvas-blue); backgr
     <h2>Your Argument</h2>
 
     <div style="background:rgba(154,111,42,0.07);border:1px solid var(--cream-deep);border-left:4px solid var(--gold);padding:14px 18px;margin-bottom:18px;">
-      <div style="font-family:'DM Mono',monospace;font-size:0.7em;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">SCORING RUBRIC — 60 points</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.7em;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">SCORING RUBRIC — 30 points</div>
       <table style="width:100%;border-collapse:collapse;font-size:0.88em;">
-        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Thesis</td><td style="padding:6px 10px;color:var(--ink-light);">Clear, arguable claim stating the turning point and why it matters most · 15 pts</td></tr>
-        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Evidence</td><td style="padding:6px 10px;color:var(--ink-light);">At least two specific, accurate historical facts that support your argument · 20 pts</td></tr>
-        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Counterargument</td><td style="padding:6px 10px;color:var(--ink-light);">Acknowledges and dismisses at least one alternative turning point · 15 pts</td></tr>
-        <tr><td style="padding:6px 10px;font-weight:700;">Clarity &amp; Writing</td><td style="padding:6px 10px;color:var(--ink-light);">Well-organized, clear prose with a conclusion · 10 pts</td></tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Thesis</td><td style="padding:6px 10px;color:var(--ink-light);">Clear, arguable claim stating the turning point and why it matters most · 8 pts</td></tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Evidence</td><td style="padding:6px 10px;color:var(--ink-light);">At least two specific, accurate historical facts that support your argument · 12 pts</td></tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Counterargument</td><td style="padding:6px 10px;color:var(--ink-light);">Acknowledges and dismisses at least one alternative turning point · 6 pts</td></tr>
+        <tr><td style="padding:6px 10px;font-weight:700;">Clarity &amp; Writing</td><td style="padding:6px 10px;color:var(--ink-light);">Well-organized, clear prose with a conclusion · 4 pts</td></tr>
       </table>
     </div>
 
@@ -1730,9 +1853,9 @@ function buildSummary() {
     `<strong>Student:</strong> ${name} &nbsp;|&nbsp; <strong>W#:</strong> ${wnum} &nbsp;|&nbsp; <strong>Section:</strong> ${section}<br>`+
     `<strong>Started:</strong> ${startTime?startTime.toLocaleString():'—'} &nbsp;·&nbsp; <strong>Completed:</strong> ${endTime?endTime.toLocaleString():'—'}<br>`+
     `<strong>Time used:</strong> ${elapsedStr()}<br><br>`+
-    `<strong>Part I MC:</strong> ${mcScore}/40 auto-scored &nbsp;·&nbsp; <strong>Part II Timeline:</strong> ${tlScr}/20 auto-scored<br>`+
+    `<strong>Part I MC:</strong> ${mcScore}/20 auto-scored &nbsp;·&nbsp; <strong>Part II Timeline:</strong> ${tlScr}/20 auto-scored<br>`+
     `<strong>Part III Sources:</strong> Submitted for instructor grading (30 pts)<br>`+
-    `<strong>Part IV Essay:</strong> ${essayWC} words · Turning point: ${selectedTP?TP_LABELS[selectedTP]:'—'} (60 pts instructor graded)`;
+    `<strong>Part IV Essay:</strong> ${essayWC} words · Turning point: ${selectedTP?TP_LABELS[selectedTP]:'—'} (30 pts instructor graded)`;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1777,10 +1900,10 @@ function buildPDF() {
   for(let i=1;i<=20;i++){
     const q=`mc${i}`, ans=mcAnswers[q]||'[No answer]', correct=MC_ANSWERS[q];
     const ok = ans===correct;
-    if(ok) mcScore+=2;
+    if(ok) mcScore+=1;
     add(`Q${i}: Selected: ${ans}  |  Correct: ${correct}  |  ${ok?'CORRECT +2':'INCORRECT 0'}`,9);
   }
-  add(`Part I Score: ${mcScore} / 40`,10,true); y+=4;
+  add(`Part I Score: ${mcScore} / 20`,10,true); y+=4;
 
   add('PART II — TIMELINE SEQUENCING  (auto-scored)',13,true);
   let tlScr2=0;
@@ -1809,8 +1932,8 @@ function buildPDF() {
   add(`Word count: ${essayWC}`,9); y+=2;
   add(document.getElementById('essay-response').value||'[No essay]',10);
   y+=4;
-  add(`AUTO-SCORED TOTAL (Parts I+II): ${mcScore+tlScr2} / 60`,12,true);
-  add(`Parts III+IV require instructor grading (+90 possible)`,10);
+  add(`AUTO-SCORED TOTAL (Parts I+II): ${mcScore+tlScr2} / 40`,12,true);
+  add(`Parts III+IV require instructor grading (+60 possible)`,10);
   return doc;
 }
 
@@ -1980,5 +2103,173 @@ window.addEventListener('beforeunload', e=>{
 });
 
 </script>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  EXAM SECURITY — JavaScript Layer
+//  Preview mode bypasses all locks
+// ════════════════════════════════════════════════════════
+
+(function() {
+  const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
+
+  // ── 1. BLOCK RIGHT-CLICK ────────────────────────────
+  document.addEventListener('contextmenu', function(e) {
+    if (isPreview) return;
+    e.preventDefault();
+    return false;
+  });
+
+  // ── 2. BLOCK KEYBOARD SHORTCUTS ────────────────────
+  document.addEventListener('keydown', function(e) {
+    if (isPreview) return;
+    const ctrl = e.ctrlKey || e.metaKey;
+    // Block: Ctrl+C, Ctrl+A, Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+F, Ctrl+G
+    // Block: Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C (DevTools)
+    // Block: F12, PrintScreen
+    if (ctrl && ['c','a','s','p','u','f','g'].includes(e.key.toLowerCase())) {
+      // Allow Ctrl+C/A inside textareas and text inputs — students need to type
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if ((e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'a') && 
+          (tag === 'TEXTAREA' || tag === 'INPUT')) return;
+      e.preventDefault(); return false;
+    }
+    if (ctrl && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) {
+      e.preventDefault(); return false;
+    }
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+    // Block PrintScreen — shows warning
+    if (e.key === 'PrintScreen') {
+      e.preventDefault();
+      showPrintScreenWarning();
+      return false;
+    }
+  });
+
+  // ── 3. BLOCK COPY / CUT on non-input elements ──────
+  document.addEventListener('copy', function(e) {
+    if (isPreview) return;
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (tag === 'TEXTAREA' || tag === 'INPUT') return; // allow inside answer boxes
+    e.preventDefault();
+    return false;
+  });
+  document.addEventListener('cut', function(e) {
+    if (isPreview) return;
+    e.preventDefault(); return false;
+  });
+
+  // ── 4. BLOCK DRAG & DROP of content ─────────────────
+  document.addEventListener('dragstart', function(e) {
+    if (isPreview) return;
+    const tag = e.target.tagName;
+    // Allow dragging timeline items
+    if (e.target.classList.contains('tl-item')) return;
+    e.preventDefault(); return false;
+  });
+
+  // ── 5. PRINT BLOCK via window.print() ───────────────
+  var _origPrint = window.print;
+  window.print = function() {
+    if (isPreview) { _origPrint.call(window); return; }
+    showPrintWarning();
+  };
+  // Also intercept beforeprint event
+  window.addEventListener('beforeprint', function(e) {
+    if (isPreview) return;
+    e.preventDefault();
+    showPrintWarning();
+  });
+
+  // ── 6. VISIBILITY / TAB SWITCH SHIELD ───────────────
+  // Blurs content when student switches away (partial screenshot deterrent)
+  document.addEventListener('visibilitychange', function() {
+    if (isPreview) return;
+    if (document.hidden) {
+      document.body.classList.add('exam-shielded');
+      document.getElementById('screenshotShield').classList.add('active');
+    } else {
+      document.body.classList.remove('exam-shielded');
+      document.getElementById('screenshotShield').classList.remove('active');
+    }
+  });
+
+  window.addEventListener('blur', function() {
+    if (isPreview) return;
+    document.body.classList.add('exam-shielded');
+    document.getElementById('screenshotShield').classList.add('active');
+  });
+  window.addEventListener('focus', function() {
+    document.body.classList.remove('exam-shielded');
+    document.getElementById('screenshotShield').classList.remove('active');
+  });
+
+  // ── 7. DEVTOOLS DETECTION ───────────────────────────
+  // Uses window size differential — reliable on desktop
+  // Disabled on mobile (< 768px) to avoid false positives
+  var devtoolsOpen = false;
+  function checkDevtools() {
+    if (isPreview) return;
+    if (window.innerWidth < 768) return; // skip on mobile
+    var threshold = 160;
+    var widthDiff  = window.outerWidth  - window.innerWidth;
+    var heightDiff = window.outerHeight - window.innerHeight;
+    var detected   = widthDiff > threshold || heightDiff > threshold;
+    if (detected && !devtoolsOpen) {
+      devtoolsOpen = true;
+      document.getElementById('devtoolsShield').classList.add('active');
+    } else if (!detected && devtoolsOpen) {
+      devtoolsOpen = false;
+      document.getElementById('devtoolsShield').classList.remove('active');
+    }
+  }
+  setInterval(checkDevtools, 1000);
+
+  // ── 8. WARNING HELPERS ───────────────────────────────
+  function showPrintWarning() {
+    var toast = document.getElementById('security-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'security-toast';
+      toast.style.cssText = [
+        'position:fixed','top:20px','left:50%','transform:translateX(-50%)',
+        'background:#8c3a1e','color:#f7f2e8',
+        'padding:14px 28px','font-family:"DM Mono",monospace',
+        'font-size:0.88em','letter-spacing:2px',
+        'z-index:99999','border:2px solid #e0d5be',
+        'box-shadow:4px 4px 0 rgba(0,0,0,0.4)',
+        'text-align:center','max-width:460px','line-height:1.6'
+      ].join(';');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '⚠ Printing is not permitted during this examination.';
+    toast.style.display = 'block';
+    setTimeout(function() { toast.style.display = 'none'; }, 3500);
+  }
+
+  function showPrintScreenWarning() {
+    var toast = document.getElementById('security-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'security-toast';
+      toast.style.cssText = [
+        'position:fixed','top:20px','left:50%','transform:translateX(-50%)',
+        'background:#8c3a1e','color:#f7f2e8',
+        'padding:14px 28px','font-family:"DM Mono",monospace',
+        'font-size:0.88em','letter-spacing:2px',
+        'z-index:99999','border:2px solid #e0d5be',
+        'box-shadow:4px 4px 0 rgba(0,0,0,0.4)',
+        'text-align:center','max-width:460px','line-height:1.6'
+      ].join(';');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '⚠ Screenshots are not permitted during this examination.';
+    toast.style.display = 'block';
+    setTimeout(function() { toast.style.display = 'none'; }, 3500);
+  }
+
+})();
+</script>
+
 </body>
 </html>
