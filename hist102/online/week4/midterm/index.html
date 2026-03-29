@@ -2058,9 +2058,11 @@ window.addEventListener('beforeunload', e=>{
 (function() {
   const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
 
+  // Exit immediately in preview mode — no security handlers attached at all
+  if (isPreview) return;
+
   // ── 1. BLOCK RIGHT-CLICK ────────────────────────────
   document.addEventListener('contextmenu', function(e) {
-    if (isPreview) return;
     e.preventDefault();
     return false;
   });
