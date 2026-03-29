@@ -1650,19 +1650,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
     el.addEventListener('dragstart', e=>{ draggedId = el.dataset.id; el.classList.add('dragging'); });
     el.addEventListener('dragend',   e=>{ el.classList.remove('dragging'); });
   });
-  // Instructor panel: show toggle if preview mode
+  const cBtn = document.getElementById('canvasBtn');
+  if (cBtn && CANVAS_URL !== 'CANVAS_URL_PLACEHOLDER') cBtn.href = CANVAS_URL;
+});
+
+// Instructor panel init — runs after all scripts are parsed
+window.addEventListener('load', function() {
   if (PREVIEW_MODE) {
-    // Show toggle button
-    document.getElementById('instrToggle').style.display = 'block';
-    // Show panel and slide it into view
-    const panel = document.getElementById('instrPanel');
-    panel.style.display = 'block';
-    panel.classList.add('open'); // applies transform: translateX(0)
+    var toggle = document.getElementById('instrToggle');
+    var panel  = document.getElementById('instrPanel');
+    if (toggle) toggle.style.cssText = 'display:block !important';
+    if (panel)  {
+      panel.style.cssText = 'display:block !important; transform:translateX(0) !important';
+      panel.classList.add('open');
+    }
     updateProgress();
     updateInstrStatus();
   }
-  const cBtn = document.getElementById('canvasBtn');
-  if (cBtn && CANVAS_URL !== 'CANVAS_URL_PLACEHOLDER') cBtn.href = CANVAS_URL;
 });
 function dragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
 function dropItem(e,slotNum) {
