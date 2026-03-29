@@ -169,6 +169,7 @@
         td {
             padding: 12px;
             border-bottom: 1px solid #ecf0f1;
+            text-align: left;
         }
 
         tr:hover {
@@ -204,20 +205,33 @@
 
         .source-card {
             background: #f8f9fa;
-            padding: 15px;
+            padding: 15px 18px;
             margin: 15px 0;
             border-left: 4px solid #3498db;
             border-radius: 3px;
+            text-align: left;
         }
 
         .source-card h4 {
             color: #2c3e50;
             margin-bottom: 10px;
+            text-align: left;
         }
 
         .source-card p {
             margin: 5px 0;
             font-size: 0.95em;
+            text-align: left;
+        }
+
+        /* Hanging indent for citation */
+        .source-card .citation-line {
+            padding-left: 2em;
+            text-indent: -2em;
+            margin: 5px 0;
+            font-size: 0.95em;
+            text-align: left;
+            line-height: 1.5;
         }
 
         .source-card .meta {
@@ -225,6 +239,7 @@
             color: #7f8c8d;
             font-style: italic;
             margin-top: 10px;
+            text-align: left;
         }
 
         .filters {
@@ -279,6 +294,20 @@
         .empty-state h3 {
             font-size: 1.5em;
             margin-bottom: 10px;
+        }
+
+        /* Commodity group heading in archive */
+        .commodity-group {
+            margin-top: 36px;
+            margin-bottom: 4px;
+        }
+
+        .commodity-group h3 {
+            color: #2c3e50;
+            font-size: 1.1em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 6px;
+            text-align: left;
         }
 
         footer {
@@ -349,7 +378,6 @@
             <div class="tab active" onclick="switchTab(event, 'roles')">🎯 Role Selections</div>
             <div class="tab" onclick="switchTab(event, 'archive')">📚 Class Archive</div>
             <div class="tab" onclick="switchTab(event, 'progress')">📊 Class Progress</div>
-
         </div>
 
         <!-- Tab Content: Role Selections -->
@@ -441,25 +469,19 @@
             await loadRoles()
         }
 
-function switchTab(e, tabName) {
-  // Update tab buttons
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
-  e.currentTarget.classList.add('active')
+        function switchTab(e, tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
+            e.currentTarget.classList.add('active')
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
+            document.getElementById('tab-' + tabName).classList.add('active')
 
-  // Update tab content
-  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'))
-  document.getElementById('tab-' + tabName).classList.add('active')
-
-  // Load data for the tab
-  if (tabName === 'roles') loadRoles()
-  if (tabName === 'archive') loadArchive()
-  if (tabName === 'progress') loadProgress()
-}
-
+            if (tabName === 'roles') loadRoles()
+            if (tabName === 'archive') loadArchive()
+            if (tabName === 'progress') loadProgress()
+        }
 
         async function loadStats() {
             try {
-                // Total students from role selections
                 const { data: roles } = await supabaseClient
                     .from('hist107_role_selection')
                     .select('student_name, commodity_name')
@@ -467,18 +489,15 @@ function switchTab(e, tabName) {
                 const uniqueStudents = new Set(roles?.map(r => r.student_name) || [])
                 document.getElementById('stat-students').textContent = uniqueStudents.size
 
-                // Unique commodities
                 const uniqueCommodities = new Set(roles?.map(r => r.commodity_name).filter(Boolean) || [])
                 document.getElementById('stat-commodities').textContent = uniqueCommodities.size
 
-                // Total sources in class archive
                 const { data: sources } = await supabaseClient
                     .from('hist107_class_archive')
                     .select('id')
 
                 document.getElementById('stat-sources').textContent = sources?.length || 0
 
-                // Approximate groups (students / 3.5 average)
                 const approxGroups = Math.round(uniqueStudents.size / 3.5)
                 document.getElementById('stat-groups').textContent = approxGroups || '--'
 
@@ -489,47 +508,28 @@ function switchTab(e, tabName) {
 
         async function populateFilters() {
             try {
-                // Get unique sections and commodities
                 const { data: roles } = await supabaseClient
                     .from('hist107_role_selection')
                     .select('section_number, commodity_name')
 
-                const sections = [...new Set(roles?.map(r => r.section_number).filter(Boolean))]
-                sections.sort()
+                const sections = [...new Set(roles?.map(r => r.section_number).filter(Boolean))].sort()
+                const commodities = [...new Set(roles?.map(r => r.commodity_name).filter(Boolean))].sort()
 
-                const commodities = [...new Set(roles?.map(r => r.commodity_name).filter(Boolean))]
-                commodities.sort()
-
-                // Populate section filters
-                const sectionSelects = [
-                    'filter-section-roles',
-                    'filter-section-progress'
-                ]
-
-                sectionSelects.forEach(selectId => {
-                    const select = document.getElementById(selectId)
-                    sections.forEach(section => {
-                        const option = document.createElement('option')
-                        option.value = section
-                        option.textContent = section
-                        select.appendChild(option)
+                ['filter-section-roles', 'filter-section-progress'].forEach(id => {
+                    const select = document.getElementById(id)
+                    sections.forEach(s => {
+                        const opt = document.createElement('option')
+                        opt.value = s; opt.textContent = s
+                        select.appendChild(opt)
                     })
                 })
 
-                // Populate commodity filters
-                const commoditySelects = [
-                    'filter-commodity-roles',
-                    'filter-commodity-archive',
-                    'filter-commodity-progress'
-                ]
-
-                commoditySelects.forEach(selectId => {
-                    const select = document.getElementById(selectId)
-                    commodities.forEach(commodity => {
-                        const option = document.createElement('option')
-                        option.value = commodity
-                        option.textContent = commodity
-                        select.appendChild(option)
+                ['filter-commodity-roles', 'filter-commodity-archive', 'filter-commodity-progress'].forEach(id => {
+                    const select = document.getElementById(id)
+                    commodities.forEach(c => {
+                        const opt = document.createElement('option')
+                        opt.value = c; opt.textContent = c
+                        select.appendChild(opt)
                     })
                 })
 
@@ -556,7 +556,6 @@ function switchTab(e, tabName) {
                 if (commodity) query = query.eq('commodity_name', commodity)
 
                 const { data, error } = await query
-
                 if (error) throw error
 
                 if (!data || data.length === 0) {
@@ -564,7 +563,7 @@ function switchTab(e, tabName) {
                     return
                 }
 
-                // Group by commodity
+                // Group by commodity, sorted alphabetically
                 const byCommodity = {}
                 data.forEach(role => {
                     const comm = role.commodity_name || 'Unspecified'
@@ -573,11 +572,16 @@ function switchTab(e, tabName) {
                 })
 
                 let html = ''
-
-                for (const [comm, roles] of Object.entries(byCommodity)) {
-                    html += `<h3 style="color: #2c3e50; margin-top: 30px;">${comm} (${roles.length} students)</h3>`
-                    html += '<table><thead><tr><th>Student</th><th>Section</th><th>Analytical Lens</th><th>Group Members</th></tr></thead><tbody>'
-
+                Object.keys(byCommodity).sort().forEach(comm => {
+                    const roles = byCommodity[comm]
+                    html += `
+                        <div class="commodity-group">
+                            <h3>${comm} <span style="font-weight:400; color:#7f8c8d;">(${roles.length} student${roles.length !== 1 ? 's' : ''})</span></h3>
+                        </div>
+                        <table>
+                            <thead><tr><th>Student</th><th>Section</th><th>Analytical Lens</th><th>Group Members</th></tr></thead>
+                            <tbody>
+                    `
                     roles.forEach(role => {
                         const lensClass = getLensClass(role.role_name)
                         html += `
@@ -589,15 +593,13 @@ function switchTab(e, tabName) {
                             </tr>
                         `
                     })
-
                     html += '</tbody></table>'
-                }
+                })
 
                 content.innerHTML = html
 
             } catch (error) {
                 console.error('Error loading roles:', error)
-                console.error('Error details:', error.message, error.details, error.hint)
                 content.innerHTML = `<div class="empty-state"><h3>Error loading data</h3><p>${error.message || 'Please try again later.'}</p></div>`
             }
         }
@@ -613,13 +615,14 @@ function switchTab(e, tabName) {
                 let query = supabaseClient
                     .from('hist107_class_archive')
                     .select('*')
+                    .order('commodity')
+                    .order('analytical_lens')
                     .order('submitted_at', { ascending: false })
 
                 if (commodity) query = query.eq('commodity', commodity)
                 if (lens) query = query.eq('analytical_lens', lens)
 
                 const { data, error } = await query
-
                 if (error) throw error
 
                 if (!data || data.length === 0) {
@@ -627,7 +630,7 @@ function switchTab(e, tabName) {
                     return
                 }
 
-                // Group by commodity
+                // Group by commodity, sorted alphabetically
                 const byCommodity = {}
                 data.forEach(source => {
                     const comm = source.commodity || 'Unspecified'
@@ -635,34 +638,38 @@ function switchTab(e, tabName) {
                     byCommodity[comm].push(source)
                 })
 
-                let html = `<div style="background-color: #d4edda; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #27ae60;">
-                    <strong>Total sources in archive: ${data.length}</strong>
-                </div>`
+                let html = `
+                    <div style="background-color:#d4edda; padding:15px; border-radius:5px; margin-bottom:20px; border-left:4px solid #27ae60; text-align:left;">
+                        <strong>Total sources in archive: ${data.length}</strong>
+                    </div>`
 
-                for (const [comm, sources] of Object.entries(byCommodity)) {
-                    html += `<h3 style="color: #2c3e50; margin-top: 30px;">${comm} (${sources.length} sources)</h3>`
+                Object.keys(byCommodity).sort().forEach(comm => {
+                    const sources = byCommodity[comm]
+                    html += `
+                        <div class="commodity-group">
+                            <h3>${comm} <span style="font-weight:400; color:#7f8c8d;">(${sources.length} source${sources.length !== 1 ? 's' : ''})</span></h3>
+                        </div>`
 
                     sources.forEach((source, idx) => {
+                        const lensClass = getLensClass(source.analytical_lens)
                         html += `
                             <div class="source-card">
-                                <h4>${source.analytical_lens} | Source ${idx + 1}</h4>
-                                <p><strong>Citation:</strong> ${source.citation}</p>
-                                <p><strong>Type:</strong> ${source.source_type || 'Not specified'}</p>
-                                <p><strong>Producer:</strong> ${source.producer || 'Not specified'}</p>
-                                <p><strong>What it reveals:</strong> ${source.historical_question || 'Not specified'}</p>
+                                <h4><span class="badge ${lensClass}">${source.analytical_lens || 'No lens'}</span></h4>
+                                <p class="citation-line"><strong>Citation:</strong> ${source.citation || 'Not provided'}</p>
+                                <p><strong>Source type:</strong> ${source.source_type || 'Not specified'}</p>
+                                <p><strong>Producer &amp; date:</strong> ${source.producer || 'Not specified'}</p>
+                                <p><strong>Historical question it helps answer:</strong> ${source.historical_question || 'Not specified'}</p>
                                 <p><strong>Limitations:</strong> ${source.limitations || 'Not specified'}</p>
                                 ${source.url ? `<p><strong>URL:</strong> <a href="${source.url}" target="_blank">${source.url}</a></p>` : ''}
-                                <p class="meta">Contributed by ${source.student_name} (${source.section_number}) on ${new Date(source.submitted_at).toLocaleDateString()}</p>
-                            </div>
-                        `
+                                <p class="meta">Contributed by ${source.student_name} (${source.section_number}) · ${new Date(source.submitted_at).toLocaleDateString()}</p>
+                            </div>`
                     })
-                }
+                })
 
                 content.innerHTML = html
 
             } catch (error) {
                 console.error('Error loading archive:', error)
-                console.error('Error details:', error.message, error.details, error.hint)
                 content.innerHTML = `<div class="empty-state"><h3>Error loading data</h3><p>${error.message || 'Please try again later.'}</p></div>`
             }
         }
@@ -678,13 +685,13 @@ function switchTab(e, tabName) {
                 let query = supabaseClient
                     .from('hist107_role_selection')
                     .select('*')
+                    .order('commodity_name')
                     .order('student_name')
 
                 if (section) query = query.eq('section_number', section)
                 if (commodity) query = query.eq('commodity_name', commodity)
 
                 const { data: roles, error } = await query
-
                 if (error) throw error
 
                 if (!roles || roles.length === 0) {
@@ -692,39 +699,50 @@ function switchTab(e, tabName) {
                     return
                 }
 
-                // Get mini-archive data
                 const { data: archives } = await supabaseClient
                     .from('hist107_mini_archive')
                     .select('student_name, sources')
 
                 const archiveMap = new Map()
-                archives?.forEach(a => {
-                    archiveMap.set(a.student_name, a.sources?.length || 0)
-                })
+                archives?.forEach(a => archiveMap.set(a.student_name, a.sources?.length || 0))
 
-                let html = '<table><thead><tr><th>Student</th><th>Section</th><th>Commodity</th><th>Lens</th><th>Sources Added</th></tr></thead><tbody>'
-
+                // Group by commodity
+                const byCommodity = {}
                 roles.forEach(role => {
-                    const sourcesCount = archiveMap.get(role.student_name) || 0
-                    const lensClass = getLensClass(role.role_name)
-
-                    html += `
-                        <tr>
-                            <td><strong>${role.student_name}</strong></td>
-                            <td>${role.section_number}</td>
-                            <td>${role.commodity_name || 'Not selected'}</td>
-                            <td><span class="badge ${lensClass}">${role.role_name || 'Not selected'}</span></td>
-                            <td><strong>${sourcesCount}</strong> / 3-4</td>
-                        </tr>
-                    `
+                    const comm = role.commodity_name || 'Unspecified'
+                    if (!byCommodity[comm]) byCommodity[comm] = []
+                    byCommodity[comm].push(role)
                 })
 
-                html += '</tbody></table>'
+                let html = ''
+                Object.keys(byCommodity).sort().forEach(comm => {
+                    const group = byCommodity[comm]
+                    html += `
+                        <div class="commodity-group">
+                            <h3>${comm} <span style="font-weight:400; color:#7f8c8d;">(${group.length} student${group.length !== 1 ? 's' : ''})</span></h3>
+                        </div>
+                        <table>
+                            <thead><tr><th>Student</th><th>Section</th><th>Lens</th><th>Sources Added</th></tr></thead>
+                            <tbody>`
+
+                    group.forEach(role => {
+                        const sourcesCount = archiveMap.get(role.student_name) || 0
+                        const lensClass = getLensClass(role.role_name)
+                        html += `
+                            <tr>
+                                <td><strong>${role.student_name}</strong></td>
+                                <td>${role.section_number}</td>
+                                <td><span class="badge ${lensClass}">${role.role_name || 'Not selected'}</span></td>
+                                <td><strong>${sourcesCount}</strong> / 3–4</td>
+                            </tr>`
+                    })
+                    html += '</tbody></table>'
+                })
+
                 content.innerHTML = html
 
             } catch (error) {
                 console.error('Error loading progress:', error)
-                console.error('Error details:', error.message, error.details, error.hint)
                 content.innerHTML = `<div class="empty-state"><h3>Error loading data</h3><p>${error.message || 'Please try again later.'}</p></div>`
             }
         }
