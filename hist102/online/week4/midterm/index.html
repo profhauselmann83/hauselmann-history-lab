@@ -565,6 +565,7 @@ img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
   <div class="ip-section">
     <div class="ip-label">Exam Status</div>
     <div class="ip-status-row"><span>Mode</span><span class="ip-status-val" style="color:var(--gold-light);">PREVIEW — No DB writes</span></div>
+    <div class="ip-status-row"><span>Exam Password</span><span class="ip-status-val" style="color:var(--gold-light);" id="ip-password-display">—</span></div>
     <div class="ip-status-row"><span>Current Phase</span><span class="ip-status-val" id="ip-phase-status">0 — Start</span></div>
     <div class="ip-status-row"><span>Timer</span><span class="ip-status-val" id="ip-timer-status">Not started</span></div>
     <div class="ip-status-row"><span>MC answered</span><span class="ip-status-val" id="ip-mc-status">0/20</span></div>
@@ -737,6 +738,13 @@ img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
         <div class="field-group">
           <label>Section</label>
           <input type="text" id="s-section" placeholder="e.g., 9994">
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:16px 18px;background:rgba(140,58,30,0.05);border:1px solid var(--cream-deep);border-left:4px solid var(--rust);">
+        <div class="field-group">
+          <label style="color:var(--rust);">Exam Access Code</label>
+          <input type="password" id="s-password" placeholder="Enter the access code provided by your instructor" autocomplete="off" style="width:100%;padding:10px 13px;background:#fffdf6;border:2px solid var(--cream-deep);color:var(--ink);font-family:'Source Serif 4',serif;font-size:0.95em;transition:border-color 0.18s;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.7em;color:var(--ink-light);margin-top:5px;letter-spacing:1px;">Your instructor will announce this code at the start of the exam period.</div>
         </div>
       </div>
     </div>
@@ -1323,6 +1331,7 @@ const CANVAS_URL     = 'CANVAS_URL_PLACEHOLDER';
 const SUPABASE_URL   = 'https://bqrluqymscucvbiaaeai.supabase.co';
 const SUPABASE_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
 const EXAM_MINUTES   = 120;
+const EXAM_PASSWORD  = 'MIDTERM2026';  // ← change this before publishing
 const PREVIEW_MODE   = new URLSearchParams(window.location.search).get('preview') === 'true';
 const GRACE_SECONDS  = 60;
 
@@ -1387,6 +1396,8 @@ function updateInstrStatus() {
   if (tls) tls.textContent = Object.keys(tlPlacements).length + '/10';
   const urlEl = document.getElementById('ip-url-display');
   if (urlEl) urlEl.textContent = window.location.href.split('?')[0] + '?preview=true';
+  const pwEl = document.getElementById('ip-password-display');
+  if (pwEl) pwEl.textContent = EXAM_PASSWORD;
   // Update nav button active states
   for (let i=0;i<=5;i++){
     const btn = document.getElementById(`ipnav${i}`);
@@ -1395,10 +1406,11 @@ function updateInstrStatus() {
 }
 function instrFillSample() {
   // Fill student info
-  document.getElementById('s-first').value = 'Test';
-  document.getElementById('s-last').value  = 'Student';
-  document.getElementById('s-wnum').value  = 'W1234567';
-  document.getElementById('s-section').value = '9994';
+  document.getElementById('s-first').value    = 'Test';
+  document.getElementById('s-last').value     = 'Student';
+  document.getElementById('s-wnum').value     = 'W1234567';
+  document.getElementById('s-section').value  = '9994';
+  document.getElementById('s-password').value = EXAM_PASSWORD;
   // Fill all MC with correct answers
   Object.keys(MC_ANSWERS).forEach(q => {
     mcAnswers[q] = MC_ANSWERS[q];
@@ -1542,10 +1554,11 @@ function updateProgress() {
 function previewJump(n) {
   // Always ensure student fields are populated so nothing downstream breaks
   if (!document.getElementById('s-first').value) {
-    document.getElementById('s-first').value   = 'PREVIEW';
-    document.getElementById('s-last').value    = 'Hauselmann';
-    document.getElementById('s-wnum').value    = 'W0000000';
-    document.getElementById('s-section').value = '9994';
+    document.getElementById('s-first').value    = 'PREVIEW';
+    document.getElementById('s-last').value     = 'Hauselmann';
+    document.getElementById('s-wnum').value     = 'W0000000';
+    document.getElementById('s-section').value  = '9994';
+    document.getElementById('s-password').value = EXAM_PASSWORD;
   }
   if (n > 0 && !startTime) {
     startTimer();
@@ -1578,11 +1591,20 @@ async function beginExam() {
   const last    = document.getElementById('s-last').value.trim();
   const wnum    = document.getElementById('s-wnum').value.trim();
   const section = document.getElementById('s-section').value.trim();
+  const password = document.getElementById('s-password').value.trim();
   if (!first||!last){ alert('Please enter your first and last name.'); return; }
-  if (!wnum){ alert('Please enter your W Number.'); return; }
+  if (!wnum){ alert('Please enter your Student ID number.'); return; }
   if (!section){ alert('Please enter your section number.'); return; }
-  const wPat = /^W?\d{6,7}$/i;
-  if (!wPat.test(wnum.replace(/\s/g,''))){ alert('W Number format: W followed by 7 digits (e.g., W1234567).'); return; }
+  if (!password){ alert('Please enter the exam access code.'); return; }
+  if (password.toUpperCase() !== EXAM_PASSWORD.toUpperCase()){
+    const el = document.getElementById('s-password');
+    el.style.borderColor = 'var(--rust)';
+    el.value = '';
+    el.placeholder = 'Incorrect — try again';
+    setTimeout(()=>{ el.style.borderColor=''; el.placeholder='Enter the access code provided by your instructor'; }, 2500);
+    alert('Incorrect access code. Please check with your instructor.');
+    return;
+  }
 
   const btn = document.getElementById('beginBtn');
   btn.disabled = true;
