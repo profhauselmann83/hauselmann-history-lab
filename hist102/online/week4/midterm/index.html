@@ -2200,8 +2200,9 @@ window.addEventListener('beforeunload', e=>{
     showPrintWarning();
   });
 
-  // ── 6. VISIBILITY / TAB SWITCH SHIELD ───────────────
-  // Blurs content when student switches away (partial screenshot deterrent)
+  // ── 6. TAB SWITCH SHIELD ────────────────────────────
+  // Only triggers when student actually switches to a different tab,
+  // not when they click outside the window or use a second monitor.
   document.addEventListener('visibilitychange', function() {
     if (isPreview) return;
     if (document.hidden) {
@@ -2211,16 +2212,6 @@ window.addEventListener('beforeunload', e=>{
       document.body.classList.remove('exam-shielded');
       document.getElementById('screenshotShield').classList.remove('active');
     }
-  });
-
-  window.addEventListener('blur', function() {
-    if (isPreview) return;
-    document.body.classList.add('exam-shielded');
-    document.getElementById('screenshotShield').classList.add('active');
-  });
-  window.addEventListener('focus', function() {
-    document.body.classList.remove('exam-shielded');
-    document.getElementById('screenshotShield').classList.remove('active');
   });
 
   // ── 7. DEVTOOLS DETECTION ───────────────────────────
