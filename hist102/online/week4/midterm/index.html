@@ -482,45 +482,11 @@ img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
 
 
 
-/* DevTools detection overlay */
-#devtoolsShield {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 99997;
-  background: var(--cream);
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 1rem;
-}
-#devtoolsShield.active { display: flex; }
-#devtoolsShield .shield-msg {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.85em;
-  letter-spacing: 2px;
-  color: var(--ink-light);
-  text-transform: uppercase;
-  text-align: center;
-  max-width: 360px;
-  line-height: 1.8;
-}
-#devtoolsShield .shield-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4em;
-  color: var(--rust);
-  text-align: center;
-}
+
 
 </style>
 </head>
 <body>
-
-<!-- DEVTOOLS SHIELD -->
-<div id="devtoolsShield">
-  <div class="shield-title">⚠ Developer Tools Detected</div>
-  <div class="shield-msg">Developer tools are not permitted during this examination.<br>Please close developer tools and reload the page to continue.</div>
-</div>
 
 
 <!-- LOCK SCREEN -->
@@ -2162,26 +2128,7 @@ window.addEventListener('beforeunload', e=>{
 
 
 
-  // ── 7. DEVTOOLS DETECTION ───────────────────────────
-  // Uses window size differential — reliable on desktop
-  // Disabled on mobile (< 768px) to avoid false positives
-  var devtoolsOpen = false;
-  function checkDevtools() {
-    if (isPreview) return;
-    if (window.innerWidth < 768) return; // skip on mobile
-    var threshold = 160;
-    var widthDiff  = window.outerWidth  - window.innerWidth;
-    var heightDiff = window.outerHeight - window.innerHeight;
-    var detected   = widthDiff > threshold || heightDiff > threshold;
-    if (detected && !devtoolsOpen) {
-      devtoolsOpen = true;
-      document.getElementById('devtoolsShield').classList.add('active');
-    } else if (!detected && devtoolsOpen) {
-      devtoolsOpen = false;
-      document.getElementById('devtoolsShield').classList.remove('active');
-    }
-  }
-  setInterval(checkDevtools, 1000);
+
 
   // ── 8. WARNING HELPERS ───────────────────────────────
   function showPrintWarning() {
