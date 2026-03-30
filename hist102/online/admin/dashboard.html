@@ -1,1421 +1,821 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Instructor Dashboard | HIST 102</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 15px; }
-
-:root {
-  --ink:       #1a1510;
-  --ink-mid:   #3a3028;
-  --ink-light: #6b5e50;
-  --cream:     #f7f2e8;
-  --cream-d:   #ede5d4;
-  --cream-dd:  #ddd0b8;
-  --gold:      #9a6f2a;
-  --gold-l:    #c8922a;
-  --rust:      #8c3a1e;
-  --sage:      #3d6053;
-  --sage-l:    #5a8a79;
-  --warn:      #b5620a;
-  --ok:        #2e7a50;
-  --bg:        #f2ece0;
-  --sidebar-w: 220px;
-  --canvas-blue: #1e4488;
-}
-
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-weight: 300;
-  line-height: 1.6;
-  min-height: 100vh;
-}
-
-/* ─── LOGIN SCREEN ─── */
-#loginScreen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: var(--ink);
-}
-.login-box {
-  width: 100%;
-  max-width: 400px;
-  padding: 2.5rem 2rem;
-  border: 1px solid rgba(154,111,42,0.3);
-  border-top: 3px solid var(--gold);
-  background: rgba(245,239,226,0.04);
-}
-.login-box h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  color: var(--cream);
-  margin-bottom: 0.25rem;
-}
-.login-eyebrow {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 1rem;
-}
-.login-box p {
-  font-size: 0.85rem;
-  color: rgba(245,239,226,0.45);
-  margin-bottom: 1.75rem;
-  line-height: 1.6;
-}
-.login-label {
-  display: block;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 0.4rem;
-}
-.login-input {
-  width: 100%;
-  padding: 0.75rem 0.9rem;
-  background: rgba(245,239,226,0.07);
-  border: 1px solid rgba(245,239,226,0.15);
-  border-radius: 3px;
-  color: var(--cream);
-  font-family: 'Source Serif 4', serif;
-  font-size: 0.95rem;
-  margin-bottom: 1.1rem;
-  transition: border-color 0.2s;
-}
-.login-input:focus {
-  outline: none;
-  border-color: var(--gold);
-  background: rgba(245,239,226,0.1);
-}
-.login-btn {
-  width: 100%;
-  padding: 0.85rem;
-  background: var(--gold);
-  border: none;
-  border-radius: 3px;
-  color: var(--ink);
-  font-family: 'DM Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.login-btn:hover { background: var(--gold-l); }
-.login-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.login-error {
-  display: none;
-  margin-top: 0.75rem;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  color: #f4a87a;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid rgba(140,58,30,0.4);
-  border-radius: 3px;
-  background: rgba(140,58,30,0.1);
-}
-.login-error.visible { display: block; }
-
-/* ─── APP SHELL ─── */
-#appShell { display: none; min-height: 100vh; }
-
-/* ─── TOP BAR ─── */
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--ink);
-  border-bottom: 1px solid rgba(154,111,42,0.25);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.5rem;
-  gap: 1rem;
-}
-.topbar-title {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold-l);
-}
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-.topbar-user {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-  color: rgba(245,239,226,0.4);
-}
-.signout-btn {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(245,239,226,0.35);
-  background: none;
-  border: 1px solid rgba(245,239,226,0.15);
-  border-radius: 2px;
-  padding: 0.3rem 0.7rem;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-.signout-btn:hover { color: var(--cream); border-color: rgba(245,239,226,0.4); }
-
-/* ─── BODY LAYOUT ─── */
-.app-body {
-  display: flex;
-  min-height: calc(100vh - 46px);
-}
-
-/* ─── SIDEBAR ─── */
-.sidebar {
-  width: var(--sidebar-w);
-  flex-shrink: 0;
-  background: var(--cream-d);
-  border-right: 1px solid var(--cream-dd);
-  padding: 1.5rem 0;
-  position: sticky;
-  top: 46px;
-  height: calc(100vh - 46px);
-  overflow-y: auto;
-}
-.sidebar-section-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-light);
-  padding: 0 1.25rem 0.5rem;
-  margin-top: 1rem;
-}
-.sidebar-section-label:first-child { margin-top: 0; }
-.sidebar-link {
-  display: block;
-  padding: 0.55rem 1.25rem;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.05em;
-  color: var(--ink-mid);
-  text-decoration: none;
-  cursor: pointer;
-  border-left: 3px solid transparent;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-.sidebar-link:hover { background: var(--cream-dd); color: var(--ink); }
-.sidebar-link.active {
-  background: var(--cream);
-  border-left-color: var(--gold);
-  color: var(--ink);
-  font-weight: 500;
-}
-.sidebar-link .badge {
-  float: right;
-  font-size: 0.55rem;
-  background: var(--gold);
-  color: white;
-  padding: 0.1rem 0.4rem;
-  border-radius: 10px;
-}
-
-/* ─── MAIN CONTENT ─── */
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1100px;
-}
-
-/* ─── PAGE HEADER ─── */
-.page-header {
-  margin-bottom: 1.75rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--cream-dd);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.page-header h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.6rem;
-  color: var(--ink);
-  line-height: 1.2;
-}
-.page-header p {
-  font-size: 0.85rem;
-  color: var(--ink-light);
-  margin-top: 0.3rem;
-}
-
-/* ─── STAT CARDS ─── */
-.stat-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-.stat-card {
-  background: white;
-  border: 1px solid var(--cream-dd);
-  border-top: 3px solid var(--gold);
-  padding: 1.1rem 1.25rem;
-}
-.stat-card.warn { border-top-color: var(--warn); }
-.stat-card.ok   { border-top-color: var(--ok); }
-.stat-card.info { border-top-color: var(--sage); }
-.stat-num {
-  font-family: 'DM Mono', monospace;
-  font-size: 2rem;
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1;
-  margin-bottom: 0.3rem;
-}
-.stat-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-light);
-}
-
-/* ─── FILTER BAR ─── */
-.filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-}
-.filter-bar label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-light);
-}
-.filter-select {
-  padding: 0.45rem 0.75rem;
-  background: white;
-  border: 1px solid var(--cream-dd);
-  border-radius: 3px;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--ink);
-  cursor: pointer;
-}
-.filter-select:focus { outline: none; border-color: var(--gold); }
-
-.export-btn {
-  margin-left: auto;
-  padding: 0.45rem 1rem;
-  background: var(--ink);
-  color: var(--cream);
-  border: none;
-  border-radius: 3px;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.export-btn:hover { background: var(--ink-mid); }
-
-.pdf-btn {
-  padding: 0.45rem 1rem;
-  background: var(--sage);
-  color: white;
-  border: none;
-  border-radius: 3px;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.pdf-btn:hover { background: var(--sage-l); }
-.pdf-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-.pdf-row-btn {
-  background: none;
-  border: 1px solid rgba(61,96,83,0.4);
-  border-radius: 2px;
-  color: var(--sage);
-  font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.55rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-.pdf-row-btn:hover { background: var(--sage); color: white; }
-
-/* ─── TABLE ─── */
-.table-wrap { overflow-x: auto; margin-bottom: 2rem; }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-  background: white;
-  border: 1px solid var(--cream-dd);
-}
-thead th {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-light);
-  padding: 0.65rem 0.9rem;
-  background: var(--cream);
-  border-bottom: 2px solid var(--cream-dd);
-  text-align: left;
-  white-space: nowrap;
-}
-thead th.sortable { cursor: pointer; }
-thead th.sortable:hover { color: var(--gold); }
-tbody tr { border-bottom: 1px solid var(--cream-d); transition: background 0.1s; }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: var(--cream); }
-tbody td { padding: 0.7rem 0.9rem; color: var(--ink-mid); vertical-align: middle; }
-tbody td.mono {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-}
-tbody td.name-cell { font-weight: 600; color: var(--ink); }
-
-.flag {
-  display: inline-block;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.15rem 0.45rem;
-  border-radius: 2px;
-  white-space: nowrap;
-}
-.flag-ok       { background: rgba(46,122,80,0.1);  color: var(--ok);   border: 1px solid rgba(46,122,80,0.25); }
-.flag-warn     { background: rgba(181,98,10,0.1);  color: var(--warn); border: 1px solid rgba(181,98,10,0.25); }
-.flag-missing  { background: rgba(140,58,30,0.1);  color: var(--rust); border: 1px solid rgba(140,58,30,0.25); }
-
-/* ─── EXPANDABLE ROW ─── */
-.expand-btn {
-  background: none; border: none; cursor: pointer;
-  font-family: 'DM Mono', monospace; font-size: 0.65rem;
-  color: var(--gold); padding: 0; text-decoration: underline;
-}
-.detail-row { display: none; }
-.detail-row.open { display: table-row; }
-.detail-cell {
-  padding: 0 0.9rem 1rem;
-  background: var(--cream);
-}
-.answers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 0.75rem;
-  padding-top: 0.75rem;
-}
-.answer-card {
-  background: white;
-  border: 1px solid var(--cream-dd);
-  border-left: 3px solid var(--cream-dd);
-  padding: 0.75rem 1rem;
-  font-size: 0.8rem;
-}
-.answer-card.short-ans { border-left-color: var(--warn); }
-.answer-card.no-ans    { border-left-color: var(--rust); opacity: 0.6; }
-.answer-card.good-ans  { border-left-color: var(--ok); }
-.answer-q {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-light);
-  margin-bottom: 0.35rem;
-}
-.answer-text { color: var(--ink-mid); line-height: 1.55; }
-.answer-wc {
-  margin-top: 0.35rem;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  color: var(--ink-light);
-}
-
-/* ─── GATE ENTRIES TABLE ─── */
-.gate-table td { font-size: 0.8rem; }
-
-/* ─── REVIEW TRACKING ─── */
-.review-checks {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: nowrap;
-}
-.review-check-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.05em;
-  color: var(--ink-light);
-  cursor: pointer;
-  white-space: nowrap;
-  padding: 0.2rem 0.5rem;
-  border-radius: 2px;
-  border: 1px solid var(--cream-dd);
-  background: white;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  user-select: none;
-}
-.review-check-label:hover { border-color: var(--gold); color: var(--ink); }
-.review-check-label input[type=checkbox] { display: none; }
-.review-check-label.checked-dl {
-  background: rgba(61,96,83,0.1);
-  border-color: rgba(61,96,83,0.4);
-  color: var(--sage);
-}
-.review-check-label.checked-canvas {
-  background: rgba(30,68,136,0.1);
-  border-color: rgba(30,68,136,0.35);
-  color: var(--canvas-blue);
-}
-.review-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  display: none;
-}
-.checked-dl .review-dot, .checked-canvas .review-dot { display: inline-block; }
-
-/* progress bar strip */
-.review-progress {
-  background: var(--cream-d);
-  border: 1px solid var(--cream-dd);
-  border-radius: 3px;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-.progress-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-light);
-  white-space: nowrap;
-}
-.progress-track {
-  flex: 1;
-  min-width: 120px;
-  height: 6px;
-  background: var(--cream-dd);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-.progress-fill.dl-fill     { background: var(--sage); }
-.progress-fill.canvas-fill { background: var(--canvas-blue); }
-.progress-count {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--ink-mid);
-  white-space: nowrap;
-}
-
-/* ─── ROW SELECTION ─── */
-.sel-checkbox {
-  width: 15px; height: 15px;
-  accent-color: var(--gold);
-  cursor: pointer;
-}
-.selection-bar {
-  display: none;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 1rem;
-  background: rgba(154,111,42,0.08);
-  border: 1px solid rgba(154,111,42,0.25);
-  border-radius: 3px;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-}
-.selection-bar.visible { display: flex; }
-.selection-count {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  color: var(--gold);
-  font-weight: 500;
-  flex: 1;
-}
-.sel-action-btn {
-  padding: 0.35rem 0.85rem;
-  border: none;
-  border-radius: 3px;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.sel-zip-btn       { background: var(--sage);    color: white; }
-.sel-zip-btn:hover { background: var(--sage-l); }
-.sel-pdf-btn       { background: var(--ink-mid); color: var(--cream); }
-.sel-pdf-btn:hover { background: var(--ink); }
-.sel-clear-btn     { background: none; color: var(--ink-light); border: 1px solid var(--cream-dd); }
-.sel-clear-btn:hover { color: var(--ink); border-color: var(--ink-light); }
-tbody tr.row-selected { background: rgba(154,111,42,0.06) !important; }
-
-/* ─── LOADING / EMPTY ─── */
-.loading-msg, .empty-msg {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  color: var(--ink-light);
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-/* ─── TABS ─── */
-.tab-bar {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--cream-dd);
-  margin-bottom: 1.5rem;
-}
-.tab-btn {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.65rem 1.2rem;
-  border: none;
-  background: none;
-  color: var(--ink-light);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.15s;
-}
-.tab-btn:hover { color: var(--ink); }
-.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 500; }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Submissions Dashboard | Prof. Hauselmann</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Open Sans', sans-serif; margin: 0; padding: 20px; background-color: #f5f5f0; color: #333; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { background-color: #2c3e50; color: white; padding: 20px 30px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 1.5em; }
+        .logout-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; font-family: 'Open Sans', sans-serif; }
+        .logout-btn:hover { background-color: #c0392b; }
+        .login-container { max-width: 400px; margin: 100px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .login-container h2 { margin-top: 0; color: #2c3e50; }
+        .login-container input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 1em; font-family: 'Open Sans', sans-serif; }
+        .login-container button { width: 100%; padding: 12px; background-color: #3498db; color: white; border: none; border-radius: 5px; font-size: 1em; font-weight: 600; cursor: pointer; font-family: 'Open Sans', sans-serif; }
+        .login-container button:hover { background-color: #2980b9; }
+        .tab-nav { display: flex; gap: 0; background: white; border-radius: 8px 8px 0 0; border-bottom: 2px solid #dde2e8; margin-bottom: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.06); flex-wrap: wrap; }
+        .tab-nav-btn { padding: 14px 24px; border: none; background: none; font-family: 'Open Sans', sans-serif; font-size: 0.97em; font-weight: 600; color: #7f8c8d; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color 0.2s, border-color 0.2s; display: flex; align-items: center; gap: 8px; }
+        .tab-nav-btn:hover { color: #2c3e50; }
+        .tab-nav-btn.active { color: #3498db; border-bottom-color: #3498db; }
+        .tab-nav-btn.hist102-tab.active { color: #9a6f2a; border-bottom-color: #9a6f2a; }
+        .tab-nav-btn.hist102-tab:hover  { color: #9a6f2a; }
+        .tab-nav-btn.weimar-tab.active { color: #8b0000; border-bottom-color: #8b0000; }
+        .tab-nav-btn.weimar-tab:hover  { color: #8b0000; }
+        .tab-nav-btn.thesis-tab.active { color: #4a235a; border-bottom-color: #4a235a; }
+        .tab-nav-btn.thesis-tab:hover  { color: #4a235a; }
+        .tab-nav-btn .tab-count { background: #e8ecf0; color: #555; font-size: 0.78em; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+        .tab-nav-btn.active .tab-count { background: #d5eaf7; color: #2980b9; }
+        .tab-nav-btn.hist102-tab.active .tab-count { background: #f7eed8; color: #9a6f2a; }
+        .tab-nav-btn.weimar-tab.active .tab-count  { background: #fde8e8; color: #8b0000; }
+        .tab-nav-btn.thesis-tab.active .tab-count  { background: #f0e6f6; color: #4a235a; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .stats { display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+        .stat-card { background: white; padding: 16px 20px; border-radius: 6px; flex: 1; min-width: 100px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .stat-card h3 { margin: 0 0 4px; color: #7f8c8d; font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.03em; }
+        .stat-card .number { font-size: 1.9em; font-weight: 700; color: #2c3e50; }
+        .stat-card.gold .number   { color: #9a6f2a; }
+        .stat-card.weimar .number { color: #8b0000; }
+        .stat-card.thesis .number { color: #4a235a; }
+        .filters { background: white; padding: 16px 20px; border-radius: 6px; margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-weight: 600; font-size: 0.82em; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.03em; }
+        .filter-group select, .filter-group input { padding: 7px 10px; border: 1.5px solid #ccd3da; border-radius: 4px; font-size: 0.92em; min-width: 140px; font-family: 'Open Sans', sans-serif; }
+        .filter-group select:focus, .filter-group input:focus { outline: none; border-color: #3498db; }
+        .refresh-btn { background-color: #27ae60; color: white; border: none; padding: 9px 18px; border-radius: 4px; cursor: pointer; font-weight: 600; font-family: 'Open Sans', sans-serif; }
+        .refresh-btn:hover { background-color: #229954; }
+        .table-container { background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid #ecf0f1; font-size: 0.92em; }
+        th { background-color: #34495e; color: white; font-weight: 600; position: sticky; top: 0; }
+        .th-gold   { background-color: #1a1510 !important; }
+        .th-weimar { background-color: #3d0a0a !important; }
+        .th-thesis { background-color: #2c0a3a !important; }
+        tr:hover { background-color: #f8f9fa; }
+        .worksheet-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.82em; font-weight: 600; }
+        .type-hist101 { background-color: #e8f4f8; color: #2980b9; }
+        .type-hist107 { background-color: #fef3e2; color: #e67e22; }
+        .prompt-badge { display: inline-block; padding: 3px 9px; border-radius: 4px; font-size: 0.8em; font-weight: 700; font-family: 'Open Sans', sans-serif; }
+        .prompt-a { background: #e8f4f8; color: #2980b9; }
+        .prompt-b { background: #eafaf1; color: #1e8449; }
+        .prompt-c { background: #fef3e2; color: #c0712a; }
+        .prompt-d { background: #f5eef8; color: #8e44ad; }
+        .thesis-badge { display: inline-block; padding: 3px 9px; border-radius: 4px; font-size: 0.82em; font-weight: 700; font-family: 'Open Sans', sans-serif; }
+        .thesis-A { background: #fde8e8; color: #8b0000; }
+        .thesis-B { background: #e8f4f8; color: #1a5276; }
+        .thesis-C { background: #fef3e2; color: #7d4a00; }
+        .thesis-D { background: #eafaf1; color: #1e5631; }
+        .faction-badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 0.78em; font-weight: 700; white-space: nowrap; }
+        .faction-SPD          { background: #fde8e8; color: #8b0000; }
+        .faction-KPD          { background: #5a0000; color: #fff; }
+        .faction-Centre       { background: #1a1a1a; color: #fff; }
+        .faction-DNVP         { background: #003366; color: #fff; }
+        .faction-NSDAP        { background: #3d2000; color: #fff; }
+        .faction-DVP          { background: #e8f0fe; color: #1a3a6e; }
+        .faction-Camarilla    { background: #3a3a3a; color: #d4af37; }
+        .faction-Indeterminate { background: #f0f0f0; color: #555; }
+        .score-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.88em; font-weight: 700; font-family: 'Open Sans', sans-serif; min-width: 48px; text-align: center; }
+        .score-perfect { background: #d5f5e3; color: #1e8449; }
+        .score-good    { background: #d5eaf7; color: #2471a3; }
+        .score-ok      { background: #fef3e2; color: #c07a10; }
+        .score-low     { background: #fde8e8; color: #922b21; }
+        .session-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.78em; font-weight: 700; font-family: 'Open Sans', sans-serif; }
+        .session-s1 { background: #e8f4f8; color: #2471a3; }
+        .session-s2 { background: #fde8e8; color: #8b0000; }
+        .miss-panel { background: white; border-radius: 6px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .miss-panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .miss-panel-title { font-weight: 700; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.04em; color: #2c3e50; }
+        .miss-panel-badge { font-size: 0.75em; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+        .miss-panel-badge.s2 { background: #fde8e8; color: #8b0000; }
+        .miss-panel-badge.s1 { background: #e8f4f8; color: #2471a3; }
+        .answer-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .answer-chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 10px; font-size: 0.75em; font-weight: 700; font-family: 'Open Sans', sans-serif; }
+        .chip-correct   { background: #eafaf1; color: #1e8449; }
+        .chip-incorrect { background: #fde8e8; color: #922b21; }
+        .review-checkbox   { width: 18px; height: 18px; cursor: pointer; accent-color: #27ae60; }
+        .download-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #9b59b6; }
+        .select-checkbox   { width: 18px; height: 18px; cursor: pointer; accent-color: #3498db; }
+        .reviewed-cell, .downloaded-cell { text-align: center; }
+        .reviewed-label, .downloaded-label { display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; font-size: 0.83em; color: #7f8c8d; }
+        .reviewed-label.checked   { color: #27ae60; font-weight: 600; }
+        .downloaded-label.checked { color: #9b59b6; font-weight: 600; }
+        .select-cell { text-align: center; width: 46px; }
+        .selection-info { display: flex; align-items: center; gap: 10px; font-size: 0.9em; color: #7f8c8d; }
+        .dl-btn-group { display: inline-flex; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+        .dl-btn-group .dl-main { background-color: #9b59b6; color: white; border: none; padding: 8px 14px; cursor: pointer; font-weight: 600; font-family: 'Open Sans', sans-serif; font-size: 0.88em; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.25); transition: background 0.15s; }
+        .dl-btn-group .dl-main:hover:not(:disabled) { background-color: #8e44ad; }
+        .dl-btn-group .dl-alt { background-color: #8e44ad; color: white; border: none; padding: 8px 14px; cursor: pointer; font-weight: 600; font-family: 'Open Sans', sans-serif; font-size: 0.88em; white-space: nowrap; transition: background 0.15s; }
+        .dl-btn-group .dl-alt:hover:not(:disabled) { background-color: #7d3c98; }
+        .dl-btn-group button:disabled { background-color: #bdc3c7 !important; cursor: not-allowed; }
+        .dl-btn-group.gold .dl-main { background-color: #9a6f2a; }
+        .dl-btn-group.gold .dl-main:hover:not(:disabled) { background-color: #c8922a; }
+        .dl-btn-group.gold .dl-alt  { background-color: #7d5a22; }
+        .dl-btn-group.gold .dl-alt:hover:not(:disabled)  { background-color: #5a3e10; }
+        .dl-btn-group.thesis-dl .dl-main { background-color: #4a235a; }
+        .dl-btn-group.thesis-dl .dl-main:hover:not(:disabled) { background-color: #6a3380; }
+        .dl-btn-group.thesis-dl .dl-alt  { background-color: #2c0a3a; }
+        .dl-btn-group.thesis-dl .dl-alt:hover:not(:disabled)  { background-color: #1a0022; }
+        .download-btn { background-color: #3498db; color: white; border: none; padding: 5px 11px; border-radius: 4px; cursor: pointer; font-size: 0.82em; font-family: 'Open Sans', sans-serif; font-weight: 600; }
+        .download-btn:hover { background-color: #2980b9; }
+        .download-btn.thesis-dl-btn { background-color: #4a235a; }
+        .download-btn.thesis-dl-btn:hover { background-color: #6a3380; }
+        .view-btn { background-color: #2c3e50; color: white; border: none; padding: 5px 11px; border-radius: 4px; cursor: pointer; font-size: 0.82em; font-family: 'Open Sans', sans-serif; font-weight: 600; margin-left: 4px; }
+        .view-btn:hover { background-color: #1a252f; }
+        .audio-link-btn { background-color: #8e44ad; color: white; border: none; padding: 5px 11px; border-radius: 4px; cursor: pointer; font-size: 0.82em; font-family: 'Open Sans', sans-serif; font-weight: 600; text-decoration: none; display: inline-block; }
+        .audio-link-btn:hover { background-color: #7d3c98; }
+        #text-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+        #text-modal.show { display: flex; }
+        .modal-inner { background: white; border-radius: 10px; padding: 36px 40px; max-width: 780px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.25); position: relative; }
+        .modal-inner h3 { margin: 0 0 4px; color: #2c3e50; font-size: 1.15em; }
+        .modal-inner .modal-meta { color: #888; font-size: 0.85em; margin-bottom: 18px; }
+        .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 1.4em; cursor: pointer; color: #7f8c8d; }
+        .modal-close:hover { color: #333; }
+        .modal-section-label { font-weight: 700; font-size: 0.82em; text-transform: uppercase; letter-spacing: 0.04em; color: #2c3e50; margin: 18px 0 6px; }
+        .modal-text { background: #f7f9fb; border: 1px solid #dde2e8; border-radius: 5px; padding: 14px 16px; font-size: 0.93em; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; max-height: 320px; overflow-y: auto; }
+        .modal-thesis-block { background: #f5eef8; border-left: 4px solid #4a235a; padding: 10px 14px; border-radius: 0 4px 4px 0; font-style: italic; font-size: 0.93em; color: #2c0a3a; margin-bottom: 4px; line-height: 1.55; }
+        .quiz-question-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .quiz-question-row:last-child { border-bottom: none; }
+        .quiz-q-num { background: #2c3e50; color: #fff; font-size: 0.78em; font-weight: 700; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+        .quiz-q-text { font-size: 0.88em; color: #333; flex: 1; }
+        .quiz-q-result { font-size: 0.82em; font-weight: 700; flex-shrink: 0; }
+        .quiz-q-correct   { color: #1e8449; }
+        .quiz-q-incorrect { color: #922b21; }
+        .export-btn { background-color: #8b0000; color: white; border: none; padding: 9px 18px; border-radius: 4px; cursor: pointer; font-weight: 600; font-family: 'Open Sans', sans-serif; font-size: 0.88em; }
+        .export-btn:hover { background-color: #6b0000; }
+        .export-btn.thesis-export { background-color: #4a235a; }
+        .export-btn.thesis-export:hover { background-color: #2c0a3a; }
+        .no-data { text-align: center; padding: 40px; color: #7f8c8d; }
+        .loading  { text-align: center; padding: 40px; color: #7f8c8d; }
+        .error  { background: #f8d7da; color: #721c24; padding: 14px; border-radius: 5px; margin-bottom: 16px; }
+        .hidden { display: none !important; }
+        .wc-pill { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.8em; font-weight: 700; }
+        .wc-ok  { background: #eafaf1; color: #1e8449; }
+        .wc-low { background: #fde8e8; color: #c0392b; }
+        @media (max-width: 768px) {
+            .filters { flex-direction: column; }
+            .filter-group, .filter-group select, .filter-group input { width: 100%; }
+            .stats { flex-direction: column; }
+            .table-container { overflow-x: auto; }
+        }
+    </style>
 </head>
 <body>
 
-<!-- ════════ LOGIN ════════ -->
-<div id="loginScreen">
-  <div class="login-box">
-    <div class="login-eyebrow">HIST 102 &nbsp;·&nbsp; Instructor Access</div>
-    <h1>Dashboard Login</h1>
-    <p>Sign in with your Supabase instructor account to view student submissions.</p>
-    <label class="login-label" for="loginEmail">Email</label>
-    <input class="login-input" type="email" id="loginEmail" placeholder="instructor@university.edu" autocomplete="email">
-    <label class="login-label" for="loginPass">Password</label>
-    <input class="login-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
-    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
-    <div class="login-error" id="loginError"></div>
-  </div>
+<div id="text-modal" role="dialog" aria-modal="true">
+    <div class="modal-inner">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <h3 id="modal-title"></h3>
+        <div class="modal-meta" id="modal-meta"></div>
+        <div id="modal-body"></div>
+    </div>
 </div>
 
-<!-- ════════ APP SHELL ════════ -->
-<div id="appShell">
+<div id="loginScreen" class="login-container">
+    <h2>Submissions Dashboard</h2>
+    <p>Enter the dashboard password to view student submissions.</p>
+    <input type="password" id="passwordInput" placeholder="Enter password" onkeypress="if(event.key==='Enter') checkPassword()">
+    <button onclick="checkPassword()">Access Dashboard</button>
+    <p id="loginError" class="hidden" style="color:#e74c3c;margin-top:10px"></p>
+</div>
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <span class="topbar-title">HIST 102 &nbsp;·&nbsp; Instructor Dashboard</span>
-    <div class="topbar-right">
-      <span class="topbar-user" id="userEmail"></span>
-      <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
-    </div>
-  </div>
+<div id="dashboard" class="container hidden">
+    <header>
+        <h1>📋 Student Submissions Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+    <div id="errorMessage" class="error hidden"></div>
 
-  <div class="app-body">
-
-    <!-- SIDEBAR -->
-    <nav class="sidebar">
-      <div class="sidebar-section-label">Overview</div>
-      <a class="sidebar-link active" onclick="showView('overview')">All Weeks Summary</a>
-
-      <div class="sidebar-section-label">By Week</div>
-      <a class="sidebar-link" onclick="showView('week','w1')">Week 1 — Reconstruction</a>
-      <a class="sidebar-link" onclick="showView('week','w2')">Week 2</a>
-      <a class="sidebar-link" onclick="showView('week','w3')">Week 3</a>
-      <a class="sidebar-link" onclick="showView('week','w4')">Week 4</a>
-      <a class="sidebar-link" onclick="showView('week','w5')">Week 5</a>
-      <a class="sidebar-link" onclick="showView('week','w6')">Week 6</a>
-      <a class="sidebar-link" onclick="showView('week','w7')">Week 7</a>
-
-      <div class="sidebar-section-label">Records</div>
-      <a class="sidebar-link" onclick="showView('gates')">Gate Entries</a>
-      <a class="sidebar-link" onclick="showView('downloads')">PDF Downloads</a>
-    </nav>
-
-    <!-- MAIN -->
-    <div class="main-content" id="mainContent">
-      <div class="loading-msg">Loading…</div>
+    <div class="tab-nav">
+        <button class="tab-nav-btn active" onclick="switchTab('worksheets', this)">📄 Worksheets <span class="tab-count" id="count-worksheets">0</span></button>
+        <button class="tab-nav-btn" onclick="switchTab('papers', this)">✍️ Research Papers <span class="tab-count" id="count-papers">0</span></button>
+        <button class="tab-nav-btn" onclick="switchTab('interviews', this)">🎙 Interviews <span class="tab-count" id="count-interviews">0</span></button>
+        <button class="tab-nav-btn hist102-tab" onclick="switchTab('hist102', this)">📜 HIST 102 Papers <span class="tab-count" id="count-hist102">0</span></button>
+        <button class="tab-nav-btn weimar-tab" onclick="switchTab('weimar', this)">🏛 Weimar Quiz <span class="tab-count" id="count-weimar">0</span></button>
+        <button class="tab-nav-btn thesis-tab" onclick="switchTab('thesis', this)">⚔️ Thesis Defenses <span class="tab-count" id="count-thesis">0</span></button>
     </div>
 
-  </div>
-</div><!-- /appShell -->
+    <!-- WORKSHEETS -->
+    <div class="tab-pane active" id="pane-worksheets">
+        <div class="stats">
+            <div class="stat-card"><h3>Total</h3><div class="number" id="ws-total">-</div></div>
+            <div class="stat-card"><h3>HIST 101</h3><div class="number" id="ws-hist101">-</div></div>
+            <div class="stat-card"><h3>HIST 107</h3><div class="number" id="ws-hist107">-</div></div>
+            <div class="stat-card"><h3>Today</h3><div class="number" id="ws-today">-</div></div>
+            <div class="stat-card"><h3>Reviewed</h3><div class="number" id="ws-reviewed">-</div></div>
+            <div class="stat-card"><h3>Downloaded</h3><div class="number" id="ws-downloaded">-</div></div>
+        </div>
+        <div class="filters">
+            <div class="filter-group"><label>Course</label><select id="ws-filterCourse" onchange="applyWorksheetFilters()"><option value="">All Courses</option><option value="hist101">HIST 101</option><option value="hist107">HIST 107</option></select></div>
+            <div class="filter-group"><label>Worksheet Type</label><select id="ws-filterType" onchange="applyWorksheetFilters()"><option value="">All Types</option></select></div>
+            <div class="filter-group"><label>Section</label><select id="ws-filterSection" onchange="applyWorksheetFilters()"><option value="">All Sections</option></select></div>
+            <div class="filter-group"><label>Search Student</label><input type="text" id="ws-search" placeholder="Student name..." oninput="applyWorksheetFilters()"></div>
+            <div class="filter-group"><label>Review Status</label><select id="ws-filterReviewed" onchange="applyWorksheetFilters()"><option value="">All</option><option value="unreviewed">Not Reviewed</option><option value="reviewed">Reviewed</option></select></div>
+            <div class="filter-group"><label>Download Status</label><select id="ws-filterDownloaded" onchange="applyWorksheetFilters()"><option value="">All</option><option value="not-downloaded">Not Downloaded</option><option value="downloaded">Downloaded</option></select></div>
+            <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+            <div class="selection-info"><span id="ws-selectedCount">0 selected</span><div class="dl-btn-group"><button class="dl-main" id="ws-downloadMergedBtn" onclick="downloadSelectedWorksheets('merged')" disabled>⬇ Merged PDF</button><button class="dl-alt" id="ws-downloadZipBtn" onclick="downloadSelectedWorksheets('zip')" disabled>🗜 ZIP</button></div></div>
+        </div>
+        <div class="table-container"><table><thead><tr><th class="select-cell"><input type="checkbox" class="select-checkbox" id="ws-selectAll" onchange="toggleSelectAllWorksheets()"></th><th>Student Name</th><th>Section</th><th>Worksheet</th><th>Submitted</th><th>Reviewed</th><th>Downloaded</th><th>Actions</th></tr></thead><tbody id="ws-table"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table></div>
+    </div>
 
-<script src="../supabase-config.js"></script>
+    <!-- RESEARCH PAPERS -->
+    <div class="tab-pane" id="pane-papers">
+        <div class="stats">
+            <div class="stat-card"><h3>Total</h3><div class="number" id="pp-total">-</div></div>
+            <div class="stat-card"><h3>Today</h3><div class="number" id="pp-today">-</div></div>
+            <div class="stat-card"><h3>Avg Words</h3><div class="number" id="pp-avgwords">-</div></div>
+            <div class="stat-card"><h3>Reviewed</h3><div class="number" id="pp-reviewed">-</div></div>
+        </div>
+        <div class="filters">
+            <div class="filter-group"><label>Section</label><select id="pp-filterSection" onchange="applyPaperFilters()"><option value="">All Sections</option></select></div>
+            <div class="filter-group"><label>Search Student</label><input type="text" id="pp-search" placeholder="Student name..." oninput="applyPaperFilters()"></div>
+            <div class="filter-group"><label>Review Status</label><select id="pp-filterReviewed" onchange="applyPaperFilters()"><option value="">All</option><option value="unreviewed">Not Reviewed</option><option value="reviewed">Reviewed</option></select></div>
+            <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+            <div class="selection-info"><span id="pp-selectedCount">0 selected</span><div class="dl-btn-group"><button class="dl-main" id="pp-downloadMergedBtn" onclick="downloadSelectedPapers('merged')" disabled>⬇ Merged PDF</button><button class="dl-alt" id="pp-downloadZipBtn" onclick="downloadSelectedPapers('zip')" disabled>🗜 ZIP</button></div></div>
+        </div>
+        <div class="table-container"><table><thead><tr><th class="select-cell"><input type="checkbox" class="select-checkbox" id="pp-selectAll" onchange="toggleSelectAllPapers()"></th><th>Student Name</th><th>Section</th><th>Paper Title</th><th>Words</th><th>Bibliography</th><th>Pledge</th><th>Submitted</th><th>Reviewed</th><th>Actions</th></tr></thead><tbody id="pp-table"><tr><td colspan="10" class="loading">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- INTERVIEWS -->
+    <div class="tab-pane" id="pane-interviews">
+        <div class="stats">
+            <div class="stat-card"><h3>Total</h3><div class="number" id="iv-total">-</div></div>
+            <div class="stat-card"><h3>Today</h3><div class="number" id="iv-today">-</div></div>
+            <div class="stat-card"><h3>File Uploads</h3><div class="number" id="iv-uploads">-</div></div>
+            <div class="stat-card"><h3>Links</h3><div class="number" id="iv-links">-</div></div>
+            <div class="stat-card"><h3>Reviewed</h3><div class="number" id="iv-reviewed">-</div></div>
+        </div>
+        <div class="filters">
+            <div class="filter-group"><label>Section</label><select id="iv-filterSection" onchange="applyInterviewFilters()"><option value="">All Sections</option></select></div>
+            <div class="filter-group"><label>Search Student</label><input type="text" id="iv-search" placeholder="Student name..." oninput="applyInterviewFilters()"></div>
+            <div class="filter-group"><label>Audio Type</label><select id="iv-filterMethod" onchange="applyInterviewFilters()"><option value="">All</option><option value="upload">File Upload</option><option value="link">Link</option></select></div>
+            <div class="filter-group"><label>Review Status</label><select id="iv-filterReviewed" onchange="applyInterviewFilters()"><option value="">All</option><option value="unreviewed">Not Reviewed</option><option value="reviewed">Reviewed</option></select></div>
+            <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+        </div>
+        <div class="table-container"><table><thead><tr><th>Student Name</th><th>Section</th><th>Interviewee</th><th>Norm</th><th>Date</th><th>Audio</th><th>Submitted</th><th>Reviewed</th><th>Actions</th></tr></thead><tbody id="iv-table"><tr><td colspan="9" class="loading">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- HIST 102 PAPERS -->
+    <div class="tab-pane" id="pane-hist102">
+        <div class="stats">
+            <div class="stat-card gold"><h3>Total</h3><div class="number" id="h2-total">-</div></div>
+            <div class="stat-card gold"><h3>Today</h3><div class="number" id="h2-today">-</div></div>
+            <div class="stat-card gold"><h3>Avg Words</h3><div class="number" id="h2-avgwords">-</div></div>
+            <div class="stat-card gold"><h3>Reviewed</h3><div class="number" id="h2-reviewed">-</div></div>
+            <div class="stat-card gold"><h3>Option A</h3><div class="number" id="h2-promptA">-</div></div>
+            <div class="stat-card gold"><h3>Option B</h3><div class="number" id="h2-promptB">-</div></div>
+            <div class="stat-card gold"><h3>Option C</h3><div class="number" id="h2-promptC">-</div></div>
+            <div class="stat-card gold"><h3>Option D</h3><div class="number" id="h2-promptD">-</div></div>
+        </div>
+        <div class="filters">
+            <div class="filter-group"><label>Prompt</label><select id="h2-filterPrompt" onchange="applyHist102Filters()"><option value="">All Prompts</option><option value="A">Option A — The Broken Obligation</option><option value="B">Option B — The Blind Spot</option><option value="C">Option C — The Crossroads Moment</option><option value="D">Option D — The Obligation That Matters Most Now</option></select></div>
+            <div class="filter-group"><label>Search Student</label><input type="text" id="h2-search" placeholder="Name or W Number..." oninput="applyHist102Filters()"></div>
+            <div class="filter-group"><label>Word Count</label><select id="h2-filterWc" onchange="applyHist102Filters()"><option value="">All</option><option value="ok">In Range (1,500–2,000)</option><option value="low">Under 1,500</option><option value="high">Over 2,000</option></select></div>
+            <div class="filter-group"><label>Review Status</label><select id="h2-filterReviewed" onchange="applyHist102Filters()"><option value="">All</option><option value="unreviewed">Not Reviewed</option><option value="reviewed">Reviewed</option></select></div>
+            <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+            <div class="selection-info"><span id="h2-selectedCount">0 selected</span><div class="dl-btn-group gold"><button class="dl-main" id="h2-downloadMergedBtn" onclick="downloadSelectedHist102('merged')" disabled>⬇ Merged PDF</button><button class="dl-alt" id="h2-downloadZipBtn" onclick="downloadSelectedHist102('zip')" disabled>🗜 ZIP</button></div></div>
+        </div>
+        <div class="table-container"><table><thead><tr><th class="select-cell th-gold"><input type="checkbox" class="select-checkbox" id="h2-selectAll" onchange="toggleSelectAllHist102()"></th><th class="th-gold">Student Name</th><th class="th-gold">W Number</th><th class="th-gold">Prompt</th><th class="th-gold">Paper Title</th><th class="th-gold">Words</th><th class="th-gold">Bibliography</th><th class="th-gold">Pledge</th><th class="th-gold">Submitted</th><th class="th-gold">Reviewed</th><th class="th-gold">Actions</th></tr></thead><tbody id="h2-table"><tr><td colspan="11" class="loading">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- WEIMAR QUIZ -->
+    <div class="tab-pane" id="pane-weimar">
+        <div class="stats">
+            <div class="stat-card weimar"><h3>Submissions</h3><div class="number" id="wq-total">-</div></div>
+            <div class="stat-card weimar"><h3>Today</h3><div class="number" id="wq-today">-</div></div>
+            <div class="stat-card weimar"><h3>Avg Score</h3><div class="number" id="wq-avg">-</div></div>
+            <div class="stat-card weimar"><h3>Perfect (10)</h3><div class="number" id="wq-perfect">-</div></div>
+            <div class="stat-card weimar"><h3>≥ 8</h3><div class="number" id="wq-good">-</div></div>
+            <div class="stat-card weimar"><h3>≤ 5</h3><div class="number" id="wq-low">-</div></div>
+        </div>
+        <div class="filters">
+            <div class="filter-group"><label>Score Filter</label><select id="wq-filterScore" onchange="applyWeimarFilters()"><option value="">All Scores</option><option value="perfect">Perfect (10/10)</option><option value="good">Strong (8–9)</option><option value="ok">Solid (6–7)</option><option value="low">Needs Review (≤ 5)</option></select></div>
+            <div class="filter-group"><label>Search Student</label><input type="text" id="wq-search" placeholder="Name or Student ID..." oninput="applyWeimarFilters()"></div>
+            <div class="filter-group"><label>Session</label><select id="wq-filterSession" onchange="applyWeimarFilters()"><option value="">All Sessions</option><option value="Session 1">Session 1</option><option value="Session 2">Session 2</option></select></div>
+            <div class="filter-group"><label>Date</label><select id="wq-filterDate" onchange="applyWeimarFilters()"><option value="">All Time</option><option value="today">Today</option><option value="week">This Week</option></select></div>
+            <button class="refresh-btn" onclick="loadWeimar()">↻ Refresh</button>
+            <button class="export-btn" onclick="exportWeimarCSV()">⬇ Export CSV</button>
+        </div>
+        <div id="wq-miss-s2" class="miss-panel hidden">
+            <div class="miss-panel-header"><span class="miss-panel-title">Questions Missed Most Often</span><span class="miss-panel-badge s2">Session 2 — filtered view</span><span id="wq-miss-count-s2" style="margin-left:auto;font-size:0.82em;color:#888;"></span></div>
+            <div id="wq-miss-bars-s2"></div>
+        </div>
+        <div id="wq-miss-s1" class="miss-panel hidden">
+            <div class="miss-panel-header"><span class="miss-panel-title">Questions Missed Most Often</span><span class="miss-panel-badge s1">Session 1 — filtered view</span><span id="wq-miss-count-s1" style="margin-left:auto;font-size:0.82em;color:#888;"></span></div>
+            <div id="wq-miss-bars-s1"></div>
+        </div>
+        <div class="table-container"><table><thead><tr><th class="th-weimar">Student Name</th><th class="th-weimar">Student ID</th><th class="th-weimar">Session</th><th class="th-weimar">Score</th><th class="th-weimar">Answers</th><th class="th-weimar">Submitted</th><th class="th-weimar">Actions</th></tr></thead><tbody id="wq-table"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- THESIS DEFENSES -->
+    <div class="tab-pane" id="pane-thesis">
+        <div class="stats">
+            <div class="stat-card thesis"><h3>Total</h3><div class="number" id="td-total">-</div></div>
+            <div class="stat-card thesis"><h3>Today</h3><div class="number" id="td-today">-</div></div>
+            <div class="stat-card thesis"><h3>Thesis A</h3><div class="number" id="td-A">-</div></div>
+            <div class="stat-card thesis"><h3>Thesis B</h3><div class="number" id="td-B">-</div></div>
+            <div class="stat-card thesis"><h3>Thesis C</h3><div class="number" id="td-C">-</div></div>
+            <div class="stat-card thesis"><h3>Thesis D</h3><div class="number" id="td-D">-</div></div>
+            <div class="stat-card thesis"><h3>Avg Words</h3><div class="number" id="td-avgwords">-</div></div>
+            <div class="stat-card thesis"><h3>Reviewed</h3><div class="number" id="td-reviewed">-</div></div>
+        </div>
+        <div class="filters">
+            <div class="filter-group"><label>Thesis Option</label>
+                <select id="td-filterThesis" onchange="applyThesisFilters()">
+                    <option value="">All Theses</option>
+                    <option value="A">A — Economic Crisis</option>
+                    <option value="B">B — Structural Failures</option>
+                    <option value="C">C — Elite Betrayal</option>
+                    <option value="D">D — Ideological Polarization</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>Faction</label>
+                <select id="td-filterFaction" onchange="applyThesisFilters()">
+                    <option value="">All Factions</option>
+                    <option value="SPD">SPD</option>
+                    <option value="KPD">KPD</option>
+                    <option value="Centre">Centre Party</option>
+                    <option value="DNVP">DNVP</option>
+                    <option value="NSDAP">NSDAP</option>
+                    <option value="DVP">DVP</option>
+                    <option value="Camarilla">Camarilla</option>
+                    <option value="Indeterminate">Indeterminate</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>Section</label><select id="td-filterSection" onchange="applyThesisFilters()"><option value="">All Sections</option></select></div>
+            <div class="filter-group"><label>Search Student / Role</label><input type="text" id="td-search" placeholder="Name, role, or ID..." oninput="applyThesisFilters()"></div>
+            <div class="filter-group"><label>Review Status</label><select id="td-filterReviewed" onchange="applyThesisFilters()"><option value="">All</option><option value="unreviewed">Not Reviewed</option><option value="reviewed">Reviewed</option></select></div>
+            <button class="refresh-btn" onclick="loadThesis()">↻ Refresh</button>
+            <button class="export-btn thesis-export" onclick="exportThesisCSV()">⬇ Export CSV</button>
+            <div class="selection-info">
+                <span id="td-selectedCount">0 selected</span>
+                <div class="dl-btn-group thesis-dl">
+                    <button class="dl-main" id="td-downloadMergedBtn" onclick="downloadSelectedThesis('merged')" disabled>⬇ Merged PDF</button>
+                    <button class="dl-alt"  id="td-downloadZipBtn"    onclick="downloadSelectedThesis('zip')"    disabled>🗜 ZIP</button>
+                </div>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="select-cell th-thesis"><input type="checkbox" class="select-checkbox" id="td-selectAll" onchange="toggleSelectAllThesis()"></th>
+                        <th class="th-thesis">Student Name</th>
+                        <th class="th-thesis">Role</th>
+                        <th class="th-thesis">Faction</th>
+                        <th class="th-thesis">Thesis</th>
+                        <th class="th-thesis">Words</th>
+                        <th class="th-thesis">Pledge</th>
+                        <th class="th-thesis">Submitted</th>
+                        <th class="th-thesis">Reviewed</th>
+                        <th class="th-thesis">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="td-table"><tr><td colspan="10" class="loading">Loading…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
 <script>
-// ══════════════════════════════════════════════════════════════
-//  HIST 102 — Instructor Dashboard
-//  Requires: supabase-config.js loaded above
-// ══════════════════════════════════════════════════════════════
+// ── CREDENTIALS ───────────────────────────────────────────────────────────────
+const SUPABASE_URL      = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const DASHBOARD_PASSWORD = 'hauselmann2026';
 
-var authToken = null;
+let allWorksheets = [], allPapers = [], allInterviews = [], allHist102 = [], allWeimar = [], allThesis = [];
+let wsSelected = new Set(), wsFiltered = [];
+let ppSelectedSet = new Set(), ppFiltered = [];
+let h2SelectedSet = new Set(), h2Filtered = [];
+let tdSelectedSet = new Set(), tdFiltered = [];
+let wqFiltered = [];
 
-// ── QUESTION LABELS (for expandable rows) ──
-var Q_LABELS = [
-  { col: 'r1_q1', label: "The President's Plan" },
-  { col: 'r1_q2', label: "The Thirteenth Amendment" },
-  { col: 'r1_q3', label: "Andrew Johnson" },
-  { col: 'r1_q4', label: "The Freedmen's Bureau" },
-  { col: 'r1_q5', label: "Black Codes" },
-  { col: 'r1_q6', label: "The Fourteenth Amendment" },
-  { col: 'r2_q1', label: "The Reconstruction Acts" },
-  { col: 'r2_q2', label: "Impeachment of Johnson" },
-  { col: 'r2_q3', label: "The Fifteenth Amendment" },
-  { col: 'r2_q4', label: "Sharecropping" },
-  { col: 'r2_q5', label: "The Ku Klux Klan" },
-  { col: 'r2_q6', label: "The Compromise of 1877" }
-];
+// ── QUIZ KEYS ─────────────────────────────────────────────────────────────────
+const QUIZ_ANSWERS_S1 = { q1:'B', q2:'B', q3:'C', q4:'B', q5:'C', q6:'B', q7:'C', q8:'B', q9:'C', q10:'B' };
+const QUIZ_TOPICS_S1  = { q1:'Role Sheet', q2:'Five Crises', q3:'Five Crises', q4:'Constitutional Mechanics', q5:'Party Spectrum', q6:'Freedom Law', q7:'Freedom Law', q8:'Core Texts', q9:'Stability Index', q10:'Session 1' };
+const QUIZ_QUESTIONS_S1 = { q1:'Which best describes the role of the Camarilla?', q2:'The Stab-in-the-Back Myth was significant primarily because…', q3:'Which economic event had just occurred when the simulation begins?', q4:'The "25/48/53 formula" refers to a combination that allowed…', q5:'Which party called the SPD "social fascists" and refused cooperation?', q6:'The Freedom Law would have…', q7:'Which best captures the KPD\'s distinctive reason for opposing the Freedom Law?', q8:'Which best describes the Conservative Revolution\'s critique of Weimar?', q9:'What does a HIGH Stability Index (above +50) mean for pro-Republican parties?', q10:'During character introductions, each student covers three things. Which correctly lists all three?' };
+const QUIZ_ANSWERS_S2 = { q1:'C', q2:'B', q3:'D', q4:'A', q5:'B', q6:'C', q7:'A', q8:'B', q9:'D', q10:'C' };
+const QUIZ_TOPICS_S2  = { q1:'Young Plan', q2:'Young Plan', q3:'Young Plan', q4:'Young Plan', q5:'Young Plan', q6:'Core Texts — Communism', q7:'Core Texts — Nazism', q8:'Core Texts — Nazism', q9:'Core Texts — Conservative Revolution', q10:'Core Texts — Republicanism' };
+const QUIZ_QUESTIONS_S2 = { q1:'The Young Plan (1929) was primarily a renegotiation of which aspect of Germany\'s situation under Versailles?', q2:'Beyond reducing reparations payments, the Young Plan offered Germany one significant additional concession. What was it?', q3:'The NSDAP and DNVP ran a national referendum campaign to annul the Young Plan. What was the result?', q4:'Which correctly describes how the KPD\'s opposition to the Young Plan differs from the NSDAP\'s?', q5:'The DVP supports the Young Plan. What is the basis of their support?', q6:'The KPD\'s 1930 Programme combines two elements that might seem contradictory. Which best describes that combination?', q7:'The Twenty-Five Points combine nationalist demands with economic ones that sound almost socialist. Which best captures that tension?', q8:'In "Those Damned Nazis" (1929), Goebbels argues Germany\'s crisis is caused primarily by…', q9:'Carl Schmitt\'s critique of parliamentarism rests on which central argument?', q10:'Thomas Mann\'s "On the German Republic" (1922) makes an unusual argument for democracy. Which best captures his approach?' };
+function getQuizMeta(session) { return session === 'Session 2' ? { answers: QUIZ_ANSWERS_S2, topics: QUIZ_TOPICS_S2, questions: QUIZ_QUESTIONS_S2 } : { answers: QUIZ_ANSWERS_S1, topics: QUIZ_TOPICS_S1, questions: QUIZ_QUESTIONS_S1 }; }
 
-var WEEK_LABELS = {
-  w1:'Week 1 — Reconstruction', w2:'Week 2', w3:'Week 3',
-  w4:'Week 4', w5:'Week 5', w6:'Week 6', w7:'Week 7'
+const THESIS_FULL_LABELS = {
+    A: 'Economic Crisis — hyperinflation, the Great Depression, and mass unemployment destroyed public confidence in democratic institutions.',
+    B: 'Structural & Constitutional Failures — proportional representation, Article 48, and unstable coalitions made democratic governance impossible.',
+    C: 'Elite Betrayal — conservative nationalists, industrialists, and the Camarilla around Hindenburg deliberately undermined democracy.',
+    D: 'Ideological Polarization — the rise of fascism and communism as militant mass movements shattered the political center.'
 };
 
-// ── AUTH ──
-function doLogin() {
-  var email = document.getElementById('loginEmail').value.trim();
-  var pass  = document.getElementById('loginPass').value;
-  var btn   = document.getElementById('loginBtn');
-  var err   = document.getElementById('loginError');
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+function checkPassword() { const pw=document.getElementById('passwordInput').value; if(pw===DASHBOARD_PASSWORD){sessionStorage.setItem('dashboard_auth','true');showDashboard();}else{const el=document.getElementById('loginError');el.textContent='Incorrect password.';el.classList.remove('hidden');} }
+function logout() { sessionStorage.removeItem('dashboard_auth');document.getElementById('dashboard').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('passwordInput').value=''; }
+function showDashboard() { document.getElementById('loginScreen').classList.add('hidden');document.getElementById('dashboard').classList.remove('hidden');loadAll(); }
 
-  err.classList.remove('visible');
-  btn.disabled = true;
-  btn.textContent = 'Signing in…';
+function switchTab(name,btn) { document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('pane-'+name).classList.add('active');btn.classList.add('active'); }
+async function loadAll() { await Promise.all([loadWorksheets(),loadPapers(),loadInterviews(),loadHist102(),loadWeimar(),loadThesis()]); }
 
-  sbSignIn(email, pass).then(function(data) {
-    if (data.error || !data.access_token) {
-      err.textContent = data.error_description || 'Invalid email or password.';
-      err.classList.add('visible');
-      btn.disabled = false;
-      btn.textContent = 'Sign In';
-      return;
+// ══════════════════════════════════════════════════════════════════════════════
+//  THESIS PDF GENERATION
+//  Generates a formatted MLA-style PDF from stored text fields using jsPDF
+// ══════════════════════════════════════════════════════════════════════════════
+function buildThesisPDFBytes(sub) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'in', format: 'letter' });
+
+    const margin = 1;
+    const pageW  = 8.5;
+    const pageH  = 11;
+    const cW     = pageW - margin * 2;   // content width
+    const lh     = 0.28;                 // line height (double-spaced ~12pt)
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(12);
+
+    let y = margin;
+
+    function checkPage() { if (y > pageH - margin) { doc.addPage(); y = margin; } }
+
+    function writeLine(text, opts = {}) {
+        checkPage();
+        const x = opts.center ? pageW / 2 : margin + (opts.indent || 0);
+        const align = opts.center ? 'center' : 'left';
+        doc.text(String(text), x, y, { align });
+        y += lh;
     }
-    authToken = data.access_token;
-    document.getElementById('userEmail').textContent = email;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appShell').style.display = 'block';
-    showView('overview');
-  }).catch(function(e) {
-    err.textContent = 'Connection error. Check your Supabase URL in supabase-config.js.';
-    err.classList.add('visible');
-    btn.disabled = false;
-    btn.textContent = 'Sign In';
-  });
-}
 
-function doSignOut() {
-  authToken = null;
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('appShell').style.display = 'none';
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPass').value = '';
-}
-
-// Enter key on login
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') {
-    doLogin();
-  }
-});
-
-// ── AUTH FETCH (uses instructor token) ──
-function authFetch(table, filter, order) {
-  var url = SUPABASE_URL + '/rest/v1/' + table + '?';
-  if (filter) url += filter + '&';
-  if (order)  url += 'order=' + order + '&';
-  url += 'limit=2000';
-  return fetch(url, {
-    headers: {
-      'apikey':         SUPABASE_KEY,
-      'Authorization': 'Bearer ' + authToken
+    function writeBlock(text, opts = {}) {
+        const lines = doc.splitTextToSize(String(text || ''), cW - (opts.indent || 0));
+        lines.forEach((line, li) => {
+            checkPage();
+            const x = margin + (li === 0 && opts.firstIndent ? opts.firstIndent : (opts.indent || 0));
+            doc.text(line, x, y);
+            y += lh;
+        });
     }
-  }).then(function(r){ return r.json(); });
-}
 
-// ── NAV ──
-var currentView = null;
-var currentWeek = null;
+    // ── Header block ─────────────────────────────────────────────────────────
+    writeLine(sub.student_name || '[Student Name]');
+    writeLine('Student ID: ' + (sub.student_id || '[ID]'));
+    writeLine('Section ' + (sub.section || '[Section]'));
+    writeLine('Historical Role: ' + (sub.historical_role || '[Role]') + '  (' + (sub.faction || '[Faction]') + ')');
+    writeLine('HIST 105: Western Civilization Since 1648');
+    writeLine('Prof. Hauselmann');
+    writeLine(new Date(sub.submitted_at || Date.now()).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }));
+    y += lh;
 
-function showView(view, week) {
-  currentView = view;
-  currentWeek = week || null;
+    // ── Title ─────────────────────────────────────────────────────────────────
+    doc.setFont('times', 'bold');
+    writeLine('Thesis Defense — Session 3', { center: true });
+    doc.setFont('times', 'normal');
+    y += lh;
 
-  // Update sidebar
-  document.querySelectorAll('.sidebar-link').forEach(function(l) {
-    l.classList.remove('active');
-  });
-  event.currentTarget && event.currentTarget.classList.add('active');
+    // ── Thesis label ─────────────────────────────────────────────────────────
+    const t = sub.thesis_option || '?';
+    doc.setFont('times', 'bold');
+    writeLine('Thesis Selected: Option ' + t);
+    doc.setFont('times', 'italic');
+    writeBlock((THESIS_FULL_LABELS[t] || sub.thesis_label || ''), { indent: 0 });
+    doc.setFont('times', 'normal');
+    y += lh;
 
-  var mc = document.getElementById('mainContent');
-  mc.innerHTML = '<div class="loading-msg">Loading…</div>';
-
-  if (view === 'overview')   renderOverview();
-  else if (view === 'week')  renderWeek(week);
-  else if (view === 'gates') renderGates();
-  else if (view === 'downloads') renderDownloads();
-}
-
-// ── HELPERS ──
-function fmtDate(iso) {
-  if (!iso) return '—';
-  var d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
-       + ' ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
-}
-
-function flagHtml(row) {
-  if (!row.total_questions || row.total_questions === 0) {
-    return '<span class="flag flag-missing">No answers</span>';
-  }
-  if (!row.all_complete) {
-    return '<span class="flag flag-warn">' + row.total_questions + '/12 answered</span>';
-  }
-  if (row.questions_short > 0) {
-    return '<span class="flag flag-warn">' + row.questions_short + ' short</span>';
-  }
-  return '<span class="flag flag-ok">Complete</span>';
-}
-
-function exportCSV(data, filename) {
-  if (!data.length) return;
-  var keys = Object.keys(data[0]);
-  var rows = [keys.join(',')];
-  data.forEach(function(row) {
-    rows.push(keys.map(function(k) {
-      var v = row[k] == null ? '' : String(row[k]).replace(/"/g, '""');
-      return '"' + v + '"';
-    }).join(','));
-  });
-  var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-}
-
-// ── VIEW: OVERVIEW ──
-function renderOverview() {
-  Promise.all([
-    authFetch('reading_submissions', '', 'created_at.desc'),
-    authFetch('gate_entries',        '', 'created_at.desc'),
-    authFetch('pdf_downloads',       '', 'created_at.desc')
-  ]).then(function(results) {
-    var subs  = results[0];
-    var gates = results[1];
-    var pdfs  = results[2];
-
-    if (!Array.isArray(subs)) { showError('reading_submissions'); return; }
-
-    var totalSubs     = subs.length;
-    var complete      = subs.filter(function(r){ return r.all_complete; }).length;
-    var incomplete    = subs.filter(function(r){ return !r.all_complete; }).length;
-    var shortAnswers  = subs.filter(function(r){ return r.questions_short > 0; }).length;
-
-    // Group by week
-    var byWeek = {};
-    subs.forEach(function(r) {
-      byWeek[r.week_id] = (byWeek[r.week_id] || []);
-      byWeek[r.week_id].push(r);
+    // ── Defense text ─────────────────────────────────────────────────────────
+    const paragraphs = (sub.defense_text || '').split(/\n+/).filter(p => p.trim());
+    paragraphs.forEach((para, i) => {
+        writeBlock(para.trim(), { firstIndent: i === 0 ? 0 : 0.5 });
+        y += lh * 0.25; // small gap between paragraphs
     });
 
-    var html = '';
-
-    // Header
-    html += '<div class="page-header">';
-    html +=   '<div><h2>All Weeks Overview</h2>';
-    html +=   '<p>All reading submissions across all weeks.</p></div>';
-    html += '</div>';
-
-    // Stat cards
-    html += '<div class="stat-row">';
-    html += statCard(totalSubs,    'Total Submissions',   '');
-    html += statCard(complete,     'Complete',            'ok');
-    html += statCard(incomplete,   'Incomplete',          'warn');
-    html += statCard(shortAnswers, 'Short Answers',       'warn');
-    html += statCard(Array.isArray(gates) ? gates.length : '—', 'Gate Entries', 'info');
-    html += statCard(Array.isArray(pdfs)  ? pdfs.length  : '—', 'PDFs Downloaded', 'info');
-    html += '</div>';
-
-    // Per-week summary
-    html += '<div class="tab-bar">';
-    ['w1','w2','w3','w4','w5','w6','w7'].forEach(function(wk, i) {
-      html += '<button class="tab-btn' + (i===0?' active':'') + '" ';
-      html += 'onclick="switchTab(this,\'wtab-'+wk+'\')">' + wk.toUpperCase() + '</button>';
-    });
-    html += '</div>';
-
-    ['w1','w2','w3','w4','w5','w6','w7'].forEach(function(wk, i) {
-      var rows = byWeek[wk] || [];
-      html += '<div class="tab-panel' + (i===0?' active':'') + '" id="wtab-' + wk + '">';
-      if (rows.length === 0) {
-        html += '<div class="empty-msg">No submissions yet for ' + WEEK_LABELS[wk] + '.</div>';
-      } else {
-        html += submissionsTable(rows, wk);
-      }
-      html += '</div>';
-    });
-
-    document.getElementById('mainContent').innerHTML = html;
-  });
-}
-
-function statCard(num, label, type) {
-  return '<div class="stat-card ' + type + '">'
-       + '<div class="stat-num">' + num + '</div>'
-       + '<div class="stat-label">' + label + '</div>'
-       + '</div>';
-}
-
-function switchTab(btn, panelId) {
-  btn.closest('.main-content').querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
-  btn.closest('.main-content').querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
-  btn.classList.add('active');
-  document.getElementById(panelId).classList.add('active');
-}
-
-// ── VIEW: SINGLE WEEK ──
-function renderWeek(weekId) {
-  authFetch('reading_submissions', 'week_id=eq.' + weekId, 'created_at.desc').then(function(rows) {
-    if (!Array.isArray(rows)) { showError('reading_submissions'); return; }
-
-    var complete     = rows.filter(function(r){ return r.all_complete; }).length;
-    var incomplete   = rows.filter(function(r){ return !r.all_complete; }).length;
-    var shortCount   = rows.filter(function(r){ return r.questions_short > 0; }).length;
-
-    var html = '';
-    html += '<div class="page-header">';
-    html +=   '<div><h2>' + (WEEK_LABELS[weekId]||weekId) + '</h2>';
-    html +=   '<p>Reading note submissions for this week.</p></div>';
-    html +=   '<button class="export-btn" onclick="exportWeek(\'' + weekId + '\')">&#x21E9; Export CSV</button>';
-    html += '</div>';
-
-    html += '<div class="stat-row">';
-    html += statCard(rows.length, 'Submissions', '');
-    html += statCard(complete,    'Complete',    'ok');
-    html += statCard(incomplete,  'Incomplete',  'warn');
-    html += statCard(shortCount,  'Short Answers','warn');
-    html += '</div>';
-
-    if (rows.length === 0) {
-      html += '<div class="empty-msg">No submissions yet for this week.</div>';
-    } else {
-      html += submissionsTable(rows, weekId);
+    // ── Pledge footer ─────────────────────────────────────────────────────────
+    if (sub.pledge_signature) {
+        y += lh;
+        doc.setFont('times', 'italic');
+        writeLine('Pledge signed by: ' + sub.pledge_signature);
+        doc.setFont('times', 'normal');
     }
 
-    document.getElementById('mainContent').innerHTML = html;
-    if (rows.length > 0) updateProgress(weekId);
-  });
+    return doc.output('arraybuffer');
 }
 
-// ── REVIEW STATE (persisted in localStorage) ──────────────────────
-function reviewKey(weekId, wnum) {
-  return 'hist102_review_' + weekId + '_' + (wnum||'').replace(/\W/g,'');
-}
-function getReview(weekId, wnum) {
-  try { var v = localStorage.getItem(reviewKey(weekId, wnum)); return v ? JSON.parse(v) : {dl:false,canvas:false}; }
-  catch(e) { return {dl:false,canvas:false}; }
-}
-function setReview(weekId, wnum, field, val) {
-  var r = getReview(weekId, wnum); r[field] = val;
-  try { localStorage.setItem(reviewKey(weekId, wnum), JSON.stringify(r)); } catch(e) {}
-  updateProgress(weekId);
-}
-function updateProgress(weekId) {
-  var dlBar   = document.getElementById('prog-dl-'+ weekId);
-  var cvBar   = document.getElementById('prog-canvas-'+ weekId);
-  var dlCount = document.getElementById('prog-dl-count-'+ weekId);
-  var cvCount = document.getElementById('prog-canvas-count-'+ weekId);
-  if (!dlBar) return;
-  var trs = document.querySelectorAll('#tbl-'+ weekId +' tbody tr:not(.detail-row)');
-  var total = trs.length, dlDone = 0, cvDone = 0;
-  trs.forEach(function(tr) {
-    var r = getReview(weekId, tr.getAttribute('data-wnum')||'');
-    if (r.dl)     dlDone++;
-    if (r.canvas) cvDone++;
-  });
-  var dlPct = total ? Math.round(dlDone/total*100) : 0;
-  var cvPct = total ? Math.round(cvDone/total*100) : 0;
-  dlBar.style.width   = dlPct+'%';
-  cvBar.style.width   = cvPct+'%';
-  dlCount.textContent = dlDone+'/'+total+' downloaded';
-  cvCount.textContent = cvDone+'/'+total+' in Canvas';
+function thesisSafeFilename(sub) {
+    const last = (sub.student_name || 'Unknown').split(' ').pop().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const id   = (sub.student_id || '').replace(/[^a-z0-9]/g, '');
+    return `${last}_${id}_thesis_defense.pdf`;
 }
 
-// ── SUBMISSIONS TABLE ──────────────────────────────────────────────
-function submissionsTable(rows, weekId) {
-  var html = '';
-  var rowsJson = JSON.stringify(rows).replace(/</g,'\\u003c');
+function downloadThesisPDF(id) {
+    const sub = allThesis.find(s => s.id === id);
+    if (!sub) return;
+    const bytes = buildThesisPDFBytes(sub);
+    triggerDownload(new Blob([bytes], { type: 'application/pdf' }), thesisSafeFilename(sub));
+}
 
-  // Progress strip
-  html += '<div class="review-progress">';
-  html +=   '<span class="progress-label">Downloaded</span>';
-  html +=   '<div class="progress-track"><div class="progress-fill dl-fill" id="prog-dl-'+weekId+'" style="width:0%"></div></div>';
-  html +=   '<span class="progress-count" id="prog-dl-count-'+weekId+'">0/'+rows.length+' downloaded</span>';
-  html +=   '<span class="progress-label" style="margin-left:1rem">Canvas</span>';
-  html +=   '<div class="progress-track"><div class="progress-fill canvas-fill" id="prog-canvas-'+weekId+'" style="width:0%"></div></div>';
-  html +=   '<span class="progress-count" id="prog-canvas-count-'+weekId+'">0/'+rows.length+' in Canvas</span>';
-  html +=   '<button class="export-btn" style="margin-left:auto;font-size:0.58rem" onclick="clearReview(\''+weekId+'\')">Reset Tracking</button>';
-  html += '</div>';
+// ── THESIS BULK DOWNLOAD ──────────────────────────────────────────────────────
+async function downloadSelectedThesis(mode) {
+    if (!tdSelectedSet.size) return;
+    const mergedBtn = document.getElementById('td-downloadMergedBtn');
+    const zipBtn    = document.getElementById('td-downloadZipBtn');
+    const activeBtn = mode === 'merged' ? mergedBtn : zipBtn;
+    const origText  = activeBtn.textContent;
+    mergedBtn.disabled = true; zipBtn.disabled = true;
 
-  // Selection action bar (hidden until rows are checked)
-  html += '<div class="selection-bar" id="sel-bar-'+weekId+'">';
-  html +=   '<span class="selection-count" id="sel-count-'+weekId+'">0 selected</span>';
-  html +=   '<button class="sel-action-btn sel-zip-btn" onclick="downloadZIPSelected(\''+weekId+'\','+rowsJson+')">&#x21E9; ZIP Selected</button>';
-  html +=   '<button class="sel-action-btn sel-pdf-btn" onclick="bulkPDFSelected(\''+weekId+'\','+rowsJson+')">&#x21E9; PDFs Selected</button>';
-  html +=   '<button class="sel-action-btn sel-clear-btn" onclick="clearSelection(\''+weekId+'\')">Clear</button>';
-  html += '</div>';
+    const submissions = Array.from(tdSelectedSet).map(id => allThesis.find(s => s.id === id)).filter(Boolean);
+    const total = submissions.length;
+    const dateStr = new Date().toISOString().split('T')[0];
 
-  // Filter + action bar
-  html += '<div class="filter-bar">';
-  html +=   '<label>Filter:</label>';
-  html +=   '<select class="filter-select" onchange="filterTable(this,\'tbl-'+weekId+'\')">';
-  html +=     '<option value="all">All submissions</option>';
-  html +=     '<option value="complete">Complete only</option>';
-  html +=     '<option value="incomplete">Incomplete only</option>';
-  html +=     '<option value="short">Short answers</option>';
-  html +=     '<option value="not-dl">Not downloaded</option>';
-  html +=     '<option value="not-canvas">Not in Canvas</option>';
-  html +=   '</select>';
-  html +=   '<button class="pdf-btn" id="zip-btn-'+weekId+'" onclick="downloadZIP('+rowsJson+',\''+weekId+'\')">&#x21E9; ZIP All</button>';
-  html +=   '<button class="pdf-btn" id="bulk-pdf-'+weekId+'" onclick="bulkPDF('+rowsJson+',\''+weekId+'\')" style="background:var(--ink-mid)">&#x21E9; All PDFs</button>';
-  html +=   '<button class="export-btn" onclick="exportWeekData('+rowsJson+',\''+weekId+'\')">&#x21E9; CSV</button>';
-  html += '</div>';
+    try {
+        if (mode === 'merged') {
+            // Generate each PDF and merge with pdf-lib
+            const mergedDoc = await PDFLib.PDFDocument.create();
+            for (let i = 0; i < submissions.length; i++) {
+                activeBtn.textContent = `Merging ${i + 1}/${total}…`;
+                const sub   = submissions[i];
+                const bytes = buildThesisPDFBytes(sub);
+                try {
+                    const srcDoc = await PDFLib.PDFDocument.load(bytes);
+                    const pages  = await mergedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+                    pages.forEach(p => mergedDoc.addPage(p));
+                } catch(e) { console.error('Merge error for', sub.student_name, e); }
+            }
+            const pdfBytes = await mergedDoc.save();
+            triggerDownload(new Blob([pdfBytes], { type: 'application/pdf' }), `thesis_defenses_${dateStr}_${total}_files.pdf`);
 
-  // Table — added select checkbox column
-  html += '<div class="table-wrap"><table id="tbl-'+weekId+'">';
-  html += '<thead><tr>';
-  html += '<th style="width:32px"><input type="checkbox" class="sel-checkbox" title="Select all" onchange="toggleSelectAll(this,\''+weekId+'\')"></th>';
-  html += '<th>Student</th><th>W Number</th><th>Submitted</th>';
-  html += '<th>Answered</th><th>Status</th><th>Answers</th><th>PDF</th><th>Tracking</th></tr></thead><tbody>';
+        } else {
+            // Build ZIP with individual PDFs
+            const zip    = new JSZip();
+            const folder = zip.folder('thesis_defenses');
+            const usedNames = {};
+            for (let i = 0; i < submissions.length; i++) {
+                activeBtn.textContent = `Building ZIP ${i + 1}/${total}…`;
+                const sub   = submissions[i];
+                const bytes = buildThesisPDFBytes(sub);
+                let fname = thesisSafeFilename(sub);
+                if (usedNames[fname] !== undefined) {
+                    usedNames[fname]++;
+                    fname = fname.replace('.pdf', `_${usedNames[fname]}.pdf`);
+                } else { usedNames[fname] = 0; }
+                folder.file(fname, bytes);
+            }
+            const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+            triggerDownload(zipBlob, `thesis_defenses_${dateStr}_${total}_files.zip`);
+        }
+    } catch(e) { alert('Download error: ' + e.message); }
 
-  rows.forEach(function(row, i) {
-    var rowId  = 'row-'+weekId+'-'+i;
-    var wnum   = row.student_w_num || '';
-    var review = getReview(weekId, wnum);
-    var statusClass = row.all_complete ? (row.questions_short > 0 ? 'incomplete' : 'complete') : 'incomplete';
-    var dlCls  = review.dl     ? 'checked-dl'     : '';
-    var cvCls  = review.canvas ? 'checked-canvas' : '';
-    var rowBg  = review.canvas ? 'background:rgba(30,68,136,0.04)' : review.dl ? 'background:rgba(61,96,83,0.04)' : '';
-    var rowJson = JSON.stringify(row).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'\\u003c');
+    tdSelectedSet.clear();
+    updateTdSelectedCount();
+    applyThesisFilters();
+    activeBtn.textContent = origText;
+    mergedBtn.disabled = false; zipBtn.disabled = false;
+}
 
-    html += '<tr data-status="'+statusClass+'" data-wnum="'+esc(wnum)+'" data-idx="'+i+'" style="'+rowBg+'">';
-    html += '<td style="text-align:center"><input type="checkbox" class="sel-checkbox row-sel-cb" data-idx="'+i+'" onchange="onRowCheck(this,\''+weekId+'\')"></td>';
-    html += '<td class="name-cell">'+esc(row.student_name)+'</td>';
-    html += '<td class="mono">'+esc(wnum)+'</td>';
-    html += '<td class="mono">'+fmtDate(row.created_at)+'</td>';
-    html += '<td class="mono">'+(row.total_questions||0)+'/12</td>';
-    html += '<td>'+flagHtml(row)+'</td>';
-    html += '<td><button class="expand-btn" onclick="toggleDetail(\''+rowId+'\')">View →</button></td>';
-    html += '<td><button class="pdf-row-btn" onclick=\'pdfAndMark('+rowJson+',\''+weekId+'\')\'>&#x21E9; PDF</button></td>';
-    html += '<td><div class="review-checks">';
-    html += '<label class="review-check-label '+dlCls+'" id="lbl-dl-'+weekId+'-'+i+'" onclick="toggleReview(\''+weekId+'\',\''+esc(wnum)+'\',\'dl\','+i+')">';
-    html +=   '<span class="review-dot"></span><input type="checkbox" '+(review.dl?'checked':'')+'>Downloaded</label>';
-    html += '<label class="review-check-label '+cvCls+'" id="lbl-canvas-'+weekId+'-'+i+'" onclick="toggleReview(\''+weekId+'\',\''+esc(wnum)+'\',\'canvas\','+i+')">';
-    html +=   '<span class="review-dot"></span><input type="checkbox" '+(review.canvas?'checked':'')+'>In Canvas</label>';
-    html += '</div></td>';
-    html += '</tr>';
+// ── THESIS SELECT ALL ─────────────────────────────────────────────────────────
+function tdToggleSelect(id) { tdSelectedSet.has(id) ? tdSelectedSet.delete(id) : tdSelectedSet.add(id); updateTdSelectedCount(); updateTdSelectAll(); }
 
-    // Expandable detail row
-    html += '<tr class="detail-row" id="'+rowId+'">';
-    html += '<td class="detail-cell" colspan="9"><div class="answers-grid">';
-    Q_LABELS.forEach(function(q) {
-      var ans = row[q.col+'_answer'] || '';
-      var wc  = row[q.col+'_words']  || 0;
-      var cls = ans.trim()==='' ? 'no-ans' : wc<30 ? 'short-ans' : 'good-ans';
-      html += '<div class="answer-card '+cls+'">';
-      html +=   '<div class="answer-q">'+esc(q.label)+'</div>';
-      html +=   '<div class="answer-text">'+(ans.trim()||'<em>No answer</em>')+'</div>';
-      if (ans.trim()) html += '<div class="answer-wc">'+wc+' words</div>';
-      html += '</div>';
+function toggleSelectAllThesis() {
+    const allChk = document.getElementById('td-selectAll');
+    tdFiltered.forEach(sub => {
+        allChk.checked ? tdSelectedSet.add(sub.id) : tdSelectedSet.delete(sub.id);
+        const chk = document.getElementById(`td-sel-${sub.id}`);
+        if (chk) chk.checked = allChk.checked;
     });
-    html += '</div></td></tr>';
-  });
-
-  html += '</tbody></table></div>';
-  return html;
+    updateTdSelectedCount();
 }
 
-function toggleDetail(id) { document.getElementById(id).classList.toggle('open'); }
-
-// ── ROW SELECTION ─────────────────────────────────────────────────
-function onRowCheck(cb, weekId) {
-  var tr = cb.closest('tr');
-  if (tr) tr.classList.toggle('row-selected', cb.checked);
-  updateSelectionBar(weekId);
+function updateTdSelectAll() {
+    const chk = document.getElementById('td-selectAll'); if (!chk) return;
+    const siv = tdFiltered.filter(s => tdSelectedSet.has(s.id));
+    if (!tdFiltered.length)          { chk.checked = false; chk.indeterminate = false; }
+    else if (siv.length === tdFiltered.length) { chk.checked = true;  chk.indeterminate = false; }
+    else if (siv.length > 0)         { chk.checked = false; chk.indeterminate = true; }
+    else                             { chk.checked = false; chk.indeterminate = false; }
 }
 
-function toggleSelectAll(masterCb, weekId) {
-  var tbl = document.getElementById('tbl-'+weekId);
-  if (!tbl) return;
-  tbl.querySelectorAll('.row-sel-cb').forEach(function(cb) {
-    var tr = cb.closest('tr');
-    if (tr && tr.style.display !== 'none') {
-      cb.checked = masterCb.checked;
-      tr.classList.toggle('row-selected', masterCb.checked);
+function updateTdSelectedCount() {
+    const n = tdSelectedSet.size;
+    document.getElementById('td-selectedCount').textContent = n + ' selected';
+    document.getElementById('td-downloadMergedBtn').disabled = n === 0;
+    document.getElementById('td-downloadZipBtn').disabled    = n === 0;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  THESIS LOAD / RENDER
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadThesis() {
+    document.getElementById('td-table').innerHTML = '<tr><td colspan="10" class="loading">Loading…</td></tr>';
+    try {
+        const { data, error } = await supabaseClient.from('thesis_submissions').select('*').order('submitted_at', { ascending: false });
+        if (error) throw error;
+        allThesis = data || [];
+        updateThesisStats(); populateTdFilters(); applyThesisFilters();
+        document.getElementById('count-thesis').textContent = allThesis.length;
+    } catch (e) {
+        showError('Error loading thesis defenses: ' + e.message);
+        document.getElementById('td-table').innerHTML = '<tr><td colspan="10" class="no-data">Error loading data: ' + esc(e.message) + '</td></tr>';
     }
-  });
-  updateSelectionBar(weekId);
 }
 
-function updateSelectionBar(weekId) {
-  var tbl   = document.getElementById('tbl-'+weekId);
-  var bar   = document.getElementById('sel-bar-'+weekId);
-  var count = document.getElementById('sel-count-'+weekId);
-  if (!tbl || !bar) return;
-  var checked = tbl.querySelectorAll('.row-sel-cb:checked').length;
-  bar.classList.toggle('visible', checked > 0);
-  count.textContent = checked + ' student' + (checked===1?'':'s') + ' selected';
+function updateThesisStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('td-total').textContent    = allThesis.length;
+    document.getElementById('td-today').textContent    = allThesis.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('td-reviewed').textContent = allThesis.filter(s => s.is_reviewed).length;
+    ['A','B','C','D'].forEach(t => { document.getElementById('td-' + t).textContent = allThesis.filter(s => s.thesis_option === t).length; });
+    const wcs = allThesis.map(s => s.word_count).filter(Boolean);
+    document.getElementById('td-avgwords').textContent = wcs.length ? Math.round(wcs.reduce((a,b) => a+b,0) / wcs.length) : '-';
 }
 
-function clearSelection(weekId) {
-  var tbl = document.getElementById('tbl-'+weekId);
-  if (!tbl) return;
-  tbl.querySelectorAll('.row-sel-cb').forEach(function(cb) {
-    cb.checked = false;
-    var tr = cb.closest('tr');
-    if (tr) tr.classList.remove('row-selected');
-  });
-  // uncheck select-all header
-  var masterCb = tbl.querySelector('thead .sel-checkbox');
-  if (masterCb) masterCb.checked = false;
-  updateSelectionBar(weekId);
+function populateTdFilters() {
+    const sections = [...new Set(allThesis.map(s => s.section).filter(Boolean))].sort();
+    const sel = document.getElementById('td-filterSection'); const val = sel.value;
+    sel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
+    sel.value = val;
 }
 
-// Get selected row indices
-function getSelectedIndices(weekId) {
-  var tbl = document.getElementById('tbl-'+weekId);
-  if (!tbl) return [];
-  var indices = [];
-  tbl.querySelectorAll('.row-sel-cb:checked').forEach(function(cb) {
-    indices.push(parseInt(cb.getAttribute('data-idx'), 10));
-  });
-  return indices;
+function applyThesisFilters() {
+    let f = allThesis;
+    const thesis   = document.getElementById('td-filterThesis').value;
+    const faction  = document.getElementById('td-filterFaction').value;
+    const section  = document.getElementById('td-filterSection').value;
+    const search   = document.getElementById('td-search').value.toLowerCase();
+    const reviewed = document.getElementById('td-filterReviewed').value;
+    if (thesis)   f = f.filter(s => s.thesis_option === thesis);
+    if (faction)  f = f.filter(s => s.faction === faction);
+    if (section)  f = f.filter(s => s.section === section);
+    if (search)   f = f.filter(s => (s.student_name && s.student_name.toLowerCase().includes(search)) || (s.historical_role && s.historical_role.toLowerCase().includes(search)) || (s.student_id && s.student_id.toLowerCase().includes(search)));
+    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
+    tdFiltered = f;
+    renderThesisTable(f);
+    updateTdSelectAll();
 }
 
-// ZIP only selected rows
-function downloadZIPSelected(weekId, allRows) {
-  var indices = getSelectedIndices(weekId);
-  if (!indices.length) return;
-  var selected = indices.map(function(i){ return allRows[i]; }).filter(Boolean);
-  var btn = document.querySelector('#sel-bar-'+weekId+' .sel-zip-btn');
-  if (btn) { btn.disabled=true; btn.textContent='Building…'; }
-
-  var zip = new JSZip();
-  selected.forEach(function(row) {
-    zip.file(pdfFilename(row, weekId), buildPDFDoc(row, weekId).output('arraybuffer'));
-  });
-  zip.generateAsync({type:'blob'}).then(function(blob) {
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'HIST102_'+weekId+'_selected_'+indices.length+'.zip';
-    a.click();
-    if (btn) { btn.disabled=false; btn.textContent='⇩ ZIP Selected'; }
-    // Auto-mark selected as downloaded
-    var tbl = document.getElementById('tbl-'+weekId);
-    if (tbl) tbl.querySelectorAll('.row-sel-cb:checked').forEach(function(cb) {
-      var tr = cb.closest('tr');
-      var wnum = tr ? tr.getAttribute('data-wnum') : '';
-      var idx  = parseInt(cb.getAttribute('data-idx'), 10);
-      if (wnum && !getReview(weekId, wnum).dl) toggleReview(weekId, wnum, 'dl', idx);
-    });
-  });
+function renderThesisTable(rows) {
+    const tbody = document.getElementById('td-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="no-data">No thesis submissions found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed = !!sub.is_reviewed;
+        const t  = sub.thesis_option || '?';
+        const wc = sub.word_count || 0;
+        const wcClass  = wc >= 250 && wc <= 400 ? 'wc-ok' : 'wc-low';
+        const fac      = sub.faction || '';
+        const facClass = 'faction-' + (fac.replace(/[^a-zA-Z]/g,'') || 'Indeterminate');
+        const selected = tdSelectedSet.has(sub.id);
+        return `<tr>
+            <td class="select-cell"><input type="checkbox" class="select-checkbox" id="td-sel-${sub.id}" ${selected?'checked':''} onchange="tdToggleSelect(${sub.id})"></td>
+            <td><strong>${esc(sub.student_name||'Unknown')}</strong><br><span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id||'-')} · Sec ${esc(sub.section||'-')}</span></td>
+            <td style="font-size:0.9em"><em>${esc(sub.historical_role||'-')}</em></td>
+            <td><span class="faction-badge ${facClass}">${esc(fac||'-')}</span></td>
+            <td>
+                <span class="thesis-badge thesis-${t}">${t}</span>
+                <div style="font-size:0.78em;color:#888;margin-top:3px;max-width:180px;line-height:1.4">${esc((THESIS_FULL_LABELS[t]||'').substring(0,55))}…</div>
+            </td>
+            <td><span class="wc-pill ${wcClass}">${wc}</span></td>
+            <td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature||'-')}</td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell"><label id="td-rl-${sub.id}" class="reviewed-label ${reviewed?'checked':''}" onclick="event.preventDefault();tdToggleReviewed(${sub.id})"><input type="checkbox" id="td-rc-${sub.id}" class="review-checkbox" ${reviewed?'checked':''}><span>${reviewed?'Reviewed':'Mark'}</span></label></td>
+            <td style="white-space:nowrap">
+                <button class="download-btn thesis-dl-btn" onclick="downloadThesisPDF(${sub.id})">⬇ PDF</button>
+                <button class="view-btn" onclick="viewThesis(${sub.id})">👁 View</button>
+            </td>
+        </tr>`;
+    }).join('');
 }
 
-// Staggered individual PDFs for selected rows
-function bulkPDFSelected(weekId, allRows) {
-  var indices = getSelectedIndices(weekId);
-  if (!indices.length) return;
-  var selected = indices.map(function(i){ return allRows[i]; }).filter(Boolean);
-  var btn = document.querySelector('#sel-bar-'+weekId+' .sel-pdf-btn');
-  if (btn) { btn.disabled=true; btn.textContent='Generating…'; }
-  var i = 0;
-  function next() {
-    if (i >= selected.length) { if(btn){btn.disabled=false;btn.textContent='⇩ PDFs Selected';} return; }
-    pdfAndMark(selected[i], weekId); i++;
-    setTimeout(next, 700);
-  }
-  next();
+function viewThesis(id) {
+    const sub = allThesis.find(s => s.id === id); if (!sub) return;
+    const t = sub.thesis_option || '?';
+    document.getElementById('modal-title').textContent = `${sub.student_name||'Unknown'} — Thesis Defense`;
+    document.getElementById('modal-meta').textContent  = `${sub.historical_role||'?'} · ${sub.faction||'?'} · Section ${sub.section||'?'} · ${sub.word_count||0} words · ${formatDate(sub.submitted_at)}`;
+    let body = `<div class="modal-section-label">Thesis Selected: Option ${t}</div>`;
+    body += `<div class="modal-thesis-block">${esc(THESIS_FULL_LABELS[t] || sub.thesis_label || '(no label)')}</div>`;
+    if (sub.defense_text) body += `<div class="modal-section-label">Defense</div><div class="modal-text">${esc(sub.defense_text)}</div>`;
+    if (sub.pledge_signature) body += `<div class="modal-section-label">Pledge Signed By</div><div style="font-style:italic;color:#555;padding:6px 0">${esc(sub.pledge_signature)}</div>`;
+    document.getElementById('modal-body').innerHTML = body;
+    document.getElementById('text-modal').classList.add('show');
 }
 
-function toggleReview(weekId, wnum, field, idx) {
-  var r = getReview(weekId, wnum);
-  r[field] = !r[field];
-  setReview(weekId, wnum, field, r[field]);
-  var cls = field==='dl' ? 'checked-dl' : 'checked-canvas';
-  var lbl = document.getElementById('lbl-'+field+'-'+weekId+'-'+idx);
-  if (lbl) {
-    lbl.classList.toggle(cls, r[field]);
-    var tr = lbl.closest('tr');
-    if (tr) {
-      var rev = getReview(weekId, wnum);
-      tr.style.background = rev.canvas ? 'rgba(30,68,136,0.04)' : rev.dl ? 'rgba(61,96,83,0.04)' : '';
+async function tdToggleReviewed(id) {
+    const sub = allThesis.find(s => s.id === id); if (!sub) return;
+    const newVal = !sub.is_reviewed;
+    const lbl = document.getElementById(`td-rl-${id}`), chk = document.getElementById(`td-rc-${id}`);
+    if (lbl && chk) { chk.checked = newVal; lbl.classList.toggle('checked', newVal); lbl.querySelector('span').textContent = newVal ? 'Reviewed' : 'Mark'; }
+    try {
+        const { error } = await supabaseClient.from('thesis_submissions').update({ is_reviewed: newVal }).eq('id', id);
+        if (error) throw error;
+        sub.is_reviewed = newVal; updateThesisStats();
+    } catch(e) {
+        if (lbl && chk) { chk.checked = !newVal; lbl.classList.toggle('checked', !newVal); lbl.querySelector('span').textContent = !newVal ? 'Reviewed' : 'Mark'; }
+        alert('Error saving. Please try again.');
     }
-  }
 }
 
-function clearReview(weekId) {
-  if (!confirm('Reset all tracking for '+(WEEK_LABELS[weekId]||weekId)+'?')) return;
-  Object.keys(localStorage).forEach(function(k) {
-    if (k.startsWith('hist102_review_'+weekId+'_')) localStorage.removeItem(k);
-  });
-  showView('week', weekId);
+function exportThesisCSV() {
+    if (!tdFiltered.length) { alert('No data to export.'); return; }
+    const headers = ['student_name','student_id','section','historical_role','faction','thesis_option','thesis_label','word_count','pledge_signature','session','submitted_at','defense_text'];
+    const rows = tdFiltered.map(sub => headers.map(h => `"${String(sub[h]||'').replace(/"/g,'""')}"`).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    triggerDownload(new Blob([csv], {type:'text/csv'}), `thesis_defenses_${new Date().toISOString().split('T')[0]}.csv`);
 }
 
-function filterTable(sel, tableId) {
-  var val = sel.value;
-  var tbl = document.getElementById(tableId);
-  if (!tbl) return;
-  var weekId = tableId.replace('tbl-','');
-  tbl.querySelectorAll('tbody tr:not(.detail-row)').forEach(function(tr) {
-    var status = tr.getAttribute('data-status')||'';
-    var wnum   = tr.getAttribute('data-wnum')||'';
-    var r = getReview(weekId, wnum);
-    var show = val==='all'
-      || (val==='complete'    && status==='complete')
-      || (val==='incomplete'  && status==='incomplete')
-      || (val==='short'       && status==='incomplete')
-      || (val==='not-dl'      && !r.dl)
-      || (val==='not-canvas'  && !r.canvas);
-    tr.style.display = show ? '' : 'none';
-    var next = tr.nextElementSibling;
-    if (next && next.classList.contains('detail-row') && !show) next.style.display = 'none';
-  });
-  // Clear selection state after filter — hidden rows shouldn't stay checked
-  clearSelection(weekId);
-}
+// ══════════════════════════════════════════════════════════════════════════════
+//  WEIMAR QUIZ
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadWeimar() { document.getElementById('wq-table').innerHTML='<tr><td colspan="7" class="loading">Loading…</td></tr>'; try{ const{data,error}=await supabaseClient.from('quiz_responses').select('*').order('submitted_at',{ascending:false}); if(error)throw error; allWeimar=data||[];updateWeimarStats();applyWeimarFilters();document.getElementById('count-weimar').textContent=allWeimar.length; }catch(e){showError('Error loading quiz results: '+e.message);document.getElementById('wq-table').innerHTML='<tr><td colspan="7" class="no-data">Error loading data.</td></tr>';} }
+function updateWeimarStats() { const today=new Date().toISOString().split('T')[0];const scores=allWeimar.map(s=>s.score);const avg=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'-'; document.getElementById('wq-total').textContent=allWeimar.length;document.getElementById('wq-today').textContent=allWeimar.filter(s=>s.submitted_at&&s.submitted_at.startsWith(today)).length;document.getElementById('wq-avg').textContent=avg;document.getElementById('wq-perfect').textContent=allWeimar.filter(s=>s.score===10).length;document.getElementById('wq-good').textContent=allWeimar.filter(s=>s.score>=8).length;document.getElementById('wq-low').textContent=allWeimar.filter(s=>s.score<=5).length; }
+function applyWeimarFilters() { let f=allWeimar;const scoreF=document.getElementById('wq-filterScore').value,search=document.getElementById('wq-search').value.toLowerCase(),sessionF=document.getElementById('wq-filterSession').value,dateF=document.getElementById('wq-filterDate').value; if(scoreF==='perfect')f=f.filter(s=>s.score===10);if(scoreF==='good')f=f.filter(s=>s.score>=8&&s.score<=9);if(scoreF==='ok')f=f.filter(s=>s.score>=6&&s.score<=7);if(scoreF==='low')f=f.filter(s=>s.score<=5);if(sessionF)f=f.filter(s=>s.session===sessionF);if(search)f=f.filter(s=>(s.student_name&&s.student_name.toLowerCase().includes(search))||(s.student_id&&s.student_id.toLowerCase().includes(search)));if(dateF==='today'){const t=new Date().toISOString().split('T')[0];f=f.filter(s=>s.submitted_at&&s.submitted_at.startsWith(t));}if(dateF==='week'){const w=new Date();w.setDate(w.getDate()-7);f=f.filter(s=>s.submitted_at&&new Date(s.submitted_at)>=w);} wqFiltered=f;renderWeimarTable(f);renderMissAnalysisSplit(f); }
+function renderMissAnalysisSplit(rows) { renderOneMissPanel('s2',rows.filter(s=>s.session==='Session 2'),QUIZ_ANSWERS_S2,QUIZ_TOPICS_S2);renderOneMissPanel('s1',rows.filter(s=>(s.session||'Session 1')==='Session 1'),QUIZ_ANSWERS_S1,QUIZ_TOPICS_S1); }
+function renderOneMissPanel(suffix,rows,correctAnswers,topics) { const panel=document.getElementById(`wq-miss-${suffix}`),barsEl=document.getElementById(`wq-miss-bars-${suffix}`),countEl=document.getElementById(`wq-miss-count-${suffix}`);if(!rows.length){panel.classList.add('hidden');return;}const misses={};Object.keys(correctAnswers).forEach(q=>misses[q]=0);rows.forEach(sub=>{const given=sub.answers||{};Object.keys(correctAnswers).forEach(q=>{if(given[q]!==correctAnswers[q])misses[q]++;});});const max=Math.max(...Object.values(misses),1),sorted=Object.keys(misses).sort((a,b)=>misses[b]-misses[a]);countEl.textContent=`${rows.length} submission${rows.length!==1?'s':''}`;barsEl.innerHTML=sorted.map(q=>{const n=misses[q],pct=Math.round((n/rows.length)*100),w=Math.round((n/max)*100);const col=pct>=50?'#922b21':pct>=30?'#d35400':'#2471a3';return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:0.85em;"><div style="width:36px;text-align:right;font-weight:700;color:#555">Q${q.slice(1)}</div><div style="flex:1;background:#f0f0f0;border-radius:4px;height:16px;overflow:hidden;"><div style="width:${w}%;background:${col};height:100%;border-radius:4px;transition:width 0.4s;"></div></div><div style="width:90px;color:#555">${n}/${rows.length} (${pct}%)</div><div style="color:#888;font-size:0.9em;">${topics[q]}</div></div>`;}).join('');panel.classList.remove('hidden'); }
+function renderWeimarTable(rows) { const tbody=document.getElementById('wq-table');if(!rows.length){tbody.innerHTML='<tr><td colspan="7" class="no-data">No quiz submissions found.</td></tr>';return;}tbody.innerHTML=rows.map(sub=>{const score=sub.score??0,total=sub.total??10,answers=sub.answers||{},session=sub.session||'Session 1';const{answers:ca,topics}=getQuizMeta(session);const sc=score===total?'score-perfect':score>=8?'score-good':score>=6?'score-ok':'score-low';const ss=session==='Session 2'?'session-s2':'session-s1';const chips=Object.keys(ca).map(q=>{const given=answers[q];const ok=given===ca[q];return `<span class="answer-chip ${ok?'chip-correct':'chip-incorrect'}" title="Q${q.slice(1)}: ${topics[q]} — answered ${given||'?'}, correct ${ca[q]}">Q${q.slice(1)}${ok?'✓':'✗'}</span>`;}).join('');return `<tr><td><strong>${esc(sub.student_name||'Unknown')}</strong></td><td style="font-family:monospace;font-size:0.88em;color:#555">${esc(sub.student_id||'-')}</td><td><span class="session-badge ${ss}">${esc(session)}</span></td><td><span class="score-badge ${sc}">${score}/${total}</span></td><td><div class="answer-grid">${chips}</div></td><td>${formatDate(sub.submitted_at)}</td><td><button class="view-btn" onclick="viewWeimarDetail(${sub.id})">👁 Detail</button></td></tr>`;}).join(''); }
+function viewWeimarDetail(id) { const sub=allWeimar.find(s=>s.id===id);if(!sub)return;const answers=sub.answers||{},score=sub.score??0,total=sub.total??10,session=sub.session||'Session 1';const{answers:ca,topics,questions}=getQuizMeta(session);document.getElementById('modal-title').textContent=`${sub.student_name||'Unknown'} — ${session} Quiz`;document.getElementById('modal-meta').textContent=`Student ID: ${sub.student_id||'-'} · Score: ${score}/${total} · ${formatDate(sub.submitted_at)}`;const rows=Object.keys(ca).map(q=>{const given=answers[q]||'?';const ok=given===ca[q];return `<div class="quiz-question-row"><span class="quiz-q-num">Q${q.slice(1)}</span><div class="quiz-q-text"><div style="font-size:0.82em;color:#888;margin-bottom:2px;">${topics[q]}</div>${esc(questions[q])}</div><div class="quiz-q-result ${ok?'quiz-q-correct':'quiz-q-incorrect'}">${ok?`✓ ${given}`:`✗ ${given} (ans: ${ca[q]})`}</div></div>`;}).join('');document.getElementById('modal-body').innerHTML=`<div class="modal-section-label">Question-by-Question</div><div style="border:1px solid #dde2e8;border-radius:5px;overflow:hidden;">${rows}</div>`;document.getElementById('text-modal').classList.add('show'); }
+function exportWeimarCSV() { if(!wqFiltered.length){alert('No data to export.');return;}const qk=['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10'];const headers=['student_name','student_id','session','score','total','submitted_at',...qk.map(q=>`${q}_given`),...qk.map(q=>`${q}_correct`)];const rows=wqFiltered.map(sub=>{const answers=sub.answers||{};const{answers:ca}=getQuizMeta(sub.session||'Session 1');return[sub.student_name||'',sub.student_id||'',sub.session||'',sub.score??'',sub.total??10,sub.submitted_at||'',...qk.map(q=>answers[q]||''),...qk.map(q=>ca[q]||'')].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');});const csv=[headers.join(','),...rows].join('\n');triggerDownload(new Blob([csv],{type:'text/csv'}),`weimar_quiz_results_${new Date().toISOString().split('T')[0]}.csv`); }
 
-function exportWeekData(rows, weekId) {
-  exportCSV(rows, 'HIST102_'+weekId+'_submissions.csv');
-}
+// ══════════════════════════════════════════════════════════════════════════════
+//  WORKSHEETS
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadWorksheets() { document.getElementById('ws-table').innerHTML='<tr><td colspan="8" class="loading">Loading…</td></tr>';try{const{data,error}=await supabaseClient.from('worksheet_submissions').select('*').order('submitted_at',{ascending:false});if(error)throw error;allWorksheets=data||[];updateWorksheetStats();populateWsFilters();applyWorksheetFilters();document.getElementById('count-worksheets').textContent=allWorksheets.length;}catch(e){showError('Error loading worksheets: '+e.message);document.getElementById('ws-table').innerHTML='<tr><td colspan="8" class="no-data">Error loading data.</td></tr>';} }
+function updateWorksheetStats() { const today=new Date().toISOString().split('T')[0];document.getElementById('ws-total').textContent=allWorksheets.length;document.getElementById('ws-hist101').textContent=allWorksheets.filter(s=>s.worksheet_type&&s.worksheet_type.startsWith('hist101')).length;document.getElementById('ws-hist107').textContent=allWorksheets.filter(s=>s.worksheet_type&&s.worksheet_type.startsWith('hist107')).length;document.getElementById('ws-today').textContent=allWorksheets.filter(s=>s.submitted_at&&s.submitted_at.startsWith(today)).length;document.getElementById('ws-reviewed').textContent=allWorksheets.filter(s=>s.is_reviewed).length;document.getElementById('ws-downloaded').textContent=allWorksheets.filter(s=>s.is_downloaded).length; }
+function populateWsFilters() { const sections=[...new Set(allWorksheets.map(s=>s.section_number).filter(Boolean))].sort();const secSel=document.getElementById('ws-filterSection');const secVal=secSel.value;secSel.innerHTML='<option value="">All Sections</option>';sections.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;secSel.appendChild(o);});secSel.value=secVal;const types=[...new Set(allWorksheets.map(s=>s.worksheet_type).filter(Boolean))].sort();const typeSel=document.getElementById('ws-filterType');const typeVal=typeSel.value;typeSel.innerHTML='<option value="">All Types</option>';types.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=formatWorksheetType(t);typeSel.appendChild(o);});if([...typeSel.options].some(o=>o.value===typeVal))typeSel.value=typeVal; }
+function applyWorksheetFilters() { let f=allWorksheets;const course=document.getElementById('ws-filterCourse').value,type=document.getElementById('ws-filterType').value,section=document.getElementById('ws-filterSection').value,search=document.getElementById('ws-search').value.toLowerCase(),reviewed=document.getElementById('ws-filterReviewed').value,downloaded=document.getElementById('ws-filterDownloaded').value;if(course)f=f.filter(s=>s.worksheet_type&&s.worksheet_type.startsWith(course));if(type)f=f.filter(s=>s.worksheet_type===type);if(section)f=f.filter(s=>s.section_number===section);if(search)f=f.filter(s=>s.student_name&&s.student_name.toLowerCase().includes(search));if(reviewed==='reviewed')f=f.filter(s=>!!s.is_reviewed);if(reviewed==='unreviewed')f=f.filter(s=>!s.is_reviewed);if(downloaded==='downloaded')f=f.filter(s=>!!s.is_downloaded);if(downloaded==='not-downloaded')f=f.filter(s=>!s.is_downloaded);wsFiltered=f;renderWorksheetTable(f);updateWsSelectAll(); }
+function renderWorksheetTable(rows) { const tbody=document.getElementById('ws-table');if(!rows.length){tbody.innerHTML='<tr><td colspan="8" class="no-data">No submissions found.</td></tr>';return;}tbody.innerHTML=rows.map(sub=>{const reviewed=!!sub.is_reviewed,downloaded=!!sub.is_downloaded,selected=wsSelected.has(sub.id);const typeClass=sub.worksheet_type&&sub.worksheet_type.startsWith('hist101')?'type-hist101':'type-hist107';return `<tr><td class="select-cell">${sub.file_path?`<input type="checkbox" class="select-checkbox" id="ws-sel-${sub.id}" ${selected?'checked':''} onchange="wsToggleSelect(${sub.id})">`:''}</td><td><strong>${esc(sub.student_name||'Unknown')}</strong></td><td>${esc(sub.section_number||'-')}</td><td><span class="worksheet-type ${typeClass}">${formatWorksheetType(sub.worksheet_type)}</span></td><td>${formatDate(sub.submitted_at)}</td><td class="reviewed-cell"><label id="ws-rl-${sub.id}" class="reviewed-label ${reviewed?'checked':''}" onclick="event.preventDefault();wsToggleReviewed(${sub.id})"><input type="checkbox" id="ws-rc-${sub.id}" class="review-checkbox" ${reviewed?'checked':''}><span>${reviewed?'Reviewed':'Mark'}</span></label></td><td class="downloaded-cell"><label id="ws-dl-${sub.id}" class="downloaded-label ${downloaded?'checked':''}" onclick="event.preventDefault();wsToggleDownloaded(${sub.id})"><input type="checkbox" id="ws-dc-${sub.id}" class="download-checkbox" ${downloaded?'checked':''}><span>${downloaded?'Yes':'No'}</span></label></td><td>${sub.file_path?`<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>`:'-'}</td></tr>`;}).join(''); }
 
-// ── VIEW: GATE ENTRIES ──
-function renderGates() {
-  authFetch('gate_entries', '', 'created_at.desc').then(function(rows) {
-    if (!Array.isArray(rows)) { showError('gate_entries'); return; }
-    var html = '';
-    html += '<div class="page-header"><div><h2>Gate Entries</h2><p>All student pledge + access code submissions.</p></div>';
-    html += '<button class="export-btn" onclick="exportCSV('+JSON.stringify(rows).replace(/</g,'\\u003c')+',\'HIST102_gate_entries.csv\')">&#x21E9; Export CSV</button></div>';
-    html += '<div class="stat-row">'+statCard(rows.length,'Total Entries','');
-    var weeks={}; rows.forEach(function(r){weeks[r.week_id]=true;});
-    html += statCard(Object.keys(weeks).length,'Weeks Active','info')+'</div>';
-    if (rows.length===0) { html += '<div class="empty-msg">No gate entries yet.</div>'; }
-    else {
-      html += '<div class="table-wrap"><table class="gate-table"><thead><tr><th>Student</th><th>W Number</th><th>Week</th><th>Entered</th></tr></thead><tbody>';
-      rows.forEach(function(row) {
-        html += '<tr><td class="name-cell">'+esc(row.student_name)+'</td><td class="mono">'+esc(row.student_w_num)+'</td>';
-        html += '<td class="mono">'+esc(row.week_label||row.week_id)+'</td><td class="mono">'+fmtDate(row.created_at)+'</td></tr>';
-      });
-      html += '</tbody></table></div>';
-    }
-    document.getElementById('mainContent').innerHTML = html;
-  });
-}
+// ══════════════════════════════════════════════════════════════════════════════
+//  RESEARCH PAPERS
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadPapers() { document.getElementById('pp-table').innerHTML='<tr><td colspan="10" class="loading">Loading…</td></tr>';try{const{data,error}=await supabaseClient.from('paper_submissions').select('*').order('submitted_at',{ascending:false});if(error)throw error;allPapers=data||[];updatePaperStats();populatePpFilters();applyPaperFilters();document.getElementById('count-papers').textContent=allPapers.length;}catch(e){showError('Error loading papers: '+e.message);document.getElementById('pp-table').innerHTML='<tr><td colspan="10" class="no-data">Error loading data.</td></tr>';} }
+function updatePaperStats(){ const today=new Date().toISOString().split('T')[0];document.getElementById('pp-total').textContent=allPapers.length;document.getElementById('pp-today').textContent=allPapers.filter(s=>s.submitted_at&&s.submitted_at.startsWith(today)).length;document.getElementById('pp-reviewed').textContent=allPapers.filter(s=>s.is_reviewed).length;const wcs=allPapers.map(s=>s.word_count).filter(Boolean);document.getElementById('pp-avgwords').textContent=wcs.length?Math.round(wcs.reduce((a,b)=>a+b,0)/wcs.length).toLocaleString():'-'; }
+function populatePpFilters(){ const sections=[...new Set(allPapers.map(s=>s.section).filter(Boolean))].sort();const sel=document.getElementById('pp-filterSection');const val=sel.value;sel.innerHTML='<option value="">All Sections</option>';sections.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent='Section '+s;sel.appendChild(o);});sel.value=val; }
+function applyPaperFilters(){ let f=allPapers;const section=document.getElementById('pp-filterSection').value,search=document.getElementById('pp-search').value.toLowerCase(),reviewed=document.getElementById('pp-filterReviewed').value;if(section)f=f.filter(s=>s.section===section);if(search)f=f.filter(s=>s.student_name&&s.student_name.toLowerCase().includes(search));if(reviewed==='reviewed')f=f.filter(s=>!!s.is_reviewed);if(reviewed==='unreviewed')f=f.filter(s=>!s.is_reviewed);ppFiltered=f;renderPaperTable(f);updatePpSelectAll(); }
+function renderPaperTable(rows){ const tbody=document.getElementById('pp-table');if(!rows.length){tbody.innerHTML='<tr><td colspan="10" class="no-data">No papers found.</td></tr>';return;}tbody.innerHTML=rows.map(sub=>{const reviewed=!!sub.is_reviewed,wc=sub.word_count||0,wcClass=wc>=1500&&wc<=2000?'wc-ok':'wc-low',bibLines=sub.bibliography?sub.bibliography.split('\n').filter(l=>l.trim()).length:0,ppSelected=ppSelectedSet.has(sub.id);return `<tr><td class="select-cell">${sub.file_path?`<input type="checkbox" class="select-checkbox" id="pp-sel-${sub.id}" ${ppSelected?'checked':''} onchange="ppToggleSelect(${sub.id})">`:''}</td><td><strong>${esc(sub.student_name||'Unknown')}</strong><br><span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id||'-')}</span></td><td>Section ${esc(sub.section||'-')}</td><td><em>${esc(sub.paper_title||'(Untitled)')}</em></td><td><span class="wc-pill ${wcClass}">${wc.toLocaleString()}</span></td><td style="color:#555;font-size:0.88em">${bibLines} source${bibLines!==1?'s':''}</td><td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature||'-')}</td><td>${formatDate(sub.submitted_at)}</td><td class="reviewed-cell"><label id="pp-rl-${sub.id}" class="reviewed-label ${reviewed?'checked':''}" onclick="event.preventDefault();ppToggleReviewed(${sub.id})"><input type="checkbox" id="pp-rc-${sub.id}" class="review-checkbox" ${reviewed?'checked':''}><span>${reviewed?'Reviewed':'Mark'}</span></label></td><td>${sub.file_path?`<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>`:''}<button class="view-btn" onclick="viewPaper(${sub.id})">👁 View</button></td></tr>`; }).join(''); }
 
-// ── VIEW: PDF DOWNLOADS ──
-function renderDownloads() {
-  authFetch('pdf_downloads', '', 'created_at.desc').then(function(rows) {
-    if (!Array.isArray(rows)) { showError('pdf_downloads'); return; }
-    var html = '';
-    html += '<div class="page-header"><div><h2>PDF Downloads</h2><p>Every time a student clicked "Download Notes PDF".</p></div>';
-    html += '<button class="export-btn" onclick="exportCSV('+JSON.stringify(rows).replace(/</g,'\\u003c')+',\'HIST102_pdf_downloads.csv\')">&#x21E9; Export CSV</button></div>';
-    var full = rows.filter(function(r){return r.answers_count===12;}).length;
-    html += '<div class="stat-row">'+statCard(rows.length,'Total Downloads','')+statCard(full,'All 12 Answered','ok')+statCard(rows.length-full,'Partial Downloads','warn')+'</div>';
-    if (rows.length===0) { html += '<div class="empty-msg">No PDF downloads yet.</div>'; }
-    else {
-      html += '<div class="table-wrap"><table><thead><tr><th>Student</th><th>W Number</th><th>Week</th><th>Answers at Download</th><th>Downloaded</th></tr></thead><tbody>';
-      rows.forEach(function(row) {
-        html += '<tr><td class="name-cell">'+esc(row.student_name)+'</td><td class="mono">'+esc(row.student_w_num)+'</td>';
-        html += '<td class="mono">'+esc(row.week_id)+'</td><td class="mono">'+(row.answers_count||0)+'/12</td><td class="mono">'+fmtDate(row.created_at)+'</td></tr>';
-      });
-      html += '</tbody></table></div>';
-    }
-    document.getElementById('mainContent').innerHTML = html;
-  });
-}
+// ══════════════════════════════════════════════════════════════════════════════
+//  INTERVIEWS
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadInterviews(){ document.getElementById('iv-table').innerHTML='<tr><td colspan="9" class="loading">Loading…</td></tr>';try{const{data,error}=await supabaseClient.from('interview_submissions').select('*').order('submitted_at',{ascending:false});if(error)throw error;allInterviews=data||[];updateInterviewStats();populateIvFilters();applyInterviewFilters();document.getElementById('count-interviews').textContent=allInterviews.length;}catch(e){showError('Error loading interviews: '+e.message);document.getElementById('iv-table').innerHTML='<tr><td colspan="9" class="no-data">Error loading data.</td></tr>';} }
+function updateInterviewStats(){ const today=new Date().toISOString().split('T')[0];document.getElementById('iv-total').textContent=allInterviews.length;document.getElementById('iv-today').textContent=allInterviews.filter(s=>s.submitted_at&&s.submitted_at.startsWith(today)).length;document.getElementById('iv-uploads').textContent=allInterviews.filter(s=>s.audio_method==='upload').length;document.getElementById('iv-links').textContent=allInterviews.filter(s=>s.audio_method==='link').length;document.getElementById('iv-reviewed').textContent=allInterviews.filter(s=>s.is_reviewed).length; }
+function populateIvFilters(){ const sections=[...new Set(allInterviews.map(s=>s.section).filter(Boolean))].sort();const sel=document.getElementById('iv-filterSection');const val=sel.value;sel.innerHTML='<option value="">All Sections</option>';sections.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent='Section '+s;sel.appendChild(o);});sel.value=val; }
+function applyInterviewFilters(){ let f=allInterviews;const section=document.getElementById('iv-filterSection').value,search=document.getElementById('iv-search').value.toLowerCase(),method=document.getElementById('iv-filterMethod').value,reviewed=document.getElementById('iv-filterReviewed').value;if(section)f=f.filter(s=>s.section===section);if(search)f=f.filter(s=>s.student_name&&s.student_name.toLowerCase().includes(search));if(method)f=f.filter(s=>s.audio_method===method);if(reviewed==='reviewed')f=f.filter(s=>!!s.is_reviewed);if(reviewed==='unreviewed')f=f.filter(s=>!s.is_reviewed);renderInterviewTable(f); }
+function renderInterviewTable(rows){ const tbody=document.getElementById('iv-table');if(!rows.length){tbody.innerHTML='<tr><td colspan="9" class="no-data">No interviews found.</td></tr>';return;}tbody.innerHTML=rows.map(sub=>{const reviewed=!!sub.is_reviewed;const audioCell=sub.audio_method==='upload'?`<button class="download-btn" onclick="downloadAudio('${esc(sub.audio_path||'')}')">⬇ Audio</button>`:sub.audio_link?`<a href="${esc(sub.audio_link)}" target="_blank" class="audio-link-btn">🔗 Link</a>`:'-';return `<tr><td><strong>${esc(sub.student_name||'Unknown')}</strong><br><span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id||'-')}</span></td><td>Section ${esc(sub.section||'-')}</td><td>${esc(sub.interviewee||'-')}<br><span style="font-size:0.8em;color:#888">${esc(sub.interviewee_role||'')}</span></td><td style="font-size:0.88em">${esc(sub.democratic_norm||'-')}</td><td style="font-size:0.88em">${esc(sub.interview_date||'-')}</td><td>${audioCell}</td><td>${formatDate(sub.submitted_at)}</td><td class="reviewed-cell"><label id="iv-rl-${sub.id}" class="reviewed-label ${reviewed?'checked':''}" onclick="event.preventDefault();ivToggleReviewed(${sub.id})"><input type="checkbox" id="iv-rc-${sub.id}" class="review-checkbox" ${reviewed?'checked':''}><span>${reviewed?'Reviewed':'Mark'}</span></label></td><td>${sub.file_path?`<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>`:''}<button class="view-btn" onclick="viewTranscript(${sub.id})">👁 Transcript</button></td></tr>`;}).join(''); }
 
-// ── PDF CORE ──────────────────────────────────────────────────────
-function buildPDFDoc(row, weekId) {
-  var jsPDF = window.jspdf.jsPDF;
-  var doc = new jsPDF({ unit:'pt', format:'letter' });
-  var pageW = doc.internal.pageSize.getWidth();
-  var pageH = doc.internal.pageSize.getHeight();
-  var margin = 54, colW = pageW - margin*2, y = margin;
+// ══════════════════════════════════════════════════════════════════════════════
+//  HIST 102 PAPERS
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadHist102(){ document.getElementById('h2-table').innerHTML='<tr><td colspan="11" class="loading">Loading…</td></tr>';try{const{data,error}=await supabaseClient.from('paper_submissions_102').select('*').order('submitted_at',{ascending:false});if(error)throw error;allHist102=data||[];updateHist102Stats();applyHist102Filters();document.getElementById('count-hist102').textContent=allHist102.length;}catch(e){showError('Error loading HIST 102 papers: '+e.message);document.getElementById('h2-table').innerHTML='<tr><td colspan="11" class="no-data">Error loading data.</td></tr>';} }
+function updateHist102Stats(){ const today=new Date().toISOString().split('T')[0];document.getElementById('h2-total').textContent=allHist102.length;document.getElementById('h2-today').textContent=allHist102.filter(s=>s.submitted_at&&s.submitted_at.startsWith(today)).length;document.getElementById('h2-reviewed').textContent=allHist102.filter(s=>s.is_reviewed).length;const wcs=allHist102.map(s=>s.word_count).filter(Boolean);document.getElementById('h2-avgwords').textContent=wcs.length?Math.round(wcs.reduce((a,b)=>a+b,0)/wcs.length).toLocaleString():'-';['A','B','C','D'].forEach(p=>{document.getElementById('h2-prompt'+p).textContent=allHist102.filter(s=>s.prompt_choice===p).length;}); }
+function applyHist102Filters(){ let f=allHist102;const prompt=document.getElementById('h2-filterPrompt').value,search=document.getElementById('h2-search').value.toLowerCase(),wcFilter=document.getElementById('h2-filterWc').value,reviewed=document.getElementById('h2-filterReviewed').value;if(prompt)f=f.filter(s=>s.prompt_choice===prompt);if(search)f=f.filter(s=>(s.student_name&&s.student_name.toLowerCase().includes(search))||(s.student_w_num&&s.student_w_num.toLowerCase().includes(search)));if(wcFilter==='ok')f=f.filter(s=>s.word_count>=1500&&s.word_count<=2000);if(wcFilter==='low')f=f.filter(s=>s.word_count<1500);if(wcFilter==='high')f=f.filter(s=>s.word_count>2000);if(reviewed==='reviewed')f=f.filter(s=>!!s.is_reviewed);if(reviewed==='unreviewed')f=f.filter(s=>!s.is_reviewed);h2Filtered=f;renderHist102Table(f);updateH2SelectAll(); }
+function renderHist102Table(rows){ const tbody=document.getElementById('h2-table');if(!rows.length){tbody.innerHTML='<tr><td colspan="11" class="no-data">No HIST 102 papers found.</td></tr>';return;}const pl={A:'Option A — Broken Obligation',B:'Option B — Blind Spot',C:'Option C — Crossroads Moment',D:'Option D — Matters Most Now'};const ps={A:'A',B:'B',C:'C',D:'D'};tbody.innerHTML=rows.map(sub=>{const reviewed=!!sub.is_reviewed,wc=sub.word_count||0,wcClass=wc>=1500&&wc<=2000?'wc-ok':'wc-low',bibLines=sub.bibliography?sub.bibliography.split('\n').filter(l=>l.trim()).length:0,selected=h2SelectedSet.has(sub.id),p=sub.prompt_choice||'',pClass='prompt-'+p.toLowerCase(),pLabel=pl[p]||p||'-',pShort=ps[p]||p||'-';return `<tr><td class="select-cell">${sub.file_path?`<input type="checkbox" class="select-checkbox" id="h2-sel-${sub.id}" ${selected?'checked':''} onchange="h2ToggleSelect(${sub.id})">`:''}</td><td><strong>${esc(sub.student_name||'Unknown')}</strong></td><td style="font-family:monospace;font-size:0.88em;color:#555">${esc(sub.student_w_num||'-')}</td><td><span class="prompt-badge ${pClass}" title="${esc(pLabel)}">${esc(pShort)}</span><span style="font-size:0.82em;color:#888;display:block;margin-top:2px">${esc(pLabel)}</span></td><td><em>${esc(sub.paper_title||'(Untitled)')}</em></td><td><span class="wc-pill ${wcClass}">${wc.toLocaleString()}</span></td><td style="color:#555;font-size:0.88em">${bibLines} source${bibLines!==1?'s':''}</td><td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature||'-')}</td><td>${formatDate(sub.submitted_at)}</td><td class="reviewed-cell"><label id="h2-rl-${sub.id}" class="reviewed-label ${reviewed?'checked':''}" onclick="event.preventDefault();h2ToggleReviewed(${sub.id})"><input type="checkbox" id="h2-rc-${sub.id}" class="review-checkbox" ${reviewed?'checked':''}><span>${reviewed?'Reviewed':'Mark'}</span></label></td><td>${sub.file_path?`<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>`:''}<button class="view-btn" onclick="viewHist102Paper(${sub.id})">👁 View</button></td></tr>`;}).join(''); }
+function h2ToggleSelect(id){h2SelectedSet.has(id)?h2SelectedSet.delete(id):h2SelectedSet.add(id);updateH2SelectedCount();updateH2SelectAll();}
+function toggleSelectAllHist102(){ const allChk=document.getElementById('h2-selectAll');h2Filtered.filter(s=>s.file_path).forEach(sub=>{allChk.checked?h2SelectedSet.add(sub.id):h2SelectedSet.delete(sub.id);const chk=document.getElementById(`h2-sel-${sub.id}`);if(chk)chk.checked=allChk.checked;});updateH2SelectedCount(); }
+function updateH2SelectAll(){ const chk=document.getElementById('h2-selectAll');if(!chk)return;const sel=h2Filtered.filter(s=>s.file_path),siv=sel.filter(s=>h2SelectedSet.has(s.id));if(!sel.length){chk.checked=false;chk.indeterminate=false;}else if(siv.length===sel.length){chk.checked=true;chk.indeterminate=false;}else if(siv.length>0){chk.checked=false;chk.indeterminate=true;}else{chk.checked=false;chk.indeterminate=false;} }
+function updateH2SelectedCount(){ const n=h2SelectedSet.size;document.getElementById('h2-selectedCount').textContent=n+' selected';document.getElementById('h2-downloadMergedBtn').disabled=n===0;document.getElementById('h2-downloadZipBtn').disabled=n===0; }
+async function downloadSelectedHist102(mode){ if(!h2SelectedSet.size)return;const mergedBtn=document.getElementById('h2-downloadMergedBtn'),zipBtn=document.getElementById('h2-downloadZipBtn'),activeBtn=mode==='merged'?mergedBtn:zipBtn,origText=activeBtn.textContent;mergedBtn.disabled=true;zipBtn.disabled=true;const submissions=Array.from(h2SelectedSet).map(id=>allHist102.find(s=>s.id===id)).filter(Boolean);const onProgress=(cur,tot)=>activeBtn.textContent=`${mode==='merged'?'Merging':'Fetching'} ${cur}/${tot}…`;try{let count;if(mode==='merged'){count=await bulkMergePdf(submissions,'hist102_papers',onProgress);}else{activeBtn.textContent='Building ZIP…';count=await bulkZip(submissions,'hist102_papers',onProgress);}if(count===0)alert('No PDFs could be downloaded.');}catch(e){alert('Error: '+e.message);}h2SelectedSet.clear();updateH2SelectedCount();applyHist102Filters();activeBtn.textContent=origText;mergedBtn.disabled=false;zipBtn.disabled=false; }
+const h2ToggleReviewed=id=>toggleReviewed('paper_submissions_102',allHist102,'h2',id);
+function viewHist102Paper(id){ const sub=allHist102.find(s=>s.id===id);if(!sub)return;const pl={A:'Option A — The Broken Obligation',B:'Option B — The Blind Spot',C:'Option C — The Crossroads Moment',D:'Option D — The Obligation That Matters Most Now'};document.getElementById('modal-title').textContent=sub.paper_title||'(Untitled)';document.getElementById('modal-meta').textContent=`${sub.student_name} · ${sub.student_w_num||''} · ${pl[sub.prompt_choice]||sub.prompt_choice||''} · ${(sub.word_count||0).toLocaleString()} words · ${formatDate(sub.submitted_at)}`;let body='';if(sub.paper_text)body+=`<div class="modal-section-label">Essay</div><div class="modal-text">${esc(sub.paper_text)}</div>`;if(sub.bibliography)body+=`<div class="modal-section-label">Bibliography</div><div class="modal-text">${esc(sub.bibliography)}</div>`;if(sub.pledge_signature)body+=`<div class="modal-section-label">Pledge Signed By</div><div style="font-style:italic;color:#555;padding:6px 0">${esc(sub.pledge_signature)}</div>`;document.getElementById('modal-body').innerHTML=body;document.getElementById('text-modal').classList.add('show'); }
 
-  doc.setFillColor(26,21,16); doc.rect(0,0,pageW,72,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(247,242,232);
-  doc.text('HIST 102 — US History After 1877', margin, 30);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200,146,42);
-  doc.text('Reading Notes — '+(WEEK_LABELS[weekId]||weekId), margin, 48);
+// ══════════════════════════════════════════════════════════════════════════════
+//  SHARED UTILITIES
+// ══════════════════════════════════════════════════════════════════════════════
+function ppToggleSelect(id){ppSelectedSet.has(id)?ppSelectedSet.delete(id):ppSelectedSet.add(id);updatePpSelectedCount();updatePpSelectAll();}
+function toggleSelectAllPapers(){ const allChk=document.getElementById('pp-selectAll');ppFiltered.filter(s=>s.file_path).forEach(sub=>{allChk.checked?ppSelectedSet.add(sub.id):ppSelectedSet.delete(sub.id);const chk=document.getElementById(`pp-sel-${sub.id}`);if(chk)chk.checked=allChk.checked;});updatePpSelectedCount(); }
+function updatePpSelectAll(){ const chk=document.getElementById('pp-selectAll');if(!chk)return;const sel=ppFiltered.filter(s=>s.file_path),siv=sel.filter(s=>ppSelectedSet.has(s.id));if(!sel.length){chk.checked=false;chk.indeterminate=false;}else if(siv.length===sel.length){chk.checked=true;chk.indeterminate=false;}else if(siv.length>0){chk.checked=false;chk.indeterminate=true;}else{chk.checked=false;chk.indeterminate=false;} }
+function updatePpSelectedCount(){ const n=ppSelectedSet.size;document.getElementById('pp-selectedCount').textContent=n+' selected';document.getElementById('pp-downloadMergedBtn').disabled=n===0;document.getElementById('pp-downloadZipBtn').disabled=n===0; }
+async function fetchFileBytes(filePath,bucket='student-submissions'){ const{data,error}=await supabaseClient.storage.from(bucket).createSignedUrl(filePath,3600);if(error)return null;try{const resp=await fetch(data.signedUrl);if(!resp.ok)return null;return await resp.arrayBuffer();}catch(e){return null;} }
+function safeFilename(studentName,filePath){ const ext=filePath.split('.').pop()||'pdf';const name=(studentName||'Unknown').replace(/[^a-zA-Z0-9_\- ]/g,'').trim().replace(/\s+/g,'_');return `${name}.${ext}`; }
+async function bulkMergePdf(submissions,filenameStem,onProgress){ const mergedPdf=await PDFLib.PDFDocument.create();let count=0;for(let i=0;i<submissions.length;i++){if(onProgress)onProgress(i+1,submissions.length);const sub=submissions[i];if(!sub.file_path)continue;const bytes=await fetchFileBytes(sub.file_path);if(!bytes)continue;try{const doc=await PDFLib.PDFDocument.load(bytes);const pages=await mergedPdf.copyPages(doc,doc.getPageIndices());pages.forEach(p=>mergedPdf.addPage(p));count++;}catch(e){console.error('Merge error',e);}}if(count===0)return 0;const pdfBytes=await mergedPdf.save();const dateStr=new Date().toISOString().split('T')[0];triggerDownload(new Blob([pdfBytes],{type:'application/pdf'}),`${filenameStem}_${dateStr}_${count}_files.pdf`);return count; }
+async function bulkZip(submissions,filenameStem,onProgress){ const zip=new JSZip();const folder=zip.folder(filenameStem);let count=0;const usedNames={};for(let i=0;i<submissions.length;i++){if(onProgress)onProgress(i+1,submissions.length);const sub=submissions[i];if(!sub.file_path)continue;const bytes=await fetchFileBytes(sub.file_path);if(!bytes)continue;let fname=safeFilename(sub.student_name,sub.file_path);if(usedNames[fname]!==undefined){usedNames[fname]++;const parts=fname.split('.');const ext=parts.pop();fname=`${parts.join('.')}_${usedNames[fname]}.${ext}`;}else{usedNames[fname]=0;}folder.file(fname,bytes);count++;}if(count===0)return 0;const dateStr=new Date().toISOString().split('T')[0];const zipBlob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});triggerDownload(zipBlob,`${filenameStem}_${dateStr}_${count}_files.zip`);return count; }
+function triggerDownload(blob,filename){ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href); }
+async function downloadSelectedWorksheets(mode){ if(!wsSelected.size)return;const mergedBtn=document.getElementById('ws-downloadMergedBtn'),zipBtn=document.getElementById('ws-downloadZipBtn'),activeBtn=mode==='merged'?mergedBtn:zipBtn,origText=activeBtn.textContent;mergedBtn.disabled=true;zipBtn.disabled=true;const submissions=Array.from(wsSelected).map(id=>allWorksheets.find(s=>s.id===id)).filter(Boolean);const onProgress=(cur,tot)=>activeBtn.textContent=`${mode==='merged'?'Merging':'Fetching'} ${cur}/${tot}…`;try{let count;if(mode==='merged'){count=await bulkMergePdf(submissions,'worksheets',onProgress);}else{activeBtn.textContent='Building ZIP…';count=await bulkZip(submissions,'worksheets',onProgress);}if(count===0){alert('No PDFs could be downloaded.');}else{for(const sub of submissions){if(sub.file_path&&!sub.is_downloaded){await supabaseClient.from('worksheet_submissions').update({is_downloaded:true}).eq('id',sub.id);sub.is_downloaded=true;const lbl=document.getElementById(`ws-dl-${sub.id}`);const chk=document.getElementById(`ws-dc-${sub.id}`);if(lbl&&chk){chk.checked=true;lbl.classList.add('checked');lbl.querySelector('span').textContent='Yes';}}}}}catch(e){alert('Error: '+e.message);}wsSelected.clear();updateWsSelectedCount();updateWorksheetStats();applyWorksheetFilters();activeBtn.textContent=origText;mergedBtn.disabled=false;zipBtn.disabled=false; }
+async function downloadSelectedPapers(mode){ if(!ppSelectedSet.size)return;const mergedBtn=document.getElementById('pp-downloadMergedBtn'),zipBtn=document.getElementById('pp-downloadZipBtn'),activeBtn=mode==='merged'?mergedBtn:zipBtn,origText=activeBtn.textContent;mergedBtn.disabled=true;zipBtn.disabled=true;const submissions=Array.from(ppSelectedSet).map(id=>allPapers.find(s=>s.id===id)).filter(Boolean);const onProgress=(cur,tot)=>activeBtn.textContent=`${mode==='merged'?'Merging':'Fetching'} ${cur}/${tot}…`;try{let count;if(mode==='merged'){count=await bulkMergePdf(submissions,'papers',onProgress);}else{activeBtn.textContent='Building ZIP…';count=await bulkZip(submissions,'papers',onProgress);}if(count===0)alert('No PDFs could be downloaded.');}catch(e){alert('Error: '+e.message);}ppSelectedSet.clear();updatePpSelectedCount();applyPaperFilters();activeBtn.textContent=origText;mergedBtn.disabled=false;zipBtn.disabled=false; }
+async function toggleReviewed(table,allData,idPrefix,id){ const sub=allData.find(s=>s.id===id);if(!sub)return;const newVal=!sub.is_reviewed;const lbl=document.getElementById(`${idPrefix}-rl-${id}`),chk=document.getElementById(`${idPrefix}-rc-${id}`);if(lbl&&chk){chk.checked=newVal;lbl.classList.toggle('checked',newVal);lbl.querySelector('span').textContent=newVal?'Reviewed':'Mark';}try{const{error}=await supabaseClient.from(table).update({is_reviewed:newVal}).eq('id',id);if(error)throw error;sub.is_reviewed=newVal;if(table==='worksheet_submissions')updateWorksheetStats();if(table==='paper_submissions')updatePaperStats();if(table==='interview_submissions')updateInterviewStats();if(table==='paper_submissions_102')updateHist102Stats();}catch(e){if(lbl&&chk){chk.checked=!newVal;lbl.classList.toggle('checked',!newVal);lbl.querySelector('span').textContent=!newVal?'Reviewed':'Mark';}alert('Error saving. Please try again.');} }
+const wsToggleReviewed=id=>toggleReviewed('worksheet_submissions',allWorksheets,'ws',id);
+const ppToggleReviewed=id=>toggleReviewed('paper_submissions',allPapers,'pp',id);
+const ivToggleReviewed=id=>toggleReviewed('interview_submissions',allInterviews,'iv',id);
+async function wsToggleDownloaded(id){ const sub=allWorksheets.find(s=>s.id===id);if(!sub)return;const newVal=!sub.is_downloaded;const lbl=document.getElementById(`ws-dl-${id}`),chk=document.getElementById(`ws-dc-${id}`);if(lbl&&chk){chk.checked=newVal;lbl.classList.toggle('checked',newVal);lbl.querySelector('span').textContent=newVal?'Yes':'No';}try{const{error}=await supabaseClient.from('worksheet_submissions').update({is_downloaded:newVal}).eq('id',id);if(error)throw error;sub.is_downloaded=newVal;updateWorksheetStats();}catch(e){if(lbl&&chk){chk.checked=!newVal;lbl.classList.toggle('checked',!newVal);lbl.querySelector('span').textContent=!newVal?'Yes':'No';}alert('Error saving. Please try again.');} }
+function wsToggleSelect(id){wsSelected.has(id)?wsSelected.delete(id):wsSelected.add(id);updateWsSelectedCount();updateWsSelectAll();}
+function toggleSelectAllWorksheets(){ const allChk=document.getElementById('ws-selectAll');wsFiltered.filter(s=>s.file_path).forEach(sub=>{allChk.checked?wsSelected.add(sub.id):wsSelected.delete(sub.id);const chk=document.getElementById(`ws-sel-${sub.id}`);if(chk)chk.checked=allChk.checked;});updateWsSelectedCount(); }
+function updateWsSelectAll(){ const chk=document.getElementById('ws-selectAll');const sel=wsFiltered.filter(s=>s.file_path),siv=sel.filter(s=>wsSelected.has(s.id));if(!sel.length){chk.checked=false;chk.indeterminate=false;}else if(siv.length===sel.length){chk.checked=true;chk.indeterminate=false;}else if(siv.length>0){chk.checked=false;chk.indeterminate=true;}else{chk.checked=false;chk.indeterminate=false;} }
+function updateWsSelectedCount(){ const n=wsSelected.size;document.getElementById('ws-selectedCount').textContent=n+' selected';document.getElementById('ws-downloadMergedBtn').disabled=n===0;document.getElementById('ws-downloadZipBtn').disabled=n===0; }
+async function downloadFile(filePath){ try{const{data,error}=await supabaseClient.storage.from('student-submissions').createSignedUrl(filePath,3600);if(error)throw error;window.open(data.signedUrl,'_blank');}catch(e){alert('Error downloading file: '+e.message);} }
+async function downloadAudio(filePath){ if(!filePath){alert('No audio file path found.');return;}try{const{data,error}=await supabaseClient.storage.from('audio-files').createSignedUrl(filePath,3600);if(error)throw error;const a=document.createElement('a');a.href=data.signedUrl;a.download=filePath.split('/').pop();document.body.appendChild(a);a.click();document.body.removeChild(a);}catch(e){alert('Error accessing audio: '+e.message);} }
+function viewPaper(id){ const sub=allPapers.find(s=>s.id===id);if(!sub)return;document.getElementById('modal-title').textContent=sub.paper_title||'(Untitled)';document.getElementById('modal-meta').textContent=`${sub.student_name} · Section ${sub.section} · ${sub.word_count?.toLocaleString()||'?'} words · ${formatDate(sub.submitted_at)}`;let body='';if(sub.paper_text)body+=`<div class="modal-section-label">Essay</div><div class="modal-text">${esc(sub.paper_text)}</div>`;if(sub.bibliography)body+=`<div class="modal-section-label">Bibliography</div><div class="modal-text">${esc(sub.bibliography)}</div>`;if(sub.pledge_signature)body+=`<div class="modal-section-label">Pledge Signed By</div><div style="font-style:italic;color:#555;padding:6px 0">${esc(sub.pledge_signature)}</div>`;document.getElementById('modal-body').innerHTML=body;document.getElementById('text-modal').classList.add('show'); }
+function viewTranscript(id){ const sub=allInterviews.find(s=>s.id===id);if(!sub)return;document.getElementById('modal-title').textContent=`Interview: ${sub.student_name} with ${sub.interviewee||'?'}`;document.getElementById('modal-meta').textContent=`Section ${sub.section} · ${sub.democratic_norm||''} · ${formatDate(sub.submitted_at)}`;document.getElementById('modal-body').innerHTML=`<div class="modal-section-label">Transcript</div><div class="modal-text">${esc(sub.transcript||'(No transcript provided)')}</div>`;document.getElementById('text-modal').classList.add('show'); }
+function closeModal(){document.getElementById('text-modal').classList.remove('show');}
+document.getElementById('text-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+function formatWorksheetType(type){ const labels={'hist101-research-steps1-2':'HIST 101: Steps 1–2','hist101-research-steps3-4':'HIST 101: Steps 3–4','hist101-research-steps5-6':'HIST 101: Steps 5–6','hist101-interview-guide':'HIST 101: Interview','hist101-puritan-activity':'HIST 101: Puritan','hist101-myth-memory':'HIST 101: Myth & Memory','hist107-role-selection':'HIST 107: Role Selection','hist107-commodity-steps1-2':'HIST 107: Commodity'};return labels[type]||type; }
+function formatDate(str){if(!str)return '-';return new Date(str).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
+function esc(text){if(text===null||text===undefined)return '';const d=document.createElement('div');d.textContent=String(text);return d.innerHTML;}
+function showError(msg){const el=document.getElementById('errorMessage');el.textContent=msg;el.classList.remove('hidden');}
 
-  y = 96;
-  doc.setFontSize(9); doc.setTextColor(107,94,80);
-  var dt = row.created_at ? new Date(row.created_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '—';
-  doc.text('Student: '+(row.student_name||'—'), margin, y);
-  doc.text('W Number: '+(row.student_w_num||'—'), margin+240, y);
-  doc.text('Submitted: '+dt, margin+420, y);
-  y += 10;
-  doc.setDrawColor(221,208,184); doc.setLineWidth(0.75); doc.line(margin,y,pageW-margin,y); y += 20;
-
-  Q_LABELS.forEach(function(q, idx) {
-    var ans = (row[q.col+'_answer']||'').trim();
-    var wc  = row[q.col+'_words']||0;
-    var isEmpty = ans==='', isShort = !isEmpty && wc<30;
-
-    doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-    if (isEmpty) doc.setTextColor(140,58,30);
-    else if (isShort) doc.setTextColor(181,98,10);
-    else doc.setTextColor(26,21,16);
-    doc.text('Q'+(idx+1)+'. '+q.label, margin, y);
-
-    var chip = isEmpty ? 'No answer' : isShort ? wc+' words (short)' : wc+' words';
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(160,144,128);
-    doc.text(chip, pageW-margin-doc.getTextWidth(chip), y);
-    y += 14;
-
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    var lines = doc.splitTextToSize(isEmpty ? 'No answer provided.' : ans, colW);
-    if (y + lines.length*13 + 24 > pageH-margin) { doc.addPage(); y = margin; }
-    doc.setTextColor(isEmpty?160:58, isEmpty?150:48, isEmpty?130:40);
-    doc.text(lines, margin, y);
-    y += lines.length*13 + 6;
-
-    if (idx < Q_LABELS.length-1) {
-      doc.setDrawColor(237,229,212); doc.setLineWidth(0.5); doc.line(margin,y,pageW-margin,y); y += 14;
-      if (y > pageH-margin-60) { doc.addPage(); y = margin; }
-    }
-  });
-
-  var totalPages = doc.internal.getNumberOfPages();
-  for (var p=1; p<=totalPages; p++) {
-    doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(160,144,128);
-    doc.text('HIST 102 · '+(WEEK_LABELS[weekId]||weekId)+' · '+(row.student_name||''), margin, pageH-28);
-    doc.text('Page '+p+' of '+totalPages, pageW-margin-40, pageH-28);
-  }
-  return doc;
-}
-
-function pdfFilename(row, weekId) {
-  return 'HIST102_'+weekId+'_'+(row.student_name||'student').replace(/[^a-zA-Z0-9]/g,'_')+'_'+(row.student_w_num||'').replace(/[^a-zA-Z0-9]/g,'')+'.pdf';
-}
-
-// Single PDF — auto-marks Downloaded
-function pdfAndMark(row, weekId) {
-  buildPDFDoc(row, weekId).save(pdfFilename(row, weekId));
-  var wnum = row.student_w_num||'';
-  var r = getReview(weekId, wnum);
-  if (!r.dl) {
-    var tbl = document.getElementById('tbl-'+weekId);
-    if (tbl) tbl.querySelectorAll('tbody tr:not(.detail-row)').forEach(function(tr, idx) {
-      if (tr.getAttribute('data-wnum')===wnum) toggleReview(weekId, wnum, 'dl', idx);
-    });
-  }
-}
-
-// Legacy alias
-function generatePDF(row, weekId) { pdfAndMark(row, weekId); }
-
-// Bulk individual PDFs staggered
-function bulkPDF(rows, weekId) {
-  if (!rows||!rows.length) return;
-  var btn = document.getElementById('bulk-pdf-'+weekId);
-  if (btn) { btn.disabled=true; btn.textContent='Generating…'; }
-  var i=0;
-  function next() {
-    if (i>=rows.length) { if(btn){btn.disabled=false;btn.textContent='⇩ All PDFs';} return; }
-    pdfAndMark(rows[i], weekId); i++;
-    setTimeout(next, 700);
-  }
-  next();
-}
-
-// ZIP — one file, all PDFs inside, auto-marks all Downloaded
-function downloadZIP(rows, weekId) {
-  if (!rows||!rows.length) return;
-  var btn = document.getElementById('zip-btn-'+weekId);
-  if (btn) { btn.disabled=true; btn.textContent='Building ZIP…'; }
-  var zip = new JSZip();
-  rows.forEach(function(row) {
-    var doc = buildPDFDoc(row, weekId);
-    zip.file(pdfFilename(row, weekId), doc.output('arraybuffer'));
-  });
-  zip.generateAsync({type:'blob'}).then(function(blob) {
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'HIST102_'+weekId+'_all_submissions.zip';
-    a.click();
-    if (btn) { btn.disabled=false; btn.textContent='⇩ ZIP All'; }
-    // Mark all as downloaded
-    var tbl = document.getElementById('tbl-'+weekId);
-    if (tbl) tbl.querySelectorAll('tbody tr:not(.detail-row)').forEach(function(tr,idx){
-      var wnum = tr.getAttribute('data-wnum')||'';
-      if (!getReview(weekId,wnum).dl) toggleReview(weekId,wnum,'dl',idx);
-    });
-  });
-}
-
-// ── UTILS ──
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function showError(table) {
-  document.getElementById('mainContent').innerHTML =
-    '<div class="empty-msg">Could not load '+table+'. Check your Supabase credentials in supabase-config.js.</div>';
-}
+if(sessionStorage.getItem('dashboard_auth')==='true') showDashboard();
 </script>
 </body>
 </html>
