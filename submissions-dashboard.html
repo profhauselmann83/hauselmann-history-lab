@@ -31,11 +31,14 @@
         .tab-nav-btn.weimar-tab:hover  { color: #8b0000; }
         .tab-nav-btn.thesis-tab.active { color: #4a235a; border-bottom-color: #4a235a; }
         .tab-nav-btn.thesis-tab:hover  { color: #4a235a; }
+        .tab-nav-btn.checkin-tab.active { color: #8e44ad; border-bottom-color: #8e44ad; }
+        .tab-nav-btn.checkin-tab:hover  { color: #8e44ad; }
         .tab-nav-btn .tab-count { background: #e8ecf0; color: #555; font-size: 0.78em; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
         .tab-nav-btn.active .tab-count { background: #d5eaf7; color: #2980b9; }
         .tab-nav-btn.hist102-tab.active .tab-count { background: #f7eed8; color: #9a6f2a; }
         .tab-nav-btn.weimar-tab.active .tab-count  { background: #fde8e8; color: #8b0000; }
         .tab-nav-btn.thesis-tab.active .tab-count  { background: #f0e6f6; color: #4a235a; }
+        .tab-nav-btn.checkin-tab.active .tab-count { background: #f0e6f6; color: #8e44ad; }
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
         .stats { display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
@@ -45,6 +48,7 @@
         .stat-card.gold .number   { color: #9a6f2a; }
         .stat-card.weimar .number { color: #8b0000; }
         .stat-card.thesis .number { color: #4a235a; }
+        .stat-card.checkin .number { color: #8e44ad; }
         .filters { background: white; padding: 16px 20px; border-radius: 6px; margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         .filter-group { display: flex; flex-direction: column; gap: 4px; }
         .filter-group label { font-weight: 600; font-size: 0.82em; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -196,6 +200,7 @@
         <button class="tab-nav-btn hist102-tab" onclick="switchTab('hist102', this)">📜 HIST 102 Papers <span class="tab-count" id="count-hist102">0</span></button>
         <button class="tab-nav-btn weimar-tab" onclick="switchTab('weimar', this)">🏛 Weimar Quiz <span class="tab-count" id="count-weimar">0</span></button>
         <button class="tab-nav-btn thesis-tab" onclick="switchTab('thesis', this)">⚔️ Thesis Defenses <span class="tab-count" id="count-thesis">0</span></button>
+        <button class="tab-nav-btn checkin-tab" onclick="switchTab('checkins', this)">📝 HIST 105 Check-Ins <span class="tab-count" id="count-checkins">0</span></button>
     </div>
 
     <!-- WORKSHEETS -->
@@ -373,6 +378,51 @@
         </div>
     </div>
 
+    <!-- HIST 105 CHECK-INS -->
+    <div class="tab-pane" id="pane-checkins">
+        <div class="stats">
+            <div class="stat-card checkin"><h3>Total</h3><div class="number" id="ci-total">-</div></div>
+            <div class="stat-card checkin"><h3>Today</h3><div class="number" id="ci-today">-</div></div>
+            <div class="stat-card checkin"><h3>Check-In 1</h3><div class="number" id="ci-c1">-</div></div>
+            <div class="stat-card checkin"><h3>Check-In 2</h3><div class="number" id="ci-c2">-</div></div>
+            <div class="stat-card checkin"><h3>Check-In 3</h3><div class="number" id="ci-c3">-</div></div>
+            <div class="stat-card checkin"><h3>Check-In 4</h3><div class="number" id="ci-c4">-</div></div>
+            <div class="stat-card checkin"><h3>Reviewed</h3><div class="number" id="ci-reviewed">-</div></div>
+        </div>
+        <div class="filters">
+            <div class="filter-group"><label>Check-In #</label>
+                <select id="ci-filterCheckin" onchange="applyCheckinFilters()">
+                    <option value="">All Check-Ins</option>
+                    <option value="1">Check-In 1 — Research Materials</option>
+                    <option value="2">Check-In 2 — Thesis Statement</option>
+                    <option value="3">Check-In 3 — Outline</option>
+                    <option value="4">Check-In 4 — Draft</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>Section</label><select id="ci-filterSection" onchange="applyCheckinFilters()"><option value="">All Sections</option></select></div>
+            <div class="filter-group"><label>Search Student</label><input type="text" id="ci-search" placeholder="Student name..." oninput="applyCheckinFilters()"></div>
+            <div class="filter-group"><label>Review Status</label><select id="ci-filterReviewed" onchange="applyCheckinFilters()"><option value="">All</option><option value="unreviewed">Not Reviewed</option><option value="reviewed">Reviewed</option></select></div>
+            <button class="refresh-btn" onclick="loadCheckins()">↻ Refresh</button>
+            <div class="selection-info"><span id="ci-selectedCount">0 selected</span><div class="dl-btn-group"><button class="dl-main" id="ci-downloadMergedBtn" onclick="downloadSelectedCheckins('merged')" disabled>⬇ Merged PDF</button><button class="dl-alt" id="ci-downloadZipBtn" onclick="downloadSelectedCheckins('zip')" disabled>🗜 ZIP</button></div></div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="select-cell th-thesis"><input type="checkbox" class="select-checkbox" id="ci-selectAll" onchange="toggleSelectAllCheckins()"></th>
+                        <th class="th-thesis">Student Name</th>
+                        <th class="th-thesis">Section</th>
+                        <th class="th-thesis">Check-In</th>
+                        <th class="th-thesis">Submitted</th>
+                        <th class="th-thesis">Reviewed</th>
+                        <th class="th-thesis">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ci-table"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
 </div><!-- end #dashboard -->
 
 <script>
@@ -383,11 +433,12 @@ const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 const DASHBOARD_PASSWORD = 'hauselmann2026';
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
-let allWorksheets = [], allPapers = [], allInterviews = [], allHist102 = [], allWeimar = [], allThesis = [];
+let allWorksheets = [], allPapers = [], allInterviews = [], allHist102 = [], allWeimar = [], allThesis = [], allCheckins = [];
 let wsSelected = new Set(), wsFiltered = [];
 let ppSelectedSet = new Set(), ppFiltered = [];
 let h2SelectedSet = new Set(), h2Filtered = [];
 let wqFiltered = [], tdFiltered = [];
+let ciSelectedSet = new Set(), ciFiltered = [];
 
 // ── QUIZ KEYS ─────────────────────────────────────────────────────────────────
 const QUIZ_ANSWERS_S1 = { q1:'B', q2:'B', q3:'C', q4:'B', q5:'C', q6:'B', q7:'C', q8:'B', q9:'C', q10:'B' };
@@ -426,7 +477,7 @@ function switchTab(name, btn) {
 }
 
 async function loadAll() {
-    await Promise.all([loadWorksheets(), loadPapers(), loadInterviews(), loadHist102(), loadWeimar(), loadThesis()]);
+    await Promise.all([loadWorksheets(), loadPapers(), loadInterviews(), loadHist102(), loadWeimar(), loadThesis(), loadCheckins()]);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -739,6 +790,110 @@ const h2ToggleReviewed=id=>toggleReviewed('paper_submissions_102',allHist102,'h2
 function viewHist102Paper(id){ const sub=allHist102.find(s=>s.id===id);if(!sub)return; const pl={A:'Option A — The Broken Obligation',B:'Option B — The Blind Spot',C:'Option C — The Crossroads Moment',D:'Option D — The Obligation That Matters Most Now'}; document.getElementById('modal-title').textContent=sub.paper_title||'(Untitled)'; document.getElementById('modal-meta').textContent=`${sub.student_name} · ${sub.student_w_num||''} · ${pl[sub.prompt_choice]||sub.prompt_choice||''} · ${(sub.word_count||0).toLocaleString()} words · ${formatDate(sub.submitted_at)}`; let body=''; if(sub.paper_text) body+=`<div class="modal-section-label">Essay</div><div class="modal-text">${esc(sub.paper_text)}</div>`; if(sub.bibliography) body+=`<div class="modal-section-label">Bibliography</div><div class="modal-text">${esc(sub.bibliography)}</div>`; if(sub.pledge_signature) body+=`<div class="modal-section-label">Pledge Signed By</div><div style="font-style:italic;color:#555;padding:6px 0">${esc(sub.pledge_signature)}</div>`; document.getElementById('modal-body').innerHTML=body; document.getElementById('text-modal').classList.add('show'); }
 
 // ══════════════════════════════════════════════════════════════════════════════
+//  HIST 105 CHECK-INS
+// ══════════════════════════════════════════════════════════════════════════════
+const CHECKIN_LABELS = { '1': 'Research Materials', '2': 'Thesis Statement', '3': 'Outline & Arguments', '4': 'Draft & Reflection' };
+async function loadCheckins() {
+    document.getElementById('ci-table').innerHTML = '<tr><td colspan="7" class="loading">Loading…</td></tr>';
+    try {
+        const { data, error } = await supabaseClient.from('checkin_submissions').select('*').order('submitted_at', { ascending: false });
+        if (error) throw error;
+        allCheckins = data || [];
+        updateCheckinStats(); populateCiFilters(); applyCheckinFilters();
+        document.getElementById('count-checkins').textContent = allCheckins.length;
+    } catch (e) {
+        showError('Error loading check-ins: ' + e.message);
+        document.getElementById('ci-table').innerHTML = '<tr><td colspan="7" class="no-data">Error loading data: ' + esc(e.message) + '</td></tr>';
+    }
+}
+function updateCheckinStats() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('ci-total').textContent    = allCheckins.length;
+    document.getElementById('ci-today').textContent    = allCheckins.filter(s => s.submitted_at && s.submitted_at.startsWith(today)).length;
+    document.getElementById('ci-c1').textContent       = allCheckins.filter(s => s.checkin_number === '1').length;
+    document.getElementById('ci-c2').textContent       = allCheckins.filter(s => s.checkin_number === '2').length;
+    document.getElementById('ci-c3').textContent       = allCheckins.filter(s => s.checkin_number === '3').length;
+    document.getElementById('ci-c4').textContent       = allCheckins.filter(s => s.checkin_number === '4').length;
+    document.getElementById('ci-reviewed').textContent = allCheckins.filter(s => s.is_reviewed).length;
+}
+function populateCiFilters() {
+    const sections = [...new Set(allCheckins.map(s => s.section).filter(Boolean))].sort();
+    const sel = document.getElementById('ci-filterSection'); const val = sel.value;
+    sel.innerHTML = '<option value="">All Sections</option>';
+    sections.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = 'Section ' + s; sel.appendChild(o); });
+    sel.value = val;
+}
+function applyCheckinFilters() {
+    let f = allCheckins;
+    const checkin  = document.getElementById('ci-filterCheckin').value;
+    const section  = document.getElementById('ci-filterSection').value;
+    const search   = document.getElementById('ci-search').value.toLowerCase();
+    const reviewed = document.getElementById('ci-filterReviewed').value;
+    if (checkin)  f = f.filter(s => s.checkin_number === checkin);
+    if (section)  f = f.filter(s => s.section === section);
+    if (search)   f = f.filter(s => s.student_name && s.student_name.toLowerCase().includes(search));
+    if (reviewed === 'reviewed')   f = f.filter(s => !!s.is_reviewed);
+    if (reviewed === 'unreviewed') f = f.filter(s => !s.is_reviewed);
+    ciFiltered = f;
+    renderCheckinTable(f);
+    updateCiSelectAll();
+}
+function renderCheckinTable(rows) {
+    const tbody = document.getElementById('ci-table');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="7" class="no-data">No check-in submissions found.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(sub => {
+        const reviewed = !!sub.is_reviewed;
+        const num = sub.checkin_number || '?';
+        const label = CHECKIN_LABELS[num] || '';
+        const selected = ciSelectedSet.has(sub.id);
+        return `<tr>
+            <td class="select-cell">${sub.file_path ? `<input type="checkbox" class="select-checkbox" id="ci-sel-${sub.id}" ${selected ? 'checked' : ''} onchange="ciToggleSelect(${sub.id})">` : ''}</td>
+            <td><strong>${esc(sub.student_name || 'Unknown')}</strong></td>
+            <td>Section ${esc(sub.section || '-')}</td>
+            <td><span class="thesis-badge thesis-${num === '1' ? 'A' : num === '2' ? 'B' : num === '3' ? 'C' : 'D'}">#${esc(num)}</span>
+                <div style="font-size:0.78em;color:#888;margin-top:3px">${esc(label)}</div></td>
+            <td>${formatDate(sub.submitted_at)}</td>
+            <td class="reviewed-cell"><label id="ci-rl-${sub.id}" class="reviewed-label ${reviewed ? 'checked' : ''}" onclick="event.preventDefault();ciToggleReviewed(${sub.id})"><input type="checkbox" id="ci-rc-${sub.id}" class="review-checkbox" ${reviewed ? 'checked' : ''}><span>${reviewed ? 'Reviewed' : 'Mark'}</span></label></td>
+            <td>${sub.file_path ? `<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>` : ''}<button class="view-btn" onclick="viewCheckin(${sub.id})">👁 View</button></td>
+        </tr>`;
+    }).join('');
+}
+function viewCheckin(id) {
+    const sub = allCheckins.find(s => s.id === id); if (!sub) return;
+    const num = sub.checkin_number || '?';
+    document.getElementById('modal-title').textContent = `${sub.student_name || 'Unknown'} — Check-In #${num}`;
+    document.getElementById('modal-meta').textContent  = `Section ${sub.section || '?'} · ${CHECKIN_LABELS[num] || ''} · ${formatDate(sub.submitted_at)}`;
+    let body = '';
+    if (sub.form_data && typeof sub.form_data === 'object') {
+        body += '<div class="modal-section-label">Form Responses</div>';
+        body += '<div class="modal-text">';
+        const fd = sub.form_data;
+        if (typeof fd === 'object' && !Array.isArray(fd)) {
+            Object.keys(fd).forEach(key => {
+                const val = fd[key];
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                if (typeof val === 'object' && val !== null) {
+                    body += `<div style="margin-bottom:12px"><strong>${esc(label)}:</strong><pre style="white-space:pre-wrap;font-size:0.9em;background:#f8f8f8;padding:8px;border-radius:4px;margin-top:4px">${esc(JSON.stringify(val, null, 2))}</pre></div>`;
+                } else {
+                    body += `<div style="margin-bottom:8px"><strong>${esc(label)}:</strong> ${esc(String(val))}</div>`;
+                }
+            });
+        } else {
+            body += `<pre style="white-space:pre-wrap;font-size:0.9em">${esc(JSON.stringify(fd, null, 2))}</pre>`;
+        }
+        body += '</div>';
+    }
+    document.getElementById('modal-body').innerHTML = body || '<div class="no-data">No form data available.</div>';
+    document.getElementById('text-modal').classList.add('show');
+}
+const ciToggleReviewed = id => toggleReviewed('checkin_submissions', allCheckins, 'ci', id);
+function ciToggleSelect(id) { ciSelectedSet.has(id) ? ciSelectedSet.delete(id) : ciSelectedSet.add(id); updateCiSelectedCount(); updateCiSelectAll(); }
+function toggleSelectAllCheckins() { const allChk = document.getElementById('ci-selectAll'); ciFiltered.filter(s => s.file_path).forEach(sub => { allChk.checked ? ciSelectedSet.add(sub.id) : ciSelectedSet.delete(sub.id); const chk = document.getElementById(`ci-sel-${sub.id}`); if (chk) chk.checked = allChk.checked; }); updateCiSelectedCount(); }
+function updateCiSelectAll() { const chk = document.getElementById('ci-selectAll'); if (!chk) return; const sel = ciFiltered.filter(s => s.file_path), siv = sel.filter(s => ciSelectedSet.has(s.id)); if (!sel.length) { chk.checked = false; chk.indeterminate = false; } else if (siv.length === sel.length) { chk.checked = true; chk.indeterminate = false; } else if (siv.length > 0) { chk.checked = false; chk.indeterminate = true; } else { chk.checked = false; chk.indeterminate = false; } }
+function updateCiSelectedCount() { const n = ciSelectedSet.size; document.getElementById('ci-selectedCount').textContent = n + ' selected'; document.getElementById('ci-downloadMergedBtn').disabled = n === 0; document.getElementById('ci-downloadZipBtn').disabled = n === 0; }
+async function downloadSelectedCheckins(mode) { if (!ciSelectedSet.size) return; const mergedBtn = document.getElementById('ci-downloadMergedBtn'), zipBtn = document.getElementById('ci-downloadZipBtn'), activeBtn = mode === 'merged' ? mergedBtn : zipBtn, origText = activeBtn.textContent; mergedBtn.disabled = true; zipBtn.disabled = true; const submissions = Array.from(ciSelectedSet).map(id => allCheckins.find(s => s.id === id)).filter(Boolean); const onProgress = (cur, tot) => activeBtn.textContent = `${mode === 'merged' ? 'Merging' : 'Fetching'} ${cur}/${tot}…`; try { let count; if (mode === 'merged') { count = await bulkMergePdf(submissions, 'hist105_checkins', onProgress); } else { activeBtn.textContent = 'Building ZIP…'; count = await bulkZip(submissions, 'hist105_checkins', onProgress); } if (count === 0) alert('No PDFs could be downloaded.'); } catch (e) { alert('Error: ' + e.message); } ciSelectedSet.clear(); updateCiSelectedCount(); applyCheckinFilters(); activeBtn.textContent = origText; mergedBtn.disabled = false; zipBtn.disabled = false; }
+
+// ══════════════════════════════════════════════════════════════════════════════
 //  SHARED UTILITIES
 // ══════════════════════════════════════════════════════════════════════════════
 function ppToggleSelect(id){ppSelectedSet.has(id)?ppSelectedSet.delete(id):ppSelectedSet.add(id);updatePpSelectedCount();updatePpSelectAll();}
@@ -752,7 +907,7 @@ async function bulkZip(submissions,filenameStem,onProgress){ const zip=new JSZip
 function triggerDownload(blob,filename){ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href); }
 async function downloadSelectedWorksheets(mode){ if(!wsSelected.size)return; const mergedBtn=document.getElementById('ws-downloadMergedBtn'),zipBtn=document.getElementById('ws-downloadZipBtn'),activeBtn=mode==='merged'?mergedBtn:zipBtn,origText=activeBtn.textContent; mergedBtn.disabled=true;zipBtn.disabled=true; const submissions=Array.from(wsSelected).map(id=>allWorksheets.find(s=>s.id===id)).filter(Boolean); const onProgress=(cur,tot)=>activeBtn.textContent=`${mode==='merged'?'Merging':'Fetching'} ${cur}/${tot}…`; try{ let count; if(mode==='merged'){count=await bulkMergePdf(submissions,'worksheets',onProgress);}else{activeBtn.textContent='Building ZIP…';count=await bulkZip(submissions,'worksheets',onProgress);} if(count===0){alert('No PDFs could be downloaded.');}else{for(const sub of submissions){if(sub.file_path&&!sub.is_downloaded){await supabaseClient.from('worksheet_submissions').update({is_downloaded:true}).eq('id',sub.id);sub.is_downloaded=true;const lbl=document.getElementById(`ws-dl-${sub.id}`);const chk=document.getElementById(`ws-dc-${sub.id}`);if(lbl&&chk){chk.checked=true;lbl.classList.add('checked');lbl.querySelector('span').textContent='Yes';}}}} }catch(e){alert('Error: '+e.message);} wsSelected.clear();updateWsSelectedCount();updateWorksheetStats();applyWorksheetFilters(); activeBtn.textContent=origText;mergedBtn.disabled=false;zipBtn.disabled=false; }
 async function downloadSelectedPapers(mode){ if(!ppSelectedSet.size)return; const mergedBtn=document.getElementById('pp-downloadMergedBtn'),zipBtn=document.getElementById('pp-downloadZipBtn'),activeBtn=mode==='merged'?mergedBtn:zipBtn,origText=activeBtn.textContent; mergedBtn.disabled=true;zipBtn.disabled=true; const submissions=Array.from(ppSelectedSet).map(id=>allPapers.find(s=>s.id===id)).filter(Boolean); const onProgress=(cur,tot)=>activeBtn.textContent=`${mode==='merged'?'Merging':'Fetching'} ${cur}/${tot}…`; try{ let count; if(mode==='merged'){count=await bulkMergePdf(submissions,'papers',onProgress);}else{activeBtn.textContent='Building ZIP…';count=await bulkZip(submissions,'papers',onProgress);} if(count===0)alert('No PDFs could be downloaded.'); }catch(e){alert('Error: '+e.message);} ppSelectedSet.clear();updatePpSelectedCount();applyPaperFilters(); activeBtn.textContent=origText;mergedBtn.disabled=false;zipBtn.disabled=false; }
-async function toggleReviewed(table,allData,idPrefix,id){ const sub=allData.find(s=>s.id===id);if(!sub)return; const newVal=!sub.is_reviewed; const lbl=document.getElementById(`${idPrefix}-rl-${id}`),chk=document.getElementById(`${idPrefix}-rc-${id}`); if(lbl&&chk){chk.checked=newVal;lbl.classList.toggle('checked',newVal);lbl.querySelector('span').textContent=newVal?'Reviewed':'Mark';} try{ const{error}=await supabaseClient.from(table).update({is_reviewed:newVal}).eq('id',id); if(error)throw error; sub.is_reviewed=newVal; if(table==='worksheet_submissions') updateWorksheetStats(); if(table==='paper_submissions') updatePaperStats(); if(table==='interview_submissions') updateInterviewStats(); if(table==='paper_submissions_102') updateHist102Stats(); }catch(e){ if(lbl&&chk){chk.checked=!newVal;lbl.classList.toggle('checked',!newVal);lbl.querySelector('span').textContent=!newVal?'Reviewed':'Mark';} alert('Error saving. Please try again.'); } }
+async function toggleReviewed(table,allData,idPrefix,id){ const sub=allData.find(s=>s.id===id);if(!sub)return; const newVal=!sub.is_reviewed; const lbl=document.getElementById(`${idPrefix}-rl-${id}`),chk=document.getElementById(`${idPrefix}-rc-${id}`); if(lbl&&chk){chk.checked=newVal;lbl.classList.toggle('checked',newVal);lbl.querySelector('span').textContent=newVal?'Reviewed':'Mark';} try{ const{error}=await supabaseClient.from(table).update({is_reviewed:newVal}).eq('id',id); if(error)throw error; sub.is_reviewed=newVal; if(table==='worksheet_submissions') updateWorksheetStats(); if(table==='paper_submissions') updatePaperStats(); if(table==='interview_submissions') updateInterviewStats(); if(table==='paper_submissions_102') updateHist102Stats(); if(table==='checkin_submissions') updateCheckinStats(); }catch(e){ if(lbl&&chk){chk.checked=!newVal;lbl.classList.toggle('checked',!newVal);lbl.querySelector('span').textContent=!newVal?'Reviewed':'Mark';} alert('Error saving. Please try again.'); } }
 const wsToggleReviewed=id=>toggleReviewed('worksheet_submissions',allWorksheets,'ws',id);
 const ppToggleReviewed=id=>toggleReviewed('paper_submissions',allPapers,'pp',id);
 const ivToggleReviewed=id=>toggleReviewed('interview_submissions',allInterviews,'iv',id);
