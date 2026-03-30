@@ -1636,12 +1636,15 @@ async function beginExam() {
   showPreflight('Checking attempt records for '+wnum+'…');
   try {
     // Use ilike for case-insensitive student_id matching
+    console.log('[ATTEMPT CHECK] Looking up student_id:', wnum.trim(), '| worksheet_type: hist102-midterm');
     const { data:existing, error:chkErr } = await sb
       .from('exam_attempts')
       .select('id,student_name,student_id,started_at,attempt_status')
       .ilike('student_id', wnum.trim())
       .eq('worksheet_type','hist102-midterm')
       .limit(1);
+
+    console.log('[ATTEMPT CHECK] Result — data:', JSON.stringify(existing), '| error:', JSON.stringify(chkErr));
 
     // If Supabase returns an error, block the student rather than allow through.
     // This prevents the silent-fail loophole that allowed repeat attempts.
