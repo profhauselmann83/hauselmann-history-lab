@@ -1312,7 +1312,7 @@ img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
       <div style="padding:16px 18px;">
         <p style="font-size:0.93em;margin-bottom:14px;">Open the Canvas assignment using the button below and upload the PDF file you just downloaded. Your submission is not complete until it appears in Canvas.</p>
         <div class="btn-row" style="justify-content:flex-start;margin-top:0;">
-          <a id="canvasBtn" href="https://modesto.instructure.com/courses/69719/assignments/2275871?module_item_id=5997010" target="_blank" class="btn btn-gold" style="text-decoration:none;font-size:1em;padding:14px 32px;" onclick="handleCanvasNavigation(event)">📋 Go to Canvas Assignment →</a>
+          <a id="canvasBtn" href="CANVAS_URL_PLACEHOLDER" target="_blank" class="btn btn-gold" style="text-decoration:none;font-size:1em;padding:14px 32px;" onclick="handleCanvasNavigation(event)">📋 Go to Canvas Assignment →</a>
         </div>
         <div class="notice" style="margin-top:14px;">After uploading, you will see a submission confirmation in Canvas. That confirmation is your receipt — keep it.</div>
       </div>
@@ -1641,21 +1641,50 @@ async function beginExam() {
       .eq('student_id', wnum.toUpperCase().trim())
       .eq('worksheet_type','hist102-midterm')
       .limit(1);
-    if (chkErr){ console.error(chkErr); hidePreflight(); await registerAndStart(first+' '+last,wnum,section); return; }
-    if (existing && existing.length>0){
+
+    // If Supabase returns an error, block the student rather than allow through.
+    // This prevents the silent-fail loophole that allowed repeat attempts.
+    if (chkErr) {
+      console.error('Supabase check error:', chkErr);
+      hidePreflight();
+      document.getElementById('beginBtn').disabled = false;
+      document.getElementById('beginError').style.display = 'block';
+      document.getElementById('beginError').innerHTML =
+        '<div style="background:rgba(140,58,30,0.1);border-left:4px solid var(--rust);padding:12px 16px;color:var(--rust);font-size:0.9em;">' +
+        '⚠ Could not verify your eligibility (error: ' + chkErr.message + '). ' +
+        'Please check your internet connection and try again, or contact Prof. Hauselmann at hauselmannh@yosemite.edu.' +
+        '</div>';
+      return;
+    }
+
+    if (existing && existing.length > 0) {
       hidePreflight();
       showLock(existing[0]);
+      // Log the blocked attempt
       await sb.from('exam_attempts').insert({
-        student_name:first+' '+last, student_id:wnum.toUpperCase().trim(),
-        section_number:section, worksheet_type:'hist102-midterm',
-        attempt_status:'blocked', started_at:new Date().toISOString(),
-        notes:`Blocked: prior attempt ${existing[0].id}`
+        student_name: first+' '+last, student_id: wnum.toUpperCase().trim(),
+        section_number: section, worksheet_type: 'hist102-midterm',
+        attempt_status: 'blocked', started_at: new Date().toISOString(),
+        notes: `Blocked: prior attempt ${existing[0].id}`
       });
       return;
     }
+
     hidePreflight();
-    await registerAndStart(first+' '+last,wnum,section);
-  } catch(e){ console.error(e); hidePreflight(); await registerAndStart(first+' '+last,wnum,section); }
+    await registerAndStart(first+' '+last, wnum, section);
+
+  } catch(e) {
+    // Network/unexpected error — block rather than allow through
+    console.error('beginExam catch:', e);
+    hidePreflight();
+    document.getElementById('beginBtn').disabled = false;
+    document.getElementById('beginError').style.display = 'block';
+    document.getElementById('beginError').innerHTML =
+      '<div style="background:rgba(140,58,30,0.1);border-left:4px solid var(--rust);padding:12px 16px;color:var(--rust);font-size:0.9em;">' +
+      '⚠ Unable to connect to the exam server (' + e.message + '). ' +
+      'Please check your internet connection and try again. If the problem persists, contact Prof. Hauselmann.' +
+      '</div>';
+  }
 }
 async function registerAndStart(name,wnum,section) {
   try {
