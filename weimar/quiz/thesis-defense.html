@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Thesis Defense Submission – HIST 105</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="css/weimar-styles.css">
+    <style>
+        /* ── PAGE-SPECIFIC OVERRIDES & FORM COMPONENTS ─────────────────── */
+
+        body {
+            background-color: var(--weimar-cream);
+            font-family: var(--font-body);
+        }
+
+        /* Constrain form to readable width */
+        .form-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* BREADCRUMB */
+        .breadcrumb {
+            background: #fff;
+            padding: 10px 16px;
+            margin: 18px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border-left: 4px solid var(--weimar-gold);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .breadcrumb a { color: var(--weimar-red); text-decoration: none; font-weight: 600; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* STEP INDICATOR */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            margin: 24px 0 6px;
+        }
+        .step-dot {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: #d8d0c0;
+            color: #999;
+            font-family: var(--font-body);
+            font-size: 0.82em;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.3s, color 0.3s;
+            border: 2px solid transparent;
+        }
+        .step-dot.active {
+            background: var(--weimar-black);
+            color: var(--weimar-gold);
+            border-color: var(--weimar-gold);
+        }
+        .step-dot.done {
+            background: var(--stability-green);
+            color: #fff;
+        }
+        .step-line {
+            flex: 1; height: 3px;
+            background: #d0c8b8;
+            transition: background 0.3s;
+        }
+        .step-line.done { background: var(--stability-green); }
+
+        .progress-bar-wrap {
+            background: #d8d0c0;
+            border-radius: 20px;
+            height: 5px;
+            margin: 6px 0 26px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--weimar-red), var(--weimar-gold));
+            border-radius: 20px;
+            transition: width 0.4s ease;
+        }
+
+        /* STEP PANELS */
+        .step-panel {
+            background: #fff;
+            border-radius: 6px;
+            padding: 32px 36px;
+            margin: 0 0 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+            border-top: 4px solid var(--weimar-gold);
+        }
+        .step-panel h2 {
+            font-family: var(--font-heading);
+            color: var(--weimar-black);
+            margin: 0 0 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e8e0d0;
+            font-size: 1.6em;
+            border-left: none;
+            padding-left: 0;
+        }
+
+        /* ALERTS — mapped to Weimar semantic colors */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 4px;
+            margin: 0 0 18px;
+            font-size: 0.94em;
+            line-height: 1.6;
+            font-family: var(--font-body);
+        }
+        .alert-info    { background: #f5f1e8; border-left: 5px solid var(--weimar-gold); color: #3a2e10; }
+        .alert-warning { background: #fff5e6; border-left: 5px solid var(--warning-amber); color: #5c3800; }
+        .alert-success { background: #f0f7eb; border-left: 5px solid var(--stability-green); color: #1e3a0a; }
+        .alert-danger  { background: #fff0f0; border-left: 5px solid var(--crisis-red); color: #6e0a0a; }
+
+        /* FORM FIELDS */
+        .form-row { margin-bottom: 18px; }
+        label {
+            display: block;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 0.95em;
+            margin-bottom: 6px;
+            color: var(--weimar-black);
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #c8c0b0;
+            border-radius: 4px;
+            font-family: var(--font-body);
+            font-size: 1em;
+            color: var(--weimar-black);
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--weimar-gold);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
+        }
+
+        /* THESIS CARDS */
+        .thesis-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0 6px;
+        }
+        .thesis-option {
+            border: 2px solid #c8c0b0;
+            border-radius: 5px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .thesis-option:hover {
+            border-color: var(--weimar-gold);
+            background: #faf7f0;
+        }
+        .thesis-option.selected {
+            border-color: var(--weimar-red);
+            background: #fff5f5;
+            border-left-width: 5px;
+        }
+        .thesis-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+        .thesis-option-label { display: flex; align-items: flex-start; gap: 12px; }
+        .thesis-radio-circle {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            border: 2px solid #c8c0b0;
+            flex-shrink: 0;
+            margin-top: 3px;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .thesis-option.selected .thesis-radio-circle {
+            border-color: var(--weimar-red);
+            background: var(--weimar-red);
+        }
+        .thesis-option.selected .thesis-radio-circle::after {
+            content: '';
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #fff;
+            display: block;
+        }
+        .thesis-letter {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.2em;
+            color: var(--weimar-red);
+            min-width: 22px;
+            line-height: 1.2;
+        }
+        .thesis-text {
+            font-family: var(--font-body);
+            font-size: 0.95em;
+            color: var(--weimar-black);
+            line-height: 1.55;
+        }
+
+        /* WORD COUNT */
+        .wc-panel {
+            background: #f5f1e8;
+            border: 1px solid #d8d0c0;
+            border-radius: 4px;
+            padding: 13px 16px;
+            margin: 12px 0 16px;
+        }
+        .wc-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .wc-number {
+            font-family: var(--font-body);
+            font-size: 1.05em;
+            font-weight: 700;
+            min-width: 110px;
+        }
+        .wc-number.too-few  { color: var(--crisis-red); }
+        .wc-number.in-range { color: var(--stability-green); }
+        .wc-number.too-many { color: var(--warning-amber); }
+        .wc-track {
+            flex: 1; min-width: 180px; height: 10px;
+            background: #d8d0c0; border-radius: 10px; position: relative;
+        }
+        .wc-fill { height: 100%; border-radius: 10px; transition: width 0.25s, background 0.25s; }
+        .wc-marker {
+            position: absolute; top: -5px;
+            width: 3px; height: 20px;
+            background: var(--weimar-black); border-radius: 2px;
+        }
+        .wc-marker::after {
+            content: attr(data-label);
+            position: absolute;
+            top: 22px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.68em;
+            font-family: var(--font-body);
+            color: #666;
+            white-space: nowrap;
+        }
+        .autosave-badge {
+            font-family: var(--font-body);
+            font-size: 0.8em;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        .autosave-badge.saved   { background: #dff0d8; color: var(--stability-green); }
+        .autosave-badge.saving  { background: #fef9c3; color: #7a5a00; }
+        .autosave-badge.unsaved { background: #fce8e8; color: var(--crisis-red); }
+        .wc-hint { font-size: 0.86em; color: #5a5040; font-family: var(--font-body); }
+
+        /* CHARACTER BOX — reuses historical-context styling */
+        .character-box {
+            background: linear-gradient(to right, #f5f1e8 0%, #ede5d5 100%);
+            border-left: 8px solid var(--weimar-gold);
+            padding: 16px 20px;
+            margin: 0 0 18px;
+            font-size: 1em;
+            line-height: 1.7;
+        }
+        .character-box h4 {
+            font-family: var(--font-heading);
+            margin: 0 0 6px;
+            color: var(--weimar-black);
+            font-size: 1.1em;
+        }
+        .character-box p { margin: 0; font-size: 0.93em; color: #3a3020; }
+
+        /* CROSS-EXAM BANNER */
+        .crossex-banner {
+            background: linear-gradient(135deg, var(--weimar-black) 0%, #2c2c2c 100%);
+            color: var(--weimar-cream);
+            border-radius: 5px;
+            padding: 18px 22px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            border-bottom: 3px solid var(--weimar-red);
+        }
+        .crossex-icon { font-size: 1.8em; flex-shrink: 0; }
+        .crossex-text h4 {
+            font-family: var(--font-heading);
+            margin: 0 0 5px;
+            font-size: 1.15em;
+            color: var(--weimar-gold);
+        }
+        .crossex-text p { margin: 0; font-size: 0.9em; opacity: 0.9; line-height: 1.6; }
+
+        /* TABS — mapped to Weimar tab style */
+        .tab-bar {
+            display: flex;
+            border-bottom: 2px solid var(--weimar-gold);
+            background-color: #f0ebe0;
+            margin-bottom: 0;
+        }
+        .tab-btn {
+            padding: 10px 22px;
+            border: none;
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 0.95em;
+            font-weight: 700;
+            color: var(--weimar-black);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .tab-btn:hover { background: #e0dbd0; }
+        .tab-btn.active {
+            background: var(--weimar-black);
+            color: var(--weimar-gold);
+            border-bottom-color: var(--weimar-red);
+        }
+        .tab-content {
+            display: none;
+            padding: 24px 0 0;
+            animation: fadeIn 0.3s;
+        }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #defense-area {
+            width: 100%;
+            line-height: 1.75;
+            resize: vertical;
+            min-height: 400px;
+            font-family: var(--font-body);
+        }
+
+        /* EVIDENCE GUIDE — reuses key-facts box */
+        .evidence-guide {
+            background: #fff;
+            border: 2px solid var(--weimar-gold);
+            border-radius: 6px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            font-size: 0.93em;
+            line-height: 1.65;
+        }
+        .evidence-guide h4 {
+            font-family: var(--font-heading);
+            color: var(--weimar-red);
+            margin: 0 0 14px;
+            font-size: 1.15em;
+        }
+        .evidence-rule { margin-bottom: 14px; }
+        .evidence-rule .label {
+            font-weight: 700;
+            color: var(--weimar-black);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .cite-example {
+            background: #f5f1e8;
+            border-left: 4px solid var(--weimar-red);
+            padding: 6px 12px;
+            margin: 4px 0;
+            font-family: var(--font-mono);
+            font-size: 0.96em;
+            color: var(--weimar-black);
+            border-radius: 0 3px 3px 0;
+        }
+
+        /* PLEDGE */
+        .pledge-box {
+            background: #fff9e6;
+            border: 2px solid var(--weimar-gold);
+            border-radius: 5px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+        .pledge-box h4 {
+            font-family: var(--font-heading);
+            margin: 0 0 10px;
+            color: var(--weimar-black);
+            font-size: 1.15em;
+        }
+        .pledge-box p { margin: 0 0 14px; color: #444; font-size: 0.93em; line-height: 1.65; }
+        .pledge-check-row {
+            display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;
+        }
+        .pledge-check-row input[type="checkbox"] {
+            width: 18px; height: 18px; margin-top: 2px;
+            flex-shrink: 0; cursor: pointer;
+            accent-color: var(--weimar-red);
+        }
+        .pledge-check-row label {
+            font-weight: 400; font-size: 0.93em;
+            color: var(--weimar-black); cursor: pointer; margin: 0;
+        }
+        .pledge-sign-row {
+            display: flex; align-items: center;
+            gap: 12px; margin-top: 14px; flex-wrap: wrap;
+        }
+        .pledge-sign-row label {
+            font-weight: 700; font-size: 0.93em;
+            color: var(--weimar-black); margin: 0; white-space: nowrap;
+        }
+        .pledge-sign-row input[type="text"] { max-width: 280px; font-style: italic; }
+
+        /* REVIEW */
+        .review-block {
+            background: #f5f1e8;
+            border: 1px solid #d8d0c0;
+            border-left: 5px solid var(--weimar-gold);
+            border-radius: 4px;
+            padding: 18px 22px;
+            margin-bottom: 18px;
+            font-size: 0.97em;
+            line-height: 2;
+        }
+        .review-block p { margin: 0; }
+        .review-thesis-text {
+            background: #fff5f5;
+            border-left: 4px solid var(--weimar-red);
+            padding: 8px 14px;
+            font-size: 0.92em;
+            color: #5a0a0a;
+            margin: 4px 0 8px;
+            font-style: italic;
+            line-height: 1.55;
+        }
+
+        /* BUTTONS — extend weimar-styles .btn */
+        .btn {
+            font-family: var(--font-body);
+            font-size: 0.97em;
+            font-weight: 700;
+            padding: 10px 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        .btn-primary  { background: var(--weimar-red); color: #fff; }
+        .btn-primary:hover:not(:disabled)  { background: var(--crisis-red); transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        .btn-success  { background: var(--stability-green); color: #fff; }
+        .btn-success:hover:not(:disabled)  { background: #1e4010; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        .btn-danger   { background: var(--crisis-red); color: #fff; }
+        .btn-danger:hover:not(:disabled)   { background: #8b0000; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        .btn-secondary { background: var(--weimar-black); color: var(--weimar-cream); }
+        .btn-secondary:hover:not(:disabled) { background: #2c2c2c; transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--weimar-black);
+            color: var(--weimar-black);
+        }
+        .btn-outline:hover:not(:disabled) { background: var(--weimar-black); color: var(--weimar-cream); }
+
+        .btn-row {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            align-items: center; margin-top: 22px;
+        }
+        .btn-row .spacer { flex: 1; }
+
+        /* PASTE MODAL — reuses .modal from weimar-styles */
+        #paste-modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); z-index: 2000;
+            align-items: center; justify-content: center;
+        }
+        #paste-modal.show { display: flex; }
+        .paste-modal-box {
+            background: var(--weimar-cream);
+            border: 3px solid var(--weimar-black);
+            border-radius: 8px;
+            padding: 36px 40px;
+            max-width: 400px; width: 90%;
+            text-align: center;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+            font-family: var(--font-body);
+            animation: slideDown 0.3s;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-40px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        .paste-modal-box h3 {
+            font-family: var(--font-heading);
+            color: var(--crisis-red);
+            margin: 0 0 12px;
+            font-size: 1.4em;
+            border-bottom: 2px solid var(--weimar-gold);
+            padding-bottom: 8px;
+        }
+        .paste-modal-box p { color: #444; line-height: 1.6; margin: 0 0 20px; font-size: 0.95em; }
+
+        .confetti { font-size: 2.8em; display: block; text-align: center; margin-bottom: 8px; }
+
+        /* PRINT */
+        #print-doc { display: none; }
+        @media print {
+            body > *:not(#print-doc) { display: none !important; }
+            body { background: #fff; padding: 0; margin: 0; max-width: 100%; font-family: 'Times New Roman', serif; font-size: 12pt; color: #000; }
+            #print-doc { display: block !important; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 2; color: #000; }
+            #print-doc .print-paragraph { text-indent: 0.5in; margin: 0; padding: 0; line-height: 2; }
+            #print-doc .print-paragraph:first-child { text-indent: 0; }
+            @page { margin: 1in; size: letter; }
+        }
+
+        @media (max-width: 600px) {
+            .step-panel { padding: 20px 18px; }
+            .tab-btn { padding: 9px 14px; font-size: 0.88em; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PASTE MODAL -->
+<div id="paste-modal" role="dialog" aria-modal="true">
+    <div class="paste-modal-box">
+        <h3>⚠️ Copy-Paste Not Allowed</h3>
+        <p>This assignment requires you to type your thesis defense directly. Pasting text is not permitted — your argument must be in your own words.</p>
+        <button class="btn btn-primary" onclick="closePasteModal()">I Understand</button>
+    </div>
+</div>
+
+<!-- PRINT DOC -->
+<div id="print-doc">
+    <div id="print-header"></div>
+    <div id="print-title" style="text-align:center;font-weight:bold;"></div>
+    <div id="print-thesis-label" style="font-weight:bold;margin-top:12pt;">Thesis Selected:</div>
+    <div id="print-thesis-block" style="font-style:italic;border-left:3px solid #333;padding-left:12pt;margin:4pt 0 12pt;line-height:1.6;"></div>
+    <div id="print-body"></div>
+</div>
+
+<!-- SITE HEADER -->
+<header class="site-header">
+    <div class="container">
+        <h1>Hauselmann History Lab</h1>
+        <p class="subtitle">Weimar Republic Simulation — Democracy in Crisis</p>
+    </div>
+</header>
+
+<!-- MAIN NAV -->
+<nav class="main-nav">
+    <button class="nav-toggle" onclick="document.querySelector('.main-nav ul').classList.toggle('active')" aria-label="Toggle menu">☰</button>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="activities.html">Interactive Activities</a></li>
+        <li><a href="research.html">Research Tools</a></li>
+        <li><a href="archives.html">Student Archives</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a></li>
+    </ul>
+</nav>
+
+<div class="form-wrap">
+
+    <div class="breadcrumb">
+        <a href="index.html">← Back to Weimar Simulation Home</a>
+    </div>
+
+    <!-- STEP INDICATOR -->
+    <div class="step-indicator">
+        <div class="step-dot active" id="dot-1">1</div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step-dot" id="dot-2">2</div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step-dot" id="dot-3">3</div>
+        <div class="step-line" id="line-3"></div>
+        <div class="step-dot" id="dot-4">4</div>
+    </div>
+    <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-fill" style="width:12%"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 1 — IDENTIFY YOURSELF                -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel" id="step-login">
+        <h2>Step 1 — Identify Yourself</h2>
+
+        <div class="alert alert-info">
+            Enter your information exactly as it appears on your course roster. Your draft saves automatically to your browser so you can return to finish if needed.
+        </div>
+
+        <div class="form-row">
+            <label for="inp-name">Full Name (First Last)</label>
+            <input type="text" id="inp-name" placeholder="e.g. Jane Smith" autocomplete="name">
+        </div>
+        <div class="form-row">
+            <label for="inp-id">Student ID</label>
+            <input type="text" id="inp-id" placeholder="e.g. 12345678" autocomplete="off" inputmode="numeric">
+        </div>
+        <div class="form-row">
+            <label for="inp-section">Course Section</label>
+            <select id="inp-section">
+                <option value="">— Select your section —</option>
+                <option value="4167">Section 4167</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="inp-role">Your Historical Role</label>
+            <input type="text" id="inp-role" placeholder="e.g. Ernst Thälmann, Clara Zetkin, Hermann Göring…" autocomplete="off">
+        </div>
+        <div class="form-row">
+            <label for="inp-faction">Your Faction</label>
+            <select id="inp-faction">
+                <option value="">— Select your faction —</option>
+                <option value="SPD">SPD — Social Democrats</option>
+                <option value="KPD">KPD — Communists</option>
+                <option value="Centre">Centre Party (Zentrum)</option>
+                <option value="DNVP">DNVP — German Nationalists</option>
+                <option value="NSDAP">NSDAP — National Socialists</option>
+                <option value="DVP">DVP — German People's Party</option>
+                <option value="Camarilla">Camarilla</option>
+                <option value="Indeterminate">Indeterminate / Swing Delegate</option>
+            </select>
+        </div>
+
+        <div class="alert alert-danger" id="login-error" style="display:none"></div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="proceedToWrite()">Continue to Thesis Defense →</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 2 — THESIS SELECTION & DEFENSE       -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel" id="step-write" style="display:none">
+        <h2>Step 2 — Select Your Thesis &amp; Write Your Defense</h2>
+
+        <div class="crossex-banner">
+            <div class="crossex-icon">⚔️</div>
+            <div class="crossex-text">
+                <h4>Prepare for Cross-Examination</h4>
+                <p>You will be challenged on your argument in Session 3. Do <strong>not</strong> plan to read directly from this paper — know your evidence, know your character's ideology, and be ready to defend your position in debate.</p>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <strong>📝 Type directly into the fields below.</strong> Copy-pasting is disabled. Your draft saves automatically every 30 seconds. You can leave and return to finish using the same browser.
+        </div>
+
+        <!-- THESIS CARDS -->
+        <div class="form-row">
+            <label>Select Your Thesis <span style="font-weight:400;color:var(--neutral-gray)">(from your role sheet — choose one)</span></label>
+            <div class="thesis-options">
+                <label class="thesis-option" id="opt-A">
+                    <input type="radio" name="thesis" value="A" onchange="selectThesis('A')">
+                    <div class="thesis-option-label">
+                        <div class="thesis-radio-circle"></div>
+                        <span class="thesis-letter">A</span>
+                        <span class="thesis-text">The Weimar Republic collapsed primarily because of <strong>economic crisis</strong> — hyperinflation, the Great Depression, and mass unemployment destroyed public confidence in democratic institutions and created conditions ripe for extremist exploitation.</span>
+                    </div>
+                </label>
+                <label class="thesis-option" id="opt-B">
+                    <input type="radio" name="thesis" value="B" onchange="selectThesis('B')">
+                    <div class="thesis-option-label">
+                        <div class="thesis-radio-circle"></div>
+                        <span class="thesis-letter">B</span>
+                        <span class="thesis-text">The Weimar Republic collapsed primarily because of <strong>structural and constitutional failures</strong> — proportional representation, Article 48 emergency powers, and the inability to build stable governing coalitions made democratic governance impossible.</span>
+                    </div>
+                </label>
+                <label class="thesis-option" id="opt-C">
+                    <input type="radio" name="thesis" value="C" onchange="selectThesis('C')">
+                    <div class="thesis-option-label">
+                        <div class="thesis-radio-circle"></div>
+                        <span class="thesis-letter">C</span>
+                        <span class="thesis-text">The Weimar Republic collapsed primarily because of <strong>elite betrayal</strong> — conservative nationalists, industrialists, and the Camarilla around Hindenburg deliberately undermined democracy to restore authoritarian rule, using Hitler as their instrument.</span>
+                    </div>
+                </label>
+                <label class="thesis-option" id="opt-D">
+                    <input type="radio" name="thesis" value="D" onchange="selectThesis('D')">
+                    <div class="thesis-option-label">
+                        <div class="thesis-radio-circle"></div>
+                        <span class="thesis-letter">D</span>
+                        <span class="thesis-text">The Weimar Republic collapsed primarily because of <strong>ideological polarization and mass politics</strong> — the rise of fascism and communism as militant mass movements shattered the political center and made democratic compromise impossible.</span>
+                    </div>
+                </label>
+            </div>
+            <p style="font-size:0.83em;color:var(--neutral-gray);margin:6px 0 0">If your role sheet thesis options differ from the above, select the closest match and note your actual thesis in your defense text.</p>
+        </div>
+
+        <!-- TABS -->
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('defense', this)">✍️ Defense</button>
+            <button class="tab-btn" onclick="switchTab('guidance', this)">📋 Writing Guide</button>
+        </div>
+
+        <!-- TAB: DEFENSE -->
+        <div class="tab-content active" id="tab-defense">
+            <div class="character-box">
+                <h4>🎭 Character Consistency Reminder</h4>
+                <p>You are writing as <strong><span id="char-name-display">your historical character</span></strong> (<span id="char-faction-display">your faction</span>). Your defense should argue the thesis from the perspective of your character's ideology. If your character would plausibly <em>disagree</em> with the thesis you selected, explain that divergence directly in your paper.</p>
+            </div>
+
+            <div class="wc-panel">
+                <div class="wc-top">
+                    <span class="wc-number too-few" id="wc-number">0 words</span>
+                    <div class="wc-track">
+                        <div class="wc-fill" id="wc-fill" style="width:0%;background:var(--crisis-red)"></div>
+                        <div class="wc-marker" id="wc-min-marker" data-label="250 min"></div>
+                        <div class="wc-marker" id="wc-max-marker" data-label="400 max"></div>
+                    </div>
+                    <span class="autosave-badge unsaved" id="autosave-badge">● Unsaved</span>
+                </div>
+                <div class="wc-hint" id="wc-hint">You need at least <strong>250</strong> words (approx. 1 page). Maximum is <strong>400</strong> words.</div>
+            </div>
+
+            <textarea
+                id="defense-area"
+                placeholder="Write your thesis defense here…
+
+Begin by stating which thesis you are defending and introducing your character's perspective. Then develop your argument with at least two specific pieces of evidence drawn from primary sources on the course website.
+
+If your character's ideology leads them to a different conclusion than the thesis you selected, explain that tension directly.
+
+Remember: you will be cross-examined in class — write to understand and argue, not just to summarize."
+                oninput="onDefenseInput()"
+                onpaste="blockPaste(event)"
+                ondrop="blockDrop(event)"
+                oncontextmenu="return false"
+                spellcheck="true"
+                autocomplete="off"
+            ></textarea>
+
+            <div class="alert alert-danger" id="wc-over-alert" style="display:none;margin-top:12px">
+                You have exceeded the 400-word maximum. Please shorten your defense before proceeding.
+            </div>
+        </div>
+
+        <!-- TAB: WRITING GUIDE -->
+        <div class="tab-content" id="tab-guidance">
+            <div class="evidence-guide">
+                <h4>📋 How to Write Your Thesis Defense</h4>
+
+                <div class="evidence-rule">
+                    <span class="label">What this paper is</span>
+                    <p style="margin:4px 0;color:#444;font-size:0.93em">A one-page argument defending one of the four thesis options from your role sheet. Your evidence must come from the primary sources on the course website. You will present and defend this argument in Session 3 — be ready for cross-examination from other characters.</p>
+                </div>
+
+                <div class="evidence-rule">
+                    <span class="label">Suggested structure (1 page ≈ 250–400 words)</span>
+                    <ul style="margin:4px 0 0 18px;padding:0;color:#444;font-size:0.93em;line-height:1.9">
+                        <li><strong>Opening sentence:</strong> State your thesis directly and identify your character.</li>
+                        <li><strong>Evidence 1:</strong> Name a specific primary source from the course website, quote or paraphrase a key passage, and explain how it supports your thesis.</li>
+                        <li><strong>Evidence 2:</strong> Repeat with a second primary source, preferably from a different faction or document type.</li>
+                        <li><strong>Character reflection:</strong> Does your character naturally hold this view? If yes, why? If no, where do you diverge and why?</li>
+                        <li><strong>Conclusion:</strong> One to two sentences restating your argument and its significance.</li>
+                    </ul>
+                </div>
+
+                <div class="evidence-rule">
+                    <span class="label">Citing primary sources from the course website</span>
+                    <div class="cite-example">(KPD Platform 1930, ¶3)</div>
+                    <div class="cite-example">(NSDAP Twenty-Five Points, Point 4)</div>
+                    <div class="cite-example">(SPD Görlitz Programme 1921)</div>
+                    <p style="font-size:0.88em;color:var(--neutral-gray);margin-top:5px">Cite by document title and relevant section or paragraph. All required primary sources are linked on the Core Texts pages.</p>
+                </div>
+
+                <div class="evidence-rule">
+                    <span class="label">Citing Pelz (optional but encouraged)</span>
+                    <div class="cite-example">(Pelz 2016, 102)</div>
+                </div>
+
+                <div class="key-concept" style="margin-top:18px">
+                    <h4>💡 Cross-Examination Tips</h4>
+                    <ul style="margin:4px 0 0 18px;padding:0;color:#444;font-size:0.93em;line-height:1.9">
+                        <li>Know your evidence well enough to quote or paraphrase without looking at the page.</li>
+                        <li>Anticipate which characters will challenge your thesis — what would a KPD delegate say? A DNVP delegate?</li>
+                        <li>Be prepared to explain why your thesis is more convincing than the alternatives.</li>
+                        <li>Staying in character makes your argument more powerful — use your character's language and priorities.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-outline" onclick="printDraft()">🖨️ Print Draft</button>
+            <button class="btn btn-success" id="btn-to-pledge" onclick="proceedToPledge()" disabled>Continue to Pledge →</button>
+            <span class="spacer"></span>
+            <button class="btn btn-secondary" style="font-size:0.85em" onclick="clearDraft()">🗑 Clear Draft</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 3 — PLEDGE                           -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel" id="step-pledge" style="display:none">
+        <h2>Step 3 — Academic Integrity Pledge</h2>
+        <div class="alert alert-info">Before submitting, confirm that this thesis defense is your own original work.</div>
+        <div class="pledge-box">
+            <h4>🎓 Academic Integrity Pledge — HIST 105</h4>
+            <p>Please read each statement carefully and check the box to indicate your agreement.</p>
+            <div class="pledge-check-row">
+                <input type="checkbox" id="pledge-1" onchange="checkPledge()">
+                <label for="pledge-1">I wrote this thesis defense myself. The argument and writing are my own, except where I have clearly cited sources.</label>
+            </div>
+            <div class="pledge-check-row">
+                <input type="checkbox" id="pledge-2" onchange="checkPledge()">
+                <label for="pledge-2">I did not copy, paste, or directly import text from any outside source — including websites, notes, or AI tools — into the submission field.</label>
+            </div>
+            <div class="pledge-check-row">
+                <input type="checkbox" id="pledge-3" onchange="checkPledge()">
+                <label for="pledge-3">I selected a thesis from my role sheet and supported it with evidence drawn from the primary sources on the course website.</label>
+            </div>
+            <div class="pledge-check-row">
+                <input type="checkbox" id="pledge-4" onchange="checkPledge()">
+                <label for="pledge-4">I understand that submitting another person's work as my own, or using AI to write this defense, constitutes academic dishonesty and may result in a failing grade or disciplinary action.</label>
+            </div>
+            <div class="pledge-sign-row">
+                <label for="pledge-signature">Type your full name as your digital signature:</label>
+                <input type="text" id="pledge-signature" placeholder="Your full name…" oninput="checkPledge()" style="font-style:italic">
+            </div>
+        </div>
+        <div class="alert alert-danger" id="pledge-error" style="display:none"></div>
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="backToWrite()">← Back to Defense</button>
+            <button class="btn btn-danger" id="btn-to-review" onclick="proceedToReview()" disabled>Review &amp; Submit →</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 4 — FINAL REVIEW & SUBMIT            -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel" id="step-submit" style="display:none">
+        <h2>Step 4 — Final Review &amp; Submit</h2>
+        <div class="alert alert-warning">
+            <strong>⚠️ This is your final submission.</strong> Once submitted, your thesis defense cannot be edited. Confirm all details below are correct before clicking Submit.
+        </div>
+        <div class="review-block">
+            <p><strong>Name:</strong> <span id="rv-name"></span></p>
+            <p><strong>Student ID:</strong> <span id="rv-id"></span></p>
+            <p><strong>Section:</strong> <span id="rv-section"></span></p>
+            <p><strong>Historical Role:</strong> <span id="rv-role"></span></p>
+            <p><strong>Faction:</strong> <span id="rv-faction"></span></p>
+            <p><strong>Thesis Selected:</strong> Option <span id="rv-thesis-letter"></span></p>
+            <div class="review-thesis-text" id="rv-thesis-text"></div>
+            <p><strong>Defense Word Count:</strong> <span id="rv-wc"></span></p>
+            <p><strong>Pledge Signed:</strong> <span id="rv-pledge" style="color:var(--stability-green)"></span></p>
+        </div>
+        <div class="alert alert-info">By clicking Submit, you confirm all information above is accurate and that you have agreed to the Academic Integrity Pledge.</div>
+        <div class="alert alert-danger" id="submit-error" style="display:none"></div>
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="backToPledge()">← Back to Pledge</button>
+            <button class="btn btn-danger" id="btn-final" onclick="submitDefense()">Submit Thesis Defense</button>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION -->
+    <div class="step-panel" id="step-confirm" style="display:none">
+        <span class="confetti">🎉</span>
+        <h2 style="text-align:center;border-bottom:none;border-left:none;padding-left:0">Submission Received!</h2>
+        <div class="alert alert-success">Your thesis defense has been successfully submitted and recorded in the course database.</div>
+        <p id="confirm-details" style="color:#444;line-height:1.9;margin-bottom:14px"></p>
+        <div class="alert alert-warning" style="margin-top:8px">
+            <strong>⚔️ Remember:</strong> You will be cross-examined in Session 3. Review your evidence and know your character's ideology — do not plan to read from this paper.
+        </div>
+        <p style="color:#555;margin:0">If you have any questions about your submission, contact Prof. Hauselmann.</p>
+    </div>
+
+</div><!-- /.form-wrap -->
+
+<!-- SITE FOOTER -->
+<footer class="site-footer">
+    <div class="container">
+        <p>Prof. Hauselmann | <a href="https://profhauselmann.org">profhauselmann.org</a></p>
+        <p style="font-size:0.85em;opacity:0.7">HIST 105: Western Civilization Since 1648 · Yosemite Community College</p>
+    </div>
+</footer>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const TABLE        = 'thesis_submissions';
+const MIN_WORDS    = 250;
+const MAX_WORDS    = 400;
+const DRAFT_KEY    = 'hist105_thesis_draft';
+
+const THESIS_LABELS = {
+    A: 'Economic crisis — hyperinflation, the Great Depression, and mass unemployment destroyed public confidence in democratic institutions.',
+    B: 'Structural and constitutional failures — proportional representation, Article 48 emergency powers, and unstable coalitions made democratic governance impossible.',
+    C: 'Elite betrayal — conservative nationalists, industrialists, and the Camarilla around Hindenburg deliberately undermined democracy to restore authoritarian rule.',
+    D: 'Ideological polarization and mass politics — the rise of fascism and communism as militant mass movements shattered the political center.'
+};
+
+let dbClient = null;
+function getDB() {
+    if (!dbClient) dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    return dbClient;
+}
+
+let studentName = '', studentId = '', section = '', studentRole = '', studentFaction = '';
+let selectedThesis = '', wordCount = 0, saveTimer = null;
+
+// ── STEP NAVIGATION ──────────────────────────────────────────────────────────
+const STEPS = ['step-login','step-write','step-pledge','step-submit','step-confirm'];
+
+function showStep(n) {
+    STEPS.forEach((id, i) => { document.getElementById(id).style.display = (i + 1 === n) ? 'block' : 'none'; });
+    for (let i = 1; i <= 4; i++) {
+        const d = document.getElementById('dot-' + i);
+        if (d) d.className = i < n ? 'step-dot done' : i === n ? 'step-dot active' : 'step-dot';
+    }
+    for (let i = 1; i <= 3; i++) {
+        const l = document.getElementById('line-' + i);
+        if (l) l.className = 'step-line' + (n > i ? ' done' : '');
+    }
+    const pct = { 1:12, 2:37, 3:62, 4:87, 5:100 };
+    document.getElementById('progress-fill').style.width = (pct[n] || 12) + '%';
+    window.scrollTo(0, 0);
+}
+
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── THESIS SELECTION ─────────────────────────────────────────────────────────
+function selectThesis(letter) {
+    selectedThesis = letter;
+    ['A','B','C','D'].forEach(l => document.getElementById('opt-' + l).classList.toggle('selected', l === letter));
+    scheduleSave();
+    checkWriteReady();
+}
+
+// ── STEP 1 ────────────────────────────────────────────────────────────────────
+function proceedToWrite() {
+    const name = document.getElementById('inp-name').value.trim();
+    const id   = document.getElementById('inp-id').value.trim();
+    const sec  = document.getElementById('inp-section').value;
+    const role = document.getElementById('inp-role').value.trim();
+    const fac  = document.getElementById('inp-faction').value;
+    const err  = document.getElementById('login-error');
+    if (!name || !id || !sec || !role || !fac) { err.textContent = 'Please complete all fields before continuing.'; err.style.display = 'block'; return; }
+    if (!/^\d{5,10}$/.test(id)) { err.textContent = 'Student ID should be 5–10 digits (numbers only).'; err.style.display = 'block'; return; }
+    err.style.display = 'none';
+    studentName = name; studentId = id; section = sec; studentRole = role; studentFaction = fac;
+    document.getElementById('char-name-display').textContent = role;
+    const facEl = document.getElementById('inp-faction');
+    document.getElementById('char-faction-display').textContent = facEl.options[facEl.selectedIndex].text;
+    loadDraft();
+    showStep(2);
+}
+
+// ── STEP 2 ────────────────────────────────────────────────────────────────────
+function checkWriteReady() {
+    document.getElementById('btn-to-pledge').disabled = !(selectedThesis && wordCount >= MIN_WORDS && wordCount <= MAX_WORDS);
+}
+
+function proceedToPledge() {
+    if (!selectedThesis) { alert('Please select a thesis option before continuing.'); return; }
+    if (wordCount < MIN_WORDS || wordCount > MAX_WORDS) return;
+    showStep(3);
+}
+function backToWrite() { showStep(2); }
+
+// ── STEP 3 ────────────────────────────────────────────────────────────────────
+function checkPledge() {
+    const all = ['pledge-1','pledge-2','pledge-3','pledge-4'].every(id => document.getElementById(id).checked);
+    const sig = document.getElementById('pledge-signature').value.trim();
+    document.getElementById('btn-to-review').disabled = !(all && sig.length > 2);
+}
+
+function proceedToReview() {
+    const all = ['pledge-1','pledge-2','pledge-3','pledge-4'].every(id => document.getElementById(id).checked);
+    const sig = document.getElementById('pledge-signature').value.trim();
+    const err = document.getElementById('pledge-error');
+    if (!all) { err.textContent = 'Please check all four boxes before continuing.'; err.style.display = 'block'; return; }
+    if (sig.length < 3) { err.textContent = 'Please type your full name as a digital signature.'; err.style.display = 'block'; return; }
+    err.style.display = 'none';
+    const facEl = document.getElementById('inp-faction');
+    document.getElementById('rv-name').textContent          = studentName;
+    document.getElementById('rv-id').textContent            = studentId;
+    document.getElementById('rv-section').textContent       = 'Section ' + section;
+    document.getElementById('rv-role').textContent          = studentRole;
+    document.getElementById('rv-faction').textContent       = facEl.options[facEl.selectedIndex].text;
+    document.getElementById('rv-thesis-letter').textContent = selectedThesis;
+    document.getElementById('rv-thesis-text').textContent   = THESIS_LABELS[selectedThesis] || '';
+    document.getElementById('rv-wc').textContent            = wordCount.toLocaleString() + ' words';
+    document.getElementById('rv-pledge').textContent        = '✓ Signed by ' + sig;
+    showStep(4);
+}
+function backToPledge() { showStep(3); }
+
+// ── STEP 4 ────────────────────────────────────────────────────────────────────
+async function submitDefense() {
+    const btn = document.getElementById('btn-final');
+    const err = document.getElementById('submit-error');
+    btn.disabled = true; btn.textContent = 'Submitting…'; err.style.display = 'none';
+    try {
+        const { error } = await getDB().from(TABLE).insert([{
+            student_name: studentName, student_id: studentId, section,
+            historical_role: studentRole, faction: studentFaction,
+            thesis_option: selectedThesis, thesis_label: THESIS_LABELS[selectedThesis] || '',
+            defense_text: document.getElementById('defense-area').value,
+            word_count: wordCount,
+            pledge_signature: document.getElementById('pledge-signature').value.trim(),
+            course: 'HIST 105', session: 'Session 3',
+            submitted_at: new Date().toISOString()
+        }]);
+        if (error) throw error;
+        localStorage.removeItem(DRAFT_KEY);
+        const facEl = document.getElementById('inp-faction');
+        document.getElementById('confirm-details').innerHTML =
+            `<strong>${studentName}</strong> &nbsp;|&nbsp; ID: ${studentId} &nbsp;|&nbsp; Section ${section}<br>` +
+            `Role: <em>${studentRole}</em> &nbsp;(${facEl.options[facEl.selectedIndex].text})<br>` +
+            `Thesis: Option ${selectedThesis} — ${THESIS_LABELS[selectedThesis]}<br>` +
+            `Word count: ${wordCount.toLocaleString()} words &nbsp;|&nbsp; Submitted: ${new Date().toLocaleString()}`;
+        for (let i=1;i<=4;i++){const d=document.getElementById('dot-'+i);if(d)d.className='step-dot done';}
+        for (let i=1;i<=3;i++){const l=document.getElementById('line-'+i);if(l)l.className='step-line done';}
+        document.getElementById('progress-fill').style.width='100%';
+        showStep(5);
+    } catch(e) {
+        err.textContent = 'Submission failed: ' + (e.message || 'Unknown error. Please try again or contact Prof. Hauselmann.');
+        err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Submit Thesis Defense';
+    }
+}
+
+// ── WORD COUNT ────────────────────────────────────────────────────────────────
+function countWords(t) { t = t.trim(); return t === '' ? 0 : t.split(/\s+/).length; }
+
+function onDefenseInput() { updateWordCount(); scheduleSave(); }
+
+document.getElementById('defense-area').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const s = this.selectionStart, end = this.selectionEnd;
+        this.value = this.value.substring(0, s) + '\n\n' + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = s + 2;
+        onDefenseInput();
+    }
+});
+
+function updateWordCount() {
+    wordCount = countWords(document.getElementById('defense-area').value);
+    const numEl  = document.getElementById('wc-number');
+    const fillEl = document.getElementById('wc-fill');
+    const hintEl = document.getElementById('wc-hint');
+    const overEl = document.getElementById('wc-over-alert');
+    numEl.textContent = wordCount.toLocaleString() + (wordCount === 1 ? ' word' : ' words');
+    const trackMax = MAX_WORDS * 1.1;
+    document.getElementById('wc-min-marker').style.left = (MIN_WORDS / trackMax * 100).toFixed(1) + '%';
+    document.getElementById('wc-max-marker').style.left = (MAX_WORDS / trackMax * 100).toFixed(1) + '%';
+    fillEl.style.width = Math.min(wordCount / trackMax * 100, 100).toFixed(1) + '%';
+    if (wordCount < MIN_WORDS) {
+        numEl.className = 'wc-number too-few'; fillEl.style.background = 'var(--crisis-red)'; overEl.style.display = 'none';
+        hintEl.innerHTML = `Need <strong>${(MIN_WORDS-wordCount).toLocaleString()}</strong> more word(s) to reach the 250-word minimum.`;
+    } else if (wordCount <= MAX_WORDS) {
+        numEl.className = 'wc-number in-range'; fillEl.style.background = 'linear-gradient(90deg,var(--stability-green),#4a8a28)'; overEl.style.display = 'none';
+        hintEl.innerHTML = `✓ Word count is within range (250–400 words).`;
+    } else {
+        numEl.className = 'wc-number too-many'; fillEl.style.background = 'var(--warning-amber)'; overEl.style.display = 'block';
+        hintEl.innerHTML = `<strong>${(wordCount-MAX_WORDS).toLocaleString()}</strong> word(s) over the 400-word maximum. Please shorten your defense.`;
+    }
+    checkWriteReady();
+}
+
+// ── DRAFT SAVE / LOAD ─────────────────────────────────────────────────────────
+function scheduleSave() { setBadge('saving'); clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 1500); }
+function saveDraft() {
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ id: studentId, thesis: selectedThesis, defense: document.getElementById('defense-area').value, saved: new Date().toISOString() }));
+        setBadge('saved');
+    } catch(e) { setBadge('unsaved'); }
+}
+function loadDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        if (d.id !== studentId) return;
+        if (d.defense) document.getElementById('defense-area').value = d.defense;
+        if (d.thesis) { const r = document.querySelector(`input[name="thesis"][value="${d.thesis}"]`); if (r) { r.checked = true; selectThesis(d.thesis); } }
+        updateWordCount(); setBadge('saved');
+    } catch(e) {}
+}
+function clearDraft() {
+    if (!confirm('Clear your saved draft? This cannot be undone.')) return;
+    localStorage.removeItem(DRAFT_KEY);
+    document.getElementById('defense-area').value = '';
+    ['A','B','C','D'].forEach(l => document.getElementById('opt-'+l).classList.remove('selected'));
+    document.querySelectorAll('input[name="thesis"]').forEach(r => r.checked = false);
+    selectedThesis = ''; updateWordCount(); setBadge('unsaved');
+}
+function setBadge(state) {
+    const b = document.getElementById('autosave-badge');
+    b.className = 'autosave-badge ' + state;
+    b.textContent = state === 'saved' ? '✓ Saved' : state === 'saving' ? 'Saving…' : '● Unsaved';
+}
+setInterval(() => { if (studentId && document.getElementById('step-write').style.display !== 'none') saveDraft(); }, 30000);
+
+// ── PASTE / DROP BLOCKING ─────────────────────────────────────────────────────
+function blockPaste(e) { e.preventDefault(); e.stopPropagation(); document.getElementById('paste-modal').classList.add('show'); }
+function blockDrop(e)  { e.preventDefault(); document.getElementById('paste-modal').classList.add('show'); }
+function closePasteModal() { document.getElementById('paste-modal').classList.remove('show'); }
+document.addEventListener('keydown', function(e) {
+    if (document.activeElement?.id !== 'defense-area') return;
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'v' || e.key === 'V')) { e.preventDefault(); document.getElementById('paste-modal').classList.add('show'); }
+});
+
+// ── PRINT ─────────────────────────────────────────────────────────────────────
+function printDraft() {
+    const facEl = document.getElementById('inp-faction');
+    const fLabel = facEl.options[facEl.selectedIndex]?.text || studentFaction;
+    document.getElementById('print-header').innerHTML =
+        (studentName||'[Your Name]') + '<br>Student ID: ' + (studentId||'[ID]') + '<br>Section ' + (section||'[Section]') +
+        '<br>Role: ' + (studentRole||'[Role]') + ' — ' + fLabel +
+        '<br>HIST 105: Western Civilization Since 1648<br>Prof. Hauselmann<br>' +
+        new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    document.getElementById('print-title').textContent = 'Thesis Defense — Session 3';
+    document.getElementById('print-thesis-block').textContent = selectedThesis ? 'Thesis ' + selectedThesis + ': ' + (THESIS_LABELS[selectedThesis]||'') : '[No thesis selected]';
+    const paras = document.getElementById('defense-area').value.split(/\n+/).filter(p => p.trim().length > 0);
+    const bodyEl = document.getElementById('print-body');
+    bodyEl.innerHTML = '';
+    paras.forEach((p, i) => { const d = document.createElement('div'); d.className = 'print-paragraph'; if (i===0) d.style.textIndent='0'; d.textContent = p.trim(); bodyEl.appendChild(d); });
+    window.print();
+}
+
+// ── INSTRUCTOR MODE ───────────────────────────────────────────────────────────
+const INSTRUCTOR_MODE = new URLSearchParams(window.location.search).get('instructor') === 'true';
+if (INSTRUCTOR_MODE) {
+    document.getElementById('inp-name').value    = 'Instructor Preview';
+    document.getElementById('inp-id').value      = '00000000';
+    document.getElementById('inp-section').value = '4167';
+    document.getElementById('inp-role').value    = 'Ernst Thälmann';
+    document.getElementById('inp-faction').value = 'KPD';
+    document.getElementById('defense-area').value =
+        'As Ernst Thälmann, Chairman of the Communist Party of Germany, I argue that the Weimar Republic failed primarily because of elite betrayal — the deliberate conspiracy of Junker landowners, industrial magnates, and the Hindenburg Camarilla to destroy the working-class democratic state and install a fascist dictatorship as their instrument of class domination.\n\nThe KPD Platform of 1930 warned explicitly that the bourgeoisie was preparing fascist rule as the only means to suppress the revolutionary labor movement. We were not wrong. The appointment of Hitler on January 30, 1933 was not an accident of history but the logical conclusion of a systematic strategy by German capital.\n\nI acknowledge that my party saw Social Democrats as "social fascists" and refused coalition with them — a position I would defend on grounds of revolutionary principle, though history has complicated our calculation.';
+    ['pledge-1','pledge-2','pledge-3','pledge-4'].forEach(id => document.getElementById(id).checked = true);
+    document.getElementById('pledge-signature').value = 'Instructor Preview';
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:var(--weimar-black,#1a1a1a);color:#d4af37;text-align:center;padding:10px;font-family:sans-serif;font-size:0.9em;font-weight:700;position:sticky;top:0;z-index:1001;border-bottom:2px solid var(--weimar-red,#c8102e);';
+    banner.innerHTML = '🔍 Instructor Preview Mode — <span style="font-weight:400;color:#f5f1e8">all steps unlocked, submission disabled</span>';
+    document.body.insertBefore(banner, document.body.firstChild);
+
+    const jumper = document.createElement('div');
+    jumper.style.cssText = 'background:#2c2c2c;padding:8px;text-align:center;font-family:sans-serif;position:sticky;top:41px;z-index:1000;border-bottom:1px solid #444;';
+    jumper.innerHTML = `
+        <span style="color:#d4af37;font-size:0.82em;font-weight:700;margin-right:10px">Jump to step:</span>
+        <button onclick="instructorGoTo(1)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">1 · Login</button>
+        <button onclick="instructorGoTo(2)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">2 · Defense</button>
+        <button onclick="instructorGoTo(3)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">3 · Pledge</button>
+        <button onclick="instructorGoTo(4)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">4 · Review</button>
+        <button onclick="instructorGoTo(5)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#2d5016;color:#fff">5 · Confirmation</button>
+    `;
+    document.body.insertBefore(jumper, document.body.children[1]);
+
+    studentName = 'Instructor Preview'; studentId = '00000000'; section = '4167';
+    studentRole = 'Ernst Thälmann'; studentFaction = 'KPD';
+    selectThesis('C'); updateWordCount(); checkPledge();
+}
+
+function instructorGoTo(n) {
+    if (!INSTRUCTOR_MODE) return;
+    if (n === 2) {
+        document.getElementById('char-name-display').textContent    = studentRole;
+        document.getElementById('char-faction-display').textContent = 'KPD — Communists';
+    }
+    if (n === 4) {
+        document.getElementById('rv-name').textContent          = studentName;
+        document.getElementById('rv-id').textContent            = studentId;
+        document.getElementById('rv-section').textContent       = 'Section ' + section;
+        document.getElementById('rv-role').textContent          = studentRole;
+        document.getElementById('rv-faction').textContent       = 'KPD — Communists';
+        document.getElementById('rv-thesis-letter').textContent = selectedThesis || 'C';
+        document.getElementById('rv-thesis-text').textContent   = THESIS_LABELS[selectedThesis || 'C'] || '';
+        document.getElementById('rv-wc').textContent            = wordCount.toLocaleString() + ' words';
+        document.getElementById('rv-pledge').textContent        = '✓ Signed by Instructor Preview';
+        setTimeout(() => { const b = document.getElementById('btn-final'); if(b){b.disabled=true;b.title='Disabled in preview mode';} }, 50);
+    }
+    if (n === 5) {
+        document.getElementById('confirm-details').innerHTML =
+            '<strong>Instructor Preview</strong> &nbsp;|&nbsp; ID: 00000000 &nbsp;|&nbsp; Section 4167<br>' +
+            'Role: <em>Ernst Thälmann</em> &nbsp;(KPD)<br>Thesis: Option C — Elite betrayal<br>' +
+            'Submitted: ' + new Date().toLocaleString();
+    }
+    showStep(n);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateWordCount();
+</script>
+</body>
+</html>
