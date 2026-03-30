@@ -11,7 +11,6 @@ if (window.location.search.indexOf('preview=true') !== -1) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HIST 102 Midterm Exam — Prof. Hauselmann</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1394,9 +1393,62 @@ let selectedTP   = null;
 let pdfFilename  = '';
 
 // ══════════════════════════════════════════════════════
-//  SUPABASE
+//  SUPABASE — plain fetch helpers (no SDK dependency)
 // ══════════════════════════════════════════════════════
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+function sbInsert(table, payload) {
+  return fetch(SUPABASE_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Prefer':        'return=representation'
+    },
+    body: JSON.stringify(payload)
+  }).then(function(r){ return r.json(); });
+}
+
+function sbSelect(table, filters) {
+  var url = SUPABASE_URL + '/rest/v1/' + table + '?';
+  if (filters) url += filters + '&';
+  url += 'limit=1';
+  return fetch(url, {
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    }
+  }).then(function(r){ return r.json(); });
+}
+
+function sbUpdate(table, filters, payload) {
+  var url = SUPABASE_URL + '/rest/v1/' + table + '?' + filters;
+  return fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Prefer':        'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  });
+}
+
+function sbUpload(bucket, path, blob) {
+  return fetch(SUPABASE_URL + '/storage/v1/object/' + bucket + '/' + path, {
+    method: 'POST',
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type':  'application/pdf'
+    },
+    body: blob
+  }).then(function(r){ return r.json(); });
+}
+
+function sbPublicUrl(bucket, path) {
+  return SUPABASE_URL + '/storage/v1/object/public/' + bucket + '/' + path;
+}
 
 // ══════════════════════════════════════════════════════
 //  INSTRUCTOR PANEL
@@ -1635,41 +1687,31 @@ async function beginExam() {
 
   showPreflight('Checking attempt records for '+wnum+'…');
   try {
-    // Use ilike for case-insensitive student_id matching
-    console.log('[ATTEMPT CHECK] Looking up student_id:', wnum.trim(), '| worksheet_type: hist102-midterm');
-    const { data:existing, error:chkErr } = await sb
-      .from('exam_attempts')
-      .select('id,student_name,student_id,started_at,attempt_status')
-      .ilike('student_id', wnum.trim())
-      .eq('worksheet_type','hist102-midterm')
-      .limit(1);
+    const wnumUpper = wnum.trim().toUpperCase();
+    const existing = await sbSelect('exam_attempts',
+      'student_id=ilike.' + encodeURIComponent(wnumUpper) +
+      '&worksheet_type=eq.hist102-midterm');
 
-    console.log('[ATTEMPT CHECK] Result — data:', JSON.stringify(existing), '| error:', JSON.stringify(chkErr));
-
-    // If Supabase returns an error, block the student rather than allow through.
-    // This prevents the silent-fail loophole that allowed repeat attempts.
-    if (chkErr) {
-      console.error('Supabase check error:', chkErr);
+    if (!Array.isArray(existing)) {
+      // Fetch failed or returned an error object
       hidePreflight();
       document.getElementById('beginBtn').disabled = false;
       document.getElementById('beginError').style.display = 'block';
       document.getElementById('beginError').innerHTML =
         '<div style="background:rgba(140,58,30,0.1);border-left:4px solid var(--rust);padding:12px 16px;color:var(--rust);font-size:0.9em;">' +
-        '⚠ Could not verify your eligibility (error: ' + chkErr.message + '). ' +
-        'Please check your internet connection and try again, or contact Prof. Hauselmann at hauselmannh@yosemite.edu.' +
+        '⚠ Could not verify your eligibility. Please check your internet connection and try again, or contact Prof. Hauselmann at hauselmannh@yosemite.edu.' +
         '</div>';
       return;
     }
 
-    if (existing && existing.length > 0) {
+    if (existing.length > 0) {
       hidePreflight();
       showLock(existing[0]);
-      // Log the blocked attempt
-      await sb.from('exam_attempts').insert({
-        student_name: first+' '+last, student_id: wnum.toUpperCase().trim(),
+      sbInsert('exam_attempts', {
+        student_name: first+' '+last, student_id: wnumUpper,
         section_number: section, worksheet_type: 'hist102-midterm',
         attempt_status: 'blocked', started_at: new Date().toISOString(),
-        notes: `Blocked: prior attempt ${existing[0].id}`
+        notes: 'Blocked: prior attempt ' + existing[0].id
       });
       return;
     }
@@ -1678,26 +1720,24 @@ async function beginExam() {
     await registerAndStart(first+' '+last, wnum, section);
 
   } catch(e) {
-    // Network/unexpected error — block rather than allow through
     console.error('beginExam catch:', e);
     hidePreflight();
     document.getElementById('beginBtn').disabled = false;
     document.getElementById('beginError').style.display = 'block';
     document.getElementById('beginError').innerHTML =
       '<div style="background:rgba(140,58,30,0.1);border-left:4px solid var(--rust);padding:12px 16px;color:var(--rust);font-size:0.9em;">' +
-      '⚠ Unable to connect to the exam server (' + e.message + '). ' +
-      'Please check your internet connection and try again. If the problem persists, contact Prof. Hauselmann.' +
+      '⚠ Unable to connect to the exam server. Please check your internet connection and try again.' +
       '</div>';
   }
 }
 async function registerAndStart(name,wnum,section) {
   try {
-    const {data,error} = await sb.from('exam_attempts').insert({
-      student_name:name, student_id:wnum.trim().toUpperCase(),
-      section_number:section, worksheet_type:'hist102-midterm',
-      attempt_status:'started', started_at:new Date().toISOString()
-    }).select('id').single();
-    if (!error && data) attemptId = data.id;
+    const result = await sbInsert('exam_attempts', {
+      student_name: name, student_id: wnum.trim().toUpperCase(),
+      section_number: section, worksheet_type: 'hist102-midterm',
+      attempt_status: 'started', started_at: new Date().toISOString()
+    });
+    if (Array.isArray(result) && result[0]) attemptId = result[0].id;
   } catch(e){ console.error(e); }
   startTimer(); goToPhase(1);
 }
@@ -2035,46 +2075,45 @@ async function submitExam() {
     const ts   = new Date().toISOString().replace(/[:.]/g,'-');
     const safeName = name.replace(/[^a-zA-Z0-9]/g,'_');
     const safeW    = wnum.replace(/[^a-zA-Z0-9]/g,'_');
-    const filePath = `hist102-midterm/${section}/${safeName}_${safeW}_${ts}.pdf`;
+    const filePath = 'hist102-midterm/' + section + '/' + safeName + '_' + safeW + '_' + ts + '.pdf';
 
-    const {error:upErr} = await sb.storage.from('student-submissions').upload(filePath,blob,{contentType:'application/pdf',upsert:false});
-    if (upErr) throw new Error(upErr.message);
+    const uploadResult = await sbUpload('student-submissions', filePath, blob);
+    if (uploadResult && uploadResult.error) throw new Error(uploadResult.error.message);
 
-    const {data:urlData} = sb.storage.from('student-submissions').getPublicUrl(filePath);
+    const fileUrl = sbPublicUrl('student-submissions', filePath);
 
-    const formData = {
-      student_wnum: wnum,
-      turning_point_choice: selectedTP||'',
-      essay_text: document.getElementById('essay-response').value,
-      essay_wc: countWords(document.getElementById('essay-response').value),
-      mc_answers: JSON.stringify(mcAnswers),
-      mc_score: scoreMC(),
-      tl_placements: JSON.stringify(tlPlacements),
-      tl_score: tlScore(),
-      sa1q1: document.getElementById('sa1q1').value,
-      sa1q2: document.getElementById('sa1q2').value,
-      sa2q1: document.getElementById('sa2q1').value,
-      sa2q2: document.getElementById('sa2q2').value,
-      sa3q1: document.getElementById('sa3q1').value,
-      sa3q2: document.getElementById('sa3q2').value,
-      exam_start: startTime?startTime.toISOString():null,
-      exam_end: endTime?endTime.toISOString():new Date().toISOString(),
-      elapsed: elapsedStr()
-    };
-
-    await sb.from('worksheet_submissions').insert({
+    await sbInsert('worksheet_submissions', {
       student_name: name, section_number: section,
       worksheet_type: 'hist102-midterm',
-      file_path: filePath, file_url: urlData.publicUrl,
-      form_data: formData, submitted_at: new Date().toISOString()
+      file_path: filePath, file_url: fileUrl,
+      form_data: {
+        student_wnum: wnum,
+        turning_point_choice: selectedTP||'',
+        essay_text: document.getElementById('essay-response').value,
+        essay_wc: countWords(document.getElementById('essay-response').value),
+        mc_answers: JSON.stringify(mcAnswers),
+        mc_score: scoreMC(),
+        tl_placements: JSON.stringify(tlPlacements),
+        tl_score: tlScore(),
+        sa1q1: document.getElementById('sa1q1').value,
+        sa1q2: document.getElementById('sa1q2').value,
+        sa2q1: document.getElementById('sa2q1').value,
+        sa2q2: document.getElementById('sa2q2').value,
+        sa3q1: document.getElementById('sa3q1').value,
+        sa3q2: document.getElementById('sa3q2').value,
+        exam_start: startTime?startTime.toISOString():null,
+        exam_end: endTime?endTime.toISOString():new Date().toISOString(),
+        elapsed: elapsedStr()
+      },
+      submitted_at: new Date().toISOString()
     });
 
     if (attemptId) {
-      await sb.from('exam_attempts').update({
+      sbUpdate('exam_attempts', 'id=eq.' + attemptId, {
         attempt_status: 'completed',
         completed_at: new Date().toISOString(),
-        file_url: urlData.publicUrl
-      }).eq('id', attemptId);
+        file_url: fileUrl
+      });
     }
 
     msg.innerHTML = '<div class="success-msg">✅ Submission recorded. Your PDF downloaded automatically. Complete Step 3 to finish.</div>';
@@ -2083,8 +2122,7 @@ async function submitExam() {
 
   } catch(e) {
     console.error(e);
-    // PDF already downloaded — Supabase failed. Tell student to still upload PDF.
-    msg.innerHTML = `<div class="error-msg">⚠ Database recording failed (${e.message}), but your PDF was downloaded. Proceed to upload it to Canvas — Prof. Hauselmann can recover your data from the PDF.</div>`;
+    msg.innerHTML = '<div class="error-msg">⚠ Database recording failed (' + e.message + '), but your PDF was downloaded. Proceed to upload it to Canvas — Prof. Hauselmann can recover your data from the PDF.</div>';
     btn.textContent = '⚠ Partial — See Message';
     unlockSubmitSteps();
   }
