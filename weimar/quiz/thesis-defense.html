@@ -3,506 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+Pro:wght@400;600;700&family=Courier+Prime&display=swap" rel="stylesheet">
     <title>Thesis Defense Submission – HIST 105</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="css/weimar-styles.css">
     <style>
-        /* ── PAGE-SPECIFIC OVERRIDES & FORM COMPONENTS ─────────────────── */
+        /* ══════════════════════════════════════════════
+           WEIMAR SIMULATION THEME (inlined)
+        ══════════════════════════════════════════════ */
+        :root {
+            --weimar-black: #1a1a1a;
+            --weimar-red:   #c8102e;
+            --weimar-gold:  #d4af37;
+            --weimar-cream: #f5f1e8;
+            --spd-red:      #e3000f;
+            --kpd-red:      #8b0000;
+            --crisis-red:   #b22222;
+            --stability-green: #2d5016;
+            --warning-amber:   #ff8c00;
+            --neutral-gray:    #6b6b6b;
+            --font-heading: 'Crimson Text', Georgia, serif;
+            --font-body:    'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+            --font-mono:    'Courier Prime', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; }
 
         body {
-            background-color: var(--weimar-cream);
             font-family: var(--font-body);
+            color: var(--weimar-black);
+            background-color: var(--weimar-cream);
+            line-height: 1.7;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Constrain form to readable width */
-        .form-wrap {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 0 20px 60px;
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* TYPOGRAPHY */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            line-height: 1.3;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
         }
+        h1 { font-size: 2.5em; color: var(--weimar-black); border-bottom: 3px solid var(--weimar-red); padding-bottom: 0.3em; margin-bottom: 1em; }
+        h2 { font-size: 2em;   color: var(--weimar-black); border-left: 5px solid var(--weimar-gold); padding-left: 15px; }
+        h3 { font-size: 1.5em; color: var(--weimar-black); }
+        .subtitle { font-size: 1.3em; font-style: italic; color: var(--neutral-gray); margin-top: -0.5em; margin-bottom: 1.5em; }
+
+        /* HEADER */
+        .site-header {
+            background: linear-gradient(135deg, var(--weimar-black) 0%, #2c2c2c 100%);
+            color: var(--weimar-cream);
+            padding: 2em 0;
+            border-bottom: 4px solid var(--weimar-red);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .site-header h1 { color: var(--weimar-gold); border: none; margin: 0; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .site-header .subtitle { color: var(--weimar-cream); text-align: center; opacity: 0.9; }
+
+        /* NAV */
+        .main-nav {
+            background-color: #2c2c2c;
+            border-bottom: 2px solid var(--weimar-gold);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .nav-toggle { display: none; background: transparent; border: none; color: var(--weimar-cream); font-size: 1.5em; padding: 0.5em 1em; cursor: pointer; position: absolute; right: 1em; top: 50%; transform: translateY(-50%); z-index: 1001; }
+        .nav-toggle:hover { color: var(--weimar-gold); }
+        .main-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; }
+        .main-nav li { margin: 0; }
+        .main-nav a { display: block; padding: 1em 1.5em; color: var(--weimar-cream); text-decoration: none; font-weight: 600; transition: all 0.3s ease; border-bottom: 3px solid transparent; }
+        .main-nav a:hover, .main-nav a.active { background-color: var(--weimar-red); border-bottom-color: var(--weimar-gold); }
+
+        /* KEY-CONCEPT BOX (reused for tips) */
+        .key-concept { background-color: #fff8dc; border: 2px dashed var(--weimar-gold); padding: 1.5em; margin: 1.5em 0; border-radius: 4px; }
+        .key-concept h4 { color: var(--weimar-black); margin-top: 0; font-size: 1.2em; }
+
+        /* FOOTER */
+        .site-footer { background-color: var(--weimar-black); color: var(--weimar-cream); padding: 2em 0; margin-top: 4em; border-top: 4px solid var(--weimar-gold); }
+        .site-footer p { text-align: center; margin: 0.5em 0; }
+        .site-footer a { color: var(--weimar-gold); text-decoration: none; }
+        .site-footer a:hover { text-decoration: underline; }
+
+        /* RESPONSIVE NAV */
+        @media (max-width: 768px) {
+            .main-nav { position: relative; min-height: 50px; }
+            .nav-toggle { display: block; }
+            .main-nav ul { display: none; flex-direction: column; width: 100%; background-color: #2c2c2c; }
+            .main-nav ul.active { display: flex; }
+            .main-nav li { width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .main-nav a { border-bottom: none; border-left: 3px solid transparent; }
+            .main-nav a:hover, .main-nav a.active { border-left-color: var(--weimar-gold); border-bottom: none; }
+        }
+
+        /* ══════════════════════════════════════════════
+           PAGE-SPECIFIC FORM STYLES
+        ══════════════════════════════════════════════ */
+
+        .form-wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 60px; }
 
         /* BREADCRUMB */
-        .breadcrumb {
-            background: #fff;
-            padding: 10px 16px;
-            margin: 18px 0;
-            border-radius: 4px;
-            font-size: 0.9em;
-            border-left: 4px solid var(--weimar-gold);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        }
+        .breadcrumb { background: #fff; padding: 10px 16px; margin: 18px 0; border-radius: 4px; font-size: 0.9em; border-left: 5px solid var(--weimar-gold); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         .breadcrumb a { color: var(--weimar-red); text-decoration: none; font-weight: 600; }
         .breadcrumb a:hover { text-decoration: underline; }
 
         /* STEP INDICATOR */
-        .step-indicator {
-            display: flex;
-            align-items: center;
-            margin: 24px 0 6px;
-        }
+        .step-indicator { display: flex; align-items: center; margin: 24px 0 6px; }
         .step-dot {
-            width: 34px; height: 34px;
-            border-radius: 50%;
-            background: #d8d0c0;
-            color: #999;
-            font-family: var(--font-body);
-            font-size: 0.82em;
-            font-weight: 700;
+            width: 34px; height: 34px; border-radius: 50%;
+            background: #d8d0c0; color: #999;
+            font-family: var(--font-body); font-size: 0.82em; font-weight: 700;
             display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            transition: background 0.3s, color 0.3s;
+            flex-shrink: 0; transition: background 0.3s, color 0.3s;
             border: 2px solid transparent;
         }
-        .step-dot.active {
-            background: var(--weimar-black);
-            color: var(--weimar-gold);
-            border-color: var(--weimar-gold);
-        }
-        .step-dot.done {
-            background: var(--stability-green);
-            color: #fff;
-        }
-        .step-line {
-            flex: 1; height: 3px;
-            background: #d0c8b8;
-            transition: background 0.3s;
-        }
+        .step-dot.active { background: var(--weimar-black); color: var(--weimar-gold); border-color: var(--weimar-gold); }
+        .step-dot.done   { background: var(--stability-green); color: #fff; border-color: var(--stability-green); }
+        .step-line { flex: 1; height: 3px; background: #d0c8b8; transition: background 0.3s; }
         .step-line.done { background: var(--stability-green); }
 
-        .progress-bar-wrap {
-            background: #d8d0c0;
-            border-radius: 20px;
-            height: 5px;
-            margin: 6px 0 26px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--weimar-red), var(--weimar-gold));
-            border-radius: 20px;
-            transition: width 0.4s ease;
-        }
+        .progress-bar-wrap { background: #d8d0c0; border-radius: 20px; height: 5px; margin: 6px 0 26px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--weimar-red), var(--weimar-gold)); border-radius: 20px; transition: width 0.4s ease; }
 
         /* STEP PANELS */
         .step-panel {
             background: #fff;
-            border-radius: 6px;
+            border-radius: 4px;
             padding: 32px 36px;
             margin: 0 0 24px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.09);
             border-top: 4px solid var(--weimar-gold);
         }
-        .step-panel h2 {
+        .step-panel > h2 {
             font-family: var(--font-heading);
             color: var(--weimar-black);
-            margin: 0 0 18px;
+            margin: 0 0 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #e8e0d0;
-            font-size: 1.6em;
-            border-left: none;
             padding-left: 0;
+            border-bottom: 2px solid #e8e0d0;
+            border-left: none;
+            font-size: 1.7em;
         }
 
-        /* ALERTS — mapped to Weimar semantic colors */
-        .alert {
-            padding: 14px 18px;
-            border-radius: 4px;
-            margin: 0 0 18px;
-            font-size: 0.94em;
-            line-height: 1.6;
-            font-family: var(--font-body);
-        }
-        .alert-info    { background: #f5f1e8; border-left: 5px solid var(--weimar-gold); color: #3a2e10; }
-        .alert-warning { background: #fff5e6; border-left: 5px solid var(--warning-amber); color: #5c3800; }
+        /* ALERTS */
+        .alert { padding: 14px 18px; border-radius: 4px; margin: 0 0 18px; font-size: 0.94em; line-height: 1.6; font-family: var(--font-body); }
+        .alert-info    { background: #f5f1e8; border-left: 5px solid var(--weimar-gold);    color: #3a2e10; }
+        .alert-warning { background: #fff5e6; border-left: 5px solid var(--warning-amber);  color: #5c3800; }
         .alert-success { background: #f0f7eb; border-left: 5px solid var(--stability-green); color: #1e3a0a; }
-        .alert-danger  { background: #fff0f0; border-left: 5px solid var(--crisis-red); color: #6e0a0a; }
+        .alert-danger  { background: #fff0f0; border-left: 5px solid var(--crisis-red);     color: #6e0a0a; }
 
         /* FORM FIELDS */
         .form-row { margin-bottom: 18px; }
-        label {
-            display: block;
-            font-family: var(--font-body);
-            font-weight: 700;
-            font-size: 0.95em;
-            margin-bottom: 6px;
-            color: var(--weimar-black);
-        }
+        label { display: block; font-family: var(--font-body); font-weight: 700; font-size: 0.95em; margin-bottom: 6px; color: var(--weimar-black); }
         input[type="text"], select, textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid #c8c0b0;
-            border-radius: 4px;
-            font-family: var(--font-body);
-            font-size: 1em;
-            color: var(--weimar-black);
-            background: #fff;
+            width: 100%; padding: 10px 14px;
+            border: 2px solid #c8c0b0; border-radius: 4px;
+            font-family: var(--font-body); font-size: 1em;
+            color: var(--weimar-black); background: #fff;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         input[type="text"]:focus, select:focus, textarea:focus {
-            border-color: var(--weimar-gold);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
+            border-color: var(--weimar-gold); outline: none;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.2);
         }
 
-        /* THESIS CARDS */
-        .thesis-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 12px 0 6px;
-        }
+        /* THESIS OPTION CARDS */
+        .thesis-options { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 6px; }
         .thesis-option {
-            border: 2px solid #c8c0b0;
-            border-radius: 5px;
-            padding: 14px 16px;
-            cursor: pointer;
+            border: 2px solid #c8c0b0; border-radius: 4px;
+            padding: 14px 16px; cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
         }
-        .thesis-option:hover {
-            border-color: var(--weimar-gold);
-            background: #faf7f0;
-        }
-        .thesis-option.selected {
-            border-color: var(--weimar-red);
-            background: #fff5f5;
-            border-left-width: 5px;
-        }
+        .thesis-option:hover  { border-color: var(--weimar-gold); background: #faf7f0; }
+        .thesis-option.selected { border-left: 5px solid var(--weimar-red); background: #fff5f5; border-color: var(--weimar-red); }
         .thesis-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
         .thesis-option-label { display: flex; align-items: flex-start; gap: 12px; }
         .thesis-radio-circle {
-            width: 18px; height: 18px;
-            border-radius: 50%;
-            border: 2px solid #c8c0b0;
-            flex-shrink: 0;
-            margin-top: 3px;
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid #c8c0b0; flex-shrink: 0; margin-top: 3px;
             display: flex; align-items: center; justify-content: center;
             transition: border-color 0.2s, background 0.2s;
         }
-        .thesis-option.selected .thesis-radio-circle {
-            border-color: var(--weimar-red);
-            background: var(--weimar-red);
-        }
-        .thesis-option.selected .thesis-radio-circle::after {
-            content: '';
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: #fff;
-            display: block;
-        }
-        .thesis-letter {
-            font-family: var(--font-heading);
-            font-weight: 700;
-            font-size: 1.2em;
-            color: var(--weimar-red);
-            min-width: 22px;
-            line-height: 1.2;
-        }
-        .thesis-text {
-            font-family: var(--font-body);
-            font-size: 0.95em;
-            color: var(--weimar-black);
-            line-height: 1.55;
-        }
+        .thesis-option.selected .thesis-radio-circle { border-color: var(--weimar-red); background: var(--weimar-red); }
+        .thesis-option.selected .thesis-radio-circle::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; display: block; }
+        .thesis-letter { font-family: var(--font-heading); font-weight: 700; font-size: 1.25em; color: var(--weimar-red); min-width: 22px; line-height: 1.2; }
+        .thesis-text   { font-family: var(--font-body); font-size: 0.95em; color: var(--weimar-black); line-height: 1.55; }
 
         /* WORD COUNT */
-        .wc-panel {
-            background: #f5f1e8;
-            border: 1px solid #d8d0c0;
-            border-radius: 4px;
-            padding: 13px 16px;
-            margin: 12px 0 16px;
-        }
-        .wc-top {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-bottom: 8px;
-        }
-        .wc-number {
-            font-family: var(--font-body);
-            font-size: 1.05em;
-            font-weight: 700;
-            min-width: 110px;
-        }
+        .wc-panel { background: #f5f1e8; border: 1px solid #d8d0c0; border-radius: 4px; padding: 13px 16px; margin: 12px 0 16px; }
+        .wc-top   { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
+        .wc-number { font-family: var(--font-body); font-size: 1.05em; font-weight: 700; min-width: 110px; }
         .wc-number.too-few  { color: var(--crisis-red); }
         .wc-number.in-range { color: var(--stability-green); }
         .wc-number.too-many { color: var(--warning-amber); }
-        .wc-track {
-            flex: 1; min-width: 180px; height: 10px;
-            background: #d8d0c0; border-radius: 10px; position: relative;
-        }
-        .wc-fill { height: 100%; border-radius: 10px; transition: width 0.25s, background 0.25s; }
-        .wc-marker {
-            position: absolute; top: -5px;
-            width: 3px; height: 20px;
-            background: var(--weimar-black); border-radius: 2px;
-        }
-        .wc-marker::after {
-            content: attr(data-label);
-            position: absolute;
-            top: 22px; left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.68em;
-            font-family: var(--font-body);
-            color: #666;
-            white-space: nowrap;
-        }
-        .autosave-badge {
-            font-family: var(--font-body);
-            font-size: 0.8em;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 700;
-        }
+        .wc-track { flex: 1; min-width: 180px; height: 10px; background: #d8d0c0; border-radius: 10px; position: relative; }
+        .wc-fill  { height: 100%; border-radius: 10px; transition: width 0.25s, background 0.25s; }
+        .wc-marker { position: absolute; top: -5px; width: 3px; height: 20px; background: var(--weimar-black); border-radius: 2px; }
+        .wc-marker::after { content: attr(data-label); position: absolute; top: 22px; left: 50%; transform: translateX(-50%); font-size: 0.68em; font-family: var(--font-body); color: #666; white-space: nowrap; }
+        .autosave-badge { font-family: var(--font-body); font-size: 0.8em; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
         .autosave-badge.saved   { background: #dff0d8; color: var(--stability-green); }
         .autosave-badge.saving  { background: #fef9c3; color: #7a5a00; }
         .autosave-badge.unsaved { background: #fce8e8; color: var(--crisis-red); }
         .wc-hint { font-size: 0.86em; color: #5a5040; font-family: var(--font-body); }
 
-        /* CHARACTER BOX — reuses historical-context styling */
+        /* CHARACTER CONSISTENCY BOX — uses historical-context pattern */
         .character-box {
             background: linear-gradient(to right, #f5f1e8 0%, #ede5d5 100%);
             border-left: 8px solid var(--weimar-gold);
-            padding: 16px 20px;
-            margin: 0 0 18px;
-            font-size: 1em;
-            line-height: 1.7;
+            padding: 16px 20px; margin: 0 0 18px;
+            font-size: 1em; line-height: 1.7;
         }
-        .character-box h4 {
-            font-family: var(--font-heading);
-            margin: 0 0 6px;
-            color: var(--weimar-black);
-            font-size: 1.1em;
-        }
-        .character-box p { margin: 0; font-size: 0.93em; color: #3a3020; }
+        .character-box h4 { font-family: var(--font-heading); margin: 0 0 6px; color: var(--weimar-black); font-size: 1.15em; }
+        .character-box p  { margin: 0; font-size: 0.93em; color: #3a3020; }
 
         /* CROSS-EXAM BANNER */
         .crossex-banner {
             background: linear-gradient(135deg, var(--weimar-black) 0%, #2c2c2c 100%);
             color: var(--weimar-cream);
-            border-radius: 5px;
-            padding: 18px 22px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
+            border-radius: 4px; padding: 18px 22px; margin-bottom: 22px;
+            display: flex; align-items: flex-start; gap: 16px;
             border-bottom: 3px solid var(--weimar-red);
         }
         .crossex-icon { font-size: 1.8em; flex-shrink: 0; }
-        .crossex-text h4 {
-            font-family: var(--font-heading);
-            margin: 0 0 5px;
-            font-size: 1.15em;
-            color: var(--weimar-gold);
-        }
-        .crossex-text p { margin: 0; font-size: 0.9em; opacity: 0.9; line-height: 1.6; }
+        .crossex-text h4 { font-family: var(--font-heading); margin: 0 0 5px; font-size: 1.2em; color: var(--weimar-gold); }
+        .crossex-text p  { margin: 0; font-size: 0.9em; opacity: 0.9; line-height: 1.6; }
 
-        /* TABS — mapped to Weimar tab style */
-        .tab-bar {
-            display: flex;
-            border-bottom: 2px solid var(--weimar-gold);
-            background-color: #f0ebe0;
-            margin-bottom: 0;
-        }
+        /* TABS */
+        .tab-bar { display: flex; border-bottom: 2px solid var(--weimar-gold); background-color: #f0ebe0; margin-bottom: 0; }
         .tab-btn {
-            padding: 10px 22px;
-            border: none;
-            background: transparent;
-            font-family: var(--font-body);
-            font-size: 0.95em;
-            font-weight: 700;
-            color: var(--weimar-black);
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
+            padding: 10px 22px; border: none; background: transparent;
+            font-family: var(--font-body); font-size: 0.95em; font-weight: 700;
+            color: var(--weimar-black); cursor: pointer;
+            border-bottom: 3px solid transparent; margin-bottom: -2px;
             transition: background 0.2s, color 0.2s, border-color 0.2s;
         }
         .tab-btn:hover { background: #e0dbd0; }
-        .tab-btn.active {
-            background: var(--weimar-black);
-            color: var(--weimar-gold);
-            border-bottom-color: var(--weimar-red);
-        }
-        .tab-content {
-            display: none;
-            padding: 24px 0 0;
-            animation: fadeIn 0.3s;
-        }
+        .tab-btn.active { background: var(--weimar-black); color: var(--weimar-gold); border-bottom-color: var(--weimar-red); }
+        .tab-content { display: none; padding: 24px 0 0; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        #defense-area {
-            width: 100%;
-            line-height: 1.75;
-            resize: vertical;
-            min-height: 400px;
-            font-family: var(--font-body);
-        }
+        #defense-area { width: 100%; line-height: 1.75; resize: vertical; min-height: 400px; font-family: var(--font-body); }
 
-        /* EVIDENCE GUIDE — reuses key-facts box */
+        /* EVIDENCE / WRITING GUIDE BOX */
         .evidence-guide {
             background: #fff;
             border: 2px solid var(--weimar-gold);
-            border-radius: 6px;
-            padding: 20px 24px;
-            margin-bottom: 16px;
-            font-size: 0.93em;
-            line-height: 1.65;
+            border-radius: 4px; padding: 20px 24px; margin-bottom: 16px;
+            font-size: 0.93em; line-height: 1.65;
         }
-        .evidence-guide h4 {
-            font-family: var(--font-heading);
-            color: var(--weimar-red);
-            margin: 0 0 14px;
-            font-size: 1.15em;
-        }
+        .evidence-guide h4 { font-family: var(--font-heading); color: var(--weimar-red); margin: 0 0 14px; font-size: 1.2em; }
         .evidence-rule { margin-bottom: 14px; }
-        .evidence-rule .label {
-            font-weight: 700;
-            color: var(--weimar-black);
-            display: block;
-            margin-bottom: 4px;
-        }
+        .evidence-rule .label { font-weight: 700; color: var(--weimar-black); display: block; margin-bottom: 4px; }
         .cite-example {
-            background: #f5f1e8;
-            border-left: 4px solid var(--weimar-red);
-            padding: 6px 12px;
-            margin: 4px 0;
-            font-family: var(--font-mono);
-            font-size: 0.96em;
-            color: var(--weimar-black);
-            border-radius: 0 3px 3px 0;
+            background: #f5f1e8; border-left: 4px solid var(--weimar-red);
+            padding: 6px 12px; margin: 4px 0;
+            font-family: var(--font-mono); font-size: 0.96em;
+            color: var(--weimar-black); border-radius: 0 3px 3px 0;
         }
 
-        /* PLEDGE */
-        .pledge-box {
-            background: #fff9e6;
-            border: 2px solid var(--weimar-gold);
-            border-radius: 5px;
-            padding: 22px 24px;
-            margin-bottom: 20px;
-        }
-        .pledge-box h4 {
-            font-family: var(--font-heading);
-            margin: 0 0 10px;
-            color: var(--weimar-black);
-            font-size: 1.15em;
-        }
-        .pledge-box p { margin: 0 0 14px; color: #444; font-size: 0.93em; line-height: 1.65; }
-        .pledge-check-row {
-            display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;
-        }
-        .pledge-check-row input[type="checkbox"] {
-            width: 18px; height: 18px; margin-top: 2px;
-            flex-shrink: 0; cursor: pointer;
-            accent-color: var(--weimar-red);
-        }
-        .pledge-check-row label {
-            font-weight: 400; font-size: 0.93em;
-            color: var(--weimar-black); cursor: pointer; margin: 0;
-        }
-        .pledge-sign-row {
-            display: flex; align-items: center;
-            gap: 12px; margin-top: 14px; flex-wrap: wrap;
-        }
-        .pledge-sign-row label {
-            font-weight: 700; font-size: 0.93em;
-            color: var(--weimar-black); margin: 0; white-space: nowrap;
-        }
+        /* PLEDGE BOX */
+        .pledge-box { background: #fff9e6; border: 2px solid var(--weimar-gold); border-radius: 4px; padding: 22px 24px; margin-bottom: 20px; }
+        .pledge-box h4 { font-family: var(--font-heading); margin: 0 0 10px; color: var(--weimar-black); font-size: 1.2em; }
+        .pledge-box p  { margin: 0 0 14px; color: #444; font-size: 0.93em; line-height: 1.65; }
+        .pledge-check-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+        .pledge-check-row input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: var(--weimar-red); }
+        .pledge-check-row label { font-weight: 400; font-size: 0.93em; color: var(--weimar-black); cursor: pointer; margin: 0; }
+        .pledge-sign-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+        .pledge-sign-row label { font-weight: 700; font-size: 0.93em; color: var(--weimar-black); margin: 0; white-space: nowrap; }
         .pledge-sign-row input[type="text"] { max-width: 280px; font-style: italic; }
 
-        /* REVIEW */
+        /* REVIEW BLOCK */
         .review-block {
-            background: #f5f1e8;
-            border: 1px solid #d8d0c0;
+            background: #f5f1e8; border: 1px solid #d8d0c0;
             border-left: 5px solid var(--weimar-gold);
-            border-radius: 4px;
-            padding: 18px 22px;
-            margin-bottom: 18px;
-            font-size: 0.97em;
-            line-height: 2;
+            border-radius: 4px; padding: 18px 22px; margin-bottom: 18px;
+            font-size: 0.97em; line-height: 2.1;
         }
         .review-block p { margin: 0; }
         .review-thesis-text {
-            background: #fff5f5;
-            border-left: 4px solid var(--weimar-red);
-            padding: 8px 14px;
-            font-size: 0.92em;
-            color: #5a0a0a;
-            margin: 4px 0 8px;
-            font-style: italic;
-            line-height: 1.55;
+            background: #fff5f5; border-left: 4px solid var(--weimar-red);
+            padding: 8px 14px; font-size: 0.92em; color: #5a0a0a;
+            margin: 4px 0 8px; font-style: italic; line-height: 1.55;
         }
 
-        /* BUTTONS — extend weimar-styles .btn */
+        /* BUTTONS */
         .btn {
-            font-family: var(--font-body);
-            font-size: 0.97em;
-            font-weight: 700;
-            padding: 10px 22px;
-            border-radius: 4px;
-            cursor: pointer;
-            border: none;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s ease;
+            display: inline-block; padding: 10px 22px; border-radius: 4px;
+            font-family: var(--font-body); font-size: 0.97em; font-weight: 700;
+            cursor: pointer; border: none; text-decoration: none;
+            transition: all 0.25s ease;
         }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-        .btn-primary  { background: var(--weimar-red); color: #fff; }
-        .btn-primary:hover:not(:disabled)  { background: var(--crisis-red); transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
-        .btn-success  { background: var(--stability-green); color: #fff; }
-        .btn-success:hover:not(:disabled)  { background: #1e4010; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
-        .btn-danger   { background: var(--crisis-red); color: #fff; }
-        .btn-danger:hover:not(:disabled)   { background: #8b0000; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
-        .btn-secondary { background: var(--weimar-black); color: var(--weimar-cream); }
+        .btn-primary   { background: var(--weimar-red);      color: #fff; }
+        .btn-primary:hover:not(:disabled)   { background: var(--crisis-red); transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        .btn-success   { background: var(--stability-green); color: #fff; }
+        .btn-success:hover:not(:disabled)   { background: #1e4010; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        .btn-danger    { background: var(--crisis-red);      color: #fff; }
+        .btn-danger:hover:not(:disabled)    { background: #8b0000; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        .btn-secondary { background: var(--weimar-black);    color: var(--weimar-cream); }
         .btn-secondary:hover:not(:disabled) { background: #2c2c2c; transform: translateY(-2px); }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--weimar-black);
-            color: var(--weimar-black);
-        }
-        .btn-outline:hover:not(:disabled) { background: var(--weimar-black); color: var(--weimar-cream); }
+        .btn-outline   { background: transparent; border: 2px solid var(--weimar-black); color: var(--weimar-black); }
+        .btn-outline:hover:not(:disabled)   { background: var(--weimar-black); color: var(--weimar-cream); }
 
-        .btn-row {
-            display: flex; gap: 10px; flex-wrap: wrap;
-            align-items: center; margin-top: 22px;
-        }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 22px; }
         .btn-row .spacer { flex: 1; }
 
-        /* PASTE MODAL — reuses .modal from weimar-styles */
-        #paste-modal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6); z-index: 2000;
-            align-items: center; justify-content: center;
-        }
+        /* CONFIRMATION */
+        .confetti { font-size: 2.8em; display: block; text-align: center; margin-bottom: 8px; }
+
+        /* PASTE MODAL */
+        #paste-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         #paste-modal.show { display: flex; }
         .paste-modal-box {
-            background: var(--weimar-cream);
-            border: 3px solid var(--weimar-black);
-            border-radius: 8px;
-            padding: 36px 40px;
-            max-width: 400px; width: 90%;
-            text-align: center;
+            background: var(--weimar-cream); border: 3px solid var(--weimar-black);
+            border-radius: 8px; padding: 36px 40px;
+            max-width: 400px; width: 90%; text-align: center;
             box-shadow: 0 5px 30px rgba(0,0,0,0.5);
             font-family: var(--font-body);
             animation: slideDown 0.3s;
         }
-        @keyframes slideDown {
-            from { transform: translateY(-40px); opacity: 0; }
-            to   { transform: translateY(0);     opacity: 1; }
-        }
-        .paste-modal-box h3 {
-            font-family: var(--font-heading);
-            color: var(--crisis-red);
-            margin: 0 0 12px;
-            font-size: 1.4em;
-            border-bottom: 2px solid var(--weimar-gold);
-            padding-bottom: 8px;
-        }
-        .paste-modal-box p { color: #444; line-height: 1.6; margin: 0 0 20px; font-size: 0.95em; }
-
-        .confetti { font-size: 2.8em; display: block; text-align: center; margin-bottom: 8px; }
+        @keyframes slideDown { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .paste-modal-box h3 { font-family: var(--font-heading); color: var(--crisis-red); margin: 0 0 12px; font-size: 1.5em; border-bottom: 2px solid var(--weimar-gold); padding-bottom: 8px; }
+        .paste-modal-box p  { color: #444; line-height: 1.6; margin: 0 0 20px; font-size: 0.95em; }
 
         /* PRINT */
         #print-doc { display: none; }
@@ -516,8 +344,8 @@
         }
 
         @media (max-width: 600px) {
-            .step-panel { padding: 20px 18px; }
-            .tab-btn { padding: 9px 14px; font-size: 0.88em; }
+            .step-panel { padding: 20px 16px; }
+            .tab-btn { padding: 9px 12px; font-size: 0.88em; }
         }
     </style>
 </head>
@@ -535,7 +363,7 @@
 <!-- PRINT DOC -->
 <div id="print-doc">
     <div id="print-header"></div>
-    <div id="print-title" style="text-align:center;font-weight:bold;"></div>
+    <div id="print-title" style="text-align:center;font-weight:bold;margin-top:0;"></div>
     <div id="print-thesis-label" style="font-weight:bold;margin-top:12pt;">Thesis Selected:</div>
     <div id="print-thesis-block" style="font-style:italic;border-left:3px solid #333;padding-left:12pt;margin:4pt 0 12pt;line-height:1.6;"></div>
     <div id="print-body"></div>
@@ -582,16 +410,12 @@
         <div class="progress-bar-fill" id="progress-fill" style="width:12%"></div>
     </div>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- STEP 1 — IDENTIFY YOURSELF                -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- ══════════════════ STEP 1 ══════════════════ -->
     <div class="step-panel" id="step-login">
         <h2>Step 1 — Identify Yourself</h2>
-
         <div class="alert alert-info">
             Enter your information exactly as it appears on your course roster. Your draft saves automatically to your browser so you can return to finish if needed.
         </div>
-
         <div class="form-row">
             <label for="inp-name">Full Name (First Last)</label>
             <input type="text" id="inp-name" placeholder="e.g. Jane Smith" autocomplete="name">
@@ -625,17 +449,13 @@
                 <option value="Indeterminate">Indeterminate / Swing Delegate</option>
             </select>
         </div>
-
         <div class="alert alert-danger" id="login-error" style="display:none"></div>
-
         <div class="btn-row">
             <button class="btn btn-primary" onclick="proceedToWrite()">Continue to Thesis Defense →</button>
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- STEP 2 — THESIS SELECTION & DEFENSE       -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- ══════════════════ STEP 2 ══════════════════ -->
     <div class="step-panel" id="step-write" style="display:none">
         <h2>Step 2 — Select Your Thesis &amp; Write Your Defense</h2>
 
@@ -648,10 +468,9 @@
         </div>
 
         <div class="alert alert-warning">
-            <strong>📝 Type directly into the fields below.</strong> Copy-pasting is disabled. Your draft saves automatically every 30 seconds. You can leave and return to finish using the same browser.
+            <strong>📝 Type directly into the fields below.</strong> Copy-pasting is disabled. Your draft saves automatically every 30 seconds. You can leave and return using the same browser.
         </div>
 
-        <!-- THESIS CARDS -->
         <div class="form-row">
             <label>Select Your Thesis <span style="font-weight:400;color:var(--neutral-gray)">(from your role sheet — choose one)</span></label>
             <div class="thesis-options">
@@ -701,7 +520,7 @@
         <div class="tab-content active" id="tab-defense">
             <div class="character-box">
                 <h4>🎭 Character Consistency Reminder</h4>
-                <p>You are writing as <strong><span id="char-name-display">your historical character</span></strong> (<span id="char-faction-display">your faction</span>). Your defense should argue the thesis from the perspective of your character's ideology. If your character would plausibly <em>disagree</em> with the thesis you selected, explain that divergence directly in your paper.</p>
+                <p>You are writing as <strong><span id="char-name-display">your historical character</span></strong> (<span id="char-faction-display">your faction</span>). Your defense should argue the thesis from your character's ideological perspective. If your character would plausibly <em>disagree</em> with the thesis you selected, explain that divergence directly in your paper.</p>
             </div>
 
             <div class="wc-panel">
@@ -743,45 +562,40 @@ Remember: you will be cross-examined in class — write to understand and argue,
         <div class="tab-content" id="tab-guidance">
             <div class="evidence-guide">
                 <h4>📋 How to Write Your Thesis Defense</h4>
-
                 <div class="evidence-rule">
                     <span class="label">What this paper is</span>
-                    <p style="margin:4px 0;color:#444;font-size:0.93em">A one-page argument defending one of the four thesis options from your role sheet. Your evidence must come from the primary sources on the course website. You will present and defend this argument in Session 3 — be ready for cross-examination from other characters.</p>
+                    <p style="margin:4px 0;color:#444;font-size:0.93em">A one-page argument defending one of the four thesis options from your role sheet. Evidence must come from primary sources on the course website. You will present and defend this argument in Session 3 — be ready for cross-examination.</p>
                 </div>
-
                 <div class="evidence-rule">
-                    <span class="label">Suggested structure (1 page ≈ 250–400 words)</span>
+                    <span class="label">Suggested structure (250–400 words)</span>
                     <ul style="margin:4px 0 0 18px;padding:0;color:#444;font-size:0.93em;line-height:1.9">
-                        <li><strong>Opening sentence:</strong> State your thesis directly and identify your character.</li>
-                        <li><strong>Evidence 1:</strong> Name a specific primary source from the course website, quote or paraphrase a key passage, and explain how it supports your thesis.</li>
-                        <li><strong>Evidence 2:</strong> Repeat with a second primary source, preferably from a different faction or document type.</li>
-                        <li><strong>Character reflection:</strong> Does your character naturally hold this view? If yes, why? If no, where do you diverge and why?</li>
+                        <li><strong>Opening:</strong> State your thesis directly and identify your character.</li>
+                        <li><strong>Evidence 1:</strong> Name a primary source, quote or paraphrase a passage, explain how it supports your thesis.</li>
+                        <li><strong>Evidence 2:</strong> Repeat with a second source, preferably from a different faction or document type.</li>
+                        <li><strong>Character reflection:</strong> Does your character naturally hold this view? If not, where do you diverge and why?</li>
                         <li><strong>Conclusion:</strong> One to two sentences restating your argument and its significance.</li>
                     </ul>
                 </div>
-
                 <div class="evidence-rule">
                     <span class="label">Citing primary sources from the course website</span>
                     <div class="cite-example">(KPD Platform 1930, ¶3)</div>
                     <div class="cite-example">(NSDAP Twenty-Five Points, Point 4)</div>
                     <div class="cite-example">(SPD Görlitz Programme 1921)</div>
-                    <p style="font-size:0.88em;color:var(--neutral-gray);margin-top:5px">Cite by document title and relevant section or paragraph. All required primary sources are linked on the Core Texts pages.</p>
+                    <p style="font-size:0.88em;color:var(--neutral-gray);margin-top:5px">Cite by document title and relevant section or paragraph. All primary sources are linked on the Core Texts pages.</p>
                 </div>
-
                 <div class="evidence-rule">
                     <span class="label">Citing Pelz (optional but encouraged)</span>
                     <div class="cite-example">(Pelz 2016, 102)</div>
                 </div>
-
-                <div class="key-concept" style="margin-top:18px">
-                    <h4>💡 Cross-Examination Tips</h4>
-                    <ul style="margin:4px 0 0 18px;padding:0;color:#444;font-size:0.93em;line-height:1.9">
-                        <li>Know your evidence well enough to quote or paraphrase without looking at the page.</li>
-                        <li>Anticipate which characters will challenge your thesis — what would a KPD delegate say? A DNVP delegate?</li>
-                        <li>Be prepared to explain why your thesis is more convincing than the alternatives.</li>
-                        <li>Staying in character makes your argument more powerful — use your character's language and priorities.</li>
-                    </ul>
-                </div>
+            </div>
+            <div class="key-concept">
+                <h4>💡 Cross-Examination Tips</h4>
+                <ul style="margin:4px 0 0 18px;padding:0;color:#444;font-size:0.93em;line-height:1.9">
+                    <li>Know your evidence well enough to quote or paraphrase without looking at the page.</li>
+                    <li>Anticipate which characters will challenge your thesis — what would a KPD delegate say? A DNVP delegate?</li>
+                    <li>Be prepared to explain why your thesis is more convincing than the alternatives.</li>
+                    <li>Staying in character makes your argument more powerful — use your character's language and priorities.</li>
+                </ul>
             </div>
         </div>
 
@@ -793,9 +607,7 @@ Remember: you will be cross-examined in class — write to understand and argue,
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- STEP 3 — PLEDGE                           -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- ══════════════════ STEP 3 ══════════════════ -->
     <div class="step-panel" id="step-pledge" style="display:none">
         <h2>Step 3 — Academic Integrity Pledge</h2>
         <div class="alert alert-info">Before submitting, confirm that this thesis defense is your own original work.</div>
@@ -830,13 +642,11 @@ Remember: you will be cross-examined in class — write to understand and argue,
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- STEP 4 — FINAL REVIEW & SUBMIT            -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- ══════════════════ STEP 4 ══════════════════ -->
     <div class="step-panel" id="step-submit" style="display:none">
         <h2>Step 4 — Final Review &amp; Submit</h2>
         <div class="alert alert-warning">
-            <strong>⚠️ This is your final submission.</strong> Once submitted, your thesis defense cannot be edited. Confirm all details below are correct before clicking Submit.
+            <strong>⚠️ This is your final submission.</strong> Once submitted, your thesis defense cannot be edited. Confirm all details below before clicking Submit.
         </div>
         <div class="review-block">
             <p><strong>Name:</strong> <span id="rv-name"></span></p>
@@ -862,16 +672,15 @@ Remember: you will be cross-examined in class — write to understand and argue,
         <span class="confetti">🎉</span>
         <h2 style="text-align:center;border-bottom:none;border-left:none;padding-left:0">Submission Received!</h2>
         <div class="alert alert-success">Your thesis defense has been successfully submitted and recorded in the course database.</div>
-        <p id="confirm-details" style="color:#444;line-height:1.9;margin-bottom:14px"></p>
-        <div class="alert alert-warning" style="margin-top:8px">
+        <p id="confirm-details" style="color:#444;line-height:1.9;margin-bottom:14px;font-family:var(--font-body)"></p>
+        <div class="alert alert-warning">
             <strong>⚔️ Remember:</strong> You will be cross-examined in Session 3. Review your evidence and know your character's ideology — do not plan to read from this paper.
         </div>
-        <p style="color:#555;margin:0">If you have any questions about your submission, contact Prof. Hauselmann.</p>
+        <p style="color:#555;margin:0;font-family:var(--font-body)">If you have any questions about your submission, contact Prof. Hauselmann.</p>
     </div>
 
 </div><!-- /.form-wrap -->
 
-<!-- SITE FOOTER -->
 <footer class="site-footer">
     <div class="container">
         <p>Prof. Hauselmann | <a href="https://profhauselmann.org">profhauselmann.org</a></p>
@@ -880,13 +689,13 @@ Remember: you will be cross-examined in class — write to understand and argue,
 </footer>
 
 <script>
-// ── CONFIG ───────────────────────────────────────────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-const TABLE        = 'thesis_submissions';
-const MIN_WORDS    = 250;
-const MAX_WORDS    = 400;
-const DRAFT_KEY    = 'hist105_thesis_draft';
+const TABLE     = 'thesis_submissions';
+const MIN_WORDS = 250;
+const MAX_WORDS = 400;
+const DRAFT_KEY = 'hist105_thesis_draft';
 
 const THESIS_LABELS = {
     A: 'Economic crisis — hyperinflation, the Great Depression, and mass unemployment destroyed public confidence in democratic institutions.',
@@ -896,15 +705,12 @@ const THESIS_LABELS = {
 };
 
 let dbClient = null;
-function getDB() {
-    if (!dbClient) dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-    return dbClient;
-}
+function getDB() { if (!dbClient) dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON); return dbClient; }
 
 let studentName = '', studentId = '', section = '', studentRole = '', studentFaction = '';
 let selectedThesis = '', wordCount = 0, saveTimer = null;
 
-// ── STEP NAVIGATION ──────────────────────────────────────────────────────────
+// ── STEP NAVIGATION ───────────────────────────────────────────────────────────
 const STEPS = ['step-login','step-write','step-pledge','step-submit','step-confirm'];
 
 function showStep(n) {
@@ -917,7 +723,7 @@ function showStep(n) {
         const l = document.getElementById('line-' + i);
         if (l) l.className = 'step-line' + (n > i ? ' done' : '');
     }
-    const pct = { 1:12, 2:37, 3:62, 4:87, 5:100 };
+    const pct = {1:12,2:37,3:62,4:87,5:100};
     document.getElementById('progress-fill').style.width = (pct[n] || 12) + '%';
     window.scrollTo(0, 0);
 }
@@ -929,12 +735,11 @@ function switchTab(name, btn) {
     btn.classList.add('active');
 }
 
-// ── THESIS SELECTION ─────────────────────────────────────────────────────────
+// ── THESIS ────────────────────────────────────────────────────────────────────
 function selectThesis(letter) {
     selectedThesis = letter;
     ['A','B','C','D'].forEach(l => document.getElementById('opt-' + l).classList.toggle('selected', l === letter));
-    scheduleSave();
-    checkWriteReady();
+    scheduleSave(); checkWriteReady();
 }
 
 // ── STEP 1 ────────────────────────────────────────────────────────────────────
@@ -952,15 +757,13 @@ function proceedToWrite() {
     document.getElementById('char-name-display').textContent = role;
     const facEl = document.getElementById('inp-faction');
     document.getElementById('char-faction-display').textContent = facEl.options[facEl.selectedIndex].text;
-    loadDraft();
-    showStep(2);
+    loadDraft(); showStep(2);
 }
 
 // ── STEP 2 ────────────────────────────────────────────────────────────────────
 function checkWriteReady() {
     document.getElementById('btn-to-pledge').disabled = !(selectedThesis && wordCount >= MIN_WORDS && wordCount <= MAX_WORDS);
 }
-
 function proceedToPledge() {
     if (!selectedThesis) { alert('Please select a thesis option before continuing.'); return; }
     if (wordCount < MIN_WORDS || wordCount > MAX_WORDS) return;
@@ -974,7 +777,6 @@ function checkPledge() {
     const sig = document.getElementById('pledge-signature').value.trim();
     document.getElementById('btn-to-review').disabled = !(all && sig.length > 2);
 }
-
 function proceedToReview() {
     const all = ['pledge-1','pledge-2','pledge-3','pledge-4'].every(id => document.getElementById(id).checked);
     const sig = document.getElementById('pledge-signature').value.trim();
@@ -1020,9 +822,9 @@ async function submitDefense() {
             `Role: <em>${studentRole}</em> &nbsp;(${facEl.options[facEl.selectedIndex].text})<br>` +
             `Thesis: Option ${selectedThesis} — ${THESIS_LABELS[selectedThesis]}<br>` +
             `Word count: ${wordCount.toLocaleString()} words &nbsp;|&nbsp; Submitted: ${new Date().toLocaleString()}`;
-        for (let i=1;i<=4;i++){const d=document.getElementById('dot-'+i);if(d)d.className='step-dot done';}
-        for (let i=1;i<=3;i++){const l=document.getElementById('line-'+i);if(l)l.className='step-line done';}
-        document.getElementById('progress-fill').style.width='100%';
+        for(let i=1;i<=4;i++){const d=document.getElementById('dot-'+i);if(d)d.className='step-dot done';}
+        for(let i=1;i<=3;i++){const l=document.getElementById('line-'+i);if(l)l.className='step-line done';}
+        document.getElementById('progress-fill').style.width = '100%';
         showStep(5);
     } catch(e) {
         err.textContent = 'Submission failed: ' + (e.message || 'Unknown error. Please try again or contact Prof. Hauselmann.');
@@ -1032,7 +834,6 @@ async function submitDefense() {
 
 // ── WORD COUNT ────────────────────────────────────────────────────────────────
 function countWords(t) { t = t.trim(); return t === '' ? 0 : t.split(/\s+/).length; }
-
 function onDefenseInput() { updateWordCount(); scheduleSave(); }
 
 document.getElementById('defense-area').addEventListener('keydown', function(e) {
@@ -1047,7 +848,7 @@ document.getElementById('defense-area').addEventListener('keydown', function(e) 
 
 function updateWordCount() {
     wordCount = countWords(document.getElementById('defense-area').value);
-    const numEl  = document.getElementById('wc-number');
+    const numEl = document.getElementById('wc-number');
     const fillEl = document.getElementById('wc-fill');
     const hintEl = document.getElementById('wc-hint');
     const overEl = document.getElementById('wc-over-alert');
@@ -1058,13 +859,13 @@ function updateWordCount() {
     fillEl.style.width = Math.min(wordCount / trackMax * 100, 100).toFixed(1) + '%';
     if (wordCount < MIN_WORDS) {
         numEl.className = 'wc-number too-few'; fillEl.style.background = 'var(--crisis-red)'; overEl.style.display = 'none';
-        hintEl.innerHTML = `Need <strong>${(MIN_WORDS-wordCount).toLocaleString()}</strong> more word(s) to reach the 250-word minimum.`;
+        hintEl.innerHTML = `Need <strong>${(MIN_WORDS - wordCount).toLocaleString()}</strong> more word(s) to reach the 250-word minimum.`;
     } else if (wordCount <= MAX_WORDS) {
         numEl.className = 'wc-number in-range'; fillEl.style.background = 'linear-gradient(90deg,var(--stability-green),#4a8a28)'; overEl.style.display = 'none';
         hintEl.innerHTML = `✓ Word count is within range (250–400 words).`;
     } else {
         numEl.className = 'wc-number too-many'; fillEl.style.background = 'var(--warning-amber)'; overEl.style.display = 'block';
-        hintEl.innerHTML = `<strong>${(wordCount-MAX_WORDS).toLocaleString()}</strong> word(s) over the 400-word maximum. Please shorten your defense.`;
+        hintEl.innerHTML = `<strong>${(wordCount - MAX_WORDS).toLocaleString()}</strong> word(s) over the 400-word maximum. Please shorten your defense.`;
     }
     checkWriteReady();
 }
@@ -1079,10 +880,8 @@ function saveDraft() {
 }
 function loadDraft() {
     try {
-        const raw = localStorage.getItem(DRAFT_KEY);
-        if (!raw) return;
-        const d = JSON.parse(raw);
-        if (d.id !== studentId) return;
+        const raw = localStorage.getItem(DRAFT_KEY); if (!raw) return;
+        const d = JSON.parse(raw); if (d.id !== studentId) return;
         if (d.defense) document.getElementById('defense-area').value = d.defense;
         if (d.thesis) { const r = document.querySelector(`input[name="thesis"][value="${d.thesis}"]`); if (r) { r.checked = true; selectThesis(d.thesis); } }
         updateWordCount(); setBadge('saved');
@@ -1092,7 +891,7 @@ function clearDraft() {
     if (!confirm('Clear your saved draft? This cannot be undone.')) return;
     localStorage.removeItem(DRAFT_KEY);
     document.getElementById('defense-area').value = '';
-    ['A','B','C','D'].forEach(l => document.getElementById('opt-'+l).classList.remove('selected'));
+    ['A','B','C','D'].forEach(l => document.getElementById('opt-' + l).classList.remove('selected'));
     document.querySelectorAll('input[name="thesis"]').forEach(r => r.checked = false);
     selectedThesis = ''; updateWordCount(); setBadge('unsaved');
 }
@@ -1122,11 +921,12 @@ function printDraft() {
         '<br>HIST 105: Western Civilization Since 1648<br>Prof. Hauselmann<br>' +
         new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
     document.getElementById('print-title').textContent = 'Thesis Defense — Session 3';
-    document.getElementById('print-thesis-block').textContent = selectedThesis ? 'Thesis ' + selectedThesis + ': ' + (THESIS_LABELS[selectedThesis]||'') : '[No thesis selected]';
-    const paras = document.getElementById('defense-area').value.split(/\n+/).filter(p => p.trim().length > 0);
-    const bodyEl = document.getElementById('print-body');
-    bodyEl.innerHTML = '';
-    paras.forEach((p, i) => { const d = document.createElement('div'); d.className = 'print-paragraph'; if (i===0) d.style.textIndent='0'; d.textContent = p.trim(); bodyEl.appendChild(d); });
+    document.getElementById('print-thesis-block').textContent = selectedThesis
+        ? 'Thesis ' + selectedThesis + ': ' + (THESIS_LABELS[selectedThesis] || '')
+        : '[No thesis selected]';
+    const paras = document.getElementById('defense-area').value.split(/\n+/).filter(p => p.trim());
+    const bodyEl = document.getElementById('print-body'); bodyEl.innerHTML = '';
+    paras.forEach((p, i) => { const d = document.createElement('div'); d.className = 'print-paragraph'; if(i===0) d.style.textIndent='0'; d.textContent = p.trim(); bodyEl.appendChild(d); });
     window.print();
 }
 
@@ -1144,19 +944,19 @@ if (INSTRUCTOR_MODE) {
     document.getElementById('pledge-signature').value = 'Instructor Preview';
 
     const banner = document.createElement('div');
-    banner.style.cssText = 'background:var(--weimar-black,#1a1a1a);color:#d4af37;text-align:center;padding:10px;font-family:sans-serif;font-size:0.9em;font-weight:700;position:sticky;top:0;z-index:1001;border-bottom:2px solid var(--weimar-red,#c8102e);';
+    banner.style.cssText = 'background:#1a1a1a;color:#d4af37;text-align:center;padding:10px;font-family:sans-serif;font-size:0.9em;font-weight:700;position:sticky;top:0;z-index:1002;border-bottom:2px solid #c8102e;';
     banner.innerHTML = '🔍 Instructor Preview Mode — <span style="font-weight:400;color:#f5f1e8">all steps unlocked, submission disabled</span>';
     document.body.insertBefore(banner, document.body.firstChild);
 
     const jumper = document.createElement('div');
-    jumper.style.cssText = 'background:#2c2c2c;padding:8px;text-align:center;font-family:sans-serif;position:sticky;top:41px;z-index:1000;border-bottom:1px solid #444;';
+    jumper.style.cssText = 'background:#2c2c2c;padding:8px;text-align:center;font-family:sans-serif;position:sticky;top:41px;z-index:1001;border-bottom:1px solid #444;';
     jumper.innerHTML = `
-        <span style="color:#d4af37;font-size:0.82em;font-weight:700;margin-right:10px">Jump to step:</span>
-        <button onclick="instructorGoTo(1)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">1 · Login</button>
-        <button onclick="instructorGoTo(2)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">2 · Defense</button>
-        <button onclick="instructorGoTo(3)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">3 · Pledge</button>
-        <button onclick="instructorGoTo(4)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">4 · Review</button>
-        <button onclick="instructorGoTo(5)" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#2d5016;color:#fff">5 · Confirmation</button>
+        <span style="color:#d4af37;font-size:0.82em;font-weight:700;margin-right:8px">Jump to step:</span>
+        <button onclick="instructorGoTo(1)" style="margin:2px 4px;padding:5px 13px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">1 · Login</button>
+        <button onclick="instructorGoTo(2)" style="margin:2px 4px;padding:5px 13px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">2 · Defense</button>
+        <button onclick="instructorGoTo(3)" style="margin:2px 4px;padding:5px 13px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">3 · Pledge</button>
+        <button onclick="instructorGoTo(4)" style="margin:2px 4px;padding:5px 13px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#c8102e;color:#fff">4 · Review</button>
+        <button onclick="instructorGoTo(5)" style="margin:2px 4px;padding:5px 13px;border:none;border-radius:3px;font-size:0.82em;font-weight:700;cursor:pointer;background:#2d5016;color:#fff">5 · Confirm</button>
     `;
     document.body.insertBefore(jumper, document.body.children[1]);
 
@@ -1181,7 +981,7 @@ function instructorGoTo(n) {
         document.getElementById('rv-thesis-text').textContent   = THESIS_LABELS[selectedThesis || 'C'] || '';
         document.getElementById('rv-wc').textContent            = wordCount.toLocaleString() + ' words';
         document.getElementById('rv-pledge').textContent        = '✓ Signed by Instructor Preview';
-        setTimeout(() => { const b = document.getElementById('btn-final'); if(b){b.disabled=true;b.title='Disabled in preview mode';} }, 50);
+        setTimeout(() => { const b = document.getElementById('btn-final'); if(b){b.disabled=true;b.title='Disabled in preview';} }, 50);
     }
     if (n === 5) {
         document.getElementById('confirm-details').innerHTML =
