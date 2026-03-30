@@ -1135,8 +1135,8 @@ img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
     <!-- PHOTOGRAPH -->
     <div style="border:2px solid var(--ink);margin:0 0 16px;background:#1a1510;text-align:center;position:relative;">
       <img id="migrant-mother-img"
-     src="lange-migrant-mother-1936.jpg"
-     alt="Migrant Mother — Dorothea Lange, 1936..."
+           src="" data-note="Replace with actual image path before publishing"
+           alt="Migrant Mother — Dorothea Lange, 1936. A woman in her thirties sits with two children turned away from the camera, leaning against her shoulders. Her expression is weary and concerned."
            style="max-width:100%;max-height:480px;object-fit:contain;display:block;margin:0 auto;-webkit-user-drag:none;pointer-events:none;"
            draggable="false"
            oncontextmenu="return false;">
@@ -1312,7 +1312,7 @@ img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
       <div style="padding:16px 18px;">
         <p style="font-size:0.93em;margin-bottom:14px;">Open the Canvas assignment using the button below and upload the PDF file you just downloaded. Your submission is not complete until it appears in Canvas.</p>
         <div class="btn-row" style="justify-content:flex-start;margin-top:0;">
-          <a id="canvasBtn" href="CANVAS_URL_PLACEHOLDER" target="_blank" class="btn btn-gold" style="text-decoration:none;font-size:1em;padding:14px 32px;">📋 Go to Canvas Assignment →</a>
+          <a id="canvasBtn" href="https://modesto.instructure.com/courses/69719/assignments/2275871?module_item_id=5997010" target="_blank" class="btn btn-gold" style="text-decoration:none;font-size:1em;padding:14px 32px;" onclick="handleCanvasNavigation(event)">📋 Go to Canvas Assignment →</a>
         </div>
         <div class="notice" style="margin-top:14px;">After uploading, you will see a submission confirmation in Canvas. That confirmation is your receipt — keep it.</div>
       </div>
@@ -1322,6 +1322,28 @@ img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
 </div>
 
 </div><!-- /page-wrap -->
+
+<!-- EXAM CLOSED OVERLAY -->
+<div id="examClosedOverlay" style="display:none;position:fixed;inset:0;background:#100a04;z-index:99999;overflow-y:auto;padding:40px 16px;">
+  <div style="max-width:600px;margin:60px auto;background:var(--cream);border:3px solid var(--ink);border-top:8px solid var(--sage);box-shadow:10px 10px 0 rgba(0,0,0,0.5);">
+    <div style="background:var(--sage);color:#d4ece4;font-family:'DM Mono',monospace;font-size:0.74em;letter-spacing:3px;text-transform:uppercase;padding:10px 20px;">✓ Examination Submitted — HIST 102 Midterm</div>
+    <div style="padding:36px 36px 40px;">
+      <div style="text-align:center;padding:10px 0 22px;">
+        <div style="font-family:'DM Mono',monospace;font-size:2em;color:var(--sage);border:4px solid var(--sage);display:inline-block;padding:10px 24px;transform:rotate(-1.5deg);letter-spacing:4px;">SUBMITTED</div>
+      </div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6em;color:var(--ink);border-bottom:2px solid var(--cream-deep);padding-bottom:12px;margin-bottom:18px;">Your exam is complete.</h2>
+      <p style="line-height:1.8;margin-bottom:14px;">A new tab has opened with the Canvas assignment. Upload your PDF there to finish your submission.</p>
+      <p style="line-height:1.8;margin-bottom:14px;"><strong>This exam window is now closed.</strong> You do not need to keep it open. Once your PDF is uploaded to Canvas and you see the submission confirmation, you are done.</p>
+      <div style="background:rgba(61,96,83,0.08);border:1px solid var(--cream-deep);border-left:4px solid var(--sage);padding:14px 16px;font-family:'DM Mono',monospace;font-size:0.82em;letter-spacing:0.5px;line-height:1.9;margin:18px 0;">
+        <div id="closedOverlay-summary" style="color:#3a3028;"></div>
+      </div>
+      <p style="font-size:0.88em;color:var(--ink-light);font-style:italic;margin-top:16px;">If the Canvas tab did not open, <a id="canvasFallbackLink" href="#" target="_blank" style="color:var(--canvas-blue);">click here to open it</a>.</p>
+      <div style="text-align:center;margin-top:28px;">
+        <button onclick="window.close()" style="font-family:'DM Mono',monospace;font-size:0.82em;letter-spacing:2px;padding:11px 24px;background:transparent;border:2px solid var(--ink-light);color:var(--ink-light);cursor:pointer;text-transform:uppercase;">Close This Window</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ══════════════════════════════════════════════════════
@@ -2033,6 +2055,38 @@ async function submitExam() {
     btn.textContent = '⚠ Partial — See Message';
     unlockSubmitSteps();
   }
+}
+
+function handleCanvasNavigation(e) {
+  // Don't prevent default — let the link open normally in a new tab
+  // Then show the closed overlay on this page
+  setTimeout(function() {
+    showExamClosedOverlay();
+  }, 300);
+}
+
+function showExamClosedOverlay() {
+  // Populate the summary in the overlay
+  const name    = (document.getElementById('s-first').value + ' ' + document.getElementById('s-last').value).trim();
+  const wnum    = document.getElementById('s-wnum').value;
+  const fn      = pdfFilename || 'your exam PDF';
+  const sumEl   = document.getElementById('closedOverlay-summary');
+  if (sumEl) {
+    sumEl.innerHTML =
+      '<strong>Student:</strong> ' + name + ' &nbsp;·&nbsp; <strong>W#:</strong> ' + wnum + '<br>' +
+      '<strong>PDF file:</strong> ' + fn + '<br>' +
+      '<strong>Next step:</strong> Upload this PDF to the Canvas assignment that just opened.';
+  }
+  // Set fallback link
+  const canvasHref = document.getElementById('canvasBtn') ? document.getElementById('canvasBtn').href : '#';
+  const fallback = document.getElementById('canvasFallbackLink');
+  if (fallback) fallback.href = canvasHref;
+  // Show overlay — this visually "closes" the exam
+  document.getElementById('examClosedOverlay').style.display = 'block';
+  // Disable all interaction on the page behind it
+  document.querySelectorAll('textarea, input, button:not([onclick="window.close()"])').forEach(function(el) {
+    el.disabled = true;
+  });
 }
 
 function unlockSubmitSteps() {
