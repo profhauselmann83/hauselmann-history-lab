@@ -1635,10 +1635,11 @@ async function beginExam() {
 
   showPreflight('Checking attempt records for '+wnum+'…');
   try {
+    // Use ilike for case-insensitive student_id matching
     const { data:existing, error:chkErr } = await sb
       .from('exam_attempts')
       .select('id,student_name,student_id,started_at,attempt_status')
-      .eq('student_id', wnum.toUpperCase().trim())
+      .ilike('student_id', wnum.trim())
       .eq('worksheet_type','hist102-midterm')
       .limit(1);
 
@@ -1689,7 +1690,7 @@ async function beginExam() {
 async function registerAndStart(name,wnum,section) {
   try {
     const {data,error} = await sb.from('exam_attempts').insert({
-      student_name:name, student_id:wnum.toUpperCase().trim(),
+      student_name:name, student_id:wnum.trim().toUpperCase(),
       section_number:section, worksheet_type:'hist102-midterm',
       attempt_status:'started', started_at:new Date().toISOString()
     }).select('id').single();
