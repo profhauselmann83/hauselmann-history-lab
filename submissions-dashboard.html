@@ -357,11 +357,13 @@
             <div class="filter-group"><label>Review Status</label><select id="td-filterReviewed" onchange="applyThesisFilters()"><option value="">All</option><option value="unreviewed">Not Reviewed</option><option value="reviewed">Reviewed</option></select></div>
             <button class="refresh-btn" onclick="loadThesis()">↻ Refresh</button>
             <button class="export-btn thesis-export" onclick="exportThesisCSV()">⬇ Export CSV</button>
+            <div class="selection-info"><span id="td-selectedCount">0 selected</span><div class="dl-btn-group"><button class="dl-main" id="td-downloadMergedBtn" onclick="downloadSelectedTheses('merged')" disabled>⬇ Merged PDF</button><button class="dl-alt" id="td-downloadZipBtn" onclick="downloadSelectedTheses('zip')" disabled>🗜 ZIP</button></div></div>
         </div>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
+                        <th class="select-cell th-thesis"><input type="checkbox" class="select-checkbox" id="td-selectAll" onchange="toggleSelectAllTheses()"></th>
                         <th class="th-thesis">Student Name</th>
                         <th class="th-thesis">Role</th>
                         <th class="th-thesis">Faction</th>
@@ -373,7 +375,7 @@
                         <th class="th-thesis">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="td-table"><tr><td colspan="9" class="loading">Loading…</td></tr></tbody>
+                <tbody id="td-table"><tr><td colspan="10" class="loading">Loading…</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -437,7 +439,7 @@ let allWorksheets = [], allPapers = [], allInterviews = [], allHist102 = [], all
 let wsSelected = new Set(), wsFiltered = [];
 let ppSelectedSet = new Set(), ppFiltered = [];
 let h2SelectedSet = new Set(), h2Filtered = [];
-let wqFiltered = [], tdFiltered = [];
+let wqFiltered = [], tdFiltered = [], tdSelectedSet = new Set();
 let ciSelectedSet = new Set(), ciFiltered = [];
 
 // ── QUIZ KEYS ─────────────────────────────────────────────────────────────────
@@ -484,7 +486,7 @@ async function loadAll() {
 //  THESIS DEFENSES
 // ══════════════════════════════════════════════════════════════════════════════
 async function loadThesis() {
-    document.getElementById('td-table').innerHTML = '<tr><td colspan="9" class="loading">Loading…</td></tr>';
+    document.getElementById('td-table').innerHTML = '<tr><td colspan="10" class="loading">Loading…</td></tr>';
     try {
         const { data, error } = await supabaseClient.from('thesis_submissions').select('*').order('submitted_at', { ascending: false });
         if (error) throw error;
@@ -495,7 +497,7 @@ async function loadThesis() {
         document.getElementById('count-thesis').textContent = allThesis.length;
     } catch (e) {
         showError('Error loading thesis defenses: ' + e.message);
-        document.getElementById('td-table').innerHTML = '<tr><td colspan="9" class="no-data">Error loading data: ' + esc(e.message) + '</td></tr>';
+        document.getElementById('td-table').innerHTML = '<tr><td colspan="10" class="no-data">Error loading data: ' + esc(e.message) + '</td></tr>';
     }
 }
 
@@ -542,7 +544,7 @@ function applyThesisFilters() {
 
 function renderThesisTable(rows) {
     const tbody = document.getElementById('td-table');
-    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="no-data">No thesis submissions found.</td></tr>'; return; }
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="no-data">No thesis submissions found.</td></tr>'; return; }
     tbody.innerHTML = rows.map(sub => {
         const reviewed = !!sub.is_reviewed;
         const t = sub.thesis_option || '?';
@@ -550,7 +552,9 @@ function renderThesisTable(rows) {
         const wcClass = wc >= 250 && wc <= 400 ? 'wc-ok' : 'wc-low';
         const fac = sub.faction || '';
         const facClass = 'faction-' + (fac.replace(/[^a-zA-Z]/g,'') || 'Indeterminate');
+        const selected = tdSelectedSet.has(sub.id);
         return `<tr>
+            <td class="select-cell"><input type="checkbox" class="select-checkbox" id="td-sel-${sub.id}" ${selected ? 'checked' : ''} onchange="tdToggleSelect(${sub.id})"></td>
             <td><strong>${esc(sub.student_name||'Unknown')}</strong><br><span style="font-size:0.8em;color:#888">ID: ${esc(sub.student_id||'-')} · Sec ${esc(sub.section||'-')}</span></td>
             <td style="font-size:0.9em"><em>${esc(sub.historical_role||'-')}</em></td>
             <td><span class="faction-badge ${facClass}">${esc(fac||'-')}</span></td>
@@ -562,7 +566,7 @@ function renderThesisTable(rows) {
             <td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature||'-')}</td>
             <td>${formatDate(sub.submitted_at)}</td>
             <td class="reviewed-cell"><label id="td-rl-${sub.id}" class="reviewed-label ${reviewed?'checked':''}" onclick="event.preventDefault();tdToggleReviewed(${sub.id})"><input type="checkbox" id="td-rc-${sub.id}" class="review-checkbox" ${reviewed?'checked':''}><span>${reviewed?'Reviewed':'Mark'}</span></label></td>
-            <td><button class="view-btn" onclick="viewThesis(${sub.id})">👁 View</button></td>
+            <td><button onclick="downloadThesisPdf(${sub.id})" class="download-btn">⬇ PDF</button><button class="view-btn" onclick="viewThesis(${sub.id})">👁 View</button></td>
         </tr>`;
     }).join('');
 }
@@ -607,6 +611,145 @@ function exportThesisCSV() {
     );
     const csv = [headers.join(','), ...rows].join('\n');
     triggerDownload(new Blob([csv], {type:'text/csv'}), `thesis_defenses_${new Date().toISOString().split('T')[0]}.csv`);
+}
+
+// ── THESIS PDF GENERATION & DOWNLOAD ─────────────────────────────────────────
+async function generateThesisPdfBytes(sub) {
+    const pdfDoc = await PDFLib.PDFDocument.create();
+    const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    const fontSize = 11, leading = 16, margin = 50;
+    const t = sub.thesis_option || '?';
+    const headerLines = [
+        `Thesis Defense — ${sub.student_name || 'Unknown'}`,
+        `Student ID: ${sub.student_id || '-'}  |  Section: ${sub.section || '-'}`,
+        `Role: ${sub.historical_role || '-'}  |  Faction: ${sub.faction || '-'}`,
+        `Thesis Option ${t}: ${THESIS_FULL_LABELS[t] || sub.thesis_label || '(unknown)'}`,
+        `Word Count: ${sub.word_count || 0}  |  Submitted: ${sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : '-'}`,
+    ];
+    const defenseText = sub.defense_text || '(No defense text provided)';
+    const pledgeText = sub.pledge_signature ? `Pledge signed by: ${sub.pledge_signature}` : '';
+
+    function wrapText(text, maxWidth, f, size) {
+        const words = text.split(/\s+/);
+        const lines = []; let current = '';
+        for (const word of words) {
+            const test = current ? current + ' ' + word : word;
+            if (f.widthOfTextAtSize(test, size) > maxWidth && current) { lines.push(current); current = word; }
+            else { current = test; }
+        }
+        if (current) lines.push(current);
+        return lines;
+    }
+
+    const pageW = 612, pageH = 792;
+    const maxW = pageW - margin * 2;
+    let page = pdfDoc.addPage([pageW, pageH]);
+    let y = pageH - margin;
+
+    // Header
+    for (let i = 0; i < headerLines.length; i++) {
+        const f = i === 0 ? fontBold : font;
+        const s = i === 0 ? 14 : 10;
+        const wrapped = wrapText(headerLines[i], maxW, f, s);
+        for (const line of wrapped) {
+            if (y < margin) { page = pdfDoc.addPage([pageW, pageH]); y = pageH - margin; }
+            page.drawText(line, { x: margin, y, size: s, font: f }); y -= (i === 0 ? 20 : 14);
+        }
+    }
+    y -= 10;
+
+    // Separator
+    if (y < margin) { page = pdfDoc.addPage([pageW, pageH]); y = pageH - margin; }
+    page.drawLine({ start: { x: margin, y }, end: { x: pageW - margin, y }, thickness: 0.5 }); y -= 20;
+
+    // Defense label
+    if (y < margin) { page = pdfDoc.addPage([pageW, pageH]); y = pageH - margin; }
+    page.drawText('Defense:', { x: margin, y, size: 12, font: fontBold }); y -= leading + 4;
+
+    // Defense text
+    const paragraphs = defenseText.split(/\n+/);
+    for (const para of paragraphs) {
+        const lines = wrapText(para, maxW, font, fontSize);
+        for (const line of lines) {
+            if (y < margin) { page = pdfDoc.addPage([pageW, pageH]); y = pageH - margin; }
+            page.drawText(line, { x: margin, y, size: fontSize, font }); y -= leading;
+        }
+        y -= 6;
+    }
+
+    // Pledge
+    if (pledgeText) {
+        y -= 10;
+        if (y < margin) { page = pdfDoc.addPage([pageW, pageH]); y = pageH - margin; }
+        page.drawText(pledgeText, { x: margin, y, size: 10, font: font, color: PDFLib.rgb(0.4, 0.4, 0.4) });
+    }
+
+    return await pdfDoc.save();
+}
+
+async function downloadThesisPdf(id) {
+    const sub = allThesis.find(s => s.id === id);
+    if (!sub) return;
+    try {
+        const pdfBytes = await generateThesisPdfBytes(sub);
+        const name = (sub.student_name || 'Unknown').replace(/[^a-zA-Z0-9_\- ]/g, '').trim().replace(/\s+/g, '_');
+        triggerDownload(new Blob([pdfBytes], { type: 'application/pdf' }), `thesis_defense_${name}.pdf`);
+    } catch (e) { alert('Error generating PDF: ' + e.message); }
+}
+
+function tdToggleSelect(id) { tdSelectedSet.has(id) ? tdSelectedSet.delete(id) : tdSelectedSet.add(id); updateTdSelectedCount(); updateTdSelectAll(); }
+function toggleSelectAllTheses() { const allChk = document.getElementById('td-selectAll'); tdFiltered.forEach(sub => { allChk.checked ? tdSelectedSet.add(sub.id) : tdSelectedSet.delete(sub.id); const chk = document.getElementById(`td-sel-${sub.id}`); if (chk) chk.checked = allChk.checked; }); updateTdSelectedCount(); }
+function updateTdSelectAll() { const chk = document.getElementById('td-selectAll'); if (!chk) return; const sel = tdFiltered, siv = sel.filter(s => tdSelectedSet.has(s.id)); if (!sel.length) { chk.checked = false; chk.indeterminate = false; } else if (siv.length === sel.length) { chk.checked = true; chk.indeterminate = false; } else if (siv.length > 0) { chk.checked = false; chk.indeterminate = true; } else { chk.checked = false; chk.indeterminate = false; } }
+function updateTdSelectedCount() { const n = tdSelectedSet.size; document.getElementById('td-selectedCount').textContent = n + ' selected'; document.getElementById('td-downloadMergedBtn').disabled = n === 0; document.getElementById('td-downloadZipBtn').disabled = n === 0; }
+
+async function downloadSelectedTheses(mode) {
+    if (!tdSelectedSet.size) return;
+    const mergedBtn = document.getElementById('td-downloadMergedBtn'), zipBtn = document.getElementById('td-downloadZipBtn');
+    const activeBtn = mode === 'merged' ? mergedBtn : zipBtn, origText = activeBtn.textContent;
+    mergedBtn.disabled = true; zipBtn.disabled = true;
+    const submissions = Array.from(tdSelectedSet).map(id => allThesis.find(s => s.id === id)).filter(Boolean);
+    try {
+        if (mode === 'merged') {
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            let count = 0;
+            for (let i = 0; i < submissions.length; i++) {
+                activeBtn.textContent = `Merging ${i + 1}/${submissions.length}…`;
+                try {
+                    const bytes = await generateThesisPdfBytes(submissions[i]);
+                    const doc = await PDFLib.PDFDocument.load(bytes);
+                    const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+                    pages.forEach(p => mergedPdf.addPage(p)); count++;
+                } catch (e) { console.error('Merge error', e); }
+            }
+            if (count === 0) { alert('No PDFs could be generated.'); } else {
+                const pdfBytes = await mergedPdf.save();
+                const dateStr = new Date().toISOString().split('T')[0];
+                triggerDownload(new Blob([pdfBytes], { type: 'application/pdf' }), `thesis_defenses_${dateStr}_${count}_files.pdf`);
+            }
+        } else {
+            activeBtn.textContent = 'Building ZIP…';
+            const zip = new JSZip(); const folder = zip.folder('thesis_defenses');
+            let count = 0; const usedNames = {};
+            for (let i = 0; i < submissions.length; i++) {
+                activeBtn.textContent = `Fetching ${i + 1}/${submissions.length}…`;
+                const sub = submissions[i];
+                try {
+                    const bytes = await generateThesisPdfBytes(sub);
+                    let fname = (sub.student_name || 'Unknown').replace(/[^a-zA-Z0-9_\- ]/g, '').trim().replace(/\s+/g, '_') + '.pdf';
+                    if (usedNames[fname] !== undefined) { usedNames[fname]++; fname = fname.replace('.pdf', `_${usedNames[fname]}.pdf`); } else { usedNames[fname] = 0; }
+                    folder.file(fname, bytes); count++;
+                } catch (e) { console.error('ZIP error', e); }
+            }
+            if (count === 0) { alert('No PDFs could be generated.'); } else {
+                const dateStr = new Date().toISOString().split('T')[0];
+                const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+                triggerDownload(zipBlob, `thesis_defenses_${dateStr}_${count}_files.zip`);
+            }
+        }
+    } catch (e) { alert('Error: ' + e.message); }
+    tdSelectedSet.clear(); updateTdSelectedCount(); applyThesisFilters();
+    activeBtn.textContent = origText; mergedBtn.disabled = false; zipBtn.disabled = false;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
