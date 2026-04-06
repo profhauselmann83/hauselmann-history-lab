@@ -473,10 +473,11 @@
             color: black;
         }
 
+        /* FIX 1: Single-spaced name block */
         #print-doc .print-name-block {
             font-family: 'Times New Roman', Times, serif;
             font-size: 12pt;
-            line-height: 2;
+            line-height: 1.2;
             margin-bottom: 0;
         }
 
@@ -495,15 +496,12 @@
             word-wrap: break-word;
         }
 
+        /* FIX 2: First paragraph now indented — no :first-child exception */
         #print-doc .print-paragraph {
             text-indent: 0.5in;
             margin: 0;
             padding: 0;
             line-height: 2;
-        }
-
-        #print-doc .print-paragraph:first-child {
-            text-indent: 0;
         }
 
         #print-doc .print-bib-section {
@@ -527,9 +525,15 @@
             word-wrap: break-word;
         }
 
+        /* FIX 3: Centered page numbers at the bottom */
         @page {
             margin: 1in;
             size: letter;
+            @bottom-center {
+                content: counter(page);
+                font-family: 'Times New Roman', Times, serif;
+                font-size: 12pt;
+            }
         }
     }
     </style>
@@ -1255,63 +1259,92 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-// ── GENERATE PDF BLOB ─────────────────────────────────────────────────────────
+// ── GENERATE PDF BLOB (for Supabase upload) ───────────────────────────────────
 function generatePDFBlob() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'in', format: 'letter' });
 
-    const margin    = 1;
-    const pageW     = 8.5;
-    const pageH     = 11;
-    const contentW  = pageW - margin * 2;
-    const lineHeight = 0.28;
+    const margin     = 1;
+    const pageW      = 8.5;
+    const pageH      = 11;
+    const contentW   = pageW - margin * 2;
+    const lineHeight = 0.28;      // ~double-spaced at 12pt
+    const indent     = 0.5;       // paragraph indent
 
     doc.setFont('times', 'normal');
     doc.setFontSize(12);
 
-    let y = margin;
+    let y          = margin;
+    let pageNumber = 1;
 
-    const nameBlock = [
+    // Helper: add centered page number at bottom, then add a new page
+    function addPageNumber() {
+        doc.setFontSize(12);
+        doc.setFont('times', 'normal');
+        doc.text(String(pageNumber), pageW / 2, pageH - 0.5, { align: 'center' });
+    }
+
+    function newPage() {
+        addPageNumber();
+        doc.addPage();
+        pageNumber++;
+        y = margin;
+    }
+
+    function checkY(needed) {
+        // Leave 0.6in at bottom for page number
+        if (y + needed > pageH - 0.6) newPage();
+    }
+
+    // ── Name block (single-spaced) ────────────────────────────────────────────
+    const singleLine = 0.18;  // single-spaced line height at 12pt
+    const nameBlock  = [
         studentName || '[Your Name]',
         'Student ID: ' + (studentId || '[ID]'),
         'Section ' + (section || '[Section]'),
         'HIST 105: Western Civilization Since 1648',
         'Prof. Hauselmann',
-        new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+        new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     ];
     nameBlock.forEach(line => {
+        checkY(singleLine);
         doc.text(line, margin, y);
-        y += lineHeight;
+        y += singleLine;
     });
 
+    // One blank double-spaced line before title
     y += lineHeight;
 
+    // ── Title (centered, bold) ────────────────────────────────────────────────
     const title = document.getElementById('inp-title').value.trim() || '(Untitled Paper)';
+    checkY(lineHeight);
     doc.setFont('times', 'bold');
     doc.text(title, pageW / 2, y, { align: 'center' });
     doc.setFont('times', 'normal');
-    y += lineHeight * 2;
+    y += lineHeight * 2;  // blank line after title
 
-    const essay = document.getElementById('essay-area').value;
+    // ── Essay body ────────────────────────────────────────────────────────────
+    const essay      = document.getElementById('essay-area').value;
     const paragraphs = essay.split(/\n+/).filter(p => p.trim().length > 0);
 
-    paragraphs.forEach((para, i) => {
-        const indent = i === 0 ? 0 : 0.5;
-        const lines  = doc.splitTextToSize(para.trim(), contentW - indent);
+    paragraphs.forEach(para => {
+        // FIX: All paragraphs indented (no first-paragraph exception)
+        const lines = doc.splitTextToSize(para.trim(), contentW - indent);
 
         lines.forEach((line, li) => {
-            if (y > pageH - margin) { doc.addPage(); y = margin; }
+            checkY(lineHeight);
+            // First line of paragraph gets indent; continuation lines flush left
             doc.text(line, margin + (li === 0 ? indent : 0), y);
             y += lineHeight;
         });
 
-        y += lineHeight;
+        y += lineHeight;  // blank line between paragraphs
     });
 
+    // ── Bibliography ──────────────────────────────────────────────────────────
     const bibText = document.getElementById('bib-area').value.trim();
     if (bibText) {
-        doc.addPage();
-        y = margin;
+        newPage();  // bib always starts on a new page
 
         doc.setFont('times', 'bold');
         doc.text('Bibliography', pageW / 2, y, { align: 'center' });
@@ -1322,18 +1355,22 @@ function generatePDFBlob() {
         entries.forEach(entry => {
             const lines = doc.splitTextToSize(entry.trim(), contentW);
             lines.forEach((line, li) => {
-                if (y > pageH - margin) { doc.addPage(); y = margin; }
-                doc.text(line, margin + (li > 0 ? 0.5 : 0), y);
+                checkY(lineHeight);
+                // Hanging indent: first line flush, subsequent lines indented
+                doc.text(line, margin + (li > 0 ? indent : 0), y);
                 y += lineHeight;
             });
             y += lineHeight * 0.5;
         });
     }
 
+    // Add page number to the final page
+    addPageNumber();
+
     return doc.output('blob');
 }
 
-// ── PDF / PRINT ───────────────────────────────────────────────────────────────
+// ── PRINT (browser print dialog) ─────────────────────────────────────────────
 function downloadPDF() {
     const name    = studentName || '[Your Name]';
     const id      = studentId   || '[Student ID]';
@@ -1342,23 +1379,24 @@ function downloadPDF() {
     const essay   = document.getElementById('essay-area').value;
     const bibText = document.getElementById('bib-area').value.trim();
 
+    // FIX: Single-spaced name block — use <br> with line-height:1.2
     document.getElementById('print-name-block').innerHTML =
         name + '<br>' +
         'Student ID: ' + id + '<br>' +
         'Section ' + sec + '<br>' +
         'HIST 105: Western Civilization Since 1648<br>' +
         'Prof. Hauselmann<br>' +
-        new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+        new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     document.getElementById('print-paper-title').textContent = title;
 
     const paragraphs = essay.split(/\n+/).filter(p => p.trim().length > 0);
     const bodyEl = document.getElementById('print-body');
     bodyEl.innerHTML = '';
-    paragraphs.forEach((p, i) => {
+    paragraphs.forEach(p => {
         const div = document.createElement('div');
-        div.className = 'print-paragraph';
-        if (i === 0) div.style.textIndent = '0';
+        div.className   = 'print-paragraph';
+        // FIX: No special case for first paragraph — all get 0.5in indent
         div.textContent = p.trim();
         bodyEl.appendChild(div);
     });
