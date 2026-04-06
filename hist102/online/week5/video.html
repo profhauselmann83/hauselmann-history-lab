@@ -9,13 +9,39 @@
   <style>
     .video-wrap { position:relative; padding-top:56.25%; background:#000; border-radius:4px; overflow:hidden; box-shadow:0 4px 24px rgba(26,21,16,0.18); }
     .video-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:none; }
-    .slides-link { display:inline-flex; align-items:center; gap:0.5rem; font-family:'DM Mono',monospace; font-size:0.72rem; letter-spacing:0.08em; color:var(--gold); border:1px solid var(--gold); padding:0.5rem 1rem; border-radius:3px; text-decoration:none; margin-top:1rem; transition:background 0.2s, color 0.2s; }
-    .slides-link:hover { background:var(--gold); color:var(--cream); text-decoration:none; }
+    .watch-notice { background:rgba(154,111,42,0.08); border:1px solid rgba(154,111,42,0.25); border-left:4px solid var(--gold); border-radius:0 4px 4px 0; padding:0.9rem 1.25rem; margin:1rem 0 1.5rem; font-size:0.88rem; color:var(--ink-mid); }
+    .watch-notice strong { color:var(--ink); }
+    .quiz-section { display:none; background:var(--cream-dark); border:1px solid var(--rule-strong); border-top:3px solid var(--gold); border-radius:0 0 4px 4px; padding:1.75rem; margin:2rem 0; }
+    .quiz-section.visible { display:block; }
+    .quiz-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem; }
+    .quiz-label::after { content:''; flex:1; height:1px; background:rgba(154,111,42,0.2); }
+    .quiz-q { margin-bottom:1.75rem; }
+    .quiz-q-text { font-family:'Playfair Display',serif; font-size:0.97rem; font-weight:600; color:var(--ink); margin-bottom:0.75rem; line-height:1.45; }
+    .quiz-opts { display:flex; flex-direction:column; gap:0.45rem; }
+    .quiz-opt { display:flex; align-items:flex-start; gap:0.65rem; background:#fff; border:1px solid var(--rule-strong); border-radius:3px; padding:0.65rem 0.9rem; cursor:pointer; font-size:0.9rem; font-family:'Source Serif 4',Georgia,serif; font-weight:300; color:var(--ink); line-height:1.45; transition:border-color 0.15s, background 0.15s; }
+    .quiz-opt:hover { border-color:var(--gold); background:var(--cream); }
+    .quiz-opt.correct { border-color:var(--sage); background:rgba(61,96,83,0.08); color:var(--sage); cursor:default; }
+    .quiz-opt.wrong { border-color:var(--rust); background:rgba(140,58,30,0.06); color:var(--rust); cursor:default; }
+    .quiz-opt input[type=radio] { margin-top:0.2rem; flex-shrink:0; accent-color:var(--gold); }
+    .quiz-feedback { font-family:'DM Mono',monospace; font-size:0.7rem; letter-spacing:0.05em; margin-top:0.6rem; min-height:1em; line-height:1.5; }
+    .quiz-feedback.correct-fb { color:var(--sage); }
+    .quiz-feedback.wrong-fb { color:var(--rust); }
+    .quiz-submit-btn { margin-top:1.75rem; display:inline-block; font-family:'DM Mono',monospace; font-size:0.75rem; letter-spacing:0.1em; background:var(--ink); color:var(--cream); padding:0.8rem 2rem; border:none; border-radius:3px; cursor:pointer; transition:background 0.2s; }
+    .quiz-submit-btn:hover { background:var(--gold); }
+    .quiz-submit-btn:disabled { opacity:0.45; cursor:not-allowed; }
+    .quiz-result-banner { display:none; margin-top:1.25rem; padding:1rem 1.25rem; border-radius:3px; font-family:'DM Mono',monospace; font-size:0.75rem; letter-spacing:0.08em; line-height:1.55; }
+    .quiz-result-banner.pass { background:rgba(61,96,83,0.1); border:1px solid var(--sage); color:var(--sage); }
+    .quiz-result-banner.fail { background:rgba(140,58,30,0.08); border:1px solid var(--rust); color:var(--rust); }
+    .quiz-result-banner.visible { display:block; }
     .lecture-card { background:var(--cream-dark); border:1px solid var(--rule-strong); border-top:3px solid var(--gold); border-radius:0 0 4px 4px; padding:1.5rem 1.75rem; margin:2rem 0; }
     .lecture-card-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; }
     .lecture-card h3 { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--ink); margin:0 0 0.5rem; }
     .lecture-card p { font-size:0.92rem; color:var(--ink-mid); line-height:1.7; margin:0 0 0.75rem; }
     .lecture-card p:last-child { margin-bottom:0; }
+    #unlock-notice { display:none; }
+    #unlock-notice.show { display:block; }
+    #page-footer { opacity:0.35; pointer-events:none; transition:opacity 0.4s; }
+    #page-footer.unlocked { opacity:1; pointer-events:auto; }
   </style>
 </head>
 <body>
@@ -36,38 +62,124 @@
   <div class="header-inner">
     <div class="page-eyebrow">Week 5 &nbsp;&middot;&nbsp; Step 2 of 7</div>
     <h1>Video Lecture</h1>
-    <p class="page-subtitle">The Civil Rights Movement &mdash; postwar America, Brown to Stonewall</p>
+    <p class="page-subtitle"><em>Rise! The Road to Civil Rights (1940&ndash;1968)</em> &mdash; The African Americans: Many Rivers to Cross, PBS</p>
     <div class="header-chips">
-      <span class="chip chip-time">~45 min</span>
-      <span class="chip chip-site">Watch before reading</span>
+      <span class="chip chip-time">53 min</span>
+      <span class="chip chip-site">Watch 80% to unlock quiz</span>
     </div>
   </div>
 </header>
 
 <div id="page-content"><main>
 
-  <div class="video-wrap">
-    <iframe src="PASTE_VIDEO_URL_HERE" frameborder="0" allowfullscreen title="Week 5 Video Lecture"></iframe>
+  <div class="watch-notice">
+    <strong>Watch at least 80% of the documentary to unlock the quiz below.</strong> The quiz must be passed before you can continue to Reading 6.1. Your progress is tracked automatically &mdash; do not close this tab while the video is playing.
   </div>
 
-  <a class="slides-link" href="PASTE_SLIDES_URL_HERE" target="_blank" rel="noopener">
-    &#9654;&nbsp; View Lecture Slides
-  </a>
+  <div class="video-wrap" style="margin-bottom:1.25rem;">
+    <iframe
+      id="yt-player"
+      src="https://www.youtube.com/embed/5jwBceWkCzA?enablejsapi=1&origin=https://profhauselmann.org"
+      frameborder="0"
+      allowfullscreen
+      title="Rise! The Road to Civil Rights (1940–1968)"
+    ></iframe>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
+    <div style="flex:1;min-width:180px;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:0.4rem;">Watch progress</div>
+      <div style="height:8px;background:var(--cream-deep);border-radius:4px;overflow:hidden;">
+        <div id="vid-progress-bar" style="height:100%;background:var(--gold);border-radius:4px;width:0%;transition:width 0.5s;"></div>
+      </div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--ink-light);white-space:nowrap;">
+      <span id="vid-pct">0%</span> watched &nbsp;&middot;&nbsp; need 80%
+    </div>
+  </div>
 
   <div class="lecture-card">
-    <div class="lecture-card-label">About This Lecture</div>
-    <h3>Week 5 &mdash; The Civil Rights Movement</h3>
-    <p>This lecture covers the thirty-year arc from the end of World War II through the Stonewall Riots of 1969. You&rsquo;ll get an overview of postwar affluence and its racial limits, the legal and grassroots strategies that drove the early civil rights movement, the Kennedy administration&rsquo;s cautious approach to civil rights, and the emergence of movements that expanded the definition of who deserved equal treatment under the law.</p>
-    <p>Pay particular attention to the tension between legal progress and lived reality &mdash; why did Brown v. Board require federal troops to enforce? Why did JFK move slowly despite his rhetoric? And what does the Stonewall uprising tell us about who gets left out of official reform? These tensions run through both readings and both source analyses this week.</p>
-    <p>As you watch, keep the week&rsquo;s central question in mind: <em>The postwar United States promised opportunity and freedom &mdash; but for whom? What strategies did excluded groups use to claim what democracy promised them?</em></p>
+    <div class="lecture-card-label">About This Documentary</div>
+    <h3>&ldquo;Rise! The Road to Civil Rights (1940&ndash;1968)&rdquo;</h3>
+    <p>This is Episode 5 of <em>The African Americans: Many Rivers to Cross</em>, the PBS series hosted by historian Henry Louis Gates, Jr. It covers the full arc of the modern civil rights movement: Black veterans returning from World War II to face Jim Crow and racial violence at home, the Montgomery Bus Boycott, Ruby Bridges desegregating her New Orleans school, the Nashville sit-in campaign, Bloody Sunday at Selma, and the emergence of Black Power after King&rsquo;s assassination in 1968.</p>
+    <p>As you watch, keep the week&rsquo;s central question in mind: <em>The postwar United States promised opportunity and freedom &mdash; but for whom? What strategies did excluded groups use to claim what democracy promised them?</em> Pay close attention to the debate between King and Malcolm X, and to what Stokeley Carmichael says about nonviolence at the end &mdash; that tension runs directly into your source analysis and discussion this week.</p>
   </div>
 
-  <div class="callout callout-task">
-    <span class="callout-label">After the Lecture</span>
-    Continue to <strong>Reading 6.1</strong> (OpenStax Ch. 28.3&ndash;28.5) to begin working through the 1950s content in detail. The reading builds directly on what you&rsquo;ve seen in the lecture.
+  <!-- QUIZ — hidden until 80% watched -->
+  <div id="quiz-section" class="quiz-section">
+    <div class="quiz-label">Video Check &mdash; 5 Questions</div>
+    <p style="font-size:0.88rem;color:var(--ink-mid);margin-bottom:1.5rem;">Answer all five questions. You need <strong>4 out of 5</strong> correct to continue to the reading. You may rewatch sections of the documentary to find answers &mdash; the video will remain above.</p>
+
+    <!-- Q1 -->
+    <div class="quiz-q">
+      <div class="quiz-q-text">1. The documentary describes the &ldquo;Double V Campaign&rdquo; launched by the Black press during World War II. What did the two V&rsquo;s stand for?</div>
+      <div class="quiz-opts" id="opts-q1">
+        <label class="quiz-opt"><input type="radio" name="q1" value="a"> Victory over fascism in Europe and victory over Communism in Asia</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="b"> Victory against Hitler overseas and victory against racism at home</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="c"> Victory for voting rights and victory for equal employment</label>
+        <label class="quiz-opt"><input type="radio" name="q1" value="d"> Victory in the Pacific and victory in Europe</label>
+      </div>
+      <div class="quiz-feedback" id="qf1"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-q">
+      <div class="quiz-q-text">2. According to the documentary, what happened to Army Sergeant Isaac Woodard in February 1946 after returning from service in the Pacific?</div>
+      <div class="quiz-opts" id="opts-q2">
+        <label class="quiz-opt"><input type="radio" name="q2" value="a"> He was denied a job at a defense plant because of his race</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="b"> He was arrested for refusing to move to the back of a bus and shot by a guard</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="c"> He was beaten by police after asking to use a restroom, and permanently blinded</label>
+        <label class="quiz-opt"><input type="radio" name="q2" value="d"> He was denied his GI Bill benefits by a Mississippi bank</label>
+      </div>
+      <div class="quiz-feedback" id="qf2"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-q">
+      <div class="quiz-q-text">3. Diane Nash describes her initial attitude toward nonviolence before joining the Nashville sit-in campaign. What does she say?</div>
+      <div class="quiz-opts" id="opts-q3">
+        <label class="quiz-opt"><input type="radio" name="q3" value="a"> She was immediately convinced it was the right approach from the beginning</label>
+        <label class="quiz-opt"><input type="radio" name="q3" value="b"> She thought nonviolence would not work and that violence would be more effective</label>
+        <label class="quiz-opt"><input type="radio" name="q3" value="c"> She believed nonviolence was cowardly and only changed her mind after Bloody Sunday</label>
+        <label class="quiz-opt"><input type="radio" name="q3" value="d"> She supported nonviolence but thought it should only be used by religious leaders</label>
+      </div>
+      <div class="quiz-feedback" id="qf3"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-q">
+      <div class="quiz-q-text">4. Henry Louis Gates Jr. uses an analogy to contrast the roles of Martin Luther King Jr. and Malcolm X. What is it?</div>
+      <div class="quiz-opts" id="opts-q4">
+        <label class="quiz-opt"><input type="radio" name="q4" value="a"> King focused on the South while Malcolm focused only on Northern cities</label>
+        <label class="quiz-opt"><input type="radio" name="q4" value="b"> King was a defense attorney mediating between Black and White Americans; Malcolm was Black America&rsquo;s prosecuting attorney arguing crimes against the Black community</label>
+        <label class="quiz-opt"><input type="radio" name="q4" value="c"> King was the political leader and Malcolm was the spiritual leader of the movement</label>
+        <label class="quiz-opt"><input type="radio" name="q4" value="d"> King appealed to the working class while Malcolm appealed to the Black middle class</label>
+      </div>
+      <div class="quiz-feedback" id="qf4"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-q">
+      <div class="quiz-q-text">5. Near the end of the documentary, the phrase &ldquo;Black Power&rdquo; is chanted publicly for the first time. Who introduced the slogan, and during what march?</div>
+      <div class="quiz-opts" id="opts-q5">
+        <label class="quiz-opt"><input type="radio" name="q5" value="a"> Ella Baker, during the founding conference of SNCC in 1960</label>
+        <label class="quiz-opt"><input type="radio" name="q5" value="b"> Martin Luther King Jr., during the Selma to Montgomery march in 1965</label>
+        <label class="quiz-opt"><input type="radio" name="q5" value="c"> Stokeley Carmichael, during the Meredith March Against Fear in 1966</label>
+        <label class="quiz-opt"><input type="radio" name="q5" value="d"> Malcolm X, during the Detroit Walk to Freedom in 1963</label>
+      </div>
+      <div class="quiz-feedback" id="qf5"></div>
+    </div>
+
+    <button class="quiz-submit-btn" id="quiz-submit-btn" onclick="submitQuiz()">Submit Answers &rarr;</button>
+    <div class="quiz-result-banner" id="quiz-result-banner"></div>
   </div>
 
-  <div class="page-footer">
+  <div id="unlock-notice" class="callout callout-task">
+    <span class="callout-label">Quiz Passed &mdash; Continue to Reading 6.1</span>
+    Well done. Continue to <strong>Reading 6.1</strong> (OpenStax Ch. 28.3&ndash;28.5) to begin working through the 1950s content in detail. The reading builds directly on what you&rsquo;ve seen in the documentary.
+  </div>
+
+  <div class="page-footer" id="page-footer">
     <a class="nav-btn nav-btn-prev" href="index.html">&larr; Overview</a>
     <span class="footer-label">Week 5 &nbsp;&middot;&nbsp; Video</span>
     <a class="nav-btn nav-btn-next" href="reading-1.html">Reading 6.1 &rarr;</a>
@@ -77,14 +189,153 @@
 
 <script src="../supabase-config.js"></script>
 <script>
+// ── Page view logging ──────────────────────────────────────────
 (function logPageView(){
   try{
     var token = JSON.parse(localStorage.getItem('hist102_access_w5')||'{}');
     if(token.granted && token.name){
-      sbInsert('page_views',{ student_name:token.name, student_w_num:token.wnum||'', week_id:'w5', page:'video' });
+      sbInsert('page_views',{student_name:token.name,student_w_num:token.wnum||'',week_id:'w5',page:'video'});
     }
   }catch(e){}
 })();
+
+// ── Constants ──────────────────────────────────────────────────
+var CORRECT = {q1:'b', q2:'c', q3:'b', q4:'b', q5:'c'};
+var FEEDBACK = {
+  q1:{
+    correct:'Correct! The Double V stood for Victory against Nazism abroad and Victory against racism at home. The Black press argued that fighting fascism overseas meant nothing without equality at home.',
+    wrong:'Not quite. The Double V linked the war against Hitler overseas to the war against racial discrimination at home \u2014 two Victories on two fronts.'
+  },
+  q2:{
+    correct:'Correct. Woodard, still in uniform, was pulled off a bus after asking to use a restroom, beaten by police, and permanently blinded at 27. Orson Welles devoted a radio broadcast to the incident.',
+    wrong:'Not quite. Sergeant Woodard was beaten by police officers after asking to use a restroom at a routine bus stop. They drove a nightstick into his eyes, blinding him permanently.'
+  },
+  q3:{
+    correct:'Correct. Nash admitted she initially thought nonviolence would not work and that violence would be more effective. She changed her mind through the training workshops led by Reverend James Lawson.',
+    wrong:'Not quite. Nash actually said the opposite \u2014 she was skeptical of nonviolence at first, thinking violence would work better. The Nashville workshops converted her.'
+  },
+  q4:{
+    correct:'Correct. Gates describes King as a \u201Cdefense attorney\u201D \u2014 a mediator seeking reconciliation \u2014 and Malcolm as \u201CBlack America\u2019s prosecuting attorney,\u201D articulating crimes committed against the Black community.',
+    wrong:'Not quite. Gates uses a courtroom analogy: King as defense attorney (mediating between groups), Malcolm as prosecuting attorney (making the case against white America on behalf of Black Americans).'
+  },
+  q5:{
+    correct:'Correct. Stokeley Carmichael of SNCC introduced "Black Power" at a rally in Greenwood, Mississippi during the Meredith March Against Fear in 1966, after James Meredith was shot on his solo march.',
+    wrong:'Not quite. It was Stokeley Carmichael who first chanted \u201CBlack Power\u201D publicly, at a rally during the Meredith March Against Fear in Mississippi in 1966.'
+  }
+};
+var PASS_THRESHOLD = 4;
+var quizPassed = false;
+
+// ── Restore if already passed ──────────────────────────────────
+try {
+  if(localStorage.getItem('hist102_w5_video_passed')==='1'){ unlockReading(); }
+}catch(e){}
+
+// ── YouTube IFrame API ─────────────────────────────────────────
+var tag = document.createElement('script');
+tag.src='https://www.youtube.com/iframe_api';
+document.head.appendChild(tag);
+
+var player, pollInterval;
+
+function onYouTubeIframeAPIReady(){
+  player = new YT.Player('yt-player',{
+    events:{ 'onStateChange': onPlayerStateChange }
+  });
+}
+
+function onPlayerStateChange(event){
+  if(event.data===YT.PlayerState.PLAYING && !pollInterval){
+    pollInterval = setInterval(pollProgress, 4000);
+  }
+}
+
+function pollProgress(){
+  if(!player||typeof player.getCurrentTime!=='function') return;
+  try{
+    var cur = player.getCurrentTime();
+    var dur = player.getDuration();
+    if(dur>0){
+      var pct = Math.min(Math.round(cur/dur*100),100);
+      document.getElementById('vid-progress-bar').style.width=pct+'%';
+      document.getElementById('vid-pct').textContent=pct+'%';
+      if(cur/dur>=0.80 && !document.getElementById('quiz-section').classList.contains('visible')){
+        document.getElementById('quiz-section').classList.add('visible');
+        setTimeout(function(){
+          document.getElementById('quiz-section').scrollIntoView({behavior:'smooth',block:'start'});
+        },400);
+      }
+    }
+  }catch(e){}
+}
+
+// ── Quiz submit ────────────────────────────────────────────────
+function submitQuiz(){
+  var btn=document.getElementById('quiz-submit-btn');
+  btn.disabled=true;
+  var score=0;
+  var allAnswered=true;
+
+  ['q1','q2','q3','q4','q5'].forEach(function(qid){
+    var sel=document.querySelector('input[name="'+qid+'"]:checked');
+    var num=qid.replace('q','');
+    var fb=document.getElementById('qf'+num);
+    var opts=document.querySelectorAll('input[name="'+qid+'"]');
+
+    if(!sel){ allAnswered=false; if(fb){fb.className='quiz-feedback wrong-fb';fb.textContent='Please select an answer.';} return; }
+
+    var val=sel.value, correct=CORRECT[qid];
+    opts.forEach(function(opt){
+      opt.disabled=true;
+      var lbl=opt.parentElement;
+      if(opt.value===correct) lbl.classList.add('correct');
+      else if(opt.value===val&&val!==correct) lbl.classList.add('wrong');
+    });
+
+    if(val===correct){
+      score++;
+      if(fb){fb.className='quiz-feedback correct-fb';fb.textContent=FEEDBACK[qid].correct;}
+    } else {
+      if(fb){fb.className='quiz-feedback wrong-fb';fb.textContent=FEEDBACK[qid].wrong;}
+    }
+  });
+
+  if(!allAnswered){ btn.disabled=false; return; }
+
+  var banner=document.getElementById('quiz-result-banner');
+  banner.classList.add('visible');
+
+  if(score>=PASS_THRESHOLD){
+    banner.className='quiz-result-banner pass visible';
+    banner.textContent='\u2713 '+score+'/5 correct \u2014 you passed. Continue to Reading 6.1.';
+    try{ localStorage.setItem('hist102_w5_video_passed','1'); }catch(e){}
+    unlockReading();
+  } else {
+    banner.className='quiz-result-banner fail visible';
+    banner.textContent=score+'/5 correct \u2014 you need at least 4. Rewatch the sections you missed and try again in a few seconds.';
+    setTimeout(function(){
+      btn.disabled=false;
+      banner.classList.remove('visible');
+      ['q1','q2','q3','q4','q5'].forEach(function(qid){
+        document.querySelectorAll('input[name="'+qid+'"]').forEach(function(opt){
+          opt.disabled=false; opt.checked=false;
+          opt.parentElement.classList.remove('correct','wrong');
+        });
+        var num=qid.replace('q','');
+        var fb=document.getElementById('qf'+num);
+        if(fb){fb.textContent='';fb.className='quiz-feedback';}
+      });
+    },8000);
+  }
+}
+
+function unlockReading(){
+  quizPassed=true;
+  var footer=document.getElementById('page-footer');
+  footer.classList.add('unlocked');
+  document.getElementById('unlock-notice').classList.add('show');
+  document.getElementById('quiz-section').classList.add('visible');
+}
 </script>
 <script src="../security.js"></script>
 </body>
