@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w4" data-gate="../week4/gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 5 Unlock — World Wars Review | HIST 102</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .puzzle-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+    .pw-display { display: flex; gap: 10px; justify-content: center; margin: 2rem 0 0.5rem; flex-wrap: wrap; }
+    .letter-box {
+      width: 58px; height: 70px;
+      border: 2px solid var(--rule-strong);
+      border-radius: 6px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: var(--cream-dark);
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .letter-box.revealed { background: var(--gold); border-color: var(--gold); }
+    .letter-box .ltr {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.9rem; font-weight: 500;
+      color: var(--cream); opacity: 0;
+      transition: opacity 0.4s; line-height: 1;
+    }
+    .letter-box.revealed .ltr { opacity: 1; }
+    .letter-box .ltr-qnum {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.1em;
+      color: var(--ink-light); margin-top: 5px;
+      text-transform: uppercase;
+    }
+    .letter-box.revealed .ltr-qnum { color: rgba(247,242,232,0.7); }
+    .pw-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ink-light);
+      text-align: center; margin-bottom: 2rem;
+    }
+    .q-card {
+      background: #fff;
+      border: 1px solid var(--rule-strong);
+      border-radius: 6px; padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .q-card.state-correct { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(61,96,83,0.12); }
+    .q-card.state-wrong { animation: shake 0.35s ease; border-color: var(--rust); }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+    }
+    .q-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin: 0 0 0.6rem; }
+    .unlock-tag { color: var(--ink-light); font-size: 0.58rem; }
+    .q-text { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--ink); line-height: 1.45; margin: 0 0 1rem; }
+    .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media(max-width: 500px){ .q-options { grid-template-columns: 1fr; } }
+    .opt-btn {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.88rem; font-weight: 300;
+      color: var(--ink); background: var(--cream);
+      border: 1px solid var(--rule-strong);
+      border-radius: 4px; padding: 0.65rem 1rem;
+      text-align: left; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s; line-height: 1.4;
+    }
+    .opt-btn:hover { background: var(--cream-dark); border-color: var(--gold); }
+    .opt-btn.correct { background: rgba(61,96,83,0.1); border-color: var(--sage); color: var(--sage); cursor: default; }
+    .opt-btn.wrong { background: rgba(140,58,30,0.07); border-color: var(--rust); color: var(--rust); }
+    .opt-btn:disabled { cursor: default; }
+    .q-feedback { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em; margin-top: 0.75rem; min-height: 1.4em; line-height: 1.5; }
+    .q-feedback.correct { color: var(--sage); }
+    .q-feedback.wrong { color: var(--rust); }
+    .puzzle-progress { background: var(--cream-dark); border: 1px solid var(--rule-strong); border-radius: 4px; padding: 0.9rem 1.25rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
+    .puzzle-progress-bar-wrap { flex: 1; height: 6px; background: var(--cream-deep); border-radius: 3px; overflow: hidden; }
+    .puzzle-progress-bar { height: 100%; background: var(--gold); border-radius: 3px; width: 0%; transition: width 0.4s ease; }
+    .puzzle-progress-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; white-space: nowrap; color: var(--ink-light); }
+    .victory-banner { display: none; background: var(--ink); color: var(--cream); border-radius: 8px; padding: 2.5rem 2rem; text-align: center; margin: 2rem 0; }
+    .victory-banner.show { display: block; }
+    .victory-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-light, #c8922a); margin-bottom: 0.75rem; }
+    .victory-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .victory-code { font-family: 'DM Mono', monospace; font-size: 2.4rem; font-weight: 500; letter-spacing: 0.25em; color: var(--gold-light, #c8922a); display: block; margin: 1rem 0; }
+    .victory-sub { font-family: 'Source Serif 4', Georgia, serif; font-size: 0.9rem; color: rgba(247,242,232,0.7); margin-bottom: 1.5rem; }
+    .victory-cta { display: inline-block; font-family: 'DM Mono', monospace; font-size: 0.78rem; letter-spacing: 0.08em; background: var(--gold); color: var(--cream); padding: 0.75rem 2rem; border-radius: 4px; text-decoration: none; transition: background 0.2s; }
+    .victory-cta:hover { background: var(--gold-light, #c8922a); color: var(--cream); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step active" href="puzzle.html"><span class="step-num">1</span> Unlock Week 5</a>
+    <a class="prog-step" href="gate.html"><span class="step-num">2</span> Enter Code</a>
+    <a class="prog-step" href="index.html"><span class="step-num">3</span> Overview</a>
+    <a class="prog-step" href="video.html"><span class="step-num">4</span> Video</a>
+    <a class="prog-step" href="reading-1.html"><span class="step-num">5</span> Reading 6.1</a>
+    <a class="prog-step" href="#"><span class="step-num">6</span> &hellip;</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 5 &nbsp;&middot;&nbsp; Apr 6 &ndash; 12</div>
+    <h1>Unlock Week 5</h1>
+    <p class="page-subtitle">Answer all six questions correctly to reveal your access code</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~10 min</span>
+      <span class="chip chip-site">Reviews Week 4</span>
+    </div>
+  </div>
+</header>
+
+<div class="puzzle-wrap">
+
+  <div class="callout callout-note" style="margin-bottom:2rem">
+    <span class="callout-label">How this works</span>
+    Answer each question correctly to reveal one letter of your Week 5 access code. Wrong answers are shown immediately &mdash; select again until you find the right one.
+  </div>
+
+  <div class="pw-display" id="pw-display">
+    <div class="letter-box" id="lb-0"><span class="ltr">R</span><span class="ltr-qnum">Q1</span></div>
+    <div class="letter-box" id="lb-1"><span class="ltr">I</span><span class="ltr-qnum">Q2</span></div>
+    <div class="letter-box" id="lb-2"><span class="ltr">G</span><span class="ltr-qnum">Q3</span></div>
+    <div class="letter-box" id="lb-3"><span class="ltr">H</span><span class="ltr-qnum">Q4</span></div>
+    <div class="letter-box" id="lb-4"><span class="ltr">T</span><span class="ltr-qnum">Q5</span></div>
+    <div class="letter-box" id="lb-5"><span class="ltr">S</span><span class="ltr-qnum">Q6</span></div>
+  </div>
+  <p class="pw-hint">Each correct answer reveals one letter &nbsp;&middot;&nbsp; <span id="pw-progress">0 / 6 unlocked</span></p>
+
+  <div class="puzzle-progress">
+    <span class="puzzle-progress-label">Progress</span>
+    <div class="puzzle-progress-bar-wrap"><div class="puzzle-progress-bar" id="progressBar"></div></div>
+    <span class="puzzle-progress-label" id="progressLabel">0 of 6 correct</span>
+  </div>
+
+  <div id="questions-mount"></div>
+
+  <div class="victory-banner" id="victory-banner">
+    <p class="victory-eyebrow">Week 5 Unlocked</p>
+    <h2 class="victory-title">Excellent work.</h2>
+    <span class="victory-code">RIGHTS</span>
+    <p class="victory-sub">Your access code for Week 5 is <strong>RIGHTS</strong>. Enter it on the next page along with your name and W number to begin.</p>
+    <a href="gate.html" class="victory-cta">Continue to Week 5 &rarr;</a>
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="../index.html">&larr; Course Home</a>
+    <span class="footer-label">Week 5 &nbsp;&middot;&nbsp; Unlock Puzzle</span>
+    <a class="nav-btn nav-btn-next" href="gate.html">Enter Week 5 &rarr;</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  var PASSWORD = 'RIGHTS';
+  var QUESTIONS = [
+    {
+      q: 'Germany resumed unrestricted submarine warfare in early 1917 because it was trying to',
+      opts: [
+        'Retaliate for the United States\u2019 declaration of war in April 1917',
+        'Break the British naval blockade before starvation forced it to surrender',
+        'Protect German merchant ships from British destroyers in the Atlantic',
+        'Test the terms of the Sussex Pledge it had agreed to with Woodrow Wilson'
+      ],
+      correct: 1,
+      feedback: 'Correct! Germany calculated that cutting off British supply lines would force a surrender before the U.S. could mobilize. The gamble failed \u2014 it brought the U.S. into the war instead.',
+      wrong: 'Not quite \u2014 try again. Think about what Germany needed to accomplish before the U.S. could mobilize its forces.'
+    },
+    {
+      q: 'The Supreme Court upheld the Espionage and Sedition Acts in Schenck v. United States (1919), ruling that wartime dissent',
+      opts: [
+        'Was protected speech under the First Amendment regardless of context',
+        'Could be criminalized only if it directly encouraged violence against military officers',
+        'Presented a \u201Cclear and present danger\u201D and therefore fell outside First Amendment protection',
+        'Was legal unless it specifically called for the overthrow of the federal government'
+      ],
+      correct: 2,
+      feedback: 'Correct! Justice Oliver Wendell Holmes wrote that the \u201Cclear and present danger\u201D test applied. This ruling gave the government broad authority to suppress dissent during wartime.',
+      wrong: 'Not quite \u2014 try again. Holmes introduced a new legal standard in this case that justified wartime restrictions on speech.'
+    },
+    {
+      q: 'Wilson\u2019s Fourteen Points called for all of the following EXCEPT',
+      opts: [
+        'National self-determination for peoples under imperial rule',
+        'A permanent League of Nations to resolve future conflicts',
+        'Germany to pay unlimited war reparations to the Allied powers',
+        'Freedom of the seas and open diplomatic negotiations'
+      ],
+      correct: 2,
+      feedback: 'Correct! Unlimited reparations were imposed by the Treaty of Versailles against Wilson\u2019s wishes. His Fourteen Points emphasized a just peace without punishing Germany excessively.',
+      wrong: 'Not quite \u2014 try again. Wilson\u2019s Fourteen Points were designed to create a just, lasting peace. One of these options describes what happened *against* his wishes.'
+    },
+    {
+      q: 'The Great Migration of the early twentieth century refers to',
+      opts: [
+        'European immigrants arriving in American cities during the Gilded Age',
+        'White middle-class families moving from cities to new suburban communities after WWII',
+        'African Americans moving from the rural South to Northern industrial cities',
+        'Dust Bowl refugees from Oklahoma and Texas traveling to California in the 1930s'
+      ],
+      correct: 2,
+      feedback: 'Correct! Beginning around 1910 and accelerating during WWI labor shortages, approximately 1.6 million African Americans moved north in the first wave, fleeing Jim Crow and seeking industrial jobs.',
+      wrong: 'Not quite \u2014 try again. The Great Migration specifically describes the movement of one particular group during a particular era.'
+    },
+    {
+      q: 'Executive Order 9066, signed by President Roosevelt in February 1942, authorized',
+      opts: [
+        'The creation of the Fair Employment Practices Committee to ban racial discrimination in defense hiring',
+        'The forced relocation of Japanese Americans from the West Coast to inland internment camps',
+        'The military draft that would eventually induct 10 million American men during WWII',
+        'The Lend-Lease program providing weapons and supplies to Britain and the Soviet Union'
+      ],
+      correct: 1,
+      feedback: 'Correct! EO 9066 led to the forced removal of approximately 120,000 people of Japanese ancestry \u2014 two-thirds of them American citizens \u2014 to internment camps. No Japanese American was ever convicted of espionage or sabotage.',
+      wrong: 'Not quite \u2014 try again. Executive Order 9066 is most remembered as one of the most sweeping civil liberties violations in American history.'
+    },
+    {
+      q: 'The United States never joined the League of Nations primarily because',
+      opts: [
+        'Woodrow Wilson refused to accept any version of the League that included Germany',
+        'The Senate, led by Henry Cabot Lodge, feared Article X would commit the U.S. to endless foreign wars',
+        'The American public overwhelmingly opposed any involvement in European affairs after WWI',
+        'Britain and France blocked U.S. membership to maintain control over the League\u2019s decisions'
+      ],
+      correct: 1,
+      feedback: 'Correct! Lodge and his allies feared that Article X \u2014 the collective security provision \u2014 would permanently commit the U.S. to military intervention. Wilson refused to compromise, and the Senate defeated the treaty twice.',
+      wrong: 'Not quite \u2014 try again. The Senate\u2019s objections centered on a specific provision of the League Covenant. Think about what concerned Lodge most.'
+    }
+  ];
+
+  var correct = new Array(QUESTIONS.length).fill(false);
+
+  function revealLetter(qi) {
+    var box = document.getElementById('lb-' + qi);
+    if (box) box.classList.add('revealed');
+    var done = correct.filter(Boolean).length;
+    document.getElementById('pw-progress').textContent = done + ' / ' + QUESTIONS.length + ' unlocked';
+    updateProgress();
+    if (done === QUESTIONS.length) {
+      setTimeout(function(){ document.getElementById('victory-banner').classList.add('show'); }, 600);
+    }
+  }
+
+  function updateProgress() {
+    var done = correct.filter(Boolean).length;
+    var pct  = Math.round(done / QUESTIONS.length * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = done + ' of ' + QUESTIONS.length + ' correct';
+  }
+
+  function handleAnswer(qi, optIdx) {
+    if (correct[qi]) return;
+    var card    = document.getElementById('qcard-' + qi);
+    var optsDiv = document.getElementById('opts-' + qi);
+    var fb      = document.getElementById('fb-' + qi);
+    var q       = QUESTIONS[qi];
+    var btns    = optsDiv.querySelectorAll('.opt-btn');
+    if (optIdx === q.correct) {
+      correct[qi] = true;
+      btns.forEach(function(b, i) { b.disabled = true; if (i === q.correct) b.classList.add('correct'); });
+      card.classList.remove('state-wrong');
+      card.classList.add('state-correct');
+      fb.className = 'q-feedback correct';
+      fb.textContent = q.feedback;
+      revealLetter(qi);
+    } else {
+      btns[optIdx].classList.add('wrong');
+      card.classList.add('state-wrong');
+      setTimeout(function(){ card.classList.remove('state-wrong'); btns[optIdx].classList.remove('wrong'); }, 700);
+      fb.className = 'q-feedback wrong';
+      fb.textContent = q.wrong;
+    }
+  }
+
+  window.handleAnswer = handleAnswer;
+
+  function buildQuestions() {
+    var mount = document.getElementById('questions-mount');
+    QUESTIONS.forEach(function(q, i) {
+      var card = document.createElement('div');
+      card.className = 'q-card'; card.id = 'qcard-' + i;
+      var eyebrow = document.createElement('p');
+      eyebrow.className = 'q-eyebrow';
+      eyebrow.innerHTML = 'Question ' + (i + 1) + ' &nbsp;&middot;&nbsp; <span class="unlock-tag">unlocks letter ' + (i + 1) + '</span>';
+      var qtext = document.createElement('p');
+      qtext.className = 'q-text'; qtext.textContent = q.q;
+      var optsDiv = document.createElement('div');
+      optsDiv.className = 'q-options'; optsDiv.id = 'opts-' + i;
+      q.opts.forEach(function(opt, j) {
+        var btn = document.createElement('button');
+        btn.className = 'opt-btn'; btn.textContent = opt;
+        btn.setAttribute('onclick', 'handleAnswer(' + i + ',' + j + ')');
+        optsDiv.appendChild(btn);
+      });
+      var fb = document.createElement('div');
+      fb.className = 'q-feedback'; fb.id = 'fb-' + i;
+      card.appendChild(eyebrow); card.appendChild(qtext);
+      card.appendChild(optsDiv); card.appendChild(fb);
+      mount.appendChild(card);
+    });
+  }
+
+  buildQuestions();
+})();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>

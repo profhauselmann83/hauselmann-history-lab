@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 5 Access — HIST 102</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,700;0,900&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #1a1510; --cream: #f7f2e8; --cream-dark: #ede5d4;
+      --gold: #9a6f2a; --gold-light: #c8922a; --rust: #8c3a1e;
+    }
+    html, body { min-height: 100vh; background: var(--ink); color: var(--cream); font-family: 'Source Serif 4', Georgia, serif; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem; }
+    .masthead { text-align: center; margin-bottom: 2.5rem; }
+    .masthead-course { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(247,242,232,0.45); margin-bottom: 0.4rem; }
+    .masthead-week { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.6rem; display: block; }
+    .masthead-title { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; line-height: 1.2; color: var(--cream); }
+    .masthead-sub { font-size: 0.88rem; font-weight: 300; color: rgba(247,242,232,0.55); margin-top: 0.4rem; }
+    .masthead-divider { width: 48px; height: 2px; background: var(--gold); margin: 1.25rem auto 0; }
+    .gate-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 2rem 2.5rem; width: 100%; max-width: 460px; }
+    .gate-card h2 { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 1.5rem; }
+    .pledge-box { background: rgba(247,242,232,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 1rem 1.25rem; font-size: 0.85rem; font-weight: 300; color: rgba(247,242,232,0.7); line-height: 1.65; margin-bottom: 1.5rem; }
+    .pledge-box strong { color: var(--cream); font-weight: 400; }
+    .field-group { margin-bottom: 1.1rem; }
+    .field-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(247,242,232,0.5); display: block; margin-bottom: 0.45rem; }
+    .field-input { width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: var(--cream); font-family: 'Source Serif 4', Georgia, serif; font-size: 0.95rem; font-weight: 300; outline: none; transition: border-color 0.2s, background 0.2s; }
+    .field-input:focus { border-color: var(--gold-light); background: rgba(255,255,255,0.09); }
+    .field-input::placeholder { color: rgba(247,242,232,0.25); }
+    .field-hint { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.06em; color: rgba(247,242,232,0.3); margin-top: 0.3rem; }
+    .field-code { font-family: 'DM Mono', monospace; font-size: 1rem; letter-spacing: 0.08em; }
+    .field-code::placeholder { font-family: 'DM Mono', monospace; letter-spacing: 0.04em; }
+    .error-msg { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.06em; color: var(--rust); background: rgba(140,58,30,0.15); border: 1px solid rgba(140,58,30,0.3); border-radius: 3px; padding: 0.6rem 0.9rem; margin-bottom: 1rem; display: none; }
+    .error-msg.show { display: block; }
+    .submit-btn { width: 100%; padding: 0.85rem; background: var(--gold); color: var(--cream); font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
+    .submit-btn:hover { background: var(--gold-light); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .gate-footer { margin-top: 1.5rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; color: rgba(247,242,232,0.25); }
+    .gate-footer a { color: rgba(247,242,232,0.4); text-decoration: none; }
+    .gate-footer a:hover { color: rgba(247,242,232,0.7); }
+  </style>
+</head>
+<body>
+
+  <div class="masthead">
+    <p class="masthead-course">HIST 102 &nbsp;&middot;&nbsp; Spring 2026</p>
+    <span class="masthead-week">Week 5</span>
+    <h1 class="masthead-title">The Civil Rights Movement</h1>
+    <p class="masthead-sub">April 6 &ndash; 12, 2026</p>
+    <div class="masthead-divider"></div>
+  </div>
+
+  <div class="gate-card">
+    <h2>Weekly Access</h2>
+    <div class="pledge-box">
+      By entering this week, I confirm that I will complete the readings, annotations, and assignments <strong>on my own</strong>, and that any work I submit reflects my own understanding.
+    </div>
+    <div id="error-msg" class="error-msg"></div>
+    <div class="field-group">
+      <label class="field-label" for="firstName">First Name</label>
+      <input class="field-input" type="text" id="firstName" placeholder="Your first name" autocomplete="given-name">
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="lastName">Last Name</label>
+      <input class="field-input" type="text" id="lastName" placeholder="Your last name" autocomplete="family-name">
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="wnum">Student W Number</label>
+      <input class="field-input" type="text" id="wnum" placeholder="W1234567" autocomplete="off" maxlength="8">
+      <p class="field-hint">Format: W followed by 7 digits</p>
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="accessCode">Weekly Access Code</label>
+      <input class="field-input field-code" type="text" id="accessCode" placeholder="Enter access code" autocomplete="off" maxlength="20">
+      <p class="field-hint">Found in the Week 5 unlock puzzle</p>
+    </div>
+    <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Enter Week 5 &rarr;</button>
+  </div>
+
+  <div class="gate-footer">
+    <a href="puzzle.html">&larr; Back to unlock puzzle</a>
+    &nbsp;&middot;&nbsp; profhauselmann.org
+  </div>
+
+<script src="../supabase-config.js"></script>
+<script>
+var WEEK_ID       = 'w5';
+var WEEK_PASSWORD = 'RIGHTS';
+var WEEK_LABEL    = 'Week 5 \u2014 The Civil Rights Movement';
+var REDIRECT_URL  = 'index.html';
+var ACCESS_EXPIRY = 7 * 24 * 60 * 60 * 1000;
+
+(function checkExisting(){
+  try{
+    var stored = JSON.parse(localStorage.getItem('hist102_access_' + WEEK_ID) || '{}');
+    if(stored.granted && stored.timestamp && (Date.now() - stored.timestamp) < ACCESS_EXPIRY){
+      window.location.href = REDIRECT_URL;
+    }
+  }catch(e){}
+})();
+
+function showError(msg){ var el = document.getElementById('error-msg'); el.textContent = msg; el.classList.add('show'); }
+function hideError(){ document.getElementById('error-msg').classList.remove('show'); }
+
+function handleSubmit(){
+  hideError();
+  var firstName  = document.getElementById('firstName').value.trim();
+  var lastName   = document.getElementById('lastName').value.trim();
+  var wnum       = document.getElementById('wnum').value.trim().toUpperCase();
+  var accessCode = document.getElementById('accessCode').value.trim().toUpperCase();
+  if(!firstName){ showError('Please enter your first name.'); return; }
+  if(!lastName){  showError('Please enter your last name.'); return; }
+  if(!/^W\d{7}$/.test(wnum)){ showError('W number must be W followed by 7 digits (e.g. W1234567).'); return; }
+  if(!accessCode){ showError('Please enter the access code.'); return; }
+  if(accessCode !== WEEK_PASSWORD){ showError('Incorrect access code. Complete the unlock puzzle to find it.'); return; }
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Entering\u2026';
+  var fullName = firstName + ' ' + lastName;
+  var token = { granted: true, timestamp: Date.now(), name: fullName, wnum: wnum, week: WEEK_ID };
+  try{ localStorage.setItem('hist102_access_' + WEEK_ID, JSON.stringify(token)); }catch(e){}
+  try{
+    sbInsert('gate_entries', {
+      student_name: fullName, student_w_num: wnum, week_id: WEEK_ID, week_label: WEEK_LABEL,
+      pledge_text: 'I will complete the readings and assignments on my own, and any work I submit reflects my own understanding.'
+    });
+  }catch(e){}
+  window.location.href = REDIRECT_URL;
+}
+
+document.addEventListener('keydown', function(e){ if(e.key === 'Enter') handleSubmit(); });
+</script>
+</body>
+</html>
