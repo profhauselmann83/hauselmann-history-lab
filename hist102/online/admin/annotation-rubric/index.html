@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotation Grading Rubric</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Georgia, serif;
+            background-color: #f7f2e8;
+            color: #1a1510;
+            line-height: 1.7;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            margin-bottom: 2.5rem;
+            border-bottom: 3px solid #1a1510;
+            padding-bottom: 1.5rem;
+        }
+        
+        h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a1510;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #6b5e50;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a1510;
+            margin: 2.5rem 0 1rem 0;
+            padding-top: 1.5rem;
+            border-top: 2px solid #9a6f2a;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            background: white;
+            border: 1px solid #e0d5be;
+            box-shadow: 0 2px 4px rgba(26, 21, 16, 0.05);
+        }
+        
+        th, td {
+            border: 1px solid #e0d5be;
+            padding: 1.25rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th {
+            background: #1a1510;
+            color: #f7f2e8;
+            font-family: 'DM Mono', monospace;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            vertical-align: middle;
+            min-width: 140px;
+        }
+        
+        td:first-child {
+            background: #ede5d4;
+            font-family: Georgia, serif;
+            font-weight: 600;
+            color: #1a1510;
+            min-width: 150px;
+            max-width: 180px;
+        }
+        
+        .grade-excellent {
+            background: #f5faf7;
+        }
+        
+        .grade-satisfactory {
+            background: #faf7f4;
+        }
+        
+        .grade-minimal {
+            background: #f8f6f3;
+        }
+        
+        .grade-description {
+            font-family: Georgia, serif;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: #3a3028;
+        }
+        
+        .grade-header {
+            font-family: 'DM Mono', monospace;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+        
+        .header-excellent {
+            color: #3d6053;
+        }
+        
+        .header-satisfactory {
+            color: #8c3a1e;
+        }
+        
+        .header-minimal {
+            color: #1a1510;
+        }
+        
+        /* Example responses */
+        .examples-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .example-box {
+            background: white;
+            border-radius: 4px;
+            padding: 1.5rem;
+        }
+        
+        .example-a {
+            border: 2px solid #3d6053;
+        }
+        
+        .example-c {
+            border: 2px solid #8c3a1e;
+        }
+        
+        .example-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .example-a .example-title {
+            color: #3d6053;
+        }
+        
+        .example-c .example-title {
+            color: #8c3a1e;
+        }
+        
+        .grade-badge {
+            font-family: 'DM Mono', monospace;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2px;
+            color: white;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .badge-a {
+            background: #3d6053;
+        }
+        
+        .badge-c {
+            background: #8c3a1e;
+        }
+        
+        .example-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            color: #6b5e50;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .example-quote {
+            font-family: Georgia, serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #3a3028;
+            font-style: italic;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 3px solid #e0d5be;
+        }
+        
+        .example-response {
+            font-family: Georgia, serif;
+            font-size: 0.85rem;
+            line-height: 1.55;
+            color: #3a3028;
+            margin-bottom: 1.5rem;
+        }
+        
+        .example-response strong {
+            color: #1a1510;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .example-checklist {
+            margin-top: 1rem;
+        }
+        
+        .example-checklist p {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            color: #6b5e50;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .example-list {
+            list-style: none;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #3a3028;
+        }
+        
+        .example-list li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .callout {
+            background: #ede5d4;
+            border-left: 4px solid #9a6f2a;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 2px;
+        }
+        
+        .callout p {
+            font-family: Georgia, serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #3a3028;
+        }
+        
+        @media (max-width: 1000px) {
+            .examples-section {
+                grid-template-columns: 1fr;
+            }
+            
+            th, td {
+                padding: 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .grade-description {
+                font-size: 0.8rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media print {
+            body {
+                padding: 0.5rem;
+            }
+            
+            table {
+                page-break-inside: avoid;
+            }
+            
+            .section-title {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Annotation Grading Rubric</h1>
+            <p class="subtitle">HIST 102: Primary Source Discussion & Haass Chapter Annotations</p>
+        </header>
+        
+        <!-- PRIMARY SOURCE ANNOTATIONS -->
+        
+        <h2 class="section-title">Primary Source Discussion Annotations</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>A/B — Excellent/Good</th>
+                    <th>C — Satisfactory</th>
+                    <th>D/F — Minimal/Missing</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Golden Line</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Selects meaningful passage AND explains why it's important to the central question. Explanation shows what the passage reveals about the author's political theory, strategy, or beliefs. Citation present (A: fully developed; B: somewhat developed).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Selects passage but explanation is partial or surface-level. May describe what the passage says rather than what it reveals. Citation may be missing.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Selects passage but provides only personal reaction or basic description with no real explanation. Little to no citation. (D: minimal effort; F: missing).</span></td>
+                </tr>
+                <tr>
+                    <td>Sourcing</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Correctly identifies creator, audience (specific, not vague), and purpose. Explains how the creator's context shaped the argument. All elements present and developed (A: thorough; B: adequate).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Identifies creator and some other elements, but one element is missing or incorrect. Explanation of context is weak or vague. Partial understanding shown.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Identifies creator only, or misidentifies audience/purpose. No meaningful explanation of context. Major elements missing (D: minimal elements present; F: missing/wrong).</span></td>
+                </tr>
+                <tr>
+                    <td>Contextualization</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Selects relevant context from OpenStax and cites correctly. Explains how context illuminates the specific document. Shows why this context matters for understanding the document (A: clear and thorough; B: clear but could be deeper).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Selects and cites context, but connection to document is weak or vague. May apply context to the wrong document or fail to show why it matters.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Cites context but doesn't meaningfully connect it, applies to wrong document, or provides no citation (D: minimal connection; F: missing/incoherent).</span></td>
+                </tr>
+                <tr>
+                    <td>Corroboration</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Identifies both documents and their claims. Clearly names the contradiction. Explains what it reveals about the larger historical pattern or assumption (A: thorough interpretation; B: adequate interpretation).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Identifies both documents and names a contradiction, but stops there. Little to no interpretation of what the contradiction reveals about larger patterns.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Identifies only one document, names only surface disagreement, or provides no real contradiction or interpretation (D: minimal engagement; F: missing).</span></td>
+                </tr>
+                <tr>
+                    <td>Research</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Finds credible source (government, academic, peer-reviewed). Evaluates credibility and connects meaningfully to passage. Includes specific quote or evidence (A: strong connection; B: adequate connection).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Finds credible source with some credibility evaluation. Connection to passage is somewhat vague or surface-level. Evidence may be present but not specific.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Finds source but provides minimal evaluation or weak connection. Little evidence included (D: minimal effort; F: no source or unreliable).</span></td>
+                </tr>
+                <tr>
+                    <td>Discussion Question</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Asks open-ended question that cannot be answered with yes/no. Presses on genuine tension or contradiction. Invites interpretive debate (A: strong pressure; B: adequate pressure).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Question hints at an issue but is too narrow, vague, or somewhat answerable with a fact. Doesn't fully press on tension.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Asks yes/no question or asks for clarification rather than interpretation. No real tension pressed (D: minimal engagement; F: missing).</span></td>
+                </tr>
+                <tr>
+                    <td>Peer Responses</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Responds directly to specific peer annotation. Extends peer's argument OR asks genuine follow-up question. Shows engagement (A: deep engagement; B: good engagement).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Responds to peer but only agrees or affirms without extending thinking. May lack specificity. Minimal engagement with peer's idea.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Response is generic, not tied to specific peer work, or shows minimal understanding (D: minimal effort; F: missing).</span></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- HAASS ANNOTATIONS -->
+        
+        <h2 class="section-title">Haass Chapter Annotations</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>A/B — Excellent/Good</th>
+                    <th>C — Satisfactory</th>
+                    <th>D/F — Minimal/Missing</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Golden Line</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Selects meaningful, important passage. Provides explanation of why it's central to Haass's main argument. Shows how passage reveals a key concept (A: fully developed; B: adequately developed).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Selects passage and provides some explanation of importance. May focus on what the passage says rather than what it reveals about Haass's broader argument.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Selects passage but provides only basic description or personal reaction. Little explanation of why passage matters (D: minimal effort; F: missing).</span></td>
+                </tr>
+                <tr>
+                    <td>Question</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Asks open-ended question that cannot be answered with yes/no. Presses on genuine tension or gap in Haass's argument. Invites interpretive debate (A: strong pressure; B: adequate pressure).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Question hints at issue but is vague, too narrow, or somewhat answerable with a fact. Doesn't fully press on genuine tension.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Asks yes/no question or asks for clarification rather than interpretation (D: minimal engagement; F: missing).</span></td>
+                </tr>
+                <tr>
+                    <td>Agree/Challenge</td>
+                    <td class="grade-excellent"><span class="grade-header header-excellent">A/B</span><span class="grade-description">Clearly identifies author's claim. States agreement. Identifies genuine limitation or gap in author's argument. Provides specific case where position breaks down (A: fully developed; B: adequately developed).</span></td>
+                    <td class="grade-satisfactory"><span class="grade-header header-satisfactory">C</span><span class="grade-description">Identifies claim and states agreement, but challenge is weak, vague, or underdeveloped. May name a problem without explaining why it's a problem.</span></td>
+                    <td class="grade-minimal"><span class="grade-header header-minimal">D/F</span><span class="grade-description">Identifies claim and agrees but provides no real challenge. Just restates or affirms (D: minimal effort; F: missing).</span></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- EXAMPLE RESPONSES -->
+        
+        <h2 class="section-title">Example Responses</h2>
+        
+        <div class="examples-section">
+            
+            <!-- Example A Response -->
+            <div class="example-box example-a">
+                <h3 class="example-title">
+                    <span class="grade-badge badge-a">A</span>
+                    Excellent Response
+                </h3>
+                
+                <p class="example-label">Golden Line Example</p>
+                <div class="example-quote">
+                    "You shall not crucify mankind upon a cross of gold."
+                </div>
+                
+                <div class="example-response">
+                    <strong>A-Level Response:</strong>
+                    "Bryan's closing image of the 'cross of gold' is the most important moment in this speech because it transforms an economic argument into a moral and religious one. By invoking the crucifixion—'cross'—Bryan reframes monetary policy as a matter of faith and sacrifice, not just policy preference. This rhetorical move does crucial work: it allows him to claim moral authority and frames his opponents as actively harming the people. The metaphor is strategic: it makes the audience's economic suffering feel sacred, which justifies the radical political change he's asking for. Without this image, his speech is just economics; with it, he's asking for moral transformation."
+                </div>
+                
+                <div class="example-checklist">
+                    <p>Why This is A Level:</p>
+                    <ul class="example-list">
+                        <li>✓ Identifies passage</li>
+                        <li>✓ Fully explains what it reveals about Bryan's strategy</li>
+                        <li>✓ Shows how the phrase functions in the larger argument</li>
+                        <li>✓ Develops interpretation thoroughly</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Example C Response -->
+            <div class="example-box example-c">
+                <h3 class="example-title">
+                    <span class="grade-badge badge-c">C</span>
+                    Satisfactory Response
+                </h3>
+                
+                <p class="example-label">Golden Line Example</p>
+                <div class="example-quote">
+                    "You shall not crucify mankind upon a cross of gold."
+                </div>
+                
+                <div class="example-response">
+                    <strong>C-Level Response:</strong>
+                    "This passage is important because Bryan uses religious language to appeal to farmers. The 'cross of gold' shows his connection to the Populist movement. It's a powerful phrase that resonates with the audience."
+                </div>
+                
+                <div class="example-checklist">
+                    <p>Why This is C Level:</p>
+                    <ul class="example-list">
+                        <li>✓ Identifies passage</li>
+                        <li>✓ Describes what it does (religious language, appeals to farmers)</li>
+                        <li>✗ Doesn't explain WHY or what it reveals</li>
+                        <li>✗ Stops at surface level; no interpretation</li>
+                    </ul>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="callout">
+            <p><strong>The Gap:</strong> The C-level response identifies and describes the passage. The A-level response takes that same passage and explains <em>what it reveals</em> about the author's strategy, <em>why</em> the author made that choice, and <em>what</em> it accomplishes in the overall argument. That's the analytical move that separates satisfactory from excellent.</p>
+        </div>
+        
+    </div>
+</body>
+</html>
