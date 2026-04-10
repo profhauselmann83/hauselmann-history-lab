@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Source Analysis 5.2 — Stonewall Riots | HIST 102</title>
   <link rel="stylesheet" href="../style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     .reading-nav{position:sticky;top:42px;background:var(--cream);border-bottom:1px solid var(--rule-strong);z-index:100;}
     .reading-nav-inner{max-width:860px;margin:0 auto;padding:0 1.5rem;display:flex;overflow-x:auto;scrollbar-width:none;}
@@ -50,6 +51,14 @@
     .hostile-tone-note{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;color:var(--rust);background:rgba(140,58,30,0.05);border:1px solid rgba(140,58,30,0.15);border-radius:3px;padding:0.5rem 0.9rem;margin:0 1.5rem 1rem;display:block;}
     .doc-connect{background:rgba(154,111,42,0.07);border:1px solid rgba(154,111,42,0.2);border-radius:3px;padding:0.7rem 1.25rem;margin:0 1.5rem 1rem;font-size:0.83rem;color:var(--ink-mid);}
     .doc-connect strong{color:var(--gold);font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;}
+    .pdf-section{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:4px;padding:1.5rem;margin:2rem 0;}
+    .pdf-section h3{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink);margin-bottom:0.75rem;}
+    .pdf-btn{display:inline-block;font-family:'DM Mono',monospace;font-size:0.75rem;letter-spacing:0.08em;background:var(--ink);color:var(--cream);padding:0.7rem 1.5rem;border:none;border-radius:3px;cursor:pointer;transition:background .2s;}
+    .pdf-btn:hover{background:var(--gold);}
+    .pdf-btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .pdf-msg{font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.05em;color:var(--sage);margin-top:0.75rem;display:none;}
+    .pdf-msg.visible{display:block;}
+    .mobile-note{font-size:0.78rem;color:var(--ink-light);font-style:italic;margin-top:0.5rem;}
   </style>
 </head>
 <body>
@@ -301,6 +310,15 @@
     </div>
   </div>
 
+  <!-- PDF Download -->
+  <div class="pdf-section">
+    <h3>&#128462; Download Your Complete Week 5 Reading Notes</h3>
+    <p style="font-size:0.88rem;color:var(--ink-mid);margin-bottom:1rem;">This PDF includes all answers and notes from <strong>Reading 6.1</strong> (Affluent Society &amp; Civil Rights), <strong>Reading 6.2</strong> (The Kennedy Promise), plus your answers from <strong>Source Analysis 5.1</strong> (JFK &amp; Civil Rights) and <strong>Source Analysis 5.2</strong> (Stonewall Riots). Submit it to Canvas by Sunday at 11:59&nbsp;PM.</p>
+    <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">&#8595; &nbsp;Download Complete Week 5 Notes PDF</button>
+    <p class="mobile-note">On mobile? If the download doesn&rsquo;t start automatically, try opening this page in Safari or Chrome rather than the Canvas app.</p>
+    <div class="pdf-msg" id="pdfMsg"></div>
+  </div>
+
   <div class="callout callout-task" style="margin-top:2rem">
     <span class="callout-label">Answers Saved &mdash; Proceed to Canvas</span>
     Your answers are saved automatically. You&rsquo;ve now completed all the course website readings and source analyses for Week 5. Head to <strong>Canvas</strong> to submit your Week 5 Discussion in Hypothesis (initial post due Thursday 11:59 PM, replies and notes PDF due Sunday 11:59 PM).
@@ -323,6 +341,211 @@ function loadAnswers(){document.querySelectorAll('.answer-area').forEach(functio
 function updateProgress(){var answered=0;document.querySelectorAll('.answer-area').forEach(function(ta){if(countWords(ta.value)>=10)answered++;});var pct=Math.round(answered/TOTAL*100);var bar=document.getElementById('progressBar');var lbl=document.getElementById('progressLabel');if(bar)bar.style.width=pct+'%';if(lbl)lbl.textContent=answered+'/'+TOTAL+' answered';}
 document.querySelectorAll('.answer-area').forEach(function(ta){var t;ta.addEventListener('input',function(){updateWordCount(ta);clearTimeout(t);t=setTimeout(function(){saveField(ta);},800);});});
 loadAnswers();
+
+// ── localStorage key maps ─────────────────────────────────────────────
+var R1_KEYS={q_1:'hist102_w5_r1_q1',q_2:'hist102_w5_r1_q2',q_3:'hist102_w5_r1_q3',q_4:'hist102_w5_r1_q4',q_5:'hist102_w5_r1_q5',q_6:'hist102_w5_r1_q6'};
+var R1_N_KEYS={n_1:'hist102_w5_r1_n1',n_2:'hist102_w5_r1_n2',n_3:'hist102_w5_r1_n3',n_4:'hist102_w5_r1_n4',n_5:'hist102_w5_r1_n5',n_6:'hist102_w5_r1_n6'};
+var R2_KEYS={q_1:'hist102_w5_r2_q1',q_2:'hist102_w5_r2_q2',q_3:'hist102_w5_r2_q3',q_4:'hist102_w5_r2_q4',q_5:'hist102_w5_r2_q5'};
+var R2_N_KEYS={n_1:'hist102_w5_r2_n1',n_2:'hist102_w5_r2_n2',n_3:'hist102_w5_r2_n3',n_4:'hist102_w5_r2_n4',n_5:'hist102_w5_r2_n5'};
+
+// SA 5.1 — JFK and Civil Rights (9 question fields)
+var SA1_KEYS=[
+  ['SA 5.1 \u2014 Doc A, Q1: JFK 1960 speech \u2014 event and civil rights context','hist102_w5_sa1_qa1'],
+  ['SA 5.1 \u2014 Doc A, Q2: JFK civil rights statements and "timid leadership"','hist102_w5_sa1_qa2'],
+  ['SA 5.1 \u2014 Doc B, Q1: JFK 1963 speech \u2014 civil rights argument','hist102_w5_sa1_qb1'],
+  ['SA 5.1 \u2014 Doc B, Q2: Comparing 1960 and 1963 speeches','hist102_w5_sa1_qb2'],
+  ['SA 5.1 \u2014 Doc C, Q1: King\'s criticisms of Kennedy','hist102_w5_sa1_qc1'],
+  ['SA 5.1 \u2014 Doc D, Q1: Lewis at the March on Washington','hist102_w5_sa1_qd1'],
+  ['SA 5.1 \u2014 Doc D, Q2: Lewis on the Kennedy bill','hist102_w5_sa1_qd2'],
+  ['SA 5.1 \u2014 Doc E, Q1: Political reasons for delay','hist102_w5_sa1_qe1'],
+  ['SA 5.1 \u2014 Doc E, Q2: Synthesis \u2014 Was JFK a strong supporter?','hist102_w5_sa1_qe2']
+];
+
+// SA 5.2 — Stonewall Riots (15 question fields)
+var SA2_KEYS=[
+  ['SA 5.2 \u2014 Doc A, Q1: Lisker as source','hist102_w5_sa2_qa1'],
+  ['SA 5.2 \u2014 Doc A, Q2: Patrons\' real cause vs. police explanation','hist102_w5_sa2_qa2'],
+  ['SA 5.2 \u2014 Doc A, Q3: Lisker\'s tone analysis','hist102_w5_sa2_qa3'],
+  ['SA 5.2 \u2014 Doc A, Q4: Reliability of the source','hist102_w5_sa2_qa4'],
+  ['SA 5.2 \u2014 Doc B, Q1: Rivera\'s account \u2014 who escalated','hist102_w5_sa2_qb1'],
+  ['SA 5.2 \u2014 Doc B, Q2: "Nothing to lose" \u2014 why this raid was different','hist102_w5_sa2_qb2'],
+  ['SA 5.2 \u2014 Doc B, Q3: Other movements and 1969 political climate','hist102_w5_sa2_qb3'],
+  ['SA 5.2 \u2014 Doc B, Q4: First-person account reliability','hist102_w5_sa2_qb4'],
+  ['SA 5.2 \u2014 Doc C, Q1: Leitsch and the Mattachine Society','hist102_w5_sa2_qc1'],
+  ['SA 5.2 \u2014 Doc C, Q2: Groups with reasons to resist','hist102_w5_sa2_qc2'],
+  ['SA 5.2 \u2014 Doc C, Q3: Comparing Leitsch with Lisker and Rivera','hist102_w5_sa2_qc3'],
+  ['SA 5.2 \u2014 Doc D, Q1: The Ladder \u2014 lesbian publication perspective','hist102_w5_sa2_qd1'],
+  ['SA 5.2 \u2014 Doc D, Q2: Pattern of raids before June 28','hist102_w5_sa2_qd2'],
+  ['SA 5.2 \u2014 Doc D, Q3: Election year and political context','hist102_w5_sa2_qd3'],
+  ['SA 5.2 \u2014 Doc D, Q4: Synthesis \u2014 What caused the Stonewall Riots?','hist102_w5_sa2_qd4']
+];
+
+var Q_LABELS_R1=['R1 Q1 \u2014 The American Dream','R1 Q2 \u2014 Popular Culture','R1 Q3 \u2014 The Civil Rights Struggle','R1 Q4 \u2014 White Resistance','R1 Q5 \u2014 Nonviolence and the Haass Connection','R1 Q6 \u2014 Synthesis'];
+var N_LABELS_R1=['Notes \u2014 28.3 The American Dream','Notes \u2014 28.4 Popular Culture','Notes \u2014 28.5 Civil Rights','Notes \u2014 White Resistance','Notes \u2014 Nonviolence','Notes \u2014 Synthesis'];
+var Q_LABELS_R2=['R2 Q1 \u2014 The New Frontier','R2 Q2 \u2014 Cold War Crises','R2 Q3 \u2014 Civil Rights & Vietnam','R2 Q4 \u2014 Dallas and Legacy','R2 Q5 \u2014 Week 5 Synthesis'];
+var N_LABELS_R2=['Notes \u2014 The New Frontier','Notes \u2014 Cold War Crises','Notes \u2014 Civil Rights & Vietnam','Notes \u2014 Dallas','Notes \u2014 Synthesis'];
+
+// ── PDF generation — all fields ───────────────────────────────────────
+function generatePDF(){
+  var btn=document.getElementById('pdfBtn');
+  btn.disabled=true;btn.textContent='Generating PDF\u2026';
+
+  var storedName='Student',storedWnum='';
+  try{var token=JSON.parse(localStorage.getItem('hist102_access_w5')||'{}');if(token.name)storedName=token.name;if(token.wnum)storedWnum=token.wnum;}catch(e){}
+
+  function getLS(key){try{return localStorage.getItem(key)||'';}catch(e){return '';}}
+
+  // Collect reading answers + notes
+  var r1A={},r1N={},r2A={},r2N={};
+  ['q_1','q_2','q_3','q_4','q_5','q_6'].forEach(function(k){r1A[k]=getLS(R1_KEYS[k]);});
+  ['n_1','n_2','n_3','n_4','n_5','n_6'].forEach(function(k){r1N[k]=getLS(R1_N_KEYS[k]);});
+  ['q_1','q_2','q_3','q_4','q_5'].forEach(function(k){r2A[k]=getLS(R2_KEYS[k]);});
+  ['n_1','n_2','n_3','n_4','n_5'].forEach(function(k){r2N[k]=getLS(R2_N_KEYS[k]);});
+
+  // Stats — reading questions only (11 total)
+  var readingAnswers=[];
+  ['q_1','q_2','q_3','q_4','q_5','q_6'].forEach(function(k){readingAnswers.push(r1A[k]);});
+  ['q_1','q_2','q_3','q_4','q_5'].forEach(function(k){readingAnswers.push(r2A[k]);});
+  var readingAnswered=0;
+  readingAnswers.forEach(function(a){if(a.trim()&&a.trim().split(/\s+/).length>=10)readingAnswered++;});
+
+  // Count SA answers (24 total)
+  var saAnswered=0;
+  SA1_KEYS.forEach(function(pair){if(getLS(pair[1]).trim()&&getLS(pair[1]).trim().split(/\s+/).length>=5)saAnswered++;});
+  SA2_KEYS.forEach(function(pair){var el=document.getElementById(pair[1].split('_').pop());var val=el&&el.value?el.value:getLS(pair[1]);if(val.trim()&&val.trim().split(/\s+/).length>=5)saAnswered++;});
+
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF({unit:'pt',format:'letter'});
+    var margin=60,pageW=doc.internal.pageSize.getWidth(),pageH=doc.internal.pageSize.getHeight(),maxW=pageW-margin*2,y=margin;
+
+    function checkPage(need){if(y+need>pageH-margin){doc.addPage();y=margin;}}
+    function rule(color){doc.setDrawColor(color[0],color[1],color[2]);doc.line(margin,y,pageW-margin,y);y+=10;}
+    function ruleHeavy(color){doc.setDrawColor(color[0],color[1],color[2]);doc.line(margin,y,pageW-margin,y);y+=20;}
+    function addText(text,fs,style,color,lh){
+      doc.setFontSize(fs);doc.setFont('times',style||'normal');
+      doc.setTextColor(color?color[0]:30,color?color[1]:21,color?color[2]:16);
+      var lines=doc.splitTextToSize(text||'',maxW);
+      checkPage(lines.length*(lh||fs*1.35));
+      doc.text(lines,margin,y);y+=lines.length*(lh||fs*1.35);
+    }
+    function addIndented(text,fs,style,color,lh){
+      var ind=margin+18,indW=maxW-18;
+      doc.setFontSize(fs);doc.setFont('times',style||'normal');
+      doc.setTextColor(color?color[0]:30,color?color[1]:21,color?color[2]:16);
+      var lines=doc.splitTextToSize(text||'',indW);
+      checkPage(lines.length*(lh||fs*1.35));
+      doc.text(lines,ind,y);y+=lines.length*(lh||fs*1.35);
+    }
+    function sectionBand(title){
+      checkPage(50);
+      doc.setFillColor(26,21,16);doc.rect(margin-10,y-12,pageW-margin*2+20,26,'F');
+      doc.setFontSize(12);doc.setFont('times','bold');doc.setTextColor(200,146,42);
+      doc.text(title,margin,y+4);y+=26;
+    }
+    function subhead(label){
+      checkPage(30);
+      doc.setFontSize(9);doc.setFont('times','bold');doc.setTextColor(61,96,83);
+      doc.text(label,margin,y);y+=14;
+    }
+    function answer(text){
+      var t=text&&text.trim()?text:'(no answer entered)';
+      addText(t,10,'normal',[30,21,16],14);y+=6;
+    }
+    function noteText(text){
+      if(!text||!text.trim())return;
+      addIndented(text,9,'italic',[58,80,110],13);y+=6;
+    }
+
+    // ── Cover ─────────────────────────────────────────────────────────
+    doc.setFillColor(26,21,16);doc.rect(0,0,pageW,90,'F');
+    doc.setFontSize(20);doc.setFont('times','bold');doc.setTextColor(247,242,232);
+    doc.text('HIST 102 \u2014 US History After 1877',margin,34);
+    doc.setFontSize(13);doc.setFont('times','normal');doc.setTextColor(200,146,42);
+    doc.text('Week 5 Complete Notes  \u00B7  Civil Rights and Social Movements',margin,56);
+    doc.setFontSize(10);doc.setTextColor(107,94,80);
+    doc.text(storedName+(storedWnum?'  \u00B7  '+storedWnum:'')+'  \u00B7  Generated '+new Date().toLocaleDateString(),margin,74);
+    y=110;
+
+    // ── Reading 6.1 ───────────────────────────────────────────────────
+    sectionBand('Reading 6.1 \u2014 The Affluent Society & Civil Rights  (OpenStax Ch. 28.3\u201328.5)');
+    y+=8;
+    Q_LABELS_R1.forEach(function(label,i){
+      var qk='q_'+(i+1),nk='n_'+(i+1);
+      checkPage(60);rule([224,213,190]);
+      subhead(label);answer(r1A[qk]);
+      if(r1N[nk]&&r1N[nk].trim()){subhead(N_LABELS_R1[i]);noteText(r1N[nk]);}
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Reading 6.2 ───────────────────────────────────────────────────
+    sectionBand('Reading 6.2 \u2014 The Kennedy Promise  (OpenStax Ch. 29.1)');
+    y+=8;
+    Q_LABELS_R2.forEach(function(label,i){
+      var qk='q_'+(i+1),nk='n_'+(i+1);
+      checkPage(60);rule([224,213,190]);
+      subhead(label);answer(r2A[qk]);
+      if(r2N[nk]&&r2N[nk].trim()){subhead(N_LABELS_R2[i]);noteText(r2N[nk]);}
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Source Analysis 5.1 ───────────────────────────────────────────
+    sectionBand('Source Analysis 5.1 \u2014 Was JFK a Strong Supporter of Civil Rights?');
+    y+=8;
+    SA1_KEYS.forEach(function(pair){
+      checkPage(50);rule([224,213,190]);
+      subhead(pair[0]);answer(getLS(pair[1]));
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Source Analysis 5.2 ───────────────────────────────────────────
+    sectionBand('Source Analysis 5.2 \u2014 What Caused the Stonewall Riots?');
+    y+=8;
+    SA2_KEYS.forEach(function(pair){
+      var el=document.getElementById(pair[1].split('_').pop());
+      var val=el&&el.value?el.value:getLS(pair[1]);
+      checkPage(50);rule([224,213,190]);
+      subhead(pair[0]);answer(val);
+      y+=4;
+    });
+
+    // ── Footer ────────────────────────────────────────────────────────
+    y+=14;checkPage(30);
+    doc.setDrawColor(26,21,16);doc.line(margin,y,pageW-margin,y);y+=14;
+    doc.setFontSize(8);doc.setFont('times','normal');doc.setTextColor(107,94,80);
+    doc.text(
+      'Reading: '+readingAnswered+'/11  \u00B7  Source Analysis: '+saAnswered+'/24  \u00B7  profhauselmann.org  \u00B7  HIST 102 Spring 2026',
+      margin,y
+    );
+
+    var filename='HIST102_W5_Notes_'+(storedWnum||'student')+'.pdf';
+    doc.save(filename);
+
+    // Log to Supabase
+    try{sbInsert('pdf_downloads',{student_name:storedName,student_w_num:storedWnum,week_id:'w5',answers_count:readingAnswered+saAnswered,filename:filename});}catch(e){}
+    try{
+      var sub={student_name:storedName,student_w_num:storedWnum,week_id:'w5',total_questions:readingAnswered,questions_short:0,all_complete:(readingAnswered===11)};
+      ['q_1','q_2','q_3','q_4','q_5','q_6'].forEach(function(k,i){var n=i+1;var w=r1A[k].trim()?r1A[k].trim().split(/\s+/).length:0;sub['r1_q'+n+'_answer']=r1A[k];sub['r1_q'+n+'_words']=w;});
+      ['q_1','q_2','q_3','q_4','q_5'].forEach(function(k,i){var n=i+1;var w=r2A[k].trim()?r2A[k].trim().split(/\s+/).length:0;sub['r2_q'+n+'_answer']=r2A[k];sub['r2_q'+n+'_words']=w;});
+      sbInsert('reading_submissions',sub);
+    }catch(e){}
+
+    var msgEl=document.getElementById('pdfMsg');
+    msgEl.textContent='\u2713 PDF downloaded \u2014 reading '+readingAnswered+'/11, source analysis '+saAnswered+'/24. Submit to Canvas by Sunday 11:59 PM.';
+    msgEl.classList.add('visible');
+    btn.disabled=false;btn.textContent='\u2193  Download Complete Notes PDF';
+  }catch(err){
+    console.error('PDF error:',err);
+    btn.disabled=false;btn.textContent='\u2193  Download Complete Notes PDF';
+    alert('PDF generation failed. Please try again or contact Prof. Hauselmann.');
+  }
+}
 </script>
 <script src="../supabase-config.js"></script>
 <script>
