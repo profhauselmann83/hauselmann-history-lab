@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reading 6.4 — 1990s &amp; Beyond | HIST 102</title>
   <link rel="stylesheet" href="../style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     .reading-body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}
     .reading-nav{position:sticky;top:42px;background:var(--cream);border-bottom:1px solid var(--rule-strong);z-index:100;}
@@ -65,6 +66,14 @@
     .section-marker{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-light,#c8922a);margin-bottom:0.4rem;}
     .section-title{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:0.3rem;}
     .section-subtitle{font-family:'Source Serif 4',Georgia,serif;font-size:0.92rem;font-style:italic;color:var(--ink-light);margin-bottom:1.25rem;}
+    .pdf-section{background:var(--cream-dark);border:1px solid var(--rule-strong);border-radius:4px;padding:1.5rem;margin:2rem 0;}
+    .pdf-section h3{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink);margin-bottom:0.75rem;}
+    .pdf-btn{display:inline-block;font-family:'DM Mono',monospace;font-size:0.75rem;letter-spacing:0.08em;background:var(--ink);color:var(--cream);padding:0.7rem 1.5rem;border:none;border-radius:3px;cursor:pointer;transition:background .2s;}
+    .pdf-btn:hover{background:var(--gold);}
+    .pdf-btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .pdf-msg{font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.05em;color:var(--sage);margin-top:0.75rem;display:none;}
+    .pdf-msg.visible{display:block;}
+    .mobile-note{font-size:0.78rem;color:var(--ink-light);font-style:italic;margin-top:0.5rem;}
   </style>
 </head>
 <body>
@@ -230,6 +239,15 @@
         <div class="answer-meta"><span class="word-count" id="wc_n_3">0 words</span><span class="save-indicator" id="si_n_3">✓ Saved</span></div>
       </div>
 
+      <!-- PDF Download -->
+      <div class="pdf-section">
+        <h3>&#128462; Download Your Complete Week 6 Reading Notes</h3>
+        <p style="font-size:0.88rem;color:var(--ink-mid);margin-bottom:1rem;">This PDF includes all answers and notes from <strong>Reading 6.1</strong> (Cold War &amp; GI Bill), <strong>Reading 6.2</strong> (The Sixties &amp; Civil Rights), <strong>Reading 6.3</strong> (The Reagan Revolution), and <strong>Reading 6.4</strong> (1990s &amp; Conservative Institutions), plus your answers from <strong>Source Analysis 6.1</strong> (Cold War Origins) and <strong>Source Analysis 6.2</strong> (Watergate). Submit it to Canvas by Sunday at 11:59&nbsp;PM.</p>
+        <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">&#8595; &nbsp;Download Complete Week 6 Notes PDF</button>
+        <p class="mobile-note">On mobile? If the download doesn&rsquo;t start automatically, try opening this page in Safari or Chrome rather than the Canvas app.</p>
+        <div class="pdf-msg" id="pdfMsg"></div>
+      </div>
+
     </div><!-- /reading-body -->
 
     <aside class="reading-sidebar">
@@ -324,6 +342,254 @@ document.querySelectorAll('.answer-area, .notes-area').forEach(ta=>{
   ta.addEventListener('input',()=>{ updateWordCount(ta); clearTimeout(t); t=setTimeout(()=>saveField(ta),800); });
 });
 loadAnswers();
+
+// ── localStorage key maps ─────────────────────────────────────────────
+var R1_KEYS={q_1:'hist102_w6_r1_q1',q_2:'hist102_w6_r1_q2',q_3:'hist102_w6_r1_q3'};
+var R1_N_KEYS={n_1:'hist102_w6_r1_n1',n_2:'hist102_w6_r1_n2',n_3:'hist102_w6_r1_n3'};
+var R2_KEYS={q_1:'hist102_w6_r2_q1',q_2:'hist102_w6_r2_q2',q_3:'hist102_w6_r2_q3'};
+var R2_N_KEYS={n_1:'hist102_w6_r2_n1',n_2:'hist102_w6_r2_n2',n_3:'hist102_w6_r2_n3'};
+var R3_KEYS={q_1:'hist102_w6_r3_q1',q_2:'hist102_w6_r3_q2',q_3:'hist102_w6_r3_q3'};
+var R3_N_KEYS={n_1:'hist102_w6_r3_n1',n_2:'hist102_w6_r3_n2',n_3:'hist102_w6_r3_n3'};
+var R4_KEYS={q_1:'hist102_w6_r4_q1',q_2:'hist102_w6_r4_q2',q_3:'hist102_w6_r4_q3'};
+var R4_N_KEYS={n_1:'hist102_w6_r4_n1',n_2:'hist102_w6_r4_n2',n_3:'hist102_w6_r4_n3'};
+
+// SA 6.1 — Cold War Origins (4 question fields + 4 notes)
+var SA1_KEYS=[
+  ['SA 6.1 \u2014 Doc A: Churchill \u2014 "Sinews of Peace" Speech','hist102_w6_sa1_q1'],
+  ['SA 6.1 \u2014 Doc B: Truman Doctrine \u2014 Address to Congress','hist102_w6_sa1_q2'],
+  ['SA 6.1 \u2014 Doc C: Novikov \u2014 Telegram to Soviet Foreign Ministry','hist102_w6_sa1_q3'],
+  ['SA 6.1 \u2014 Doc D: Wallace \u2014 Private Letter to President Truman','hist102_w6_sa1_q4']
+];
+var SA1_N_KEYS=[
+  ['Notes \u2014 Churchill & Cold War','hist102_w6_sa1_n1'],
+  ['Notes \u2014 Truman Doctrine','hist102_w6_sa1_n2'],
+  ['Notes \u2014 Novikov\'s Perspective','hist102_w6_sa1_n3'],
+  ['Notes \u2014 Wallace\'s Alternative','hist102_w6_sa1_n4']
+];
+
+// SA 6.2 — Watergate (4 question fields + 4 notes)
+var SA2_KEYS=[
+  ['SA 6.2 \u2014 Doc A: Nixon \u2014 Address to the Nation on Watergate','hist102_w6_sa2_q1'],
+  ['SA 6.2 \u2014 Doc B: Dean \u2014 Senate Watergate Committee Testimony','hist102_w6_sa2_q2'],
+  ['SA 6.2 \u2014 Doc C: Haldeman \u2014 Senate Watergate Committee Testimony','hist102_w6_sa2_q3'],
+  ['SA 6.2 \u2014 Doc D: The Tapes \u2014 Secret Audio Recordings','hist102_w6_sa2_q4']
+];
+var SA2_N_KEYS=[
+  ['Notes \u2014 Nixon\'s Defense','hist102_w6_sa2_n1'],
+  ['Notes \u2014 Dean\'s Account','hist102_w6_sa2_n2'],
+  ['Notes \u2014 Haldeman\'s Defense','hist102_w6_sa2_n3'],
+  ['Notes \u2014 The Tapes & Evidence','hist102_w6_sa2_n4']
+];
+
+var Q_LABELS_R1=['R1 Q1 \u2014 28.1 Demobilization & the GI Bill','R1 Q2 \u2014 28.2 The Cold War Emerges','R1 Q3 \u2014 Synthesis: Cold War & Containment'];
+var N_LABELS_R1=['Notes \u2014 28.1 Demobilization & GI Bill','Notes \u2014 28.2 Cold War, Containment & McCarthy','Notes \u2014 Synthesis'];
+var Q_LABELS_R2=['R2 Q1 \u2014 Civil Rights Strategy','R2 Q2 \u2014 Movements for Change','R2 Q3 \u2014 Synthesis: The Sixties'];
+var N_LABELS_R2=['Notes \u2014 Civil Rights Movement','Notes \u2014 Identity & Power','Notes \u2014 Synthesis'];
+var Q_LABELS_R3=['R3 Q1 \u2014 Reagan\'s Economic & Social Vision','R3 Q2 \u2014 Cold War\'s End & Conservative Institutions','R3 Q3 \u2014 Synthesis: The Reagan Revolution'];
+var N_LABELS_R3=['Notes \u2014 Reagan Revolution','Notes \u2014 Cold War End & Institutions','Notes \u2014 Synthesis'];
+var Q_LABELS_R4=['R4 Q1 \u2014 1990s Prosperity & the Third Way','R4 Q2 \u2014 Conservative Institutions','R4 Q3 \u2014 Week 6 Comprehensive Synthesis'];
+var N_LABELS_R4=['Notes \u2014 1990s Prosperity','Notes \u2014 Conservative Institutions','Notes \u2014 Week 6 Synthesis'];
+
+// ── PDF generation — all fields ───────────────────────────────────────
+function generatePDF(){
+  var btn=document.getElementById('pdfBtn');
+  btn.disabled=true;btn.textContent='Generating PDF\u2026';
+
+  var storedName='Student',storedWnum='';
+  try{var token=JSON.parse(localStorage.getItem('hist102_access_w6')||'{}');if(token.name)storedName=token.name;if(token.wnum)storedWnum=token.wnum;}catch(e){}
+
+  function getLS(key){try{return localStorage.getItem(key)||'';}catch(e){return '';}}
+
+  // Collect reading answers + notes
+  var r1A={},r1N={},r2A={},r2N={},r3A={},r3N={},r4A={},r4N={};
+  ['q_1','q_2','q_3'].forEach(function(k){r1A[k]=getLS(R1_KEYS[k]);});
+  ['n_1','n_2','n_3'].forEach(function(k){r1N[k]=getLS(R1_N_KEYS[k]);});
+  ['q_1','q_2','q_3'].forEach(function(k){r2A[k]=getLS(R2_KEYS[k]);});
+  ['n_1','n_2','n_3'].forEach(function(k){r2N[k]=getLS(R2_N_KEYS[k]);});
+  ['q_1','q_2','q_3'].forEach(function(k){r3A[k]=getLS(R3_KEYS[k]);});
+  ['n_1','n_2','n_3'].forEach(function(k){r3N[k]=getLS(R3_N_KEYS[k]);});
+  // For reading 6.4 (this page), prefer live textarea values over stored
+  ['q_1','q_2','q_3'].forEach(function(k){var el=document.getElementById(k);r4A[k]=(el&&el.value)?el.value:getLS(R4_KEYS[k]);});
+  ['n_1','n_2','n_3'].forEach(function(k){var el=document.getElementById(k);r4N[k]=(el&&el.value)?el.value:getLS(R4_N_KEYS[k]);});
+
+  // Stats — reading questions only (12 total)
+  var readingAnswers=[];
+  ['q_1','q_2','q_3'].forEach(function(k){readingAnswers.push(r1A[k]);});
+  ['q_1','q_2','q_3'].forEach(function(k){readingAnswers.push(r2A[k]);});
+  ['q_1','q_2','q_3'].forEach(function(k){readingAnswers.push(r3A[k]);});
+  ['q_1','q_2','q_3'].forEach(function(k){readingAnswers.push(r4A[k]);});
+  var readingAnswered=0;
+  readingAnswers.forEach(function(a){if(a.trim()&&a.trim().split(/\s+/).length>=10)readingAnswered++;});
+
+  // Count SA answers (8 total)
+  var saAnswered=0;
+  SA1_KEYS.forEach(function(pair){if(getLS(pair[1]).trim()&&getLS(pair[1]).trim().split(/\s+/).length>=5)saAnswered++;});
+  SA2_KEYS.forEach(function(pair){if(getLS(pair[1]).trim()&&getLS(pair[1]).trim().split(/\s+/).length>=5)saAnswered++;});
+
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF({unit:'pt',format:'letter'});
+    var margin=60,pageW=doc.internal.pageSize.getWidth(),pageH=doc.internal.pageSize.getHeight(),maxW=pageW-margin*2,y=margin;
+
+    function checkPage(need){if(y+need>pageH-margin){doc.addPage();y=margin;}}
+    function rule(color){doc.setDrawColor(color[0],color[1],color[2]);doc.line(margin,y,pageW-margin,y);y+=10;}
+    function ruleHeavy(color){doc.setDrawColor(color[0],color[1],color[2]);doc.line(margin,y,pageW-margin,y);y+=20;}
+    function addText(text,fs,style,color,lh){
+      doc.setFontSize(fs);doc.setFont('times',style||'normal');
+      doc.setTextColor(color?color[0]:30,color?color[1]:21,color?color[2]:16);
+      var lines=doc.splitTextToSize(text||'',maxW);
+      checkPage(lines.length*(lh||fs*1.35));
+      doc.text(lines,margin,y);y+=lines.length*(lh||fs*1.35);
+    }
+    function addIndented(text,fs,style,color,lh){
+      var ind=margin+18,indW=maxW-18;
+      doc.setFontSize(fs);doc.setFont('times',style||'normal');
+      doc.setTextColor(color?color[0]:30,color?color[1]:21,color?color[2]:16);
+      var lines=doc.splitTextToSize(text||'',indW);
+      checkPage(lines.length*(lh||fs*1.35));
+      doc.text(lines,ind,y);y+=lines.length*(lh||fs*1.35);
+    }
+    function sectionBand(title){
+      checkPage(50);
+      doc.setFillColor(26,21,16);doc.rect(margin-10,y-12,pageW-margin*2+20,26,'F');
+      doc.setFontSize(12);doc.setFont('times','bold');doc.setTextColor(200,146,42);
+      doc.text(title,margin,y+4);y+=26;
+    }
+    function subhead(label){
+      checkPage(30);
+      doc.setFontSize(9);doc.setFont('times','bold');doc.setTextColor(61,96,83);
+      doc.text(label,margin,y);y+=14;
+    }
+    function answer(text){
+      var t=text&&text.trim()?text:'(no answer entered)';
+      addText(t,10,'normal',[30,21,16],14);y+=6;
+    }
+    function noteText(text){
+      if(!text||!text.trim())return;
+      addIndented(text,9,'italic',[58,80,110],13);y+=6;
+    }
+
+    // ── Cover ─────────────────────────────────────────────────────────
+    doc.setFillColor(26,21,16);doc.rect(0,0,pageW,90,'F');
+    doc.setFontSize(20);doc.setFont('times','bold');doc.setTextColor(247,242,232);
+    doc.text('HIST 102 \u2014 US History After 1877',margin,34);
+    doc.setFontSize(13);doc.setFont('times','normal');doc.setTextColor(200,146,42);
+    doc.text('Week 6 Complete Notes  \u00B7  Cold War to Permanent Conservatism',margin,56);
+    doc.setFontSize(10);doc.setTextColor(107,94,80);
+    doc.text(storedName+(storedWnum?'  \u00B7  '+storedWnum:'')+'  \u00B7  Generated '+new Date().toLocaleDateString(),margin,74);
+    y=110;
+
+    // ── Reading 6.1 ───────────────────────────────────────────────────
+    sectionBand('Reading 6.1 \u2014 Postwar America & the Cold War  (OpenStax Ch. 28.1\u201328.2)');
+    y+=8;
+    Q_LABELS_R1.forEach(function(label,i){
+      var qk='q_'+(i+1),nk='n_'+(i+1);
+      checkPage(60);rule([224,213,190]);
+      subhead(label);answer(r1A[qk]);
+      if(r1N[nk]&&r1N[nk].trim()){subhead(N_LABELS_R1[i]);noteText(r1N[nk]);}
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Reading 6.2 ───────────────────────────────────────────────────
+    sectionBand('Reading 6.2 \u2014 The Sixties & Civil Rights  (OpenStax Ch. 29)');
+    y+=8;
+    Q_LABELS_R2.forEach(function(label,i){
+      var qk='q_'+(i+1),nk='n_'+(i+1);
+      checkPage(60);rule([224,213,190]);
+      subhead(label);answer(r2A[qk]);
+      if(r2N[nk]&&r2N[nk].trim()){subhead(N_LABELS_R2[i]);noteText(r2N[nk]);}
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Reading 6.3 ───────────────────────────────────────────────────
+    sectionBand('Reading 6.3 \u2014 The Reagan Revolution  (OpenStax Ch. 31.1\u201331.2)');
+    y+=8;
+    Q_LABELS_R3.forEach(function(label,i){
+      var qk='q_'+(i+1),nk='n_'+(i+1);
+      checkPage(60);rule([224,213,190]);
+      subhead(label);answer(r3A[qk]);
+      if(r3N[nk]&&r3N[nk].trim()){subhead(N_LABELS_R3[i]);noteText(r3N[nk]);}
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Reading 6.4 ───────────────────────────────────────────────────
+    sectionBand('Reading 6.4 \u2014 1990s & Conservative Institutionalization  (OpenStax Ch. 31.3\u201331.4)');
+    y+=8;
+    Q_LABELS_R4.forEach(function(label,i){
+      var qk='q_'+(i+1),nk='n_'+(i+1);
+      checkPage(60);rule([224,213,190]);
+      subhead(label);answer(r4A[qk]);
+      if(r4N[nk]&&r4N[nk].trim()){subhead(N_LABELS_R4[i]);noteText(r4N[nk]);}
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Source Analysis 6.1 ───────────────────────────────────────────
+    sectionBand('Source Analysis 6.1 \u2014 Who Started the Cold War?');
+    y+=8;
+    SA1_KEYS.forEach(function(pair,i){
+      checkPage(50);rule([224,213,190]);
+      subhead(pair[0]);answer(getLS(pair[1]));
+      var np=SA1_N_KEYS[i];var nv=getLS(np[1]);
+      if(nv&&nv.trim()){subhead(np[0]);noteText(nv);}
+      y+=4;
+    });
+
+    ruleHeavy([154,111,42]);
+
+    // ── Source Analysis 6.2 ───────────────────────────────────────────
+    sectionBand('Source Analysis 6.2 \u2014 Watergate & the Limits of Presidential Power');
+    y+=8;
+    SA2_KEYS.forEach(function(pair,i){
+      checkPage(50);rule([224,213,190]);
+      subhead(pair[0]);answer(getLS(pair[1]));
+      var np=SA2_N_KEYS[i];var nv=getLS(np[1]);
+      if(nv&&nv.trim()){subhead(np[0]);noteText(nv);}
+      y+=4;
+    });
+
+    // ── Footer ────────────────────────────────────────────────────────
+    y+=14;checkPage(30);
+    doc.setDrawColor(26,21,16);doc.line(margin,y,pageW-margin,y);y+=14;
+    doc.setFontSize(8);doc.setFont('times','normal');doc.setTextColor(107,94,80);
+    doc.text(
+      'Reading: '+readingAnswered+'/12  \u00B7  Source Analysis: '+saAnswered+'/8  \u00B7  profhauselmann.org  \u00B7  HIST 102 Spring 2026',
+      margin,y
+    );
+
+    var filename='HIST102_W6_Notes_'+(storedWnum||'student')+'.pdf';
+    doc.save(filename);
+
+    // Log to Supabase
+    try{sbInsert('pdf_downloads',{student_name:storedName,student_w_num:storedWnum,week_id:'w6',answers_count:readingAnswered+saAnswered,filename:filename});}catch(e){}
+    try{
+      var sub={student_name:storedName,student_w_num:storedWnum,week_id:'w6',total_questions:readingAnswered,questions_short:0,all_complete:(readingAnswered===12)};
+      ['q_1','q_2','q_3'].forEach(function(k,i){var n=i+1;var w=r1A[k].trim()?r1A[k].trim().split(/\s+/).length:0;sub['r1_q'+n+'_answer']=r1A[k];sub['r1_q'+n+'_words']=w;});
+      ['q_1','q_2','q_3'].forEach(function(k,i){var n=i+1;var w=r2A[k].trim()?r2A[k].trim().split(/\s+/).length:0;sub['r2_q'+n+'_answer']=r2A[k];sub['r2_q'+n+'_words']=w;});
+      sbInsert('reading_submissions',sub);
+    }catch(e){}
+
+    var msgEl=document.getElementById('pdfMsg');
+    msgEl.textContent='\u2713 PDF downloaded \u2014 reading '+readingAnswered+'/12, source analysis '+saAnswered+'/8. Submit to Canvas by Sunday 11:59 PM.';
+    msgEl.classList.add('visible');
+    btn.disabled=false;btn.textContent='\u2193  Download Complete Week 6 Notes PDF';
+  }catch(err){
+    console.error('PDF error:',err);
+    btn.disabled=false;btn.textContent='\u2193  Download Complete Week 6 Notes PDF';
+    alert('PDF generation failed. Please try again or contact Prof. Hauselmann.');
+  }
+}
+</script>
+<script src="../supabase-config.js"></script>
+<script>
+(function logPageView(){try{var token=JSON.parse(localStorage.getItem('hist102_access_w6')||'{}');if(token.granted&&token.name){sbInsert('page_views',{student_name:token.name,student_w_num:token.wnum||'',week_id:'w6',page:'reading-4'});}}catch(e){}})();
 </script>
 <script src="../security.js"></script>
 </body>
