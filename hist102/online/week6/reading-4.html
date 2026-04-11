@@ -399,6 +399,8 @@ function generatePDF(){
   try{var token=JSON.parse(localStorage.getItem('hist102_access_w6')||'{}');if(token.name)storedName=token.name;if(token.wnum)storedWnum=token.wnum;}catch(e){}
 
   function getLS(key){try{return localStorage.getItem(key)||'';}catch(e){return '';}}
+  // For reading 6.4 (this page) prefer live textarea values over stored copies.
+  function getLive(elId,key){var el=document.getElementById(elId);return (el&&el.value)?el.value:getLS(key);}
 
   // Collect reading answers + notes
   var r1A={},r1N={},r2A={},r2N={},r3A={},r3N={},r4A={},r4N={};
@@ -408,9 +410,8 @@ function generatePDF(){
   ['n_1','n_2','n_3'].forEach(function(k){r2N[k]=getLS(R2_N_KEYS[k]);});
   ['q_1','q_2','q_3'].forEach(function(k){r3A[k]=getLS(R3_KEYS[k]);});
   ['n_1','n_2','n_3'].forEach(function(k){r3N[k]=getLS(R3_N_KEYS[k]);});
-  // For reading 6.4 (this page), prefer live textarea values over stored
-  ['q_1','q_2','q_3'].forEach(function(k){var el=document.getElementById(k);r4A[k]=(el&&el.value)?el.value:getLS(R4_KEYS[k]);});
-  ['n_1','n_2','n_3'].forEach(function(k){var el=document.getElementById(k);r4N[k]=(el&&el.value)?el.value:getLS(R4_N_KEYS[k]);});
+  ['q_1','q_2','q_3'].forEach(function(k){r4A[k]=getLive(k,R4_KEYS[k]);});
+  ['n_1','n_2','n_3'].forEach(function(k){r4N[k]=getLive(k,R4_N_KEYS[k]);});
 
   // Stats — reading questions only (12 total)
   var readingAnswers=[];
@@ -434,20 +435,29 @@ function generatePDF(){
     function checkPage(need){if(y+need>pageH-margin){doc.addPage();y=margin;}}
     function rule(color){doc.setDrawColor(color[0],color[1],color[2]);doc.line(margin,y,pageW-margin,y);y+=10;}
     function ruleHeavy(color){doc.setDrawColor(color[0],color[1],color[2]);doc.line(margin,y,pageW-margin,y);y+=20;}
+    // Per-line pagination so long answers flow across pages instead of being cut off.
     function addText(text,fs,style,color,lh){
       doc.setFontSize(fs);doc.setFont('times',style||'normal');
       doc.setTextColor(color?color[0]:30,color?color[1]:21,color?color[2]:16);
+      var lineH=lh||fs*1.35;
       var lines=doc.splitTextToSize(text||'',maxW);
-      checkPage(lines.length*(lh||fs*1.35));
-      doc.text(lines,margin,y);y+=lines.length*(lh||fs*1.35);
+      for(var i=0;i<lines.length;i++){
+        if(y+lineH>pageH-margin){doc.addPage();y=margin;}
+        doc.text(lines[i],margin,y);
+        y+=lineH;
+      }
     }
     function addIndented(text,fs,style,color,lh){
       var ind=margin+18,indW=maxW-18;
       doc.setFontSize(fs);doc.setFont('times',style||'normal');
       doc.setTextColor(color?color[0]:30,color?color[1]:21,color?color[2]:16);
+      var lineH=lh||fs*1.35;
       var lines=doc.splitTextToSize(text||'',indW);
-      checkPage(lines.length*(lh||fs*1.35));
-      doc.text(lines,ind,y);y+=lines.length*(lh||fs*1.35);
+      for(var i=0;i<lines.length;i++){
+        if(y+lineH>pageH-margin){doc.addPage();y=margin;}
+        doc.text(lines[i],ind,y);
+        y+=lineH;
+      }
     }
     function sectionBand(title){
       checkPage(50);
