@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w6" data-gate="gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Analysis 2 — Watergate | HIST 102</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .reading-body { -webkit-user-select:none; -moz-user-select:none; user-select:none; }
+    .question-block { background:#fff; border:1px solid var(--rule-strong); border-top:3px solid var(--gold); border-radius:0 0 4px 4px; padding:1.5rem; margin:2rem 0; }
+    .question-block-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem; }
+    .question-text { font-family:'Playfair Display',serif; font-size:0.97rem; font-weight:600; color:var(--ink); margin-bottom:0.5rem; line-height:1.45; }
+    .answer-requirement { font-size:0.78rem; color:var(--ink-light); font-style:italic; margin-bottom:0.6rem; }
+    .req-tag { font-family:'DM Mono',monospace; font-size:0.6rem; font-style:normal; letter-spacing:0.08em; text-transform:uppercase; color:var(--rust); background:rgba(140,58,30,0.07); border:1px solid rgba(140,58,30,0.2); border-radius:2px; padding:0.1rem 0.4rem; margin-left:0.5rem; }
+    .answer-area { width:100%; min-height:120px; padding:0.75rem 1rem; border:1px solid var(--rule-strong); border-radius:3px; background:var(--cream); font-family:'Source Serif 4',Georgia,serif; font-size:0.92rem; font-weight:300; color:var(--ink); line-height:1.7; resize:vertical; transition:border-color .2s,box-shadow .2s; -webkit-user-select:text; user-select:text; }
+    .answer-area:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(154,111,42,0.1); }
+    .answer-meta { display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem; }
+    .word-count { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.08em; color:var(--ink-light); }
+    .word-count.low { color:var(--rust); }
+    .word-count.good { color:var(--sage); }
+    .save-indicator { font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; color:var(--sage); opacity:0; transition:opacity .3s; }
+    .save-indicator.visible { opacity:1; }
+    .notes-block { background:var(--cream-dark); border:1px solid var(--rule-strong); border-top:3px solid var(--canvas-blue); border-radius:0 0 4px 4px; padding:1.25rem 1.5rem; margin:-1rem 0 2rem; }
+    .notes-block-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--canvas-blue); margin-bottom:0.75rem; }
+    .notes-area { width:100%; min-height:90px; padding:0.65rem 0.9rem; border:1px solid rgba(30,68,136,0.2); border-radius:3px; background:#fff; font-family:'Source Serif 4',Georgia,serif; font-size:0.9rem; font-weight:300; color:var(--ink); line-height:1.7; resize:vertical; transition:border-color .2s,box-shadow .2s; -webkit-user-select:text; user-select:text; }
+    .notes-area:focus { outline:none; border-color:var(--canvas-blue); box-shadow:0 0 0 3px rgba(30,68,136,0.08); }
+    .source-intro { background:rgba(30,68,136,0.05); border:1px solid rgba(30,68,136,0.2); border-left:4px solid var(--canvas-blue); border-radius:0 4px 4px 0; padding:1.5rem; margin:2rem 0; }
+    .source-intro h3 { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--ink); margin-bottom:0.75rem; }
+    .source-intro p { color:var(--ink-mid); font-size:0.95rem; line-height:1.75; margin:0.5rem 0; }
+    .source-box { background:#fff; border:1px solid var(--rule-strong); border-left:4px solid var(--gold); border-radius:0 4px 4px 0; padding:1.5rem; margin:2rem 0; }
+    .source-header { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:0.75rem; }
+    .source-title { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:var(--ink); margin-bottom:0.5rem; }
+    .source-context { font-size:0.85rem; color:var(--ink-light); font-style:italic; margin-bottom:1rem; }
+    .source-text { font-family:'Source Serif 4',Georgia,serif; font-size:0.95rem; color:var(--ink); line-height:1.85; margin:1.5rem 0; }
+    .source-text em { color:var(--ink); font-style:italic; }
+    .progress-bar-wrap { height:6px; background:var(--cream-deep); border-radius:3px; overflow:hidden; margin-bottom:1rem; }
+    .progress-bar { height:100%; background:var(--gold); border-radius:3px; transition:width .4s ease; width:0%; }
+    .copy-notice { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-light); text-align:center; padding:0.5rem; border-top:1px solid var(--rule); margin-bottom:2rem; }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step done" href="reading-2.html"><span class="step-num">✓</span> Reading 6.2</a>
+    <a class="prog-step active" href="source-analysis-2.html"><span class="step-num">6</span> Source Analysis 2</a>
+    <a class="prog-step" href="reading-3.html"><span class="step-num">7</span> Reading 6.3</a>
+    <a class="prog-step" href="reading-4.html"><span class="step-num">8</span> Reading 6.4</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 6 &nbsp;&middot;&nbsp; Step 6</div>
+    <h1>Source Analysis 2</h1>
+    <p class="page-subtitle">The Watergate Scandal — Was Nixon Involved?</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~1 hour</span>
+      <span class="chip chip-due">Due Wednesday 11:59 PM</span>
+      <span class="chip chip-pts">15 pts</span>
+    </div>
+  </div>
+</header>
+
+<div id="page-content"><main style="max-width:860px; margin:0 auto;">
+
+  <div class="copy-notice">🔒 Source text is protected — answer questions in your own words</div>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <p style="text-align:center; font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.08em; color:var(--ink-light); margin-bottom:2rem;" id="progressLabel">0 of 4 complete</p>
+
+  <div class="source-intro">
+    <h3>Overarching Question</h3>
+    <p><strong>Was President Nixon involved in the Watergate break-in and cover-up?</strong></p>
+    <p>On June 17, 1972, five men were caught breaking into the Democratic National Committee offices in the Watergate complex in Washington D.C. This event sparked investigations that ultimately led to President Nixon's resignation in 1974. Below are four primary sources: Nixon's own defense, testimony from his legal advisor John Dean, testimony from his chief of staff H.R. Haldeman, and the secret White House tapes themselves. Your task is to evaluate the evidence and judge reliability.</p>
+  </div>
+
+  <section style="margin-bottom:3rem;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--ink); margin-bottom:1.5rem;">Document A: President Nixon's Speech (April 30, 1973)</h2>
+    
+    <div class="source-box">
+      <div class="source-header">Document A</div>
+      <div class="source-title">Address to the Nation on Watergate</div>
+      <div class="source-context">President Richard Nixon, addressing the American public and announcing his response to Watergate allegations, April 30, 1973.</div>
+      
+      <div class="source-text">
+        "I want to talk to you tonight from my heart on a subject of deep concern to every American... I have accepted the resignations of two of my staff members... I can say categorically that his investigation indicates that no one on the White House staff, no one in this administration presently employed, was involved in this very bizarre incident... What I want to do in this entire matter is see that the truth is fully brought out... I had no prior knowledge of the Watergate break-in... I first learned of it from the newspapers, as you did."
+      </div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-block-label">Question SA2-1</div>
+      <div class="question-item">
+        <div class="question-text">In his April 30, 1973 speech, President Nixon claims that he did not know about Watergate until March 1973 and that he immediately ordered an investigation. Evaluate the reliability of this account by comparing it to John Dean's testimony and the White House tapes from June 23, 1972. What does the evidence suggest about when Nixon actually learned of the break-in and the cover-up?</div>
+        <div class="answer-requirement"><span>2–3 sentences minimum</span> <span class="req-tag">Include quotes from 2 sources</span></div>
+        <textarea class="answer-area" id="q1" data-key="hist102_w6_sa2_q1" placeholder="Write in your own words. Compare sources to evaluate reliability."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_q1">0 words</span><span class="save-indicator" id="si_q1">✓ Saved</span></div>
+      </div>
+    </div>
+
+    <div class="notes-block">
+      <div class="notes-block-label">My Notes — Nixon's Defense</div>
+      <textarea class="notes-area" id="n1" data-key="hist102_w6_sa2_n1" placeholder="What stands out? Key claims? How reliable?"></textarea>
+      <div class="answer-meta"><span class="word-count" id="wc_n1">0 words</span><span class="save-indicator" id="si_n1">✓ Saved</span></div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:3rem;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--ink); margin-bottom:1.5rem;">Document B: John Dean Testimony (June 25, 1973)</h2>
+    
+    <div class="source-box">
+      <div class="source-header">Document B</div>
+      <div class="source-title">Senate Watergate Committee Testimony</div>
+      <div class="source-context">John Dean, White House Counsel under President Nixon, testifying before the Senate Watergate Committee. Dean is under oath and liable to perjury charges.</div>
+      
+      <div class="source-text">
+        "I have felt compelled to come forward and tell the truth. I was made aware of the break-in at the Democratic National Committee on June 17, 1972... Mr. Haldeman told me the President was pleased with the results of the break-in... The President said the whole thing was not as bad as it could have been... In a conversation on March 21, 1973, the President asked me how much it would cost to keep the defendants quiet... The President discussed the use of Executive clemency to get the defendants off the hook... I did not think the President was joking."
+      </div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-block-label">Question SA2-2</div>
+      <div class="question-item">
+        <div class="question-text">Dean and Haldeman give directly contradictory sworn testimony about a crucial conversation regarding paying the Watergate burglars to stay silent. Haldeman claims Nixon said "We can do that, but it would be wrong," while Dean's account suggests Nixon was willing to authorize the payment. Why is the difference between these two interpretations so significant? What does the tape from March 21, 1973 reveal about which account is more accurate?</div>
+        <div class="answer-requirement"><span>2–3 sentences minimum</span> <span class="req-tag">Include quotes from 2 sources</span></div>
+        <textarea class="answer-area" id="q2" data-key="hist102_w6_sa2_q2" placeholder="Write in your own words. Compare contradictory testimonies."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_q2">0 words</span><span class="save-indicator" id="si_q2">✓ Saved</span></div>
+      </div>
+    </div>
+
+    <div class="notes-block">
+      <div class="notes-block-label">My Notes — Dean's Account</div>
+      <textarea class="notes-area" id="n2" data-key="hist102_w6_sa2_n2" placeholder="What stands out? Key claims? How reliable?"></textarea>
+      <div class="answer-meta"><span class="word-count" id="wc_n2">0 words</span><span class="save-indicator" id="si_n2">✓ Saved</span></div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:3rem;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--ink); margin-bottom:1.5rem;">Document C: H.R. Haldeman Testimony (August 1, 1973)</h2>
+    
+    <div class="source-box">
+      <div class="source-header">Document C</div>
+      <div class="source-title">Senate Watergate Committee Testimony</div>
+      <div class="source-context">H.R. Haldeman, White House Chief of Staff under President Nixon, testifying before the Senate Watergate Committee. Haldeman is under oath.</div>
+      
+      <div class="source-text">
+        "I flatly deny that the President was ever told about raising money for the defendants... The President's position was that the facts must come out, whatever they were... If such a conversation occurred... it would have been hypothetical... The President never said 'get the money and do whatever you have to do'... I have the clearest possible recollection that the President said we should not do anything that would be wrong."
+      </div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-block-label">Question SA2-3</div>
+      <div class="question-item">
+        <div class="question-text">The White House tape from June 23, 1972 (recorded just six days after the break-in) is commonly called the "smoking gun." Analyze what this tape reveals about Nixon's involvement in the cover-up. Does it prove Nixon knew about the break-in in advance, or only that he knew about it shortly after and tried to obstruct the investigation? What is the significance of the distinction?</div>
+        <div class="answer-requirement"><span>2–3 sentences minimum</span> <span class="req-tag">Include quotes from the source</span></div>
+        <textarea class="answer-area" id="q3" data-key="hist102_w6_sa2_q3" placeholder="Write in your own words. Analyze what the tape shows."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_q3">0 words</span><span class="save-indicator" id="si_q3">✓ Saved</span></div>
+      </div>
+    </div>
+
+    <div class="notes-block">
+      <div class="notes-block-label">My Notes — Haldeman's Defense</div>
+      <textarea class="notes-area" id="n3" data-key="hist102_w6_sa2_n3" placeholder="What stands out? Key claims? How reliable?"></textarea>
+      <div class="answer-meta"><span class="word-count" id="wc_n3">0 words</span><span class="save-indicator" id="si_n3">✓ Saved</span></div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:3rem;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--ink); margin-bottom:1.5rem;">Document D: The White House Tapes (June 23, 1972 & March 21, 1973)</h2>
+    
+    <div class="source-box">
+      <div class="source-header">Document D</div>
+      <div class="source-title">Secret Audio Recordings</div>
+      <div class="source-context">Transcripts from secret recordings made in the Oval Office. Nixon had been recording his conversations to create a historical record. These became crucial evidence in the Watergate investigation.</div>
+      
+      <div class="source-text">
+        <strong>June 23, 1972 (6 days after break-in):</strong><br>
+        Haldeman: "The way you've got it set up now, if they don't cooperate... the CIA would have to take the 5th Amendment or claim that the whole thing is a CIA asset."<br>
+        Nixon: "That's right."<br>
+        <br>
+        <strong>March 21, 1973:</strong><br>
+        Dean: "We have a cancer close to the Presidency that is growing."<br>
+        Nixon: "How much do we need?"<br>
+        Dean: "I would say that these people are going to cost a million dollars over the next... two years."<br>
+        Nixon: "We could get that... on a cash basis, uh, I mean we could get that."
+      </div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-block-label">Question SA2-4</div>
+      <div class="question-item">
+        <div class="question-text">Nixon's speech emphasizes that "the system" brought the facts to light—the grand jury, prosecutors, the courts, and a free press. Evaluate whether Nixon's description of American institutions working properly is supported or undermined by the documents. What does each source reveal about how justice was actually served or obstructed?</div>
+        <div class="answer-requirement"><span>2–3 sentences minimum</span> <span class="req-tag">Include quotes from multiple sources</span></div>
+        <textarea class="answer-area" id="q4" data-key="hist102_w6_sa2_q4" placeholder="Write in your own words. Evaluate institutional accountability."></textarea>
+        <div class="answer-meta"><span class="word-count" id="wc_q4">0 words</span><span class="save-indicator" id="si_q4">✓ Saved</span></div>
+      </div>
+    </div>
+
+    <div class="notes-block">
+      <div class="notes-block-label">My Notes — The Tapes & Evidence</div>
+      <textarea class="notes-area" id="n4" data-key="hist102_w6_sa2_n4" placeholder="What stands out? Key claims? How reliable?"></textarea>
+      <div class="answer-meta"><span class="word-count" id="wc_n4">0 words</span><span class="save-indicator" id="si_n4">✓ Saved</span></div>
+    </div>
+  </section>
+
+  <div class="callout callout-note" style="margin-bottom:3rem;">
+    <span class="callout-label">Historical Outcome</span>
+    <p style="margin:0;">Nixon resigned on August 9, 1974, facing certain impeachment. The White House tapes proved that he had obstructed justice by attempting to block the FBI investigation and by discussing payment to silence the burglars. The Watergate scandal shattered public trust in government, contributed to the impeachment process, and led to major reforms in campaign finance and executive oversight.</p>
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="reading-2.html">&larr; Reading 6.2</a>
+    <span class="footer-label">Page 6 of 10 &nbsp;&middot;&nbsp; Source Analysis 2</span>
+    <a class="nav-btn nav-btn-next" href="reading-3.html">Reading 6.3 →</a>
+  </div>
+
+</main></div>
+
+<script>
+document.getElementById('page-content').addEventListener('contextmenu', e => e.preventDefault());
+document.getElementById('page-content').addEventListener('selectstart', e => { if(e.target.tagName==='TEXTAREA') return; e.preventDefault(); });
+const TOTAL = 8;
+function countWords(s){ return s.trim()==='' ? 0 : s.trim().split(/\s+/).length; }
+function updateWordCount(ta){
+  const wc = countWords(ta.value);
+  const el = document.getElementById('wc_'+ta.id);
+  if(!el) return;
+  el.textContent = wc+' word'+(wc!==1?'s':'');
+  el.className = 'word-count '+(wc===0?'':wc<20?'low':'good');
+}
+function saveField(ta){
+  try{ localStorage.setItem(ta.dataset.key, ta.value); } catch(e){}
+  const si = document.getElementById('si_'+ta.id);
+  if(si){ si.classList.add('visible'); setTimeout(()=>si.classList.remove('visible'),1500); }
+  updateProgress();
+}
+function loadAnswers(){
+  document.querySelectorAll('.answer-area, .notes-area').forEach(ta=>{
+    try{ const v=localStorage.getItem(ta.dataset.key); if(v){ta.value=v; updateWordCount(ta);} }catch(e){}
+  });
+  updateProgress();
+}
+function updateProgress(){
+  let answered=0, noted=0;
+  document.querySelectorAll('.answer-area').forEach(ta=>{ if(countWords(ta.value)>=10) answered++; });
+  document.querySelectorAll('.notes-area').forEach(ta=>{ if(countWords(ta.value)>=10) noted++; });
+  const n = answered + noted;
+  const pct = Math.round(n/TOTAL*100);
+  const bar = document.getElementById('progressBar');
+  const lbl = document.getElementById('progressLabel');
+  if(bar) bar.style.width=pct+'%';
+  if(lbl) lbl.textContent=answered+'/4 answered · '+noted+'/4 notes';
+}
+document.querySelectorAll('.answer-area, .notes-area').forEach(ta=>{
+  let t;
+  ta.addEventListener('input',()=>{ updateWordCount(ta); clearTimeout(t); t=setTimeout(()=>saveField(ta),800); });
+});
+loadAnswers();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>

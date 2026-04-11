@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 6 Unlock — Cold War & Reaction | HIST 102</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .puzzle-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+    .pw-display { display: flex; gap: 10px; justify-content: center; margin: 2rem 0 0.5rem; flex-wrap: wrap; }
+    .letter-box {
+      width: 58px; height: 70px;
+      border: 2px solid var(--rule-strong);
+      border-radius: 6px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: var(--cream-dark);
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .letter-box.revealed { background: var(--gold); border-color: var(--gold); }
+    .letter-box .ltr {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.9rem; font-weight: 500;
+      color: var(--cream); opacity: 0;
+      transition: opacity 0.4s; line-height: 1;
+    }
+    .letter-box.revealed .ltr { opacity: 1; }
+    .letter-box .ltr-qnum {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.1em;
+      color: var(--ink-light); margin-top: 5px;
+      text-transform: uppercase;
+    }
+    .letter-box.revealed .ltr-qnum { color: rgba(247,242,232,0.7); }
+    .pw-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ink-light);
+      text-align: center; margin-bottom: 2rem;
+    }
+    .q-card {
+      background: #fff;
+      border: 1px solid var(--rule-strong);
+      border-radius: 6px; padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .q-card.state-correct { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(61,96,83,0.12); }
+    .q-card.state-wrong { animation: shake 0.35s ease; border-color: var(--rust); }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+    }
+    .q-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin: 0 0 0.6rem; }
+    .unlock-tag { color: var(--ink-light); font-size: 0.58rem; }
+    .q-text { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--ink); line-height: 1.45; margin: 0 0 1rem; }
+    .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media(max-width: 500px){ .q-options { grid-template-columns: 1fr; } }
+    .opt-btn {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.88rem; font-weight: 300;
+      color: var(--ink); background: var(--cream);
+      border: 1px solid var(--rule-strong);
+      border-radius: 4px; padding: 0.65rem 1rem;
+      text-align: left; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s; line-height: 1.4;
+    }
+    .opt-btn:hover { background: var(--cream-dark); border-color: var(--gold); }
+    .opt-btn.correct { background: rgba(61,96,83,0.1); border-color: var(--sage); color: var(--sage); cursor: default; }
+    .opt-btn.wrong { background: rgba(140,58,30,0.07); border-color: var(--rust); color: var(--rust); }
+    .opt-btn:disabled { cursor: default; }
+    .q-feedback { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em; margin-top: 0.75rem; min-height: 1.4em; line-height: 1.5; }
+    .q-feedback.correct { color: var(--sage); }
+    .q-feedback.wrong { color: var(--rust); }
+    .puzzle-progress { background: var(--cream-dark); border: 1px solid var(--rule-strong); border-radius: 4px; padding: 0.9rem 1.25rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
+    .puzzle-progress-bar-wrap { flex: 1; height: 6px; background: var(--cream-deep); border-radius: 3px; overflow: hidden; }
+    .puzzle-progress-bar { height: 100%; background: var(--gold); border-radius: 3px; width: 0%; transition: width 0.4s ease; }
+    .puzzle-progress-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; white-space: nowrap; color: var(--ink-light); }
+    .victory-banner { display: none; background: var(--ink); color: var(--cream); border-radius: 8px; padding: 2.5rem 2rem; text-align: center; margin: 2rem 0; }
+    .victory-banner.show { display: block; }
+    .victory-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-light, #c8922a); margin-bottom: 0.75rem; }
+    .victory-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .victory-code { font-family: 'DM Mono', monospace; font-size: 2.4rem; font-weight: 500; letter-spacing: 0.25em; color: var(--gold-light, #c8922a); display: block; margin: 1rem 0; }
+    .victory-sub { font-family: 'Source Serif 4', Georgia, serif; font-size: 0.9rem; color: rgba(247,242,232,0.7); margin-bottom: 1.5rem; }
+    .victory-cta { display: inline-block; font-family: 'DM Mono', monospace; font-size: 0.78rem; letter-spacing: 0.08em; background: var(--gold); color: var(--cream); padding: 0.75rem 2rem; border-radius: 4px; text-decoration: none; transition: background 0.2s; }
+    .victory-cta:hover { background: var(--gold-light, #c8922a); color: var(--cream); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step active" href="puzzle.html"><span class="step-num">1</span> Unlock Week 6</a>
+    <a class="prog-step" href="gate.html"><span class="step-num">2</span> Enter Code</a>
+    <a class="prog-step" href="index.html"><span class="step-num">3</span> Overview</a>
+    <a class="prog-step" href="video.html"><span class="step-num">4</span> Video</a>
+    <a class="prog-step" href="reading-1.html"><span class="step-num">5</span> Reading 6.1</a>
+    <a class="prog-step" href="#"><span class="step-num">6</span> …</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 6 &nbsp;&middot;&nbsp; Apr 13 – 19</div>
+    <h1>Unlock Week 6</h1>
+    <p class="page-subtitle">Answer all eight questions correctly to reveal your access code</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~12 min</span>
+      <span class="chip chip-site">Reviews Week 5</span>
+    </div>
+  </div>
+</header>
+
+<div class="puzzle-wrap">
+
+  <div class="callout callout-note" style="margin-bottom:2rem">
+    <span class="callout-label">How this works</span>
+    Answer each question correctly to reveal one letter of your Week 6 access code. Wrong answers are shown immediately — select again until you find the right one.
+  </div>
+
+  <div class="pw-display" id="pw-display">
+    <div class="letter-box" id="lb-0"><span class="ltr">R</span><span class="ltr-qnum">Q1</span></div>
+    <div class="letter-box" id="lb-1"><span class="ltr">E</span><span class="ltr-qnum">Q2</span></div>
+    <div class="letter-box" id="lb-2"><span class="ltr">A</span><span class="ltr-qnum">Q3</span></div>
+    <div class="letter-box" id="lb-3"><span class="ltr">C</span><span class="ltr-qnum">Q4</span></div>
+    <div class="letter-box" id="lb-4"><span class="ltr">T</span><span class="ltr-qnum">Q5</span></div>
+    <div class="letter-box" id="lb-5"><span class="ltr">I</span><span class="ltr-qnum">Q6</span></div>
+    <div class="letter-box" id="lb-6"><span class="ltr">O</span><span class="ltr-qnum">Q7</span></div>
+    <div class="letter-box" id="lb-7"><span class="ltr">N</span><span class="ltr-qnum">Q8</span></div>
+  </div>
+  <p class="pw-hint">Each correct answer reveals one letter &nbsp;&middot;&nbsp; <span id="pw-progress">0 / 8 unlocked</span></p>
+
+  <div class="puzzle-progress">
+    <span class="puzzle-progress-label">Progress</span>
+    <div class="puzzle-progress-bar-wrap"><div class="puzzle-progress-bar" id="progressBar"></div></div>
+    <span class="puzzle-progress-label" id="progressLabel">0 of 8 correct</span>
+  </div>
+
+  <div id="questions-mount"></div>
+
+  <div class="victory-banner" id="victory-banner">
+    <p class="victory-eyebrow">Week 6 Unlocked</p>
+    <h2 class="victory-title">Excellent work.</h2>
+    <span class="victory-code">REACTION</span>
+    <p class="victory-sub">Your access code for Week 6 is <strong>REACTION</strong>. Enter it on the next page along with your name and W number to begin.</p>
+    <a href="gate.html" class="victory-cta">Continue to Week 6 →</a>
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="../index.html">&larr; Course Home</a>
+    <span class="footer-label">Week 6 &nbsp;&middot;&nbsp; Unlock Puzzle</span>
+    <a class="nav-btn nav-btn-next" href="gate.html">Enter Week 6 →</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  var PASSWORD = 'REACTION';
+  var QUESTIONS = [
+    {
+      q: 'In 1945-1946, American policymakers worried that rapid demobilization of the military would',
+      opts: [
+        'Prevent the United States from enforcing the Treaty of Versailles',
+        'Leave too many soldiers competing for jobs and cause economic hardship',
+        'Allow the Soviet Union to dominate Eastern Europe without military opposition',
+        'Force Harry Truman to abandon his Fair Deal domestic agenda'
+      ],
+      correct: 2,
+      feedback: 'Correct! American leaders feared that withdrawing troops would give Stalin a free hand in Eastern Europe. This concern shaped Cold War strategy for decades.',
+      wrong: 'Not quite — try again. Think about the geopolitical consequences of reducing U.S. military presence.'
+    },
+    {
+      q: 'George Kennan\'s "Long Telegram" (1946) argued that containing Soviet expansion required',
+      opts: [
+        'Immediate military confrontation to prevent communist takeover of Western Europe',
+        'Economic assistance and military support to nations threatened by communist movements',
+        'Abandoning the United Nations and creating a separate Western alliance',
+        'Offering the Soviet Union control of Eastern Europe in exchange for respecting Western borders'
+      ],
+      correct: 1,
+      feedback: 'Correct! Kennan\'s containment policy became the foundation of U.S. Cold War strategy for over 40 years.',
+      wrong: 'Not quite — try again. Kennan advocated a long-term approach rather than immediate military action.'
+    },
+    {
+      q: 'The Berlin Blockade (1948-1949) demonstrated that',
+      opts: [
+        'The Soviet Union would not use military force to achieve its Cold War objectives',
+        'The United States could not sustain a prolonged confrontation with the Soviet Union',
+        'The policy of containment could work through non-military means like the airlift',
+        'Germany would never be reunified under any circumstances'
+      ],
+      correct: 2,
+      feedback: 'Correct! The successful airlift proved that the U.S. could contain Soviet expansion without direct military confrontation.',
+      wrong: 'Not quite — try again. What did the successful airlift demonstrate about American strategy?'
+    },
+    {
+      q: 'Senator Joseph McCarthy\'s investigations in the early 1950s primarily targeted',
+      opts: [
+        'Communist spies who had infiltrated the State Department',
+        'Suspected communists across government, academia, entertainment, and the military',
+        'Members of the Republican Party who opposed his anti-communist crusade',
+        'Soviet diplomats operating illegally within the United States'
+      ],
+      correct: 1,
+      feedback: 'Correct! McCarthy\'s broad, reckless campaign destroyed careers based on accusations, not evidence.',
+      wrong: 'Not quite — try again. Think about the scope and recklessness of McCarthy\'s accusations.'
+    },
+    {
+      q: 'President Truman fired General Douglas MacArthur in 1951 primarily because',
+      opts: [
+        'MacArthur had secretly negotiated peace terms with North Korea behind Truman\'s back',
+        'MacArthur publicly disagreed with the president\'s decision not to escalate the Korean War',
+        'MacArthur refused to integrate the armed forces as Truman had ordered',
+        'MacArthur was caught accepting bribes from defense contractors'
+      ],
+      correct: 1,
+      feedback: 'Correct! Truman insisted on civilian control of the military. MacArthur\'s public insubordination violated that principle.',
+      wrong: 'Not quite — try again. The issue was about military discipline and civilian control.'
+    },
+    {
+      q: 'The Korean War (1950-1953) resulted in',
+      opts: [
+        'A decisive victory for United Nations forces and the reunification of Korea under a democratic government',
+        'A stalemate that left Korea divided near the original 38th parallel border',
+        'The complete withdrawal of American troops from East Asia',
+        'China\'s unification under Nationalist forces with American military support'
+      ],
+      correct: 1,
+      feedback: 'Correct! The war ended in stalemate, reinforcing the Cold War division of Korea that persists today.',
+      wrong: 'Not quite — try again. The war did not result in a clear victory for either side.'
+    },
+    {
+      q: 'Which of the following was NOT a major consequence of the McCarthy era?',
+      opts: [
+        'Hundreds of government employees lost their jobs based on accusations rather than evidence',
+        'The blacklisting of entertainers, artists, and writers suspected of communist sympathies',
+        'A dramatic increase in communist party membership as Americans rejected anti-communist hysteria',
+        'Deep suspicion and distrust within government agencies that lasted years after McCarthy\'s censure'
+      ],
+      correct: 2,
+      feedback: 'Correct! If anything, McCarthyism drove communists further underground. It didn\'t increase party membership.',
+      wrong: 'Not quite — try again. Did McCarthy\'s actions actually make people MORE sympathetic to communism?'
+    },
+    {
+      q: 'The Army-McCarthy Hearings (1954) were significant because they',
+      opts: [
+        'Provided conclusive proof that communists had infiltrated the State Department',
+        'Allowed McCarthy to expand his investigations into the entire federal government',
+        'Were televised and showed the American public McCarthy\'s bullying tactics, leading to his political downfall',
+        'Resulted in the conviction of dozens of Soviet spies operating in the United States'
+      ],
+      correct: 2,
+      feedback: 'Correct! Television exposed McCarthy\'s abuse of power to millions of Americans, destroying his credibility.',
+      wrong: 'Not quite — try again. What role did television play in McCarthy\'s downfall?'
+    }
+  ];
+
+  var correct = new Array(QUESTIONS.length).fill(false);
+
+  function revealLetter(qi) {
+    var box = document.getElementById('lb-' + qi);
+    if (box) box.classList.add('revealed');
+    var done = correct.filter(Boolean).length;
+    document.getElementById('pw-progress').textContent = done + ' / ' + QUESTIONS.length + ' unlocked';
+    updateProgress();
+    if (done === QUESTIONS.length) {
+      setTimeout(function(){ document.getElementById('victory-banner').classList.add('show'); }, 600);
+    }
+  }
+
+  function updateProgress() {
+    var done = correct.filter(Boolean).length;
+    var pct  = Math.round(done / QUESTIONS.length * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = done + ' of ' + QUESTIONS.length + ' correct';
+  }
+
+  function handleAnswer(qi, optIdx) {
+    if (correct[qi]) return;
+    var card    = document.getElementById('qcard-' + qi);
+    var optsDiv = document.getElementById('opts-' + qi);
+    var fb      = document.getElementById('fb-' + qi);
+    var q       = QUESTIONS[qi];
+    var btns    = optsDiv.querySelectorAll('.opt-btn');
+    if (optIdx === q.correct) {
+      correct[qi] = true;
+      btns.forEach(function(b, i) { b.disabled = true; if (i === q.correct) b.classList.add('correct'); });
+      card.classList.remove('state-wrong');
+      card.classList.add('state-correct');
+      fb.className = 'q-feedback correct';
+      fb.textContent = q.feedback;
+      revealLetter(qi);
+    } else {
+      btns[optIdx].classList.add('wrong');
+      card.classList.add('state-wrong');
+      setTimeout(function(){ card.classList.remove('state-wrong'); btns[optIdx].classList.remove('wrong'); }, 700);
+      fb.className = 'q-feedback wrong';
+      fb.textContent = q.wrong;
+    }
+  }
+
+  window.handleAnswer = handleAnswer;
+
+  function buildQuestions() {
+    var mount = document.getElementById('questions-mount');
+    QUESTIONS.forEach(function(q, i) {
+      var card = document.createElement('div');
+      card.className = 'q-card'; card.id = 'qcard-' + i;
+      var eyebrow = document.createElement('p');
+      eyebrow.className = 'q-eyebrow';
+      eyebrow.innerHTML = 'Question ' + (i + 1) + ' &nbsp;&middot;&nbsp; <span class="unlock-tag">unlocks letter ' + (i + 1) + '</span>';
+      var qtext = document.createElement('p');
+      qtext.className = 'q-text'; qtext.textContent = q.q;
+      var optsDiv = document.createElement('div');
+      optsDiv.className = 'q-options'; optsDiv.id = 'opts-' + i;
+      q.opts.forEach(function(opt, j) {
+        var btn = document.createElement('button');
+        btn.className = 'opt-btn'; btn.textContent = opt;
+        btn.setAttribute('onclick', 'handleAnswer(' + i + ',' + j + ')');
+        optsDiv.appendChild(btn);
+      });
+      var fb = document.createElement('div');
+      fb.className = 'q-feedback'; fb.id = 'fb-' + i;
+      card.appendChild(eyebrow); card.appendChild(qtext);
+      card.appendChild(optsDiv); card.appendChild(fb);
+      mount.appendChild(card);
+    });
+  }
+
+  buildQuestions();
+})();
+</script>
+<script src="../security.js"></script>
+</body>
+</html>
