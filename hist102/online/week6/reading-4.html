@@ -65,8 +65,6 @@
     .section-marker{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-light,#c8922a);margin-bottom:0.4rem;}
     .section-title{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:0.3rem;}
     .section-subtitle{font-family:'Source Serif 4',Georgia,serif;font-size:0.92rem;font-style:italic;color:var(--ink-light);margin-bottom:1.25rem;}
-    .pdf-button{background:var(--gold);color:#fff;padding:0.75rem 1.5rem;font-family:'DM Mono',monospace;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:4px;cursor:pointer;margin:2rem 0;transition:background .2s;}
-    .pdf-button:hover{background:var(--gold-light);}
   </style>
 </head>
 <body>
@@ -232,9 +230,7 @@
         <div class="answer-meta"><span class="word-count" id="wc_n_3">0 words</span><span class="save-indicator" id="si_n_3">✓ Saved</span></div>
       </div>
 
-      <button class="pdf-button" id="downloadPDF">📄 Generate &amp; Download Reading Notes PDF</button>
-
-    </div>
+    </div><!-- /reading-body -->
 
     <aside class="reading-sidebar">
       <div class="sidebar-card">
@@ -265,12 +261,12 @@
         </ul>
       </div>
       <div class="sidebar-card" style="background:rgba(154,111,42,0.05);border-color:rgba(154,111,42,0.2)">
-        <h4 style="color:var(--gold)">Submit to Canvas</h4>
+        <h4 style="color:var(--gold)">Notes Reminder</h4>
         <ul>
-          <li>Download your PDF</li>
-          <li>Upload to Canvas assignment</li>
-          <li>Due: Sunday 11:59 PM</li>
-          <li>20 points</li>
+          <li>Answer in your own words</li>
+          <li>2–3 sentences minimum</li>
+          <li>Include one direct quote per question</li>
+          <li>Answers save automatically</li>
         </ul>
       </div>
     </aside>
@@ -278,7 +274,7 @@
 
   <div class="callout callout-task" style="margin-top:2rem">
     <span class="callout-label">Week 6 Complete</span>
-    You have finished all readings for Week 6. Download your reading notes PDF below and upload to Canvas. The Canvas discussion about primary sources is due Friday 11:59 PM.
+    Your answers have been saved automatically. You have finished all readings for Week 6. Please upload your reading notes to the Canvas assignment for this week.
   </div>
 
   <div class="page-footer">
@@ -288,7 +284,6 @@
   </div>
 </main></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 document.getElementById('readingBody').addEventListener('contextmenu', e => e.preventDefault());
 document.getElementById('readingBody').addEventListener('selectstart', e => { if(e.target.tagName==='TEXTAREA') return; e.preventDefault(); });
@@ -327,51 +322,6 @@ function updateProgress(){
 document.querySelectorAll('.answer-area, .notes-area').forEach(ta=>{
   let t;
   ta.addEventListener('input',()=>{ updateWordCount(ta); clearTimeout(t); t=setTimeout(()=>saveField(ta),800); });
-});
-document.getElementById('downloadPDF').addEventListener('click',function(){
-  const {jsPDF}=window.jspdf;
-  try{
-    var token=JSON.parse(localStorage.getItem('hist102_access_w6')||'{}');
-    var studentName=token.name||'Anonymous Student';
-    var wnum=token.wnum||'';
-  }catch(e){
-    studentName='Anonymous Student';
-    wnum='';
-  }
-  var pdf=new jsPDF('p','mm','letter');
-  var pageHeight=pdf.internal.pageSize.getHeight();
-  var pageWidth=pdf.internal.pageSize.getWidth();
-  var margin=10;
-  var y=margin;
-  pdf.setFontSize(20);
-  pdf.text('HIST 102 — Week 6 Reading Notes',margin,y);
-  y+=10;
-  pdf.setFontSize(10);
-  pdf.text('Student: '+studentName,margin,y);
-  y+=5;
-  pdf.text('W#: '+wnum,margin,y);
-  y+=5;
-  pdf.text('Date: '+new Date().toLocaleDateString(),margin,y);
-  y+=10;
-  pdf.setFontSize(12);
-  var questions=['hist102_w6_r1_q1','hist102_w6_r1_q2','hist102_w6_r1_q3','hist102_w6_r2_q1','hist102_w6_r2_q2','hist102_w6_r2_q3','hist102_w6_r3_q1','hist102_w6_r3_q2','hist102_w6_r3_q3','hist102_w6_r4_q1','hist102_w6_r4_q2','hist102_w6_r4_q3'];
-  var qLabels=['6.1 Q1: GI Bill','6.1 Q2: Fair Deal','6.1 Q3: Synthesis','6.2 Q1: Civil Rights','6.2 Q2: Movements','6.2 Q3: Synthesis','6.3 Q1: Reagan','6.3 Q2: Institutions','6.3 Q3: Synthesis','6.4 Q1: 1990s','6.4 Q2: Conservative Power','6.4 Q3: Week Synthesis'];
-  for(var i=0;i<questions.length;i++){
-    var ans='';
-    try{ans=localStorage.getItem(questions[i])||'';}catch(e){}
-    if(ans.trim()){
-      pdf.setFont(undefined,'bold');
-      var wrappedLabel=pdf.splitTextToSize(qLabels[i],pageWidth-2*margin);
-      pdf.text(wrappedLabel,margin,y);
-      y+=wrappedLabel.length*4+2;
-      pdf.setFont(undefined,'normal');
-      var wrapped=pdf.splitTextToSize(ans,pageWidth-2*margin);
-      pdf.text(wrapped,margin,y);
-      y+=wrapped.length*4+5;
-      if(y>pageHeight-20){pdf.addPage();y=margin;}
-    }
-  }
-  pdf.save('HIST102_W6_ReadingNotes_'+wnum+'.pdf');
 });
 loadAnswers();
 </script>
