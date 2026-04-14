@@ -22,7 +22,7 @@
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
             padding: 30px;
-            text-align: center;
+            text-align: left;
             border-radius: 5px;
             margin-bottom: 30px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -113,6 +113,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             border-left: 4px solid #3498db;
+            text-align: left;
         }
 
         .stat-card.success { border-left-color: #27ae60; }
@@ -168,11 +169,12 @@
             border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
             margin-bottom: 20px;
+            text-align: left;
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #34495e; color: white; padding: 12px; text-align: left; font-weight: 600; }
-        td { padding: 12px; border-bottom: 1px solid #ecf0f1; }
+        td { padding: 12px; border-bottom: 1px solid #ecf0f1; text-align: left; }
         tr:hover { background: #f8f9fa; }
 
         .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600; }
@@ -186,6 +188,7 @@
             margin: 15px 0;
             border-left: 4px solid #3498db;
             border-radius: 3px;
+            text-align: left;
         }
 
         .source-card h4 { color: #2c3e50; margin-bottom: 10px; }
@@ -236,9 +239,9 @@
 
         .download-btn:hover { background: #138d75; }
 
-        .loading { text-align: center; padding: 40px; color: #7f8c8d; font-size: 1.1em; }
+        .loading { text-align: left; padding: 40px; color: #7f8c8d; font-size: 1.1em; }
 
-        .empty-state { text-align: center; padding: 60px 20px; color: #7f8c8d; }
+        .empty-state { text-align: left; padding: 60px 20px; color: #7f8c8d; }
         .empty-state h3 { font-size: 1.5em; margin-bottom: 10px; }
 
         /* ── COMPONENTS TAB ── */
@@ -314,6 +317,20 @@
 
         .refresh-btn:hover { background-color: #229954; }
 
+        .bulk-download-btn {
+            background-color: #16a085;
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.88em;
+        }
+
+        .bulk-download-btn:hover { background-color: #138d75; }
+
         /* ── MODAL ── */
         #comp-modal {
             display: none;
@@ -346,8 +363,8 @@
             gap: 16px;
         }
 
-        .comp-modal-header h3 { margin: 0; font-size: 1.2em; }
-        .comp-modal-header .meta { font-size: 0.88em; opacity: 0.85; margin-top: 4px; }
+        .comp-modal-header h3 { margin: 0; font-size: 1.2em; text-align: left; }
+        .comp-modal-header .meta { font-size: 0.88em; opacity: 0.85; margin-top: 4px; text-align: left; }
 
         .comp-modal-close {
             background: none;
@@ -362,7 +379,7 @@
 
         .comp-modal-close:hover { opacity: 1; }
 
-        .comp-modal-body { padding: 24px 30px; }
+        .comp-modal-body { padding: 24px 30px; text-align: left; }
 
         .field-block { margin-bottom: 20px; }
 
@@ -387,6 +404,7 @@
             max-height: 200px;
             overflow-y: auto;
             color: #333;
+            text-align: left;
         }
 
         .field-value.empty { color: #aaa; font-style: italic; }
@@ -398,6 +416,7 @@
             border-left: 3px solid #8e44ad;
             border-radius: 4px;
             padding: 12px 14px;
+            text-align: left;
         }
 
         .source-item .source-num {
@@ -427,6 +446,7 @@
             padding: 8px 12px;
             border-radius: 4px;
             margin: 20px 0 14px;
+            text-align: left;
         }
 
         /* Notes area */
@@ -491,7 +511,7 @@
             padding: 12px 18px;
             border-radius: 6px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-            text-align: center;
+            text-align: left;
             min-width: 80px;
         }
 
@@ -508,6 +528,29 @@
             vertical-align: middle;
             title: "Has grading notes";
         }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .modal-download-btn {
+            background-color: #16a085;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.88em;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .modal-download-btn:hover { background-color: #138d75; }
 
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: 1fr; }
@@ -727,6 +770,7 @@
                         </div>
                         <button class="refresh-btn" onclick="loadComponents()">↻ Refresh</button>
                         <button class="export-btn" onclick="exportComponentsCSV()">⬇ Export CSV</button>
+                        <button class="bulk-download-btn" onclick="downloadAllPDFs()">📥 Download All PDFs</button>
                     </div>
 
                     <div id="comp-table-wrap">
@@ -1133,7 +1177,7 @@
         function renderCompTable(rows) {
             const tbody = document.getElementById('comp-table-body');
             if (!rows.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#7f8c8d">No submissions found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:left;padding:40px;color:#7f8c8d">No submissions found.</td></tr>';
                 return;
             }
 
@@ -1232,9 +1276,17 @@
             html += `<div class="notes-area">
                 <div class="notes-label">📝 Grading Notes</div>
                 <textarea class="notes-textarea" id="modal-notes-input" placeholder="Enter feedback, grade, or notes for this student…">${esc(sub.grading_notes || '')}</textarea>
-                <div style="display:flex;align-items:center;margin-top:8px">
+                <div style="display:flex;align-items:center;margin-top:8px;flex-wrap:wrap;gap:8px">
                     <button class="notes-save-btn" onclick="saveNotes(${id})">Save Notes</button>
                     <span class="notes-status" id="notes-status-msg"></span>
+                </div>
+            </div>`;
+
+            // Download section for individual and group work
+            html += `<div style="margin-top:20px;padding-top:20px;border-top:2px solid #ecf0f1;">
+                <div class="field-label" style="margin-bottom:12px">Download Options</div>
+                <div class="modal-actions">
+                    ${sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="modal-download-btn">📥 Download Individual Work</a>` : '<span style="color:#999;font-size:0.88em">No file available</span>'}
                 </div>
             </div>`;
 
@@ -1326,6 +1378,43 @@
             a.download = `hist107_components_${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(a.href);
+        }
+
+        // ── BULK PDF DOWNLOAD ─────────────────────────────────────────────────
+        async function downloadAllPDFs() {
+            if (!filteredComponents.length) { alert('No submissions to download.'); return; }
+
+            const withPDFs = filteredComponents.filter(s => s.file_url);
+            if (!withPDFs.length) { alert('No PDFs available in the current filtered results.'); return; }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Downloading…';
+
+            try {
+                // Using a simple approach: open each PDF in a new window with a delay
+                for (let i = 0; i < withPDFs.length; i++) {
+                    const sub = withPDFs[i];
+                    setTimeout(() => {
+                        const link = document.createElement('a');
+                        link.href = sub.file_url;
+                        link.download = `${esc(sub.student_name)}_${COMP_LABELS[sub.worksheet_type].replace(/[^a-z0-9]/gi, '_')}.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }, i * 500);
+                }
+
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = '📥 Download All PDFs';
+                }, withPDFs.length * 500 + 1000);
+
+            } catch (e) {
+                alert('Error downloading PDFs: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = '📥 Download All PDFs';
+            }
         }
 
         // ══════════════════════════════════════════════════════════════════════
@@ -1430,7 +1519,7 @@
                 data.forEach(s => { const c = s.commodity || 'Unspecified'; if (!byCommo[c]) byCommo[c] = []; byCommo[c].push(s); });
                 let html = `<div class="alert alert-info">Total sources: ${data.length}</div>`;
                 for (const [comm, sources] of Object.entries(byCommo)) {
-                    html += `<h3 style="margin-top:30px;color:#2c3e50">${esc(comm)} (${sources.length} sources)</h3>`;
+                    html += `<h3 style="margin-top:30px;color:#2c3e50;text-align:left">${esc(comm)} (${sources.length} sources)</h3>`;
                     sources.forEach((s, i) => {
                         html += `<div class="source-card"><h4>${esc(s.analytical_lens)} | Source ${i+1}</h4><p><strong>Citation:</strong> ${esc(s.citation||'')}</p><p><strong>Type:</strong> ${esc(s.source_type||'')}</p><p><strong>What it reveals:</strong> ${esc(s.historical_question||'')}</p><p><strong>Limitations:</strong> ${esc(s.limitations||'')}</p>${s.url?`<p><strong>URL:</strong> <a href="${esc(s.url)}" target="_blank">${esc(s.url)}</a></p>`:''}<p class="meta">Submitted by ${esc(s.student_name)} (${esc(s.section_number)}) on ${new Date(s.submitted_at).toLocaleDateString()}</p></div>`;
                     });
