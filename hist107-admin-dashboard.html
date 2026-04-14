@@ -1311,7 +1311,7 @@
                     </td>
                     <td>
                         <button class="view-btn" onclick="openCompModal(${sub.id})">👁 View</button>
-                        ${sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="pdf-btn">⬇ PDF</a>` : ''}
+                        ${sub.file_path ? `<button onclick="openSubmissionPDF('${esc(sub.file_path)}')" class="pdf-btn">⬇ PDF</button>` : (sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="pdf-btn">⬇ PDF</a>` : '')}
                     </td>
                 </tr>`;
             }).join('');
@@ -1398,7 +1398,7 @@
             html += `<div style="margin-top:20px;padding-top:20px;border-top:2px solid #ecf0f1;">
                 <div class="field-label" style="margin-bottom:12px">Download Options</div>
                 <div class="modal-actions">
-                    ${sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="modal-download-btn">📥 Download Individual Work</a>` : '<span style="color:#999;font-size:0.88em">No file available</span>'}
+                    ${sub.file_path ? `<button onclick="openSubmissionPDF('${esc(sub.file_path)}')" class="modal-download-btn">📥 Download Individual Work</button>` : (sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="modal-download-btn">📥 Download Individual Work</a>` : '<span style="color:#999;font-size:0.88em">No file available</span>')}
                 </div>
             </div>`;
 
@@ -1493,10 +1493,28 @@
         }
 
         // ── BULK PDF DOWNLOAD ─────────────────────────────────────────────────
+        // Open a submission PDF via a signed URL (works for private buckets too).
+        // Falls back to the stored public file_url if signing fails.
+        async function openSubmissionPDF(filePath, fallbackUrl) {
+            try {
+                const { data, error } = await supabaseClient.storage
+                    .from('student-submissions')
+                    .createSignedUrl(filePath, 3600);
+                if (error) throw error;
+                window.open(data.signedUrl, '_blank');
+            } catch (e) {
+                if (fallbackUrl) {
+                    window.open(fallbackUrl, '_blank');
+                } else {
+                    alert('Error opening PDF: ' + e.message);
+                }
+            }
+        }
+
         async function downloadAllPDFs() {
             if (!filteredComponents.length) { alert('No submissions to download.'); return; }
 
-            const withPDFs = filteredComponents.filter(s => s.file_url);
+            const withPDFs = filteredComponents.filter(s => s.file_path || s.file_url);
             if (!withPDFs.length) { alert('No PDFs available in the current filtered results.'); return; }
 
             const btn = event.target;
@@ -1504,29 +1522,35 @@
             btn.textContent = 'Downloading…';
 
             try {
-                // Using a simple approach: open each PDF in a new window with a delay
                 for (let i = 0; i < withPDFs.length; i++) {
                     const sub = withPDFs[i];
-                    setTimeout(() => {
-                        const link = document.createElement('a');
-                        link.href = sub.file_url;
-                        link.download = `${esc(sub.student_name)}_${COMP_LABELS[sub.worksheet_type].replace(/[^a-z0-9]/gi, '_')}.pdf`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }, i * 500);
+                    let url = null;
+                    if (sub.file_path) {
+                        const { data, error } = await supabaseClient.storage
+                            .from('student-submissions')
+                            .createSignedUrl(sub.file_path, 3600);
+                        if (!error && data) url = data.signedUrl;
+                    }
+                    if (!url) url = sub.file_url;
+                    if (!url) continue;
+
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.target = '_blank';
+                    link.download = `${esc(sub.student_name)}_${(COMP_LABELS[sub.worksheet_type] || sub.worksheet_type).replace(/[^a-z0-9]/gi, '_')}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    // Small delay between downloads to avoid browser popup blocking
+                    await new Promise(r => setTimeout(r, 500));
                 }
-
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.textContent = '📥 Download All PDFs';
-                }, withPDFs.length * 500 + 1000);
-
             } catch (e) {
                 alert('Error downloading PDFs: ' + e.message);
-                btn.disabled = false;
-                btn.textContent = '📥 Download All PDFs';
             }
+
+            btn.disabled = false;
+            btn.textContent = '📥 Download All PDFs';
         }
 
         // ══════════════════════════════════════════════════════════════════════
@@ -1655,7 +1679,10 @@
                 let html = '<table><thead><tr><th>Student</th><th>Section</th><th>Type</th><th>Submitted</th><th>Download</th></tr></thead><tbody>';
                 data.forEach(s => {
                     const typeName = (COMP_LABELS[s.worksheet_type] || s.worksheet_type.replace('hist107-','').replace(/-/g,' '));
-                    html += `<tr><td><strong>${esc(s.student_name)}</strong></td><td>${esc(s.section_number)}</td><td>${esc(typeName)}</td><td>${new Date(s.submitted_at).toLocaleString()}</td><td>${s.file_url?`<a href="${esc(s.file_url)}" target="_blank" class="download-btn">📄 View PDF</a>`:'-'}</td></tr>`;
+                    const pdfCell = s.file_path
+                        ? `<button onclick="openSubmissionPDF('${esc(s.file_path)}')" class="download-btn">📄 View PDF</button>`
+                        : (s.file_url ? `<a href="${esc(s.file_url)}" target="_blank" class="download-btn">📄 View PDF</a>` : '-');
+                    html += `<tr><td><strong>${esc(s.student_name)}</strong></td><td>${esc(s.section_number)}</td><td>${esc(typeName)}</td><td>${new Date(s.submitted_at).toLocaleString()}</td><td>${pdfCell}</td></tr>`;
                 });
                 html += '</tbody></table>';
                 content.innerHTML = html;
