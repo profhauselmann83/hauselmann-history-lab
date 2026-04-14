@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Lumumba File | HIST 107</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap');
+
+:root {
+  --ink: #1a1208;
+  --paper: #f2ead8;
+  --aged: #e8ddc4;
+  --manila: #d4c49a;
+  --redact: #8b0000;
+  --stamp-red: #c0392b;
+  --stamp-blue: #1a3a6b;
+  --faded: #7a6a50;
+  --highlight: #c9973a;
+  --smoke: #3d3426;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #1a1208;
+  color: var(--ink);
+  font-family: 'Courier Prime', monospace;
+  min-height: 100vh;
+  cursor: default;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* SPLASH SCREEN */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: #0d0a06;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.8s ease;
+}
+
+#splash.hidden { opacity: 0; pointer-events: none; }
+
+.splash-case {
+  border: 3px solid #3d3426;
+  padding: 60px 80px;
+  text-align: center;
+  position: relative;
+  max-width: 680px;
+}
+
+.splash-case::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid #2a2018;
+}
+
+.splash-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--faded);
+  margin-bottom: 24px;
+}
+
+.splash-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 72px;
+  color: var(--paper);
+  line-height: 1;
+  margin-bottom: 8px;
+  text-shadow: 0 0 40px rgba(201, 151, 58, 0.3);
+}
+
+.splash-sub {
+  font-family: 'Special Elite', cursive;
+  font-size: 18px;
+  color: var(--highlight);
+  margin-bottom: 32px;
+}
+
+.splash-date {
+  font-size: 12px;
+  color: var(--faded);
+  letter-spacing: 3px;
+  margin-bottom: 48px;
+  border-top: 1px solid #2a2018;
+  border-bottom: 1px solid #2a2018;
+  padding: 12px 0;
+}
+
+.splash-question {
+  font-family: 'Special Elite', cursive;
+  font-size: 20px;
+  color: var(--paper);
+  margin-bottom: 48px;
+  line-height: 1.6;
+}
+
+.splash-question em {
+  color: var(--highlight);
+  font-style: normal;
+}
+
+#begin-btn {
+  background: none;
+  border: 2px solid var(--highlight);
+  color: var(--highlight);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 4px;
+  padding: 16px 48px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#begin-btn:hover {
+  background: var(--highlight);
+  color: #0d0a06;
+}
+
+/* MAIN LAYOUT */
+#app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+  display: none;
+}
+#app.visible { display: block; }
+
+/* CASE FILE HEADER */
+.case-header {
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  padding: 0;
+  margin-bottom: 40px;
+  position: relative;
+  box-shadow: 6px 6px 0 #0d0a06, -2px -2px 0 #3d3426;
+}
+
+.case-header-top {
+  background: var(--stamp-blue);
+  color: var(--paper);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.case-header-top h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 3px;
+}
+
+.case-number {
+  font-family: 'Courier Prime', monospace;
+  font-size: 13px;
+  opacity: 0.8;
+  text-align: right;
+}
+
+.case-header-body {
+  padding: 24px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  border-bottom: 2px solid var(--manila);
+}
+
+.case-field label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--faded);
+  display: block;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.case-field .value {
+  font-family: 'Special Elite', cursive;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.central-question {
+  padding: 20px 32px;
+  background: var(--aged);
+  font-family: 'Special Elite', cursive;
+  font-size: 18px;
+  line-height: 1.6;
+  border-left: 6px solid var(--stamp-red);
+}
+
+.central-question strong {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--stamp-red);
+  margin-bottom: 8px;
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+/* PROGRESS BAR */
+.progress-strip {
+  display: flex;
+  gap: 0;
+  margin-bottom: 40px;
+  border: 2px solid var(--ink);
+  overflow: hidden;
+}
+
+.progress-step {
+  flex: 1;
+  padding: 12px 8px;
+  text-align: center;
+  background: var(--paper);
+  cursor: pointer;
+  transition: all 0.2s;
+  border-right: 1px solid var(--manila);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--faded);
+}
+
+.progress-step:last-child { border-right: none; }
+.progress-step.done { background: var(--aged); color: var(--ink); }
+.progress-step.active { background: var(--stamp-blue); color: var(--paper); font-weight: bold; }
+.progress-step .step-icon { font-size: 16px; display: block; margin-bottom: 4px; }
+
+/* PHASES */
+.phase { display: none; }
+.phase.active { display: block; }
+
+/* SECTION HEADING */
+.section-head {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: var(--paper);
+  background: var(--stamp-blue);
+  padding: 12px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.section-head .badge {
+  background: var(--highlight);
+  color: #0d0a06;
+  font-size: 13px;
+  padding: 2px 10px;
+  font-family: 'Courier Prime', monospace;
+}
+
+/* DOCUMENT CARDS */
+.document-card {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  margin-bottom: 40px;
+  position: relative;
+  box-shadow: 4px 4px 0 #0d0a06;
+}
+
+.doc-header {
+  background: var(--manila);
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.doc-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--ink);
+}
+
+.doc-meta {
+  font-size: 11px;
+  color: var(--faded);
+  text-align: right;
+  line-height: 1.8;
+}
+
+.doc-stamp {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  padding: 6px 14px;
+  border: 3px solid;
+  transform: rotate(-8deg);
+  opacity: 0.85;
+}
+
+.stamp-secret { color: var(--stamp-red); border-color: var(--stamp-red); }
+.stamp-primary { color: var(--stamp-blue); border-color: var(--stamp-blue); }
+.stamp-evidence { color: #2e6b2e; border-color: #2e6b2e; }
+
+.context-banner {
+  background: var(--smoke);
+  color: var(--paper);
+  padding: 12px 24px;
+  font-size: 13px;
+  line-height: 1.7;
+  border-bottom: 1px solid #0d0a06;
+  font-style: italic;
+}
+
+.doc-body {
+  padding: 24px;
+}
+
+.doc-text {
+  background: #faf5e8;
+  border: 1px solid var(--manila);
+  padding: 24px;
+  font-size: 14px;
+  line-height: 1.9;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.doc-text p { margin-bottom: 16px; }
+.doc-text p:last-child { margin-bottom: 0; }
+
+.doc-source {
+  font-size: 11px;
+  color: var(--faded);
+  border-top: 1px solid var(--manila);
+  padding-top: 12px;
+  margin-top: 16px;
+  font-style: italic;
+}
+
+/* REDACTED TEXT */
+.redacted {
+  background: var(--ink);
+  color: var(--ink);
+  padding: 0 4px;
+  user-select: none;
+  cursor: not-allowed;
+}
+
+/* ANALYSIS SECTION */
+.analysis-section {
+  background: var(--aged);
+  border: 1px solid var(--manila);
+  padding: 20px 24px;
+}
+
+.analysis-section h4 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: var(--stamp-blue);
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--manila);
+  padding-bottom: 8px;
+}
+
+.analysis-q {
+  margin-bottom: 20px;
+}
+
+.analysis-q label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: var(--smoke);
+  line-height: 1.5;
+}
+
+.analysis-q label .q-num {
+  color: var(--stamp-red);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+.analysis-q textarea, .analysis-q input[type="text"] {
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--manila);
+  border-bottom: 2px solid var(--ink);
+  padding: 10px 14px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 13px;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.analysis-q textarea:focus, .analysis-q input:focus {
+  outline: none;
+  border-color: var(--stamp-blue);
+  background: #fffef5;
+}
+
+/* EVIDENCE BOARD */
+.evidence-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.evidence-table th {
+  background: var(--smoke);
+  color: var(--paper);
+  padding: 10px 16px;
+  text-align: left;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  font-size: 14px;
+}
+
+.evidence-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--manila);
+  vertical-align: top;
+}
+
+.evidence-table tr:nth-child(even) td { background: var(--aged); }
+.evidence-table tr:nth-child(odd) td { background: var(--paper); }
+
+.evidence-table textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--manila);
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  resize: vertical;
+  min-height: 60px;
+  color: var(--ink);
+  padding: 4px;
+}
+
+.evidence-table textarea:focus { outline: none; border-bottom-color: var(--stamp-blue); }
+
+.doc-tag {
+  display: inline-block;
+  background: var(--stamp-blue);
+  color: var(--paper);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+}
+
+/* VERDICT SECTION */
+.verdict-section {
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  padding: 32px;
+  box-shadow: 6px 6px 0 #0d0a06;
+  margin-bottom: 32px;
+}
+
+.verdict-section h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+  color: var(--stamp-blue);
+}
+
+.verdict-claim {
+  background: #faf5e8;
+  border-left: 6px solid var(--stamp-red);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.verdict-claim label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--stamp-red);
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.verdict-claim textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--manila);
+  font-family: 'Courier Prime', monospace;
+  font-size: 14px;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 100px;
+  padding: 8px 0;
+}
+
+.verdict-claim textarea:focus { outline: none; }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap; }
+
+.btn {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 3px;
+  font-size: 16px;
+  padding: 14px 32px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--stamp-blue);
+  color: var(--paper);
+  border-color: var(--stamp-blue);
+}
+.btn-primary:hover { background: #0d2548; }
+
+.btn-submit {
+  background: var(--stamp-red);
+  color: var(--paper);
+  border-color: var(--stamp-red);
+}
+.btn-submit:hover { background: #6b0000; }
+
+.btn-back {
+  background: transparent;
+  color: var(--faded);
+  border-color: var(--faded);
+}
+.btn-back:hover { background: var(--aged); color: var(--ink); border-color: var(--ink); }
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* STUDENT INFO */
+.student-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--faded);
+  margin-bottom: 6px;
+}
+
+.form-field input {
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--manila);
+  border-bottom: 2px solid var(--ink);
+  padding: 10px 14px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.form-field input:focus { outline: none; border-bottom-color: var(--stamp-blue); }
+
+/* BACKGROUND PHASE */
+.brief-card {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  box-shadow: 4px 4px 0 #0d0a06;
+}
+
+.brief-card h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--stamp-blue);
+  border-bottom: 1px solid var(--manila);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.brief-card p {
+  font-size: 14px;
+  line-height: 1.8;
+  margin-bottom: 12px;
+  color: var(--smoke);
+}
+
+.brief-card p:last-child { margin-bottom: 0; }
+
+.timeline-list {
+  list-style: none;
+  border-left: 3px solid var(--stamp-blue);
+  padding-left: 20px;
+}
+
+.timeline-list li {
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--manila);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--smoke);
+}
+
+.timeline-list li:last-child { border-bottom: none; }
+
+.timeline-list .tl-date {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  color: var(--stamp-blue);
+  letter-spacing: 1px;
+  display: block;
+}
+
+/* SUSPECT CARDS */
+.suspect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.suspect-card {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  padding: 20px;
+  box-shadow: 3px 3px 0 #0d0a06;
+}
+
+.suspect-card .s-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--stamp-blue);
+  margin-bottom: 6px;
+}
+
+.suspect-card .s-role {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--highlight);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--manila);
+  padding-bottom: 8px;
+}
+
+.suspect-card .s-detail {
+  font-size: 13px;
+  color: var(--smoke);
+  line-height: 1.7;
+}
+
+/* SUCCESS MESSAGE */
+.success-msg {
+  background: #0f3d0f;
+  color: #a8e6a8;
+  border: 2px solid #2e6b2e;
+  padding: 20px 24px;
+  margin-top: 20px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 14px;
+  display: none;
+}
+
+.success-msg.visible { display: block; }
+
+/* FINGERPRINT DECORATION */
+.fp-deco {
+  opacity: 0.04;
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  font-size: 120px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* TYPEWRITER EFFECT */
+@keyframes blink { 50% { opacity: 0; } }
+.cursor::after { content: '|'; animation: blink 1s infinite; }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .splash-title { font-size: 48px; }
+  .splash-case { padding: 40px 24px; }
+  .case-header-body { grid-template-columns: 1fr; }
+  .student-form { grid-template-columns: 1fr; }
+  .suspect-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-case">
+    <div class="splash-label">HIST 107 · CLASSIFIED CASE FILE</div>
+    <div class="splash-title">THE LUMUMBA FILE</div>
+    <div class="splash-sub">A Cold War Murder Investigation</div>
+    <div class="splash-date">CONGO · JANUARY 17, 1961 · CASE STATUS: UNSOLVED</div>
+    <div class="splash-question">
+      Seven months after independence.<br>
+      Five documents. Multiple suspects.<br>
+      One question: <em>Who killed Patrice Lumumba — and why?</em>
+    </div>
+    <button id="begin-btn" onclick="beginInvestigation()">OPEN THE FILE</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- CASE HEADER -->
+  <div class="case-header">
+    <div class="case-header-top">
+      <h1>🔍 THE LUMUMBA FILE</h1>
+      <div class="case-number">
+        CASE NO. HIST107-1961-LMB<br>
+        CLASSIFICATION: RESTRICTED
+      </div>
+    </div>
+    <div class="case-header-body">
+      <div class="case-field">
+        <label>Subject</label>
+        <div class="value">Patrice Émery Lumumba</div>
+      </div>
+      <div class="case-field">
+        <label>Incident</label>
+        <div class="value">Assassination · January 17, 1961</div>
+      </div>
+      <div class="case-field">
+        <label>Location</label>
+        <div class="value">Katanga Province, Congo</div>
+      </div>
+    </div>
+    <div class="central-question">
+      <strong>CENTRAL HISTORICAL QUESTION</strong>
+      Why was Patrice Lumumba assassinated?
+    </div>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-strip">
+    <div class="progress-step active" data-phase="0">
+      <span class="step-icon">📋</span>BRIEFING
+    </div>
+    <div class="progress-step" data-phase="1">
+      <span class="step-icon">📜</span>DOC A
+    </div>
+    <div class="progress-step" data-phase="2">
+      <span class="step-icon">🎙️</span>DOC B
+    </div>
+    <div class="progress-step" data-phase="3">
+      <span class="step-icon">🔒</span>DOC C
+    </div>
+    <div class="progress-step" data-phase="4">
+      <span class="step-icon">📰</span>DOC D
+    </div>
+    <div class="progress-step" data-phase="5">
+      <span class="step-icon">⚖️</span>DOC E
+    </div>
+    <div class="progress-step" data-phase="6">
+      <span class="step-icon">🗂️</span>EVIDENCE
+    </div>
+    <div class="progress-step" data-phase="7">
+      <span class="step-icon">✍️</span>VERDICT
+    </div>
+  </div>
+
+  <!-- PHASE 0: BRIEFING -->
+  <div class="phase active" id="phase0">
+    <div class="section-head">📋 DETECTIVE BRIEFING <span class="badge">READ FIRST</span></div>
+
+    <div class="student-form">
+      <div class="form-field">
+        <label>DETECTIVE NAME (YOUR NAME)</label>
+        <input type="text" id="student-name" placeholder="Enter your full name">
+      </div>
+      <div class="form-field">
+        <label>SECTION NUMBER</label>
+        <input type="text" id="section-number" placeholder="e.g. 101, 102">
+      </div>
+    </div>
+
+    <div class="brief-card">
+      <h3>YOUR ASSIGNMENT</h3>
+      <p>You are a historical investigator examining the assassination of Patrice Lumumba — the first democratically elected Prime Minister of the Democratic Republic of Congo. He took office on June 30, 1960. He was dead by January 17, 1961. Seven months.</p>
+      <p>You have been given access to five documents. Each one comes from a different source with a different perspective and a different stake in what happened. Your job is not just to read what each document says — it is to ask <strong>who produced it, when, and why</strong>, and use those questions to evaluate the evidence.</p>
+      <p>After working through all five documents, you will complete an Evidence Board and write a Final Claim answering the central question: <em>Why was Patrice Lumumba assassinated?</em></p>
+    </div>
+
+    <div class="brief-card">
+      <h3>BACKGROUND: THE CASE</h3>
+      <p>Belgium had colonized the Congo since 1884. At independence in 1960, there were fewer than ten university-educated Congolese citizens in a country the size of Western Europe. Belgium left fast and left nothing behind.</p>
+      <p>Lumumba's party, the MNC, won the most votes in the first election. He became Prime Minister. Within days of independence, the Congolese army mutinied, and the mineral-rich province of Katanga — containing copper, gold, and uranium — declared secession with Belgian backing. Lumumba was dismissed from office in September 1960. He was arrested, beaten, and transferred to Katanga. He was executed on January 17, 1961.</p>
+    </div>
+
+    <div class="brief-card">
+      <h3>THE SUSPECTS</h3>
+      <div class="suspect-grid">
+        <div class="suspect-card">
+          <div class="s-name">BELGIUM</div>
+          <div class="s-role">FORMER COLONIAL POWER</div>
+          <div class="s-detail">Maintained mining interests in Katanga. Many Belgian citizens and companies still operating in Congo at independence. Relations with Lumumba strained from independence day. Backed Katanga's secession.</div>
+        </div>
+        <div class="suspect-card">
+          <div class="s-name">UNITED STATES (CIA)</div>
+          <div class="s-role">COLD WAR SUPERPOWER</div>
+          <div class="s-detail">Feared Soviet expansion in Africa. Filed internal reports labeling Lumumba a communist threat before independence. Church Committee (1975) found CIA was "actively involved" in assassination plots.</div>
+        </div>
+        <div class="suspect-card">
+          <div class="s-name">JOSEPH MOBUTU</div>
+          <div class="s-role">CONGOLESE MILITARY COLONEL</div>
+          <div class="s-detail">Staged military coup in September 1960. Had ties to Western intelligence. Ordered Lumumba's transfer to Katanga. Later became dictator of Congo (renamed Zaire) and ruled for 32 years.</div>
+        </div>
+        <div class="suspect-card">
+          <div class="s-name">KATANGESE AUTHORITIES</div>
+          <div class="s-role">SECESSIONIST PROVINCE</div>
+          <div class="s-detail">Controlled the province where Lumumba was held and killed. Led by Moise Tshombe. Backed by Belgian troops and mining interests. Firing squad was composed of Katangese forces.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brief-card">
+      <h3>TIMELINE OF EVENTS</h3>
+      <ul class="timeline-list">
+        <li><span class="tl-date">June 30, 1960</span>Congo independence. Lumumba becomes Prime Minister. Delivers unscheduled speech at ceremony.</li>
+        <li><span class="tl-date">July 5–11, 1960</span>Army mutinies against Belgian officers. Katanga declares secession with Belgian backing. Crisis begins.</li>
+        <li><span class="tl-date">July 1960</span>Lumumba appeals to UN, then US for help with Katanga. Both decline. He turns to the Soviet Union.</li>
+        <li><span class="tl-date">August 6, 1960</span>Lumumba telegraphs UN Secretary-General, accusing Belgium of instigating Katanga secession.</li>
+        <li><span class="tl-date">September 5, 1960</span>President Kasavubu dismisses Lumumba. Lumumba dismisses Kasavubu. Constitutional crisis.</li>
+        <li><span class="tl-date">September 14, 1960</span>Colonel Mobutu stages coup. Lumumba placed under house arrest.</li>
+        <li><span class="tl-date">December 1960</span>Lumumba attempts to escape to supporters. Captured by Mobutu's forces.</li>
+        <li><span class="tl-date">January 17, 1961</span>Lumumba transferred to Katanga. Executed by firing squad. Age 35.</li>
+        <li><span class="tl-date">1975</span>US Church Committee finds CIA was "actively involved" in plots to assassinate Lumumba.</li>
+        <li><span class="tl-date">2001</span>Belgian parliamentary commission concludes Belgium was "morally responsible" for circumstances leading to Lumumba's death.</li>
+      </ul>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goToPhase(1)">OPEN FIRST DOCUMENT →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 1: DOCUMENT A -->
+  <div class="phase" id="phase1">
+    <div class="section-head">📜 DOCUMENT A <span class="badge">TEXTBOOK ACCOUNT</span></div>
+
+    <div class="document-card">
+      <div class="doc-header">
+        <div>
+          <div class="doc-label">Document A — World History Textbook</div>
+          <div class="doc-meta">Published: 1999 &nbsp;|&nbsp; Source: Holt, Rinehart and Winston<br>Type: Secondary Source &nbsp;|&nbsp; Audience: High school students</div>
+        </div>
+      </div>
+      <div class="context-banner">
+        🔍 <strong>Investigator's Note:</strong> This is the kind of source you encounter most often. A textbook is a secondary source — written later, for an educational audience. Notice what it includes, what it leaves out, and how certain questions go unanswered.
+      </div>
+      <div class="doc-body">
+        <div class="doc-text">
+          <p>Like the Portuguese, the Belgians had never really considered preparing Africans in the huge Congo for self-government, much less for independence. As a Congolese nationalist movement emerged after World War II, however, the Belgian government agreed that it should prepare the colony for self-government. Believing that the Congolese had not developed the institutions or acquired the experience needed to manage a modern state, Belgians supported a 30-year timetable to prepare them for independence. Distrusting the Belgians, African nationalists demanded immediate self-government. Consequently, in 1960 Belgium suddenly announced that it would withdraw completely within a year.</p>
+          <p>With little preparation, many political parties representing different ethnic groups, geographical regions and political beliefs participated in the first elections ever held in the new Democratic Republic of the Congo. Former postal clerk Patrice Lumumba became prime minister, while his rival and political enemy Joseph Kasavubu became president. Lumumba remained opposed to European influence. Angered by his stance, Belgian technicians and experts left the Congo in droves. This proved to be a major blow to the new country's economy.</p>
+          <p>Soon, the army mutinied and the copper-rich province of Katanga seceded. The country was plunged into a crisis. An assassin killed Lumumba in 1961, and Kasavubu assumed full power. The chaos and violence continued.</p>
+          <div class="doc-source">Source: World History: Continuity and Change. Austin, Texas: Holt, Rinehart and Winston, 1999, pp. 776-777.</div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>🔍 DOCUMENT A ANALYSIS</h4>
+
+          <div class="analysis-q">
+            <label><span class="q-num">1.</span> <strong>SOURCING:</strong> Who wrote this document and for what audience? Is it a primary or secondary source — and does that matter for how you use it as evidence?</label>
+            <textarea id="a-q1" placeholder="Consider: author, purpose, audience, and what type of source this is..."></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">2.</span> <strong>CLOSE READING:</strong> The textbook says "an assassin killed Lumumba." It does not name who or explain why. What might explain this vagueness? What does it suggest about the limits of this source?</label>
+            <textarea id="a-q2" placeholder="Why might a textbook avoid answering who was responsible?"></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">3.</span> <strong>EVIDENCE EVALUATION:</strong> What reasons does this document suggest — directly or indirectly — for why Lumumba might have been killed? What makes this strong evidence? What makes it weak?</label>
+            <textarea id="a-q3" placeholder="What clues does the text provide, even if it doesn't state them directly?"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(0)">← BACK</button>
+      <button class="btn btn-primary" onclick="goToPhase(2)">NEXT DOCUMENT →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 2: DOCUMENT B -->
+  <div class="phase" id="phase2">
+    <div class="section-head">🎙️ DOCUMENT B <span class="badge">PRIMARY SOURCE: SPEECH</span></div>
+
+    <div class="document-card">
+      <div class="doc-header">
+        <div>
+          <div class="doc-label">Document B — Lumumba's Independence Day Speech</div>
+          <div class="doc-meta">Date: June 30, 1960 &nbsp;|&nbsp; Delivered at independence ceremony<br>Speaker: Patrice Lumumba &nbsp;|&nbsp; Type: Primary Source</div>
+        </div>
+        <div class="doc-stamp stamp-evidence">EXHIBIT B</div>
+      </div>
+      <div class="context-banner">
+        🔍 <strong>Investigator's Note:</strong> Lumumba was NOT on the program. The King of Belgium had just given a speech praising the "peaceful" and "friendly" transfer of power. Lumumba took the podium unannounced. Belgian officials and Congolese citizens were both in the audience.
+      </div>
+      <div class="doc-body">
+        <div class="doc-text">
+          <p>Although this independence of the Congo is being proclaimed today by agreement with Belgium, an amicable country, with which we are on equal terms, no Congolese will ever forget that independence was won in struggle, a persevering and inspired struggle carried on from day to day.</p>
+          <p>We have experienced forced labor in exchange for pay that did not allow us to satisfy our hunger, to clothe ourselves, to have decent lodgings or to bring up our children as dearly loved ones. Morning, noon and night we were subjected to jeers, insults and blows because we were "Negroes."...</p>
+          <p>We have not forgotten that the law was never the same for the white and the black, that it was lenient to the ones, and cruel and inhuman to the others. We have not forgotten that in the cities the mansions were for the whites and the tumbledown huts for the blacks...</p>
+          <p>All that, my brothers, brought us untold suffering. But...we tell you that henceforth all that is finished with. The Republic of the Congo has been proclaimed and our beloved country's future is now in the hands of its own people.</p>
+          <div class="doc-source">Source: Lumumba's Independence Day Speech, June 30, 1960.</div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>🔍 DOCUMENT B ANALYSIS</h4>
+
+          <div class="analysis-q">
+            <label><span class="q-num">1.</span> <strong>SOURCING:</strong> This is a primary source produced at a very specific moment — a public ceremony with enormous symbolic stakes. How does the context (who was in the audience, what had just been said) shape what Lumumba says and how he says it?</label>
+            <textarea id="b-q1" placeholder="Think about the occasion, the audience, and what Lumumba was responding to..."></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">2.</span> <strong>CLOSE READING:</strong> How does Lumumba's account of Belgian colonialism differ from the framing the Belgian king had just offered? How might Belgian officials in the audience have reacted? How might Congolese listeners have reacted?</label>
+            <textarea id="b-q2" placeholder="Consider the two different audiences and their likely reactions..."></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">3.</span> <strong>MOTIVE:</strong> What clues does this speech give you about why Lumumba might have become a target? What kind of leader does he present himself as — and why might that have made powerful people nervous?</label>
+            <textarea id="b-q3" placeholder="What does this speech suggest about his agenda and the enemies it might create?"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(1)">← BACK</button>
+      <button class="btn btn-primary" onclick="goToPhase(3)">NEXT DOCUMENT →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 3: DOCUMENT C -->
+  <div class="phase" id="phase3">
+    <div class="section-head">🔒 DOCUMENT C <span class="badge">CLASSIFIED: TOP SECRET</span></div>
+
+    <div class="document-card">
+      <div class="doc-header">
+        <div>
+          <div class="doc-label">Document C — CIA Daily Brief</div>
+          <div class="doc-meta">Date: June 27, 1960 &nbsp;|&nbsp; Three days before Congolese independence<br>Classification: TOP SECRET &nbsp;|&nbsp; Filed under: "The Communist Bloc"</div>
+        </div>
+        <div class="doc-stamp stamp-secret">TOP SECRET</div>
+      </div>
+      <div class="context-banner">
+        🔍 <strong>Investigator's Note:</strong> This document was never meant for public consumption. It is an internal CIA brief — the kind of document written for a small circle of American intelligence officials. Notice how it describes Lumumba. Notice what it does NOT say. Notice what filing it under "the Communist Bloc" reveals about how the U.S. was framing the situation.
+      </div>
+      <div class="doc-body">
+        <div class="doc-text">
+          <p><strong>Lumumba Moves to Consolidate Power in the Congo:</strong> The government formed by Congo Premier-designate Patrice Lumumba is "weak" and has a "strong leftist tinge" according to the consulate general in Leopoldville. Members of opposition parties named to the cabinet are described as little known and likely to be dominated by Lumumba. Lumumba allocated to himself the key post of defense minister, which carries with it control over the Congo's 24,000-man security force, whose Belgian officers are expected to remain after the Congo's independence on 30 June.</p>
+          <p>Among ten secretaries of state, however, five—including secretary for economic coordination and planning—are Communist inclined. Anti-Lumumba leaders continue to emphasize Lumumba's Communist contacts, and in conversation with US officials have deplored the failure of the United States to check "Communist forces" in the Congo. Available evidence suggests that Lumumba is a leftist-oriented "neutralist" who has accepted financial aid from Communist sources.</p>
+          <div class="doc-source">Source: CIA Daily Brief, June 27, 1960.</div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>🔍 DOCUMENT C ANALYSIS</h4>
+
+          <div class="analysis-q">
+            <label><span class="q-num">1.</span> <strong>CONTEXTUALIZATION:</strong> This brief was produced three days before Congolese independence and filed under documents about "the Communist Bloc." What does that tell you about how the U.S. was framing the Congo situation? What was the U.S. most worried about in 1960?</label>
+            <textarea id="c-q1" placeholder="Think about Cold War context — what did 'communist' mean to American officials in 1960?"></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">2.</span> <strong>CLOSE READING:</strong> Count the specific labels the CIA uses to describe Lumumba: "leftist tinge," "Communist inclined," "Communist contacts," "neutralist." The brief admits he is a "neutralist" — someone trying to stay out of the Cold War. Why would that label make the U.S. nervous rather than reassured?</label>
+            <textarea id="c-q2" placeholder="Why might 'neutralist' be alarming to Cold War strategists?"></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">3.</span> <strong>MOTIVE:</strong> Based on this document, who had motive? What does this document tell us about what the U.S. feared — and what it might have been willing to do about it?</label>
+            <textarea id="c-q3" placeholder="What does the language of this document suggest about U.S. intentions?"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(2)">← BACK</button>
+      <button class="btn btn-primary" onclick="goToPhase(4)">NEXT DOCUMENT →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 4: DOCUMENT D -->
+  <div class="phase" id="phase4">
+    <div class="section-head">📰 DOCUMENT D <span class="badge">NEW YORK TIMES · AUGUST 1960</span></div>
+
+    <div class="document-card">
+      <div class="doc-header">
+        <div>
+          <div class="doc-label">Document D — New York Times, August 6, 1960</div>
+          <div class="doc-meta">Author: Thomas F. Brady &nbsp;|&nbsp; Date: August 6, 1960<br>Type: Newspaper Report &nbsp;|&nbsp; Audience: General public</div>
+        </div>
+        <div class="doc-stamp stamp-evidence">PRESS</div>
+      </div>
+      <div class="context-banner">
+        🔍 <strong>Investigator's Note:</strong> By August, the crisis has escalated fast. The Congolese army mutinied. Katanga — rich in copper, gold, and uranium — has declared secession with Belgian troops backing it. Lumumba, having been turned away by the U.S. and the UN, is now telegraphing the UN Secretary-General directly and making a very specific accusation about Belgium.
+      </div>
+      <div class="doc-body">
+        <div class="doc-text">
+          <p>Premier Patrice Lumumba of the Congo telegraphed Secretary General Dag Hammarskjöld today.... Mr. Lumumba accused the Belgian government of "provoking" the secession of Katanga and maintaining troops there "to consolidate" this action. He said the moves of the dissident premier of Katanga, Moise Tshombe, were "dictated" by his Belgian military advisers.</p>
+          <p>After disclosing the text of the telegram to Mr. Hammarskjöld, Mr. Lumumba added that he firmly approved of his Government's decision to force the Belgian Ambassador to leave the Congo by Monday. He said his Government had taken the decision to break off all relations with Belgium on July 14. He said the decision...was taken after Belgium's "flagrant violation of the friendship treaty by instigation of the secession of Katanga."</p>
+          <div class="doc-source">Source: Thomas F. Brady, "Congolese Premier Threatens to 'Revise Position' Unless U.N. Sends Troops Now," The New York Times, August 6, 1960.</div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>🔍 DOCUMENT D ANALYSIS</h4>
+
+          <div class="analysis-q">
+            <label><span class="q-num">1.</span> <strong>SOURCING:</strong> A newspaper is a different kind of source than a government brief or a speech. Who is its audience? What are its purposes? Does being a newspaper make it more or less reliable than Document C — or just differently reliable?</label>
+            <textarea id="d-q1" placeholder="Compare this source's nature and purposes to Document C..."></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">2.</span> <strong>CLOSE READING:</strong> What specific accusation is Lumumba making about Belgium? He says Katanga's moves were "dictated" by Belgian military advisers. What is he claiming?</label>
+            <textarea id="d-q2" placeholder="What exactly is Lumumba accusing Belgium of doing?"></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">3.</span> <strong>CONTEXTUALIZATION:</strong> Katanga contained copper, gold, and uranium — some of the most valuable mineral deposits in the world. Belgian companies owned the mines. Why would Belgium have a strong financial motive to support Katanga's secession from a Lumumba-led Congo?</label>
+            <textarea id="d-q3" placeholder="Follow the money: who profits from Katanga remaining separate?"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(3)">← BACK</button>
+      <button class="btn btn-primary" onclick="goToPhase(5)">NEXT DOCUMENT →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 5: DOCUMENT E -->
+  <div class="phase" id="phase5">
+    <div class="section-head">⚖️ DOCUMENT E <span class="badge">BELGIAN COMMISSION · 2001</span></div>
+
+    <div class="document-card">
+      <div class="doc-header">
+        <div>
+          <div class="doc-label">Document E — Belgian Parliamentary Commission Report</div>
+          <div class="doc-meta">Date: 2001 &nbsp;|&nbsp; Forty years after the assassination<br>Author: Belgian Parliamentary Enquiry Committee &nbsp;|&nbsp; Purpose: Official investigation</div>
+        </div>
+        <div class="doc-stamp stamp-primary">OFFICIAL</div>
+      </div>
+      <div class="context-banner">
+        🔍 <strong>Investigator's Note:</strong> This is the strangest document in the file. In 1999 — almost forty years after Lumumba's death — the Belgian parliament established a commission to investigate its own country's possible role. This is their conclusion. Read carefully: note what they admit, and note the careful language they choose.
+      </div>
+      <div class="doc-body">
+        <div class="doc-text">
+          <p>The different speeches of 30 June 1960 confirmed the mutual distrust between Lumumba and the Belgian government, which undoubtedly influenced their reactions to the subsequent events. From the beginning of the crisis, it was clear that it led to a fundamental split between Lumumba and the Belgian government and that gradually, not only the Belgian government, but also many other governments and many layers of Belgian and Congolese society were campaigning...to bring about Lumumba's downfall politically.</p>
+          <p>As indicated, the Belgian government found itself pressured by public opinion which was very harshly opposed to the events in the Congo after independence.... It was hard for the government to justify a laissez-faire attitude regarding the tens of thousands of Europeans in the Congo and it was also worried about the financial and economic losses the Congo crisis could cause. The stakes were high for the Belgian financial groups in the Congo. Repeatedly, this was brought to the attention of the government.</p>
+          <p><strong>The committee concluded that Belgium was "morally responsible for the circumstances leading to the death of Lumumba."</strong></p>
+          <div class="doc-source">Source: "The Conclusions of the Enquiry Committee," Belgian Parliamentary Commission, 2001.</div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>🔍 DOCUMENT E ANALYSIS</h4>
+
+          <div class="analysis-q">
+            <label><span class="q-num">1.</span> <strong>SOURCING:</strong> Who wrote this document, and why was it written forty years after the assassination? What does it mean that Belgium produced a report investigating itself?</label>
+            <textarea id="e-q1" placeholder="Why might a government investigate its own possible role in an assassination forty years later?"></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">2.</span> <strong>CLOSE READING:</strong> The report says Belgium was "morally responsible for the <em>circumstances</em> leading to" Lumumba's death — not that Belgium ordered the assassination. What is the difference? Does the careful language raise questions or answer them?</label>
+            <textarea id="e-q2" placeholder="Pay close attention to the precise language used and what it does and doesn't admit..."></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">3.</span> <strong>CORROBORATION:</strong> The report says Belgium was worried about "financial and economic losses" and that "the stakes were high for Belgian financial groups." How does this corroborate or contradict what you found in Documents B, C, and D?</label>
+            <textarea id="e-q3" placeholder="What does this document confirm that other documents suggested?"></textarea>
+          </div>
+
+          <div class="analysis-q">
+            <label><span class="q-num">4.</span> <strong>RELIABILITY:</strong> This is an official government admission of moral responsibility. Does that make it more trustworthy than a document designed to conceal involvement? Or does the forty-year delay and the careful language still raise questions?</label>
+            <textarea id="e-q4" placeholder="Is a government admitting partial responsibility automatically more credible? Why or why not?"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(4)">← BACK</button>
+      <button class="btn btn-primary" onclick="goToPhase(6)">BUILD EVIDENCE BOARD →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 6: EVIDENCE BOARD -->
+  <div class="phase" id="phase6">
+    <div class="section-head">🗂️ EVIDENCE BOARD <span class="badge">CORROBORATION</span></div>
+
+    <div class="brief-card">
+      <h3>INSTRUCTIONS</h3>
+      <p>You now have five documents from five different sources. A good investigator does not treat each document in isolation — they compare, corroborate, and weigh the evidence. For each document, identify what reasons it suggests for the assassination, what makes it strong evidence, and what makes it weak or limited.</p>
+    </div>
+
+    <div class="document-card" style="overflow-x:auto;">
+      <div class="doc-header">
+        <div class="doc-label">Evidence Organizer — Corroboration Chart</div>
+      </div>
+      <div class="doc-body">
+        <table class="evidence-table">
+          <thead>
+            <tr>
+              <th style="width:12%">DOCUMENT</th>
+              <th style="width:36%">What reasons does this document suggest for why Lumumba was assassinated?</th>
+              <th style="width:26%">What makes this STRONG evidence?</th>
+              <th style="width:26%">What makes this WEAK evidence?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="doc-tag">DOC A</span><br><small>Textbook</small></td>
+              <td><textarea id="ev-a-reason" placeholder="What does this document suggest about motive?"></textarea></td>
+              <td><textarea id="ev-a-strong" placeholder="Why might this be credible?"></textarea></td>
+              <td><textarea id="ev-a-weak" placeholder="What limits this source?"></textarea></td>
+            </tr>
+            <tr>
+              <td><span class="doc-tag">DOC B</span><br><small>Lumumba Speech</small></td>
+              <td><textarea id="ev-b-reason" placeholder="What does this document suggest about motive?"></textarea></td>
+              <td><textarea id="ev-b-strong" placeholder="Why might this be credible?"></textarea></td>
+              <td><textarea id="ev-b-weak" placeholder="What limits this source?"></textarea></td>
+            </tr>
+            <tr>
+              <td><span class="doc-tag">DOC C</span><br><small>CIA Brief</small></td>
+              <td><textarea id="ev-c-reason" placeholder="What does this document suggest about motive?"></textarea></td>
+              <td><textarea id="ev-c-strong" placeholder="Why might this be credible?"></textarea></td>
+              <td><textarea id="ev-c-weak" placeholder="What limits this source?"></textarea></td>
+            </tr>
+            <tr>
+              <td><span class="doc-tag">DOC D</span><br><small>New York Times</small></td>
+              <td><textarea id="ev-d-reason" placeholder="What does this document suggest about motive?"></textarea></td>
+              <td><textarea id="ev-d-strong" placeholder="Why might this be credible?"></textarea></td>
+              <td><textarea id="ev-d-weak" placeholder="What limits this source?"></textarea></td>
+            </tr>
+            <tr>
+              <td><span class="doc-tag">DOC E</span><br><small>Belgian Commission</small></td>
+              <td><textarea id="ev-e-reason" placeholder="What does this document suggest about motive?"></textarea></td>
+              <td><textarea id="ev-e-strong" placeholder="Why might this be credible?"></textarea></td>
+              <td><textarea id="ev-e-weak" placeholder="What limits this source?"></textarea></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(5)">← BACK</button>
+      <button class="btn btn-primary" onclick="goToPhase(7)">WRITE FINAL CLAIM →</button>
+    </div>
+  </div>
+
+  <!-- PHASE 7: VERDICT -->
+  <div class="phase" id="phase7">
+    <div class="section-head">✍️ FINAL CLAIM <span class="badge">YOUR VERDICT</span></div>
+
+    <div class="verdict-section">
+      <h3>THE DETECTIVE'S CONCLUSION</h3>
+
+      <div class="verdict-claim">
+        <label>CLAIM — Answer the central question in 1–2 sentences:</label>
+        <textarea id="v-claim" placeholder="Why was Patrice Lumumba assassinated? State your argument clearly."></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>EVIDENCE — Which 2–3 documents provide your strongest evidence? Explain specifically:</label>
+        <textarea id="v-evidence" placeholder="Cite specific details from at least two documents. Why are these the most convincing?"></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>CORROBORATION — Where do your sources agree? Where do they conflict?</label>
+        <textarea id="v-corroborate" placeholder="Which documents point to the same conclusion? Where do they tell different stories?"></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>LIMITATIONS — What would you need to know to strengthen your argument?</label>
+        <textarea id="v-limits" placeholder="What perspectives are missing? What other evidence would help?"></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>BIGGER PICTURE — The Congo is one case. What does it reveal about the forces shaping decolonization more broadly?</label>
+        <textarea id="v-bigger" placeholder="Connect Lumumba's story to the patterns of decolonization, Cold War interference, and colonial legacy we discussed in lecture."></textarea>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(6)">← BACK</button>
+      <button class="btn btn-submit" id="submit-btn" onclick="submitToSupabase()">📤 SUBMIT TO PROFESSOR HAUSELMANN</button>
+    </div>
+
+    <div class="success-msg" id="success-msg">
+      ✅ FILE SUBMITTED SUCCESSFULLY. Your investigation has been sent to Prof. Hauselmann. Case closed.
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const ASSIGNMENT_OPEN = true;
+const SUBMISSION_CUTOFF = null; // Set to 'YYYY-MM-DDTHH:MM:SS' to add a deadline
+
+let currentPhase = 0;
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function beginInvestigation() {
+  document.getElementById('splash').classList.add('hidden');
+  setTimeout(() => {
+    document.getElementById('app').classList.add('visible');
+    document.getElementById('splash').style.display = 'none';
+  }, 800);
+}
+
+function goToPhase(n) {
+  // Require name on leaving phase 0
+  if (currentPhase === 0 && n > 0) {
+    const name = document.getElementById('student-name').value.trim();
+    if (!name) {
+      alert('Please enter your name before opening the first document.');
+      document.getElementById('student-name').focus();
+      return;
+    }
+  }
+
+  document.getElementById('phase' + currentPhase).classList.remove('active');
+  document.querySelectorAll('.progress-step').forEach((el, i) => {
+    el.classList.remove('active', 'done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+  document.getElementById('phase' + n).classList.add('active');
+  currentPhase = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── AUTOSAVE ──────────────────────────────────────────────────────────────
+function collectData() {
+  return {
+    studentName: document.getElementById('student-name').value,
+    sectionNumber: document.getElementById('section-number').value,
+    docA: { q1: val('a-q1'), q2: val('a-q2'), q3: val('a-q3') },
+    docB: { q1: val('b-q1'), q2: val('b-q2'), q3: val('b-q3') },
+    docC: { q1: val('c-q1'), q2: val('c-q2'), q3: val('c-q3') },
+    docD: { q1: val('d-q1'), q2: val('d-q2'), q3: val('d-q3') },
+    docE: { q1: val('e-q1'), q2: val('e-q2'), q3: val('e-q3'), q4: val('e-q4') },
+    evidence: {
+      a: { reason: val('ev-a-reason'), strong: val('ev-a-strong'), weak: val('ev-a-weak') },
+      b: { reason: val('ev-b-reason'), strong: val('ev-b-strong'), weak: val('ev-b-weak') },
+      c: { reason: val('ev-c-reason'), strong: val('ev-c-strong'), weak: val('ev-c-weak') },
+      d: { reason: val('ev-d-reason'), strong: val('ev-d-strong'), weak: val('ev-d-weak') },
+      e: { reason: val('ev-e-reason'), strong: val('ev-e-strong'), weak: val('ev-e-weak') },
+    },
+    verdict: {
+      claim: val('v-claim'),
+      evidence: val('v-evidence'),
+      corroborate: val('v-corroborate'),
+      limits: val('v-limits'),
+      bigger: val('v-bigger')
+    }
+  };
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+setInterval(() => {
+  localStorage.setItem('lumFile', JSON.stringify(collectData()));
+}, 20000);
+
+window.onload = function() {
+  const saved = localStorage.getItem('lumFile');
+  if (saved) {
+    const ok = confirm('Restore your previous session?');
+    if (ok) {
+      const d = JSON.parse(saved);
+      if (d.studentName) document.getElementById('student-name').value = d.studentName;
+      if (d.sectionNumber) document.getElementById('section-number').value = d.sectionNumber;
+      restore('a-q1', d.docA?.q1); restore('a-q2', d.docA?.q2); restore('a-q3', d.docA?.q3);
+      restore('b-q1', d.docB?.q1); restore('b-q2', d.docB?.q2); restore('b-q3', d.docB?.q3);
+      restore('c-q1', d.docC?.q1); restore('c-q2', d.docC?.q2); restore('c-q3', d.docC?.q3);
+      restore('d-q1', d.docD?.q1); restore('d-q2', d.docD?.q2); restore('d-q3', d.docD?.q3);
+      restore('e-q1', d.docE?.q1); restore('e-q2', d.docE?.q2); restore('e-q3', d.docE?.q3); restore('e-q4', d.docE?.q4);
+      restore('ev-a-reason', d.evidence?.a?.reason); restore('ev-a-strong', d.evidence?.a?.strong); restore('ev-a-weak', d.evidence?.a?.weak);
+      restore('ev-b-reason', d.evidence?.b?.reason); restore('ev-b-strong', d.evidence?.b?.strong); restore('ev-b-weak', d.evidence?.b?.weak);
+      restore('ev-c-reason', d.evidence?.c?.reason); restore('ev-c-strong', d.evidence?.c?.strong); restore('ev-c-weak', d.evidence?.c?.weak);
+      restore('ev-d-reason', d.evidence?.d?.reason); restore('ev-d-strong', d.evidence?.d?.strong); restore('ev-d-weak', d.evidence?.d?.weak);
+      restore('ev-e-reason', d.evidence?.e?.reason); restore('ev-e-strong', d.evidence?.e?.strong); restore('ev-e-weak', d.evidence?.e?.weak);
+      restore('v-claim', d.verdict?.claim); restore('v-evidence', d.verdict?.evidence);
+      restore('v-corroborate', d.verdict?.corroborate); restore('v-limits', d.verdict?.limits); restore('v-bigger', d.verdict?.bigger);
+    }
+  }
+};
+
+function restore(id, value) {
+  const el = document.getElementById(id);
+  if (el && value) el.value = value;
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────
+async function submitToSupabase() {
+  if (!ASSIGNMENT_OPEN) {
+    alert('This assignment is now closed. Please contact Prof. Hauselmann.');
+    return;
+  }
+  if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
+    alert('The submission deadline has passed. Please contact Prof. Hauselmann.');
+    return;
+  }
+
+  const name = document.getElementById('student-name').value.trim();
+  const section = document.getElementById('section-number').value.trim();
+  if (!name) { alert('Please enter your name.'); goToPhase(0); return; }
+  if (!section) { alert('Please enter your section number.'); goToPhase(0); return; }
+
+  const claim = val('v-claim');
+  if (!claim) { alert('Please write your Final Claim before submitting.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ SUBMITTING...';
+
+  const data = collectData();
+
+  try {
+    const { error } = await supabaseClient
+      .from('worksheet_submissions')
+      .insert({
+        student_name: name,
+        section_number: section,
+        worksheet_type: 'lumumba-assassination-investigation',
+        form_data: data,
+        submitted_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+
+    document.getElementById('success-msg').classList.add('visible');
+    btn.textContent = '✓ SUBMITTED';
+    localStorage.removeItem('lumFile');
+
+  } catch (err) {
+    console.error(err);
+    alert('Submission failed: ' + err.message + '\n\nPlease screenshot your completed work and email it to Prof. Hauselmann.');
+    btn.disabled = false;
+    btn.textContent = '📤 SUBMIT TO PROFESSOR HAUSELMANN';
+  }
+}
+</script>
+</body>
+</html>
