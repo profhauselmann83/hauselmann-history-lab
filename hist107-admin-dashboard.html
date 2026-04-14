@@ -6,6 +6,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <title>HIST 107 Admin Dashboard | Prof. Hauselmann</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -258,6 +260,7 @@
         .comp-2 { background: #fef3e2; color: #c0712a; }
         .comp-3 { background: #eafaf1; color: #1e8449; }
         .comp-4 { background: #f5eef8; color: #7d3c98; }
+        .comp-5 { background: #fde8e8; color: #922b21; }
 
         .view-btn {
             background-color: #8e44ad;
@@ -330,6 +333,46 @@
         }
 
         .bulk-download-btn:hover { background-color: #138d75; }
+
+        /* ── SELECTION + BULK MERGE/ZIP ── */
+        .select-cell { text-align: center; width: 46px; }
+        .select-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #8e44ad; }
+
+        .bulk-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            background: #f4ecf7;
+            border: 1px solid #d7bde2;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+
+        .bulk-toolbar .selection-info {
+            font-size: 0.9em;
+            color: #5b2c6f;
+            font-weight: 600;
+        }
+
+        .dl-btn-group { display: inline-flex; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+        .dl-btn-group .dl-main {
+            background-color: #9b59b6; color: white; border: none;
+            padding: 8px 14px; cursor: pointer; font-weight: 600;
+            font-family: 'Open Sans', sans-serif; font-size: 0.88em;
+            white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.25);
+            transition: background 0.15s;
+        }
+        .dl-btn-group .dl-main:hover:not(:disabled) { background-color: #8e44ad; }
+        .dl-btn-group .dl-alt {
+            background-color: #8e44ad; color: white; border: none;
+            padding: 8px 14px; cursor: pointer; font-weight: 600;
+            font-family: 'Open Sans', sans-serif; font-size: 0.88em;
+            white-space: nowrap; transition: background 0.15s;
+        }
+        .dl-btn-group .dl-alt:hover:not(:disabled) { background-color: #7d3c98; }
+        .dl-btn-group button:disabled { background-color: #bdc3c7 !important; cursor: not-allowed; }
 
         /* ── MODAL ── */
         #comp-modal {
@@ -629,7 +672,7 @@
                 <div class="tab" onclick="switchTab(event,'roles')">🎯 Role Selections</div>
                 <div class="tab" onclick="switchTab(event,'archives')">📚 Mini-Archives</div>
                 <div class="tab" onclick="switchTab(event,'class-archive')">🌍 Class Archive</div>
-                <div class="tab comp-tab" onclick="switchTab(event,'components')">📝 Components 1–4</div>
+                <div class="tab comp-tab" onclick="switchTab(event,'components')">📝 Components 1–5</div>
                 <div class="tab" onclick="switchTab(event,'submissions')">📤 All Submissions</div>
             </div>
 
@@ -722,7 +765,7 @@
             <!-- ══ COMPONENTS 1–4 TAB ══ -->
             <div id="tab-components" class="tab-content">
                 <div class="card">
-                    <h2 style="border-bottom-color: #8e44ad;">📝 Group Project Components 1–4</h2>
+                    <h2 style="border-bottom-color: #8e44ad;">📝 Group Project Components 1–5</h2>
 
                     <div class="comp-stats">
                         <div class="comp-stat"><div class="cs-num" id="cs-total">--</div><div class="cs-lbl">Total</div></div>
@@ -730,6 +773,7 @@
                         <div class="comp-stat"><div class="cs-num" id="cs-c2">--</div><div class="cs-lbl">Component 2</div></div>
                         <div class="comp-stat"><div class="cs-num" id="cs-c3">--</div><div class="cs-lbl">Component 3</div></div>
                         <div class="comp-stat"><div class="cs-num" id="cs-c4">--</div><div class="cs-lbl">Component 4</div></div>
+                        <div class="comp-stat"><div class="cs-num" id="cs-c5">--</div><div class="cs-lbl">Component 5</div></div>
                         <div class="comp-stat"><div class="cs-num" id="cs-noted">--</div><div class="cs-lbl">With Notes</div></div>
                     </div>
 
@@ -742,6 +786,7 @@
                                 <option value="hist107-archive-rationale">Component 2 — Archive Rationale</option>
                                 <option value="hist107-concept-map">Component 3 — Concept Map</option>
                                 <option value="hist107-research-poster">Component 4 — Research Poster</option>
+                                <option value="hist107-accountability">Component 5 — Group Accountability</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -773,10 +818,20 @@
                         <button class="bulk-download-btn" onclick="downloadAllPDFs()">📥 Download All PDFs</button>
                     </div>
 
+                    <div class="bulk-toolbar">
+                        <span class="selection-info"><span id="comp-selectedCount">0 selected</span></span>
+                        <div class="dl-btn-group">
+                            <button class="dl-main" id="comp-downloadMergedBtn" onclick="downloadSelectedComponents('merged')" disabled>⬇ Merged PDF</button>
+                            <button class="dl-alt"  id="comp-downloadZipBtn"    onclick="downloadSelectedComponents('zip')" disabled>🗜 ZIP</button>
+                        </div>
+                        <span style="font-size:0.82em;color:#7f8c8d">Tick rows (or the header box) to include them.</span>
+                    </div>
+
                     <div id="comp-table-wrap">
                         <table>
                             <thead>
                                 <tr>
+                                    <th class="select-cell"><input type="checkbox" class="select-checkbox" id="comp-selectAll" onchange="toggleSelectAllComponents()"></th>
                                     <th>Student</th>
                                     <th>Section</th>
                                     <th>Commodity</th>
@@ -787,7 +842,7 @@
                                 </tr>
                             </thead>
                             <tbody id="comp-table-body">
-                                <tr><td colspan="7" class="loading">Loading…</td></tr>
+                                <tr><td colspan="8" class="loading">Loading…</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -805,9 +860,11 @@
                                 <option value="">All Types</option>
                                 <option value="hist107-role-selection">Role Selection</option>
                                 <option value="hist107-mini-archive">Mini-Archive</option>
-                                <option value="hist107-archive-rationale">Archive Rationale</option>
+                                <option value="hist107-archive-rationale-group">Archive Rationale (Group)</option>
+                                <option value="hist107-archive-rationale-individual">Archive Rationale (Individual)</option>
                                 <option value="hist107-concept-map">Concept Map</option>
                                 <option value="hist107-research-poster">Research Poster</option>
+                                <option value="hist107-accountability">Group Accountability</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -848,6 +905,7 @@
         let allComponents = [];
         let filteredComponents = [];
         let currentModalId = null;
+        const compSelected = new Set();
 
         // ── AUTH ──────────────────────────────────────────────────────────────
         async function checkAuth() {
@@ -993,21 +1051,27 @@
         }
 
         // ══════════════════════════════════════════════════════════════════════
-        //  COMPONENTS 1–4
+        //  COMPONENTS 1–5
         // ══════════════════════════════════════════════════════════════════════
 
         const COMP_LABELS = {
-            'hist107-mini-archive':      'Component 1 — Mini-Archive',
-            'hist107-archive-rationale': 'Component 2 — Archive Rationale',
-            'hist107-concept-map':       'Component 3 — Concept Map',
-            'hist107-research-poster':   'Component 4 — Research Poster'
+            'hist107-mini-archive':                'Component 1 — Mini-Archive',
+            'hist107-archive-rationale':           'Component 2 — Archive Rationale',
+            'hist107-archive-rationale-group':     'Component 2 — Archive Rationale (Group)',
+            'hist107-archive-rationale-individual':'Component 2 — Archive Rationale (Individual)',
+            'hist107-concept-map':                 'Component 3 — Concept Map',
+            'hist107-research-poster':             'Component 4 — Research Poster',
+            'hist107-accountability':              'Component 5 — Group Accountability'
         };
 
         const COMP_BADGE_CLASS = {
-            'hist107-mini-archive':      'comp-1',
-            'hist107-archive-rationale': 'comp-2',
-            'hist107-concept-map':       'comp-3',
-            'hist107-research-poster':   'comp-4'
+            'hist107-mini-archive':                'comp-1',
+            'hist107-archive-rationale':           'comp-2',
+            'hist107-archive-rationale-group':     'comp-2',
+            'hist107-archive-rationale-individual':'comp-2',
+            'hist107-concept-map':                 'comp-3',
+            'hist107-research-poster':             'comp-4',
+            'hist107-accountability':              'comp-5'
         };
 
         // Field definitions per component type — controls modal layout
@@ -1111,12 +1175,105 @@
                         ]
                     }
                 ]
+            },
+            'hist107-archive-rationale-group': {
+                header: ['analytical_lens'],
+                sections: [
+                    {
+                        label: 'Student Info',
+                        fields: [
+                            { key: 'commodity_name', label: 'Commodity' },
+                            { key: 'analytical_lens', label: 'Analytical Lens' },
+                            { key: 'group_members', label: 'Group Members' }
+                        ]
+                    },
+                    {
+                        label: 'Part 1 — Group Archive Rationale',
+                        fields: [
+                            { key: 'group_rationale', label: 'Why These Sources?' },
+                            { key: 'major_themes', label: 'Major Themes & Patterns' },
+                            { key: 'power_perspective', label: 'Power, Perspective & Missing Voices' },
+                            { key: 'capitalism_connections', label: 'Capitalism, Empire & Globalization' },
+                            { key: 'cotton_comparison', label: 'Comparison to Cotton (Beckert)' }
+                        ]
+                    },
+                    {
+                        label: 'Part 2 — Individual Reflection',
+                        fields: [
+                            { key: 'individual_reflection', label: 'How My Lens Shaped the Archive' },
+                            { key: 'lens_contribution', label: 'Unique Insights from My Lens' },
+                            { key: 'limits_silences', label: 'Limits & Silences' }
+                        ]
+                    }
+                ]
+            },
+            'hist107-archive-rationale-individual': {
+                header: ['analytical_lens'],
+                sections: [
+                    {
+                        label: 'Student Info',
+                        fields: [
+                            { key: 'commodity_name', label: 'Commodity' },
+                            { key: 'analytical_lens', label: 'Analytical Lens' },
+                            { key: 'group_members', label: 'Group Members' }
+                        ]
+                    },
+                    {
+                        label: 'Part 1 — Group Archive Rationale',
+                        fields: [
+                            { key: 'group_rationale', label: 'Why These Sources?' },
+                            { key: 'major_themes', label: 'Major Themes & Patterns' },
+                            { key: 'power_perspective', label: 'Power, Perspective & Missing Voices' },
+                            { key: 'capitalism_connections', label: 'Capitalism, Empire & Globalization' },
+                            { key: 'cotton_comparison', label: 'Comparison to Cotton (Beckert)' }
+                        ]
+                    },
+                    {
+                        label: 'Part 2 — Individual Reflection',
+                        fields: [
+                            { key: 'individual_reflection', label: 'How My Lens Shaped the Archive' },
+                            { key: 'lens_contribution', label: 'Unique Insights from My Lens' },
+                            { key: 'limits_silences', label: 'Limits & Silences' }
+                        ]
+                    }
+                ]
+            },
+            'hist107-accountability': {
+                header: ['analytical_lens'],
+                sections: [
+                    {
+                        label: 'Student Info',
+                        fields: [
+                            { key: 'commodity_name', label: 'Commodity' },
+                            { key: 'analytical_lens', label: 'Analytical Lens' },
+                            { key: 'group_members', label: 'Group Members' }
+                        ]
+                    },
+                    {
+                        label: 'Self-Assessment',
+                        fields: [
+                            { key: 'primary_contribution', label: 'Primary Contribution' },
+                            { key: 'challenges', label: 'Challenges' },
+                            { key: 'collab_rating', label: 'Collaboration Rating' },
+                            { key: 'labor_division', label: 'Labor Division' },
+                            { key: 'productive_disagreement', label: 'Productive Disagreement' }
+                        ]
+                    },
+                    {
+                        label: 'Historical Skills Reflection',
+                        fields: [
+                            { key: 'historical_skill', label: 'Historical Skill' },
+                            { key: 'skill_explanation', label: 'Skill Explanation' },
+                            { key: 'changed_thinking', label: 'Changed Thinking' }
+                        ]
+                    }
+                ]
             }
         };
 
         async function loadComponents() {
             document.getElementById('comp-table-body').innerHTML =
-                '<tr><td colspan="7" class="loading">Loading…</td></tr>';
+                '<tr><td colspan="8" class="loading">Loading…</td></tr>';
 
             try {
                 const { data, error } = await supabaseClient
@@ -1125,20 +1282,26 @@
                     .in('worksheet_type', [
                         'hist107-mini-archive',
                         'hist107-archive-rationale',
+                        'hist107-archive-rationale-group',
+                        'hist107-archive-rationale-individual',
                         'hist107-concept-map',
-                        'hist107-research-poster'
+                        'hist107-research-poster',
+                        'hist107-accountability'
                     ])
                     .order('submitted_at', { ascending: false });
 
                 if (error) throw error;
 
                 allComponents = data || [];
+                // Drop any selections that no longer exist in the freshly loaded data
+                const validIds = new Set(allComponents.map(s => s.id));
+                Array.from(compSelected).forEach(id => { if (!validIds.has(id)) compSelected.delete(id); });
                 updateCompStats();
                 applyCompFilters();
 
             } catch (e) {
                 document.getElementById('comp-table-body').innerHTML =
-                    `<tr><td colspan="7" class="loading" style="color:#e74c3c">Error loading components: ${esc(e.message)}</td></tr>`;
+                    `<tr><td colspan="8" class="loading" style="color:#e74c3c">Error loading components: ${esc(e.message)}</td></tr>`;
             }
         }
 
@@ -1146,9 +1309,10 @@
             const types = allComponents.map(s => s.worksheet_type);
             document.getElementById('cs-total').textContent = allComponents.length;
             document.getElementById('cs-c1').textContent    = types.filter(t => t === 'hist107-mini-archive').length;
-            document.getElementById('cs-c2').textContent    = types.filter(t => t === 'hist107-archive-rationale').length;
+            document.getElementById('cs-c2').textContent    = types.filter(t => t === 'hist107-archive-rationale' || t === 'hist107-archive-rationale-group' || t === 'hist107-archive-rationale-individual').length;
             document.getElementById('cs-c3').textContent    = types.filter(t => t === 'hist107-concept-map').length;
             document.getElementById('cs-c4').textContent    = types.filter(t => t === 'hist107-research-poster').length;
+            document.getElementById('cs-c5').textContent    = types.filter(t => t === 'hist107-accountability').length;
             document.getElementById('cs-noted').textContent = allComponents.filter(s => s.grading_notes && s.grading_notes.trim()).length;
         }
 
@@ -1160,7 +1324,11 @@
             const search   = document.getElementById('comp-search').value.toLowerCase();
             const notesF   = document.getElementById('comp-filter-notes').value;
 
-            if (typeF)    f = f.filter(s => s.worksheet_type === typeF);
+            if (typeF === 'hist107-archive-rationale') {
+                f = f.filter(s => s.worksheet_type === 'hist107-archive-rationale' || s.worksheet_type === 'hist107-archive-rationale-group' || s.worksheet_type === 'hist107-archive-rationale-individual');
+            } else if (typeF) {
+                f = f.filter(s => s.worksheet_type === typeF);
+            }
             if (sectionF) f = f.filter(s => s.section_number === sectionF);
             if (commF)    f = f.filter(s => {
                 const comm = (s.form_data?.commodity_name || '').toLowerCase();
@@ -1177,7 +1345,9 @@
         function renderCompTable(rows) {
             const tbody = document.getElementById('comp-table-body');
             if (!rows.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:left;padding:40px;color:#7f8c8d">No submissions found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:left;padding:40px;color:#7f8c8d">No submissions found.</td></tr>';
+                updateCompSelectAll();
+                updateCompSelectedCount();
                 return;
             }
 
@@ -1187,8 +1357,12 @@
                 const commodity  = sub.form_data?.commodity_name || '—';
                 const hasNotes   = sub.grading_notes && sub.grading_notes.trim();
                 const noteDot    = hasNotes ? `<span class="has-notes-dot" title="Has grading notes"></span>` : '';
+                const checkbox   = sub.file_path
+                    ? `<input type="checkbox" class="select-checkbox" id="comp-sel-${sub.id}" ${compSelected.has(sub.id) ? 'checked' : ''} onchange="toggleCompSelect(${sub.id})">`
+                    : '';
 
                 return `<tr>
+                    <td class="select-cell">${checkbox}</td>
                     <td><strong>${esc(sub.student_name || 'Unknown')}</strong>${noteDot}</td>
                     <td>${esc(sub.section_number || '—')}</td>
                     <td>${esc(commodity)}</td>
@@ -1199,10 +1373,13 @@
                     </td>
                     <td>
                         <button class="view-btn" onclick="openCompModal(${sub.id})">👁 View</button>
-                        ${sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="pdf-btn">⬇ PDF</a>` : ''}
+                        ${sub.file_path ? `<button onclick="openSubmissionPDF('${esc(sub.file_path)}')" class="pdf-btn">⬇ PDF</button>` : (sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="pdf-btn">⬇ PDF</a>` : '')}
                     </td>
                 </tr>`;
             }).join('');
+
+            updateCompSelectAll();
+            updateCompSelectedCount();
         }
 
         // ── MODAL ──────────────────────────────────────────────────────────────
@@ -1286,7 +1463,7 @@
             html += `<div style="margin-top:20px;padding-top:20px;border-top:2px solid #ecf0f1;">
                 <div class="field-label" style="margin-bottom:12px">Download Options</div>
                 <div class="modal-actions">
-                    ${sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="modal-download-btn">📥 Download Individual Work</a>` : '<span style="color:#999;font-size:0.88em">No file available</span>'}
+                    ${sub.file_path ? `<button onclick="openSubmissionPDF('${esc(sub.file_path)}')" class="modal-download-btn">📥 Download Individual Work</button>` : (sub.file_url ? `<a href="${esc(sub.file_url)}" target="_blank" class="modal-download-btn">📥 Download Individual Work</a>` : '<span style="color:#999;font-size:0.88em">No file available</span>')}
                 </div>
             </div>`;
 
@@ -1380,11 +1557,196 @@
             URL.revokeObjectURL(a.href);
         }
 
+        // ── SELECTION + BULK MERGE / ZIP ──────────────────────────────────────
+        function toggleCompSelect(id) {
+            if (compSelected.has(id)) compSelected.delete(id);
+            else compSelected.add(id);
+            updateCompSelectedCount();
+            updateCompSelectAll();
+        }
+
+        function toggleSelectAllComponents() {
+            const allChk = document.getElementById('comp-selectAll');
+            filteredComponents.filter(s => s.file_path).forEach(sub => {
+                if (allChk.checked) compSelected.add(sub.id);
+                else compSelected.delete(sub.id);
+                const chk = document.getElementById(`comp-sel-${sub.id}`);
+                if (chk) chk.checked = allChk.checked;
+            });
+            updateCompSelectedCount();
+        }
+
+        function updateCompSelectAll() {
+            const chk = document.getElementById('comp-selectAll');
+            if (!chk) return;
+            const selectable = filteredComponents.filter(s => s.file_path);
+            const selected   = selectable.filter(s => compSelected.has(s.id));
+            if (!selectable.length)               { chk.checked = false; chk.indeterminate = false; }
+            else if (selected.length === selectable.length) { chk.checked = true;  chk.indeterminate = false; }
+            else if (selected.length > 0)         { chk.checked = false; chk.indeterminate = true;  }
+            else                                  { chk.checked = false; chk.indeterminate = false; }
+        }
+
+        function updateCompSelectedCount() {
+            const n = compSelected.size;
+            const el = document.getElementById('comp-selectedCount');
+            if (el) el.textContent = n === 1 ? '1 selected' : `${n} selected`;
+            const mBtn = document.getElementById('comp-downloadMergedBtn');
+            const zBtn = document.getElementById('comp-downloadZipBtn');
+            if (mBtn) mBtn.disabled = n === 0;
+            if (zBtn) zBtn.disabled = n === 0;
+        }
+
+        async function fetchFileBytes(filePath, bucket = 'student-submissions') {
+            const { data, error } = await supabaseClient.storage.from(bucket).createSignedUrl(filePath, 3600);
+            if (error || !data) return null;
+            try {
+                const resp = await fetch(data.signedUrl);
+                if (!resp.ok) return null;
+                return await resp.arrayBuffer();
+            } catch (e) { return null; }
+        }
+
+        function safeFilename(studentName, worksheetType, filePath) {
+            const ext = (filePath.split('.').pop() || 'pdf').toLowerCase();
+            const name = (studentName || 'Unknown').replace(/[^a-zA-Z0-9_\- ]/g, '').trim().replace(/\s+/g, '_') || 'Unknown';
+            const compShort = (COMP_LABELS[worksheetType] || worksheetType || 'component')
+                .replace(/[^a-zA-Z0-9]/g, '_')
+                .replace(/_+/g, '_');
+            return `${name}_${compShort}.${ext}`;
+        }
+
+        function triggerDownload(blob, filename) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+        async function bulkMergePdf(submissions, filenameStem, onProgress) {
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            let count = 0;
+            for (let i = 0; i < submissions.length; i++) {
+                if (onProgress) onProgress(i + 1, submissions.length);
+                const sub = submissions[i];
+                if (!sub.file_path) continue;
+                const bytes = await fetchFileBytes(sub.file_path);
+                if (!bytes) continue;
+                try {
+                    const doc = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true });
+                    const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+                    pages.forEach(p => mergedPdf.addPage(p));
+                    count++;
+                } catch (e) {
+                    console.error('Merge error for', sub.student_name, e);
+                }
+            }
+            if (count === 0) return 0;
+            const pdfBytes = await mergedPdf.save();
+            const dateStr = new Date().toISOString().split('T')[0];
+            triggerDownload(new Blob([pdfBytes], { type: 'application/pdf' }),
+                `${filenameStem}_${dateStr}_${count}_files.pdf`);
+            return count;
+        }
+
+        async function bulkZip(submissions, filenameStem, onProgress) {
+            const zip = new JSZip();
+            const folder = zip.folder(filenameStem);
+            let count = 0;
+            const usedNames = {};
+            for (let i = 0; i < submissions.length; i++) {
+                if (onProgress) onProgress(i + 1, submissions.length);
+                const sub = submissions[i];
+                if (!sub.file_path) continue;
+                const bytes = await fetchFileBytes(sub.file_path);
+                if (!bytes) continue;
+                let fname = safeFilename(sub.student_name, sub.worksheet_type, sub.file_path);
+                if (usedNames[fname] !== undefined) {
+                    usedNames[fname]++;
+                    const parts = fname.split('.');
+                    const ext = parts.pop();
+                    fname = `${parts.join('.')}_${usedNames[fname]}.${ext}`;
+                } else {
+                    usedNames[fname] = 0;
+                }
+                folder.file(fname, bytes);
+                count++;
+            }
+            if (count === 0) return 0;
+            const dateStr = new Date().toISOString().split('T')[0];
+            const zipBlob = await zip.generateAsync({
+                type: 'blob',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 6 }
+            });
+            triggerDownload(zipBlob, `${filenameStem}_${dateStr}_${count}_files.zip`);
+            return count;
+        }
+
+        async function downloadSelectedComponents(mode) {
+            if (!compSelected.size) return;
+
+            const mergedBtn = document.getElementById('comp-downloadMergedBtn');
+            const zipBtn    = document.getElementById('comp-downloadZipBtn');
+            const activeBtn = mode === 'merged' ? mergedBtn : zipBtn;
+            const origText  = activeBtn.textContent;
+
+            mergedBtn.disabled = true;
+            zipBtn.disabled    = true;
+
+            // Preserve the current filtered table order for a predictable merge sequence
+            const selectedInOrder = filteredComponents.filter(s => compSelected.has(s.id) && s.file_path);
+            const onProgress = (cur, tot) => {
+                activeBtn.textContent = `${mode === 'merged' ? 'Merging' : 'Fetching'} ${cur}/${tot}…`;
+            };
+
+            try {
+                let count;
+                if (mode === 'merged') {
+                    count = await bulkMergePdf(selectedInOrder, 'hist107_components', onProgress);
+                } else {
+                    activeBtn.textContent = 'Building ZIP…';
+                    count = await bulkZip(selectedInOrder, 'hist107_components', onProgress);
+                }
+                if (count === 0) {
+                    alert('No PDFs could be downloaded. They may be missing from storage.');
+                } else if (count < selectedInOrder.length) {
+                    alert(`Downloaded ${count} of ${selectedInOrder.length} selected PDFs. The rest could not be loaded.`);
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+
+            activeBtn.textContent = origText;
+            updateCompSelectedCount();  // re-enables the buttons based on current selection
+        }
+
         // ── BULK PDF DOWNLOAD ─────────────────────────────────────────────────
+        // Open a submission PDF via a signed URL (works for private buckets too).
+        // Falls back to the stored public file_url if signing fails.
+        async function openSubmissionPDF(filePath, fallbackUrl) {
+            try {
+                const { data, error } = await supabaseClient.storage
+                    .from('student-submissions')
+                    .createSignedUrl(filePath, 3600);
+                if (error) throw error;
+                window.open(data.signedUrl, '_blank');
+            } catch (e) {
+                if (fallbackUrl) {
+                    window.open(fallbackUrl, '_blank');
+                } else {
+                    alert('Error opening PDF: ' + e.message);
+                }
+            }
+        }
+
         async function downloadAllPDFs() {
             if (!filteredComponents.length) { alert('No submissions to download.'); return; }
 
-            const withPDFs = filteredComponents.filter(s => s.file_url);
+            const withPDFs = filteredComponents.filter(s => s.file_path || s.file_url);
             if (!withPDFs.length) { alert('No PDFs available in the current filtered results.'); return; }
 
             const btn = event.target;
@@ -1392,29 +1754,35 @@
             btn.textContent = 'Downloading…';
 
             try {
-                // Using a simple approach: open each PDF in a new window with a delay
                 for (let i = 0; i < withPDFs.length; i++) {
                     const sub = withPDFs[i];
-                    setTimeout(() => {
-                        const link = document.createElement('a');
-                        link.href = sub.file_url;
-                        link.download = `${esc(sub.student_name)}_${COMP_LABELS[sub.worksheet_type].replace(/[^a-z0-9]/gi, '_')}.pdf`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }, i * 500);
+                    let url = null;
+                    if (sub.file_path) {
+                        const { data, error } = await supabaseClient.storage
+                            .from('student-submissions')
+                            .createSignedUrl(sub.file_path, 3600);
+                        if (!error && data) url = data.signedUrl;
+                    }
+                    if (!url) url = sub.file_url;
+                    if (!url) continue;
+
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.target = '_blank';
+                    link.download = `${esc(sub.student_name)}_${(COMP_LABELS[sub.worksheet_type] || sub.worksheet_type).replace(/[^a-z0-9]/gi, '_')}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    // Small delay between downloads to avoid browser popup blocking
+                    await new Promise(r => setTimeout(r, 500));
                 }
-
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.textContent = '📥 Download All PDFs';
-                }, withPDFs.length * 500 + 1000);
-
             } catch (e) {
                 alert('Error downloading PDFs: ' + e.message);
-                btn.disabled = false;
-                btn.textContent = '📥 Download All PDFs';
             }
+
+            btn.disabled = false;
+            btn.textContent = '📥 Download All PDFs';
         }
 
         // ══════════════════════════════════════════════════════════════════════
@@ -1543,7 +1911,10 @@
                 let html = '<table><thead><tr><th>Student</th><th>Section</th><th>Type</th><th>Submitted</th><th>Download</th></tr></thead><tbody>';
                 data.forEach(s => {
                     const typeName = (COMP_LABELS[s.worksheet_type] || s.worksheet_type.replace('hist107-','').replace(/-/g,' '));
-                    html += `<tr><td><strong>${esc(s.student_name)}</strong></td><td>${esc(s.section_number)}</td><td>${esc(typeName)}</td><td>${new Date(s.submitted_at).toLocaleString()}</td><td>${s.file_url?`<a href="${esc(s.file_url)}" target="_blank" class="download-btn">📄 View PDF</a>`:'-'}</td></tr>`;
+                    const pdfCell = s.file_path
+                        ? `<button onclick="openSubmissionPDF('${esc(s.file_path)}')" class="download-btn">📄 View PDF</button>`
+                        : (s.file_url ? `<a href="${esc(s.file_url)}" target="_blank" class="download-btn">📄 View PDF</a>` : '-');
+                    html += `<tr><td><strong>${esc(s.student_name)}</strong></td><td>${esc(s.section_number)}</td><td>${esc(typeName)}</td><td>${new Date(s.submitted_at).toLocaleString()}</td><td>${pdfCell}</td></tr>`;
                 });
                 html += '</tbody></table>';
                 content.innerHTML = html;
