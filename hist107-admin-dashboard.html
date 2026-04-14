@@ -6,6 +6,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <title>HIST 107 Admin Dashboard | Prof. Hauselmann</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -331,6 +333,46 @@
         }
 
         .bulk-download-btn:hover { background-color: #138d75; }
+
+        /* ── SELECTION + BULK MERGE/ZIP ── */
+        .select-cell { text-align: center; width: 46px; }
+        .select-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #8e44ad; }
+
+        .bulk-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            background: #f4ecf7;
+            border: 1px solid #d7bde2;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+
+        .bulk-toolbar .selection-info {
+            font-size: 0.9em;
+            color: #5b2c6f;
+            font-weight: 600;
+        }
+
+        .dl-btn-group { display: inline-flex; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+        .dl-btn-group .dl-main {
+            background-color: #9b59b6; color: white; border: none;
+            padding: 8px 14px; cursor: pointer; font-weight: 600;
+            font-family: 'Open Sans', sans-serif; font-size: 0.88em;
+            white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.25);
+            transition: background 0.15s;
+        }
+        .dl-btn-group .dl-main:hover:not(:disabled) { background-color: #8e44ad; }
+        .dl-btn-group .dl-alt {
+            background-color: #8e44ad; color: white; border: none;
+            padding: 8px 14px; cursor: pointer; font-weight: 600;
+            font-family: 'Open Sans', sans-serif; font-size: 0.88em;
+            white-space: nowrap; transition: background 0.15s;
+        }
+        .dl-btn-group .dl-alt:hover:not(:disabled) { background-color: #7d3c98; }
+        .dl-btn-group button:disabled { background-color: #bdc3c7 !important; cursor: not-allowed; }
 
         /* ── MODAL ── */
         #comp-modal {
@@ -776,10 +818,20 @@
                         <button class="bulk-download-btn" onclick="downloadAllPDFs()">📥 Download All PDFs</button>
                     </div>
 
+                    <div class="bulk-toolbar">
+                        <span class="selection-info"><span id="comp-selectedCount">0 selected</span></span>
+                        <div class="dl-btn-group">
+                            <button class="dl-main" id="comp-downloadMergedBtn" onclick="downloadSelectedComponents('merged')" disabled>⬇ Merged PDF</button>
+                            <button class="dl-alt"  id="comp-downloadZipBtn"    onclick="downloadSelectedComponents('zip')" disabled>🗜 ZIP</button>
+                        </div>
+                        <span style="font-size:0.82em;color:#7f8c8d">Tick rows (or the header box) to include them.</span>
+                    </div>
+
                     <div id="comp-table-wrap">
                         <table>
                             <thead>
                                 <tr>
+                                    <th class="select-cell"><input type="checkbox" class="select-checkbox" id="comp-selectAll" onchange="toggleSelectAllComponents()"></th>
                                     <th>Student</th>
                                     <th>Section</th>
                                     <th>Commodity</th>
@@ -790,7 +842,7 @@
                                 </tr>
                             </thead>
                             <tbody id="comp-table-body">
-                                <tr><td colspan="7" class="loading">Loading…</td></tr>
+                                <tr><td colspan="8" class="loading">Loading…</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -853,6 +905,7 @@
         let allComponents = [];
         let filteredComponents = [];
         let currentModalId = null;
+        const compSelected = new Set();
 
         // ── AUTH ──────────────────────────────────────────────────────────────
         async function checkAuth() {
@@ -1220,7 +1273,7 @@
 
         async function loadComponents() {
             document.getElementById('comp-table-body').innerHTML =
-                '<tr><td colspan="7" class="loading">Loading…</td></tr>';
+                '<tr><td colspan="8" class="loading">Loading…</td></tr>';
 
             try {
                 const { data, error } = await supabaseClient
@@ -1240,12 +1293,15 @@
                 if (error) throw error;
 
                 allComponents = data || [];
+                // Drop any selections that no longer exist in the freshly loaded data
+                const validIds = new Set(allComponents.map(s => s.id));
+                Array.from(compSelected).forEach(id => { if (!validIds.has(id)) compSelected.delete(id); });
                 updateCompStats();
                 applyCompFilters();
 
             } catch (e) {
                 document.getElementById('comp-table-body').innerHTML =
-                    `<tr><td colspan="7" class="loading" style="color:#e74c3c">Error loading components: ${esc(e.message)}</td></tr>`;
+                    `<tr><td colspan="8" class="loading" style="color:#e74c3c">Error loading components: ${esc(e.message)}</td></tr>`;
             }
         }
 
@@ -1289,7 +1345,9 @@
         function renderCompTable(rows) {
             const tbody = document.getElementById('comp-table-body');
             if (!rows.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:left;padding:40px;color:#7f8c8d">No submissions found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:left;padding:40px;color:#7f8c8d">No submissions found.</td></tr>';
+                updateCompSelectAll();
+                updateCompSelectedCount();
                 return;
             }
 
@@ -1299,8 +1357,12 @@
                 const commodity  = sub.form_data?.commodity_name || '—';
                 const hasNotes   = sub.grading_notes && sub.grading_notes.trim();
                 const noteDot    = hasNotes ? `<span class="has-notes-dot" title="Has grading notes"></span>` : '';
+                const checkbox   = sub.file_path
+                    ? `<input type="checkbox" class="select-checkbox" id="comp-sel-${sub.id}" ${compSelected.has(sub.id) ? 'checked' : ''} onchange="toggleCompSelect(${sub.id})">`
+                    : '';
 
                 return `<tr>
+                    <td class="select-cell">${checkbox}</td>
                     <td><strong>${esc(sub.student_name || 'Unknown')}</strong>${noteDot}</td>
                     <td>${esc(sub.section_number || '—')}</td>
                     <td>${esc(commodity)}</td>
@@ -1315,6 +1377,9 @@
                     </td>
                 </tr>`;
             }).join('');
+
+            updateCompSelectAll();
+            updateCompSelectedCount();
         }
 
         // ── MODAL ──────────────────────────────────────────────────────────────
@@ -1490,6 +1555,173 @@
             a.download = `hist107_components_${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(a.href);
+        }
+
+        // ── SELECTION + BULK MERGE / ZIP ──────────────────────────────────────
+        function toggleCompSelect(id) {
+            if (compSelected.has(id)) compSelected.delete(id);
+            else compSelected.add(id);
+            updateCompSelectedCount();
+            updateCompSelectAll();
+        }
+
+        function toggleSelectAllComponents() {
+            const allChk = document.getElementById('comp-selectAll');
+            filteredComponents.filter(s => s.file_path).forEach(sub => {
+                if (allChk.checked) compSelected.add(sub.id);
+                else compSelected.delete(sub.id);
+                const chk = document.getElementById(`comp-sel-${sub.id}`);
+                if (chk) chk.checked = allChk.checked;
+            });
+            updateCompSelectedCount();
+        }
+
+        function updateCompSelectAll() {
+            const chk = document.getElementById('comp-selectAll');
+            if (!chk) return;
+            const selectable = filteredComponents.filter(s => s.file_path);
+            const selected   = selectable.filter(s => compSelected.has(s.id));
+            if (!selectable.length)               { chk.checked = false; chk.indeterminate = false; }
+            else if (selected.length === selectable.length) { chk.checked = true;  chk.indeterminate = false; }
+            else if (selected.length > 0)         { chk.checked = false; chk.indeterminate = true;  }
+            else                                  { chk.checked = false; chk.indeterminate = false; }
+        }
+
+        function updateCompSelectedCount() {
+            const n = compSelected.size;
+            const el = document.getElementById('comp-selectedCount');
+            if (el) el.textContent = n === 1 ? '1 selected' : `${n} selected`;
+            const mBtn = document.getElementById('comp-downloadMergedBtn');
+            const zBtn = document.getElementById('comp-downloadZipBtn');
+            if (mBtn) mBtn.disabled = n === 0;
+            if (zBtn) zBtn.disabled = n === 0;
+        }
+
+        async function fetchFileBytes(filePath, bucket = 'student-submissions') {
+            const { data, error } = await supabaseClient.storage.from(bucket).createSignedUrl(filePath, 3600);
+            if (error || !data) return null;
+            try {
+                const resp = await fetch(data.signedUrl);
+                if (!resp.ok) return null;
+                return await resp.arrayBuffer();
+            } catch (e) { return null; }
+        }
+
+        function safeFilename(studentName, worksheetType, filePath) {
+            const ext = (filePath.split('.').pop() || 'pdf').toLowerCase();
+            const name = (studentName || 'Unknown').replace(/[^a-zA-Z0-9_\- ]/g, '').trim().replace(/\s+/g, '_') || 'Unknown';
+            const compShort = (COMP_LABELS[worksheetType] || worksheetType || 'component')
+                .replace(/[^a-zA-Z0-9]/g, '_')
+                .replace(/_+/g, '_');
+            return `${name}_${compShort}.${ext}`;
+        }
+
+        function triggerDownload(blob, filename) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+        async function bulkMergePdf(submissions, filenameStem, onProgress) {
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            let count = 0;
+            for (let i = 0; i < submissions.length; i++) {
+                if (onProgress) onProgress(i + 1, submissions.length);
+                const sub = submissions[i];
+                if (!sub.file_path) continue;
+                const bytes = await fetchFileBytes(sub.file_path);
+                if (!bytes) continue;
+                try {
+                    const doc = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true });
+                    const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+                    pages.forEach(p => mergedPdf.addPage(p));
+                    count++;
+                } catch (e) {
+                    console.error('Merge error for', sub.student_name, e);
+                }
+            }
+            if (count === 0) return 0;
+            const pdfBytes = await mergedPdf.save();
+            const dateStr = new Date().toISOString().split('T')[0];
+            triggerDownload(new Blob([pdfBytes], { type: 'application/pdf' }),
+                `${filenameStem}_${dateStr}_${count}_files.pdf`);
+            return count;
+        }
+
+        async function bulkZip(submissions, filenameStem, onProgress) {
+            const zip = new JSZip();
+            const folder = zip.folder(filenameStem);
+            let count = 0;
+            const usedNames = {};
+            for (let i = 0; i < submissions.length; i++) {
+                if (onProgress) onProgress(i + 1, submissions.length);
+                const sub = submissions[i];
+                if (!sub.file_path) continue;
+                const bytes = await fetchFileBytes(sub.file_path);
+                if (!bytes) continue;
+                let fname = safeFilename(sub.student_name, sub.worksheet_type, sub.file_path);
+                if (usedNames[fname] !== undefined) {
+                    usedNames[fname]++;
+                    const parts = fname.split('.');
+                    const ext = parts.pop();
+                    fname = `${parts.join('.')}_${usedNames[fname]}.${ext}`;
+                } else {
+                    usedNames[fname] = 0;
+                }
+                folder.file(fname, bytes);
+                count++;
+            }
+            if (count === 0) return 0;
+            const dateStr = new Date().toISOString().split('T')[0];
+            const zipBlob = await zip.generateAsync({
+                type: 'blob',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 6 }
+            });
+            triggerDownload(zipBlob, `${filenameStem}_${dateStr}_${count}_files.zip`);
+            return count;
+        }
+
+        async function downloadSelectedComponents(mode) {
+            if (!compSelected.size) return;
+
+            const mergedBtn = document.getElementById('comp-downloadMergedBtn');
+            const zipBtn    = document.getElementById('comp-downloadZipBtn');
+            const activeBtn = mode === 'merged' ? mergedBtn : zipBtn;
+            const origText  = activeBtn.textContent;
+
+            mergedBtn.disabled = true;
+            zipBtn.disabled    = true;
+
+            // Preserve the current filtered table order for a predictable merge sequence
+            const selectedInOrder = filteredComponents.filter(s => compSelected.has(s.id) && s.file_path);
+            const onProgress = (cur, tot) => {
+                activeBtn.textContent = `${mode === 'merged' ? 'Merging' : 'Fetching'} ${cur}/${tot}…`;
+            };
+
+            try {
+                let count;
+                if (mode === 'merged') {
+                    count = await bulkMergePdf(selectedInOrder, 'hist107_components', onProgress);
+                } else {
+                    activeBtn.textContent = 'Building ZIP…';
+                    count = await bulkZip(selectedInOrder, 'hist107_components', onProgress);
+                }
+                if (count === 0) {
+                    alert('No PDFs could be downloaded. They may be missing from storage.');
+                } else if (count < selectedInOrder.length) {
+                    alert(`Downloaded ${count} of ${selectedInOrder.length} selected PDFs. The rest could not be loaded.`);
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+
+            activeBtn.textContent = origText;
+            updateCompSelectedCount();  // re-enables the buttons based on current selection
         }
 
         // ── BULK PDF DOWNLOAD ─────────────────────────────────────────────────
