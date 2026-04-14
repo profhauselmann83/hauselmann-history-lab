@@ -1237,7 +1237,20 @@ body::before {
 // ── SUPABASE ──────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Lazy-init the Supabase client so a CDN/network failure loading supabase-js
+// doesn't take down page navigation (the click handler for "OPEN THE FILE"
+// lives in this same script block — a ReferenceError here would prevent
+// beginInvestigation() from ever being defined as a global).
+let supabaseClient = null;
+function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+  if (typeof supabase === 'undefined' || !supabase.createClient) {
+    throw new Error('Supabase library failed to load. Please check your internet connection and reload the page.');
+  }
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return supabaseClient;
+}
 
 const ASSIGNMENT_OPEN = true;
 const SUBMISSION_CUTOFF = null; // Set to 'YYYY-MM-DDTHH:MM:SS' to add a deadline
@@ -1375,7 +1388,7 @@ async function submitToSupabase() {
   const data = collectData();
 
   try {
-    const { error } = await supabaseClient
+    const { error } = await getSupabaseClient()
       .from('worksheet_submissions')
       .insert({
         student_name: name,
