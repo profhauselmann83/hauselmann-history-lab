@@ -1077,31 +1077,43 @@
                     // Step 2: Generate PDF
                     const pdfBlob = await this.generatePDFBlob()
 
-                    // Step 3: Upload PDF to storage
+                    // Step 3: Upload PDF to storage (tolerate failure so the DB
+                    // record still gets written and students aren't blocked)
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
                     const fileName = `hist107-mini-archive/${sectionNumber}/${studentName.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.pdf`
 
-                    const { error: uploadError } = await this.supabaseClient
-                        .storage
-                        .from('student-submissions')
-                        .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false })
+                    let filePath = null
+                    let fileUrl = null
+                    try {
+                        const { error: uploadError } = await this.supabaseClient
+                            .storage
+                            .from('student-submissions')
+                            .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false })
 
-                    if (uploadError) throw uploadError
+                        if (uploadError) {
+                            console.warn('PDF upload failed, continuing with metadata:', uploadError.message)
+                        } else {
+                            filePath = fileName
+                            const { data: urlData } = this.supabaseClient
+                                .storage
+                                .from('student-submissions')
+                                .getPublicUrl(fileName)
+                            fileUrl = urlData && urlData.publicUrl ? urlData.publicUrl : null
+                        }
+                    } catch (uploadEx) {
+                        console.warn('PDF upload threw, continuing with metadata:', uploadEx && uploadEx.message)
+                    }
 
-                    const { data: urlData } = this.supabaseClient
-                        .storage
-                        .from('student-submissions')
-                        .getPublicUrl(fileName)
-
-                    // Step 4: Save submission metadata
+                    // Step 4: Save submission metadata (critical — this is what
+                    // the professor's dashboard reads)
                     const { error: dbError } = await this.supabaseClient
                         .from('worksheet_submissions')
                         .insert({
                             student_name: studentName,
                             section_number: sectionNumber,
                             worksheet_type: 'hist107-mini-archive',
-                            file_path: fileName,
-                            file_url: urlData.publicUrl,
+                            file_path: filePath,
+                            file_url: fileUrl,
                             form_data: {
                                 commodity: document.getElementById('commodityName').value,
                                 lens: document.getElementById('analyticalLens').value,
@@ -1110,7 +1122,9 @@
                             submitted_at: new Date().toISOString()
                         })
 
-                    if (dbError) console.warn('Metadata save warning:', dbError)
+                    if (dbError) {
+                        throw new Error('Could not save submission record: ' + dbError.message)
+                    }
 
                     // Step 5: Add sources to class archive
                     const archivePromises = this.sources.map(source =>
@@ -1133,13 +1147,18 @@
                     )
 
                     const results = await Promise.all(archivePromises)
-                    const hasError = results.some(r => r.error)
+                    const archiveErrors = results.map(r => r.error).filter(Boolean)
 
-                    if (hasError) {
-                        console.warn('Some archive entries failed, but submission recorded')
+                    let successHtml = '✅ Successfully submitted! Your work has been sent to Prof. Hauselmann. You can resubmit anytime before the deadline.'
+                    if (archiveErrors.length > 0) {
+                        const firstMsg = archiveErrors[0].message || 'unknown error'
+                        console.warn('Class archive insert errors:', archiveErrors)
+                        successHtml += `<br><small style="color:#856404;">⚠️ ${archiveErrors.length} of ${this.sources.length} sources could not be posted to the class archive (${firstMsg}). Your submission to the professor was recorded. Please notify Prof. Hauselmann so RLS policies can be checked.</small>`
                     }
-
-                    msgDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your work has been sent to Prof. Hauselmann. You can resubmit anytime before the deadline.</div>'
+                    if (!filePath) {
+                        successHtml += '<br><small style="color:#856404;">⚠️ PDF file could not be uploaded, but your form data is saved. Please also email the exported PDF to your professor as a backup.</small>'
+                    }
+                    msgDiv.innerHTML = `<div class="alert alert-success">${successHtml}</div>`
                     submitBtn.textContent = '✓ Submitted'
 
                 } catch (error) {

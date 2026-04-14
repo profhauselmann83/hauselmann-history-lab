@@ -663,7 +663,7 @@
             messageDiv.innerHTML = '<div class="alert" style="background-color:#fff3cd;color:#856404;border-left:4px solid #ffc107;">Generating and uploading your work...</div>'
 
             try {
-                let fileUrl = null, fileName = null
+                let fileUrl = null, fileName = null, filePath = null
                 try {
                     const pdfBlob = await generatePDFBlob()
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -676,30 +676,38 @@
                         .from('student-submissions')
                         .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false })
 
-                    if (uploadError) { console.warn('PDF upload skipped:', uploadError.message); fileName = null }
-                    else {
+                    if (uploadError) {
+                        console.warn('PDF upload failed, continuing with metadata:', uploadError.message)
+                    } else {
+                        filePath = fileName
                         const { data: urlData } = supabaseClient.storage.from('student-submissions').getPublicUrl(fileName)
-                        fileUrl = urlData.publicUrl
+                        fileUrl = urlData && urlData.publicUrl ? urlData.publicUrl : null
                     }
-                } catch (pdfErr) { console.warn('PDF generation/upload skipped:', pdfErr.message) }
+                } catch (pdfErr) { console.warn('PDF generation/upload skipped:', pdfErr && pdfErr.message) }
 
-                if (fileName) {
-                    const formData = collectData()
-                    const { error: dbError } = await supabaseClient
-                        .from('worksheet_submissions')
-                        .insert({
-                            student_name: studentName,
-                            section_number: sectionNumber,
-                            worksheet_type: submissionRole === 'group' ? 'hist107-archive-rationale-group' : 'hist107-archive-rationale-individual',
-                            file_path: fileName,
-                            file_url: fileUrl,
-                            form_data: formData,
-                            submitted_at: new Date().toISOString()
-                        })
-                    if (dbError) console.warn('Metadata save warning:', dbError.message)
+                // Always write the submission record so the professor has
+                // the form data, even if the PDF upload didn't make it.
+                const formData = collectData()
+                const { error: dbError } = await supabaseClient
+                    .from('worksheet_submissions')
+                    .insert({
+                        student_name: studentName,
+                        section_number: sectionNumber,
+                        worksheet_type: submissionRole === 'group' ? 'hist107-archive-rationale-group' : 'hist107-archive-rationale-individual',
+                        file_path: filePath,
+                        file_url: fileUrl,
+                        form_data: formData,
+                        submitted_at: new Date().toISOString()
+                    })
+                if (dbError) {
+                    throw new Error('Could not save submission record: ' + dbError.message)
                 }
 
-                messageDiv.innerHTML = '<div class="alert alert-success">✅ Successfully submitted! Your work has been sent to Prof. Hauselmann.</div>'
+                let successHtml = '✅ Successfully submitted! Your work has been sent to Prof. Hauselmann.'
+                if (!filePath) {
+                    successHtml += '<br><small style="color:#856404;">⚠️ PDF upload did not complete, but your written responses were saved. Please also email the exported PDF to your professor as a backup.</small>'
+                }
+                messageDiv.innerHTML = `<div class="alert alert-success">${successHtml}</div>`
                 submitBtn.textContent = '✓ Submitted'
 
             } catch (error) {
