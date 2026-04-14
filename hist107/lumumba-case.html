@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Lumumba File | HIST 107</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap');
 
@@ -1223,6 +1224,7 @@ body::before {
 
     <div class="btn-row">
       <button class="btn btn-back" onclick="goToPhase(6)">← BACK</button>
+      <button class="btn btn-primary" id="download-btn" onclick="downloadPDF()">📄 DOWNLOAD AS PDF</button>
       <button class="btn btn-submit" id="submit-btn" onclick="submitToSupabase()">📤 SUBMIT TO PROFESSOR HAUSELMANN</button>
     </div>
 
@@ -1362,6 +1364,142 @@ function restore(id, value) {
   if (el && value) el.value = value;
 }
 
+// ── PDF BUILDER ──────────────────────────────────────────────────────────
+// Builds a PDF of the student's work. Returns a Blob if returnBlob is true,
+// otherwise triggers a download.
+function buildPDF(returnBlob) {
+  if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+    throw new Error('PDF library failed to load. Please check your internet connection and reload the page.');
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 20;
+  const lh = 7, pageH = doc.internal.pageSize.height, margin = 20;
+
+  function add(text, size, bold) {
+    size = size || 12; bold = bold || false;
+    doc.setFontSize(size);
+    doc.setFont(undefined, bold ? 'bold' : 'normal');
+    const lines = doc.splitTextToSize(String(text || ''), 170);
+    lines.forEach(line => {
+      if (y > pageH - margin) { doc.addPage(); y = 20; }
+      doc.text(line, 20, y);
+      y += lh;
+    });
+    y += 3;
+  }
+
+  const name = document.getElementById('student-name').value.trim();
+  const section = document.getElementById('section-number').value.trim();
+  const NA = '[Not answered]';
+
+  add('HIST 107 — The Lumumba File: A Cold War Murder Investigation', 16, true);
+  y += 3;
+  add('Student: ' + (name || NA), 12, true);
+  if (section) add('Section: ' + section, 12, true);
+  add('Submitted: ' + new Date().toLocaleString(), 10);
+  y += 4;
+
+  // DOC A
+  add('DOCUMENT A — World History Textbook (1999)', 14, true);
+  add('1. SOURCING: Who wrote this, for what audience, primary or secondary?', 11, true);
+  add(val('a-q1') || NA, 10);
+  add('2. CLOSE READING: Why does the textbook avoid naming who killed Lumumba?', 11, true);
+  add(val('a-q2') || NA, 10);
+  add('3. EVIDENCE EVALUATION: What reasons does it suggest? Strong/weak?', 11, true);
+  add(val('a-q3') || NA, 10);
+  y += 3;
+
+  // DOC B
+  add("DOCUMENT B — Lumumba's Independence Day Speech (June 30, 1960)", 14, true);
+  add('1. SOURCING: How does the context shape what Lumumba says?', 11, true);
+  add(val('b-q1') || NA, 10);
+  add("2. CLOSE READING: How does his framing differ from the Belgian king's?", 11, true);
+  add(val('b-q2') || NA, 10);
+  add('3. MOTIVE: What clues explain why he became a target?', 11, true);
+  add(val('b-q3') || NA, 10);
+  y += 3;
+
+  // DOC C
+  add('DOCUMENT C — CIA Daily Brief (June 27, 1960)', 14, true);
+  add('1. CONTEXTUALIZATION: What does the filing under "Communist Bloc" reveal?', 11, true);
+  add(val('c-q1') || NA, 10);
+  add('2. CLOSE READING: Why would "neutralist" make the U.S. nervous?', 11, true);
+  add(val('c-q2') || NA, 10);
+  add('3. MOTIVE: Who had motive? What was the U.S. willing to do?', 11, true);
+  add(val('c-q3') || NA, 10);
+  y += 3;
+
+  // DOC D
+  add('DOCUMENT D — New York Times (August 6, 1960)', 14, true);
+  add('1. SOURCING: How does a newspaper differ from Doc C in reliability?', 11, true);
+  add(val('d-q1') || NA, 10);
+  add('2. CLOSE READING: What is Lumumba accusing Belgium of?', 11, true);
+  add(val('d-q2') || NA, 10);
+  add('3. CONTEXTUALIZATION: Why would Belgium support Katanga secession?', 11, true);
+  add(val('d-q3') || NA, 10);
+  y += 3;
+
+  // DOC E
+  add('DOCUMENT E — Belgian Parliamentary Commission Report (2001)', 14, true);
+  add('1. SOURCING: Why did Belgium investigate itself 40 years later?', 11, true);
+  add(val('e-q1') || NA, 10);
+  add('2. CLOSE READING: "Morally responsible for the circumstances" — what does it admit?', 11, true);
+  add(val('e-q2') || NA, 10);
+  add('3. CORROBORATION: How does this confirm/contradict Docs B, C, D?', 11, true);
+  add(val('e-q3') || NA, 10);
+  add('4. RELIABILITY: Does the 40-year delay and careful language raise questions?', 11, true);
+  add(val('e-q4') || NA, 10);
+  y += 4;
+
+  // EVIDENCE BOARD
+  add('EVIDENCE BOARD — Corroboration Chart', 14, true);
+  const evRows = [
+    ['A', 'Textbook'],
+    ['B', 'Lumumba Speech'],
+    ['C', 'CIA Brief'],
+    ['D', 'New York Times'],
+    ['E', 'Belgian Commission']
+  ];
+  evRows.forEach(([key, label]) => {
+    const k = key.toLowerCase();
+    add('Doc ' + key + ' — ' + label, 12, true);
+    add('Reasons suggested: ' + (val('ev-' + k + '-reason') || NA), 10);
+    add('Strong evidence because: ' + (val('ev-' + k + '-strong') || NA), 10);
+    add('Weak/limited because: ' + (val('ev-' + k + '-weak') || NA), 10);
+    y += 2;
+  });
+  y += 3;
+
+  // VERDICT
+  add("FINAL CLAIM — THE DETECTIVE'S CONCLUSION", 14, true);
+  add('CLAIM — Why was Patrice Lumumba assassinated?', 11, true);
+  add(val('v-claim') || NA, 10);
+  add('EVIDENCE — Strongest 2–3 documents and why:', 11, true);
+  add(val('v-evidence') || NA, 10);
+  add('CORROBORATION — Where do sources agree or conflict?', 11, true);
+  add(val('v-corroborate') || NA, 10);
+  add('LIMITATIONS — What would strengthen the argument?', 11, true);
+  add(val('v-limits') || NA, 10);
+  add('BIGGER PICTURE — What does this reveal about decolonization?', 11, true);
+  add(val('v-bigger') || NA, 10);
+
+  if (returnBlob) return doc.output('blob');
+  const safeName = (name || 'student').replace(/[^a-zA-Z0-9]/g, '_');
+  doc.save('LumumbaFile_' + safeName + '_' + new Date().toISOString().split('T')[0] + '.pdf');
+}
+
+function downloadPDF() {
+  const name = document.getElementById('student-name').value.trim();
+  if (!name) { alert('Please enter your name first.'); goToPhase(0); return; }
+  try {
+    buildPDF(false);
+  } catch (err) {
+    console.error(err);
+    alert('Could not generate PDF: ' + err.message);
+  }
+}
+
 // ── SUBMIT ────────────────────────────────────────────────────────────────
 async function submitToSupabase() {
   if (!ASSIGNMENT_OPEN) {
@@ -1388,12 +1526,34 @@ async function submitToSupabase() {
   const data = collectData();
 
   try {
-    const { error } = await getSupabaseClient()
+    const client = getSupabaseClient();
+
+    // 1. Build PDF and upload to student-submissions storage bucket.
+    //    (Matches the pattern used by other hist107 worksheets so the
+    //    admin dashboard can link to the PDF via file_url.)
+    const pdfBlob = buildPDF(true);
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+    const safeSection = section.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `lumumba-case/${safeSection}/${safeName}_${ts}.pdf`;
+
+    const { error: uploadError } = await client
+      .storage.from('student-submissions')
+      .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
+    if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
+
+    const { data: urlData } = client.storage
+      .from('student-submissions').getPublicUrl(fileName);
+
+    // 2. Insert row with file_path/file_url so admin dashboard can show it.
+    const { error } = await client
       .from('worksheet_submissions')
       .insert({
         student_name: name,
         section_number: section,
         worksheet_type: 'lumumba-assassination-investigation',
+        file_path: fileName,
+        file_url: urlData.publicUrl,
         form_data: data,
         submitted_at: new Date().toISOString()
       });
@@ -1406,7 +1566,7 @@ async function submitToSupabase() {
 
   } catch (err) {
     console.error(err);
-    alert('Submission failed: ' + err.message + '\n\nPlease screenshot your completed work and email it to Prof. Hauselmann.');
+    alert('Submission failed: ' + err.message + '\n\nYou can also click "DOWNLOAD AS PDF" and email the file to Prof. Hauselmann.');
     btn.disabled = false;
     btn.textContent = '📤 SUBMIT TO PROFESSOR HAUSELMANN';
   }
