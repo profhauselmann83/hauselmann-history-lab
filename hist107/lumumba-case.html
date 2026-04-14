@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Lumumba File | HIST 107</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Bebas+Neue&display=swap');
 :root{--ink:#1a1208;--paper:#f2ead8;--aged:#e8ddc4;--manila:#d4c49a;--sr:#c0392b;--sb:#1a3a6b;--faded:#7a6a50;--hl:#c9973a;--smoke:#3d3426;}
@@ -307,21 +308,48 @@ body{font-family:'Courier Prime',monospace;color:var(--ink);background:#1a1208;m
     <div class="br"><button class="btn bb" onclick="go(5)">&larr; BACK</button><button class="btn bp" onclick="go(7)">WRITE FINAL CLAIM &rarr;</button></div>
   </div>
 
-  <div class="ph" id="p7">
-    <div class="sh">&#9999; FINAL CLAIM <span class="bdg">YOUR VERDICT</span></div>
-    <div class="vs">
-      <h3>THE DETECTIVE&rsquo;S CONCLUSION</h3>
-      <div class="vc"><label>CLAIM &mdash; Answer the central question in 1&ndash;2 sentences:</label><textarea id="v1" placeholder="Why was Patrice Lumumba assassinated? State your argument clearly."></textarea></div>
-      <div class="vc"><label>EVIDENCE &mdash; Which 2&ndash;3 documents provide your strongest evidence?</label><textarea id="v2" placeholder="Cite specific details from at least two documents."></textarea></div>
-      <div class="vc"><label>CORROBORATION &mdash; Where do your sources agree? Where do they conflict?</label><textarea id="v3" placeholder="Which documents point to the same conclusion?"></textarea></div>
-      <div class="vc"><label>LIMITATIONS &mdash; What would you need to know to strengthen your argument?</label><textarea id="v4" placeholder="What perspectives are missing?"></textarea></div>
-      <div class="vc"><label>BIGGER PICTURE &mdash; What does the Congo case reveal about decolonization more broadly?</label><textarea id="v5" placeholder="Connect Lumumba's story to the patterns of Cold War interference from lecture."></textarea></div>
+  <!-- PHASE 7: VERDICT -->
+  <div class="phase" id="phase7">
+    <div class="section-head">✍️ FINAL CLAIM <span class="badge">YOUR VERDICT</span></div>
+
+    <div class="verdict-section">
+      <h3>THE DETECTIVE'S CONCLUSION</h3>
+
+      <div class="verdict-claim">
+        <label>CLAIM — Answer the central question in 1–2 sentences:</label>
+        <textarea id="v-claim" placeholder="Why was Patrice Lumumba assassinated? State your argument clearly."></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>EVIDENCE — Which 2–3 documents provide your strongest evidence? Explain specifically:</label>
+        <textarea id="v-evidence" placeholder="Cite specific details from at least two documents. Why are these the most convincing?"></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>CORROBORATION — Where do your sources agree? Where do they conflict?</label>
+        <textarea id="v-corroborate" placeholder="Which documents point to the same conclusion? Where do they tell different stories?"></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>LIMITATIONS — What would you need to know to strengthen your argument?</label>
+        <textarea id="v-limits" placeholder="What perspectives are missing? What other evidence would help?"></textarea>
+      </div>
+
+      <div class="verdict-claim">
+        <label>BIGGER PICTURE — The Congo is one case. What does it reveal about the forces shaping decolonization more broadly?</label>
+        <textarea id="v-bigger" placeholder="Connect Lumumba's story to the patterns of decolonization, Cold War interference, and colonial legacy we discussed in lecture."></textarea>
+      </div>
     </div>
-    <div class="br">
-      <button class="btn bb" onclick="go(6)">&larr; BACK</button>
-      <button class="btn bsu" id="subBtn" onclick="doSubmit()">SUBMIT TO PROFESSOR HAUSELMANN</button>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToPhase(6)">← BACK</button>
+      <button class="btn btn-primary" id="download-btn" onclick="downloadPDF()">📄 DOWNLOAD AS PDF</button>
+      <button class="btn btn-submit" id="submit-btn" onclick="submitToSupabase()">📤 SUBMIT TO PROFESSOR HAUSELMANN</button>
     </div>
-    <div class="ok" id="okMsg">FILE SUBMITTED SUCCESSFULLY. Your investigation has been sent to Prof. Hauselmann. Case closed.</div>
+
+    <div class="success-msg" id="success-msg">
+      ✅ FILE SUBMITTED SUCCESSFULLY. Your investigation has been sent to Prof. Hauselmann. Case closed.
+    </div>
   </div>
 
 </div>
@@ -355,42 +383,275 @@ function go(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function doSubmit() {
-  var claim = document.getElementById('v1').value.trim();
+// ── AUTOSAVE ──────────────────────────────────────────────────────────────
+function collectData() {
+  return {
+    studentName: document.getElementById('student-name').value,
+    sectionNumber: document.getElementById('section-number').value,
+    docA: { q1: val('a-q1'), q2: val('a-q2'), q3: val('a-q3') },
+    docB: { q1: val('b-q1'), q2: val('b-q2'), q3: val('b-q3') },
+    docC: { q1: val('c-q1'), q2: val('c-q2'), q3: val('c-q3') },
+    docD: { q1: val('d-q1'), q2: val('d-q2'), q3: val('d-q3') },
+    docE: { q1: val('e-q1'), q2: val('e-q2'), q3: val('e-q3'), q4: val('e-q4') },
+    evidence: {
+      a: { reason: val('ev-a-reason'), strong: val('ev-a-strong'), weak: val('ev-a-weak') },
+      b: { reason: val('ev-b-reason'), strong: val('ev-b-strong'), weak: val('ev-b-weak') },
+      c: { reason: val('ev-c-reason'), strong: val('ev-c-strong'), weak: val('ev-c-weak') },
+      d: { reason: val('ev-d-reason'), strong: val('ev-d-strong'), weak: val('ev-d-weak') },
+      e: { reason: val('ev-e-reason'), strong: val('ev-e-strong'), weak: val('ev-e-weak') },
+    },
+    verdict: {
+      claim: val('v-claim'),
+      evidence: val('v-evidence'),
+      corroborate: val('v-corroborate'),
+      limits: val('v-limits'),
+      bigger: val('v-bigger')
+    }
+  };
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+setInterval(() => {
+  localStorage.setItem('lumFile', JSON.stringify(collectData()));
+}, 20000);
+
+window.onload = function() {
+  const saved = localStorage.getItem('lumFile');
+  if (saved) {
+    const ok = confirm('Restore your previous session?');
+    if (ok) {
+      const d = JSON.parse(saved);
+      if (d.studentName) document.getElementById('student-name').value = d.studentName;
+      if (d.sectionNumber) document.getElementById('section-number').value = d.sectionNumber;
+      restore('a-q1', d.docA?.q1); restore('a-q2', d.docA?.q2); restore('a-q3', d.docA?.q3);
+      restore('b-q1', d.docB?.q1); restore('b-q2', d.docB?.q2); restore('b-q3', d.docB?.q3);
+      restore('c-q1', d.docC?.q1); restore('c-q2', d.docC?.q2); restore('c-q3', d.docC?.q3);
+      restore('d-q1', d.docD?.q1); restore('d-q2', d.docD?.q2); restore('d-q3', d.docD?.q3);
+      restore('e-q1', d.docE?.q1); restore('e-q2', d.docE?.q2); restore('e-q3', d.docE?.q3); restore('e-q4', d.docE?.q4);
+      restore('ev-a-reason', d.evidence?.a?.reason); restore('ev-a-strong', d.evidence?.a?.strong); restore('ev-a-weak', d.evidence?.a?.weak);
+      restore('ev-b-reason', d.evidence?.b?.reason); restore('ev-b-strong', d.evidence?.b?.strong); restore('ev-b-weak', d.evidence?.b?.weak);
+      restore('ev-c-reason', d.evidence?.c?.reason); restore('ev-c-strong', d.evidence?.c?.strong); restore('ev-c-weak', d.evidence?.c?.weak);
+      restore('ev-d-reason', d.evidence?.d?.reason); restore('ev-d-strong', d.evidence?.d?.strong); restore('ev-d-weak', d.evidence?.d?.weak);
+      restore('ev-e-reason', d.evidence?.e?.reason); restore('ev-e-strong', d.evidence?.e?.strong); restore('ev-e-weak', d.evidence?.e?.weak);
+      restore('v-claim', d.verdict?.claim); restore('v-evidence', d.verdict?.evidence);
+      restore('v-corroborate', d.verdict?.corroborate); restore('v-limits', d.verdict?.limits); restore('v-bigger', d.verdict?.bigger);
+    }
+  }
+};
+
+function restore(id, value) {
+  const el = document.getElementById(id);
+  if (el && value) el.value = value;
+}
+
+// ── PDF BUILDER ──────────────────────────────────────────────────────────
+// Builds a PDF of the student's work. Returns a Blob if returnBlob is true,
+// otherwise triggers a download.
+function buildPDF(returnBlob) {
+  if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+    throw new Error('PDF library failed to load. Please check your internet connection and reload the page.');
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 20;
+  const lh = 7, pageH = doc.internal.pageSize.height, margin = 20;
+
+  function add(text, size, bold) {
+    size = size || 12; bold = bold || false;
+    doc.setFontSize(size);
+    doc.setFont(undefined, bold ? 'bold' : 'normal');
+    const lines = doc.splitTextToSize(String(text || ''), 170);
+    lines.forEach(line => {
+      if (y > pageH - margin) { doc.addPage(); y = 20; }
+      doc.text(line, 20, y);
+      y += lh;
+    });
+    y += 3;
+  }
+
+  const name = document.getElementById('student-name').value.trim();
+  const section = document.getElementById('section-number').value.trim();
+  const NA = '[Not answered]';
+
+  add('HIST 107 — The Lumumba File: A Cold War Murder Investigation', 16, true);
+  y += 3;
+  add('Student: ' + (name || NA), 12, true);
+  if (section) add('Section: ' + section, 12, true);
+  add('Submitted: ' + new Date().toLocaleString(), 10);
+  y += 4;
+
+  // DOC A
+  add('DOCUMENT A — World History Textbook (1999)', 14, true);
+  add('1. SOURCING: Who wrote this, for what audience, primary or secondary?', 11, true);
+  add(val('a-q1') || NA, 10);
+  add('2. CLOSE READING: Why does the textbook avoid naming who killed Lumumba?', 11, true);
+  add(val('a-q2') || NA, 10);
+  add('3. EVIDENCE EVALUATION: What reasons does it suggest? Strong/weak?', 11, true);
+  add(val('a-q3') || NA, 10);
+  y += 3;
+
+  // DOC B
+  add("DOCUMENT B — Lumumba's Independence Day Speech (June 30, 1960)", 14, true);
+  add('1. SOURCING: How does the context shape what Lumumba says?', 11, true);
+  add(val('b-q1') || NA, 10);
+  add("2. CLOSE READING: How does his framing differ from the Belgian king's?", 11, true);
+  add(val('b-q2') || NA, 10);
+  add('3. MOTIVE: What clues explain why he became a target?', 11, true);
+  add(val('b-q3') || NA, 10);
+  y += 3;
+
+  // DOC C
+  add('DOCUMENT C — CIA Daily Brief (June 27, 1960)', 14, true);
+  add('1. CONTEXTUALIZATION: What does the filing under "Communist Bloc" reveal?', 11, true);
+  add(val('c-q1') || NA, 10);
+  add('2. CLOSE READING: Why would "neutralist" make the U.S. nervous?', 11, true);
+  add(val('c-q2') || NA, 10);
+  add('3. MOTIVE: Who had motive? What was the U.S. willing to do?', 11, true);
+  add(val('c-q3') || NA, 10);
+  y += 3;
+
+  // DOC D
+  add('DOCUMENT D — New York Times (August 6, 1960)', 14, true);
+  add('1. SOURCING: How does a newspaper differ from Doc C in reliability?', 11, true);
+  add(val('d-q1') || NA, 10);
+  add('2. CLOSE READING: What is Lumumba accusing Belgium of?', 11, true);
+  add(val('d-q2') || NA, 10);
+  add('3. CONTEXTUALIZATION: Why would Belgium support Katanga secession?', 11, true);
+  add(val('d-q3') || NA, 10);
+  y += 3;
+
+  // DOC E
+  add('DOCUMENT E — Belgian Parliamentary Commission Report (2001)', 14, true);
+  add('1. SOURCING: Why did Belgium investigate itself 40 years later?', 11, true);
+  add(val('e-q1') || NA, 10);
+  add('2. CLOSE READING: "Morally responsible for the circumstances" — what does it admit?', 11, true);
+  add(val('e-q2') || NA, 10);
+  add('3. CORROBORATION: How does this confirm/contradict Docs B, C, D?', 11, true);
+  add(val('e-q3') || NA, 10);
+  add('4. RELIABILITY: Does the 40-year delay and careful language raise questions?', 11, true);
+  add(val('e-q4') || NA, 10);
+  y += 4;
+
+  // EVIDENCE BOARD
+  add('EVIDENCE BOARD — Corroboration Chart', 14, true);
+  const evRows = [
+    ['A', 'Textbook'],
+    ['B', 'Lumumba Speech'],
+    ['C', 'CIA Brief'],
+    ['D', 'New York Times'],
+    ['E', 'Belgian Commission']
+  ];
+  evRows.forEach(([key, label]) => {
+    const k = key.toLowerCase();
+    add('Doc ' + key + ' — ' + label, 12, true);
+    add('Reasons suggested: ' + (val('ev-' + k + '-reason') || NA), 10);
+    add('Strong evidence because: ' + (val('ev-' + k + '-strong') || NA), 10);
+    add('Weak/limited because: ' + (val('ev-' + k + '-weak') || NA), 10);
+    y += 2;
+  });
+  y += 3;
+
+  // VERDICT
+  add("FINAL CLAIM — THE DETECTIVE'S CONCLUSION", 14, true);
+  add('CLAIM — Why was Patrice Lumumba assassinated?', 11, true);
+  add(val('v-claim') || NA, 10);
+  add('EVIDENCE — Strongest 2–3 documents and why:', 11, true);
+  add(val('v-evidence') || NA, 10);
+  add('CORROBORATION — Where do sources agree or conflict?', 11, true);
+  add(val('v-corroborate') || NA, 10);
+  add('LIMITATIONS — What would strengthen the argument?', 11, true);
+  add(val('v-limits') || NA, 10);
+  add('BIGGER PICTURE — What does this reveal about decolonization?', 11, true);
+  add(val('v-bigger') || NA, 10);
+
+  if (returnBlob) return doc.output('blob');
+  const safeName = (name || 'student').replace(/[^a-zA-Z0-9]/g, '_');
+  doc.save('LumumbaFile_' + safeName + '_' + new Date().toISOString().split('T')[0] + '.pdf');
+}
+
+function downloadPDF() {
+  const name = document.getElementById('student-name').value.trim();
+  if (!name) { alert('Please enter your name first.'); goToPhase(0); return; }
+  try {
+    buildPDF(false);
+  } catch (err) {
+    console.error(err);
+    alert('Could not generate PDF: ' + err.message);
+  }
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────
+async function submitToSupabase() {
+  if (!ASSIGNMENT_OPEN) {
+    alert('This assignment is now closed. Please contact Prof. Hauselmann.');
+    return;
+  }
+  if (SUBMISSION_CUTOFF && new Date() > new Date(SUBMISSION_CUTOFF)) {
+    alert('The submission deadline has passed. Please contact Prof. Hauselmann.');
+    return;
+  }
+
+  const name = document.getElementById('student-name').value.trim();
+  const section = document.getElementById('section-number').value.trim();
+  if (!name) { alert('Please enter your name.'); goToPhase(0); return; }
+  if (!section) { alert('Please enter your section number.'); goToPhase(0); return; }
+
+  const claim = val('v-claim');
   if (!claim) { alert('Please write your Final Claim before submitting.'); return; }
   var name = document.getElementById('sname').value.trim();
   if (!name) { alert('Please enter your name in the Briefing section.'); go(0); return; }
   var btn = document.getElementById('subBtn');
   btn.disabled = true;
-  btn.textContent = 'SUBMITTING...';
-  var data = {
-    student_name: name,
-    section_number: document.getElementById('ssec').value,
-    worksheet_type: 'lumumba-assassination-investigation',
-    form_data: {
-      docA: { q1: document.getElementById('a1').value, q2: document.getElementById('a2').value, q3: document.getElementById('a3').value },
-      docB: { q1: document.getElementById('b1').value, q2: document.getElementById('b2').value, q3: document.getElementById('b3').value },
-      docC: { q1: document.getElementById('c1').value, q2: document.getElementById('c2').value, q3: document.getElementById('c3').value },
-      docD: { q1: document.getElementById('d1').value, q2: document.getElementById('d2').value, q3: document.getElementById('d3').value },
-      docE: { q1: document.getElementById('e1').value, q2: document.getElementById('e2').value, q3: document.getElementById('e3').value, q4: document.getElementById('e4').value },
-      evidence: { a: [document.getElementById('ea1').value, document.getElementById('ea2').value, document.getElementById('ea3').value], b: [document.getElementById('eb1').value, document.getElementById('eb2').value, document.getElementById('eb3').value], c: [document.getElementById('ec1').value, document.getElementById('ec2').value, document.getElementById('ec3').value], d: [document.getElementById('ed1').value, document.getElementById('ed2').value, document.getElementById('ed3').value], e: [document.getElementById('ee1').value, document.getElementById('ee2').value, document.getElementById('ee3').value] },
-      verdict: { claim: document.getElementById('v1').value, evidence: document.getElementById('v2').value, corroborate: document.getElementById('v3').value, limits: document.getElementById('v4').value, bigger: document.getElementById('v5').value }
-    },
-    submitted_at: new Date().toISOString()
-  };
-  var SUPABASE_URL = 'https://bqrluqymscucvbiaaeai.supabase.co';
-  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
-  fetch(SUPABASE_URL + '/rest/v1/worksheet_submissions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' },
-    body: JSON.stringify(data)
-  }).then(function(r) {
-    if (r.ok) {
-      document.getElementById('okMsg').classList.add('on');
-      btn.textContent = 'SUBMITTED';
-    } else { throw new Error('Server error ' + r.status); }
-  }).catch(function(err) {
-    alert('Submission failed: ' + err.message + '\n\nPlease screenshot your work and email it to Prof. Hauselmann.');
+  btn.textContent = '⏳ SUBMITTING...';
+
+  const data = collectData();
+
+  try {
+    const client = getSupabaseClient();
+
+    // 1. Build PDF and upload to student-submissions storage bucket.
+    //    (Matches the pattern used by other hist107 worksheets so the
+    //    admin dashboard can link to the PDF via file_url.)
+    const pdfBlob = buildPDF(true);
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+    const safeSection = section.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `lumumba-case/${safeSection}/${safeName}_${ts}.pdf`;
+
+    const { error: uploadError } = await client
+      .storage.from('student-submissions')
+      .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
+    if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
+
+    const { data: urlData } = client.storage
+      .from('student-submissions').getPublicUrl(fileName);
+
+    // 2. Insert row with file_path/file_url so admin dashboard can show it.
+    const { error } = await client
+      .from('worksheet_submissions')
+      .insert({
+        student_name: name,
+        section_number: section,
+        worksheet_type: 'lumumba-assassination-investigation',
+        file_path: fileName,
+        file_url: urlData.publicUrl,
+        form_data: data,
+        submitted_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+
+    document.getElementById('success-msg').classList.add('visible');
+    btn.textContent = '✓ SUBMITTED';
+    localStorage.removeItem('lumFile');
+
+  } catch (err) {
+    console.error(err);
+    alert('Submission failed: ' + err.message + '\n\nYou can also click "DOWNLOAD AS PDF" and email the file to Prof. Hauselmann.');
     btn.disabled = false;
     btn.textContent = 'SUBMIT TO PROFESSOR HAUSELMANN';
   });
