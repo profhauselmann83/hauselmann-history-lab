@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HIST 101 | Secession & The War and Its Words</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -328,6 +330,66 @@ border-bottom: 1px solid #7ab8e880;
 
 /* Hidden util */
 .hidden { display: none !important; }
+
+/* Submission form */
+.submit-panel {
+  background: #fff;
+  border: 1px solid #e0ddd6;
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  margin-top: 1.5rem;
+}
+.submit-panel h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+.submit-panel p.hint {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 1.25rem;
+}
+.submit-panel label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+  margin-top: 0.75rem;
+}
+.submit-panel input[type="text"],
+.submit-panel input[type="email"],
+.submit-panel select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-family: inherit;
+  background: #fff;
+  color: #1a1a1a;
+}
+.submit-panel input:focus,
+.submit-panel select:focus { outline: none; border-color: #2c5f8a; }
+.submit-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+.submit-msg {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 14px;
+  display: none;
+}
+.submit-msg.loading { display: block; background: #f0f4fb; color: #2c5f8a; border: 1px solid #b8cde8; }
+.submit-msg.success { display: block; background: #f0f7ee; color: #2d5220; border: 1px solid #b8d9a8; }
+.submit-msg.error   { display: block; background: #fdf5f5; color: #b03030; border: 1px solid #e8b8b8; }
 </style>
 
 </head>
@@ -598,6 +660,47 @@ const SECTIONS = [
 let currentSection = 0;
 let completedSections = new Set();
 
+// ── Response capture / persistence ─────────────────────────────────────────
+const STORAGE_KEY = 'hist101-week14-secession-civil-war';
+const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const PROFESSOR_EMAIL = 'hauselmannh@yosemite.edu';
+
+// studentResponses[sectionId] = { title, prompt, response, feedback, timestamp }
+let studentResponses = {};
+let studentInfo = { name: '', section: '' };
+let _db = null;
+function getDB() {
+  if (!_db && window.supabase) _db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  return _db;
+}
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      responses: studentResponses,
+      info: studentInfo,
+      currentSection
+    }));
+  } catch (e) { /* quota or private mode — ignore */ }
+}
+
+function restore() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    studentResponses = d.responses || {};
+    studentInfo = d.info || { name: '', section: '' };
+    // Re-populate completedSections based on restored responses
+    SECTIONS.forEach((s, i) => {
+      if (studentResponses[s.id] && studentResponses[s.id].response) {
+        completedSections.add(i);
+      }
+    });
+  } catch (e) { /* ignore */ }
+}
+
 function updateProgress() {
   const pct = Math.round((currentSection / (SECTIONS.length - 1)) * 100);
   document.getElementById('progressBar').style.width = pct + '%';
@@ -627,11 +730,13 @@ function renderSection(idx) {
 
   if (!s.noReflection) {
     const reflLabel = s.isSynthesis ? 'Your synthesis' : 'Reflection';
+    const saved = studentResponses[s.id];
+    const savedText = (saved && saved.response) ? saved.response.replace(/&/g,'&amp;').replace(/</g,'&lt;') : '';
     html += `
       <div class="reflection-wrap">
         <div class="r-label">${reflLabel}</div>
         <p class="r-prompt">${s.prompt}</p>
-        <textarea id="reflectionText" placeholder="Write your response here..."></textarea>
+        <textarea id="reflectionText" placeholder="Write your response here...">${savedText}</textarea>
 
     <div class="btn-row">
       <button class="btn btn-primary" id="submitBtn" onclick="submitReflection(${idx})">Submit response</button>
@@ -672,6 +777,18 @@ aiText.innerHTML = '<div class="typing-indicator"><span></span><span></span><spa
 
 const s = SECTIONS[idx];
 
+// Capture the response immediately so work is saved even if the AI call fails
+studentResponses[s.id] = {
+  title: s.title,
+  prompt: s.prompt,
+  response: text,
+  feedback: '',
+  timestamp: new Date().toISOString()
+};
+completedSections.add(idx);
+persist();
+
+let feedback = '';
 try {
 const response = await fetch('https://api.anthropic.com/v1/messages', {
 method: 'POST',
@@ -685,7 +802,7 @@ messages: [{ role: 'user', content: text }]
 });
 
 const data = await response.json();
-const feedback = data.content?.[0]?.text || 'Thanks for your response. Move on when ready.';
+feedback = data.content?.[0]?.text || 'Thanks for your response. Move on when ready.';
 aiText.innerHTML = feedback.replace(/\n/g, '<br>');
 
 btn.textContent = 'Submitted';
@@ -696,9 +813,8 @@ nextBtn.innerHTML = 'Next section &rarr;';
 nextBtn.onclick = nextSection;
 document.querySelector('.btn-row').appendChild(nextBtn);
 
-completedSections.add(idx);
-
 } catch (e) {
+feedback = '(Feedback unavailable — network error.)';
 aiText.textContent = 'Could not retrieve feedback right now. You can move on to the next section.';
 btn.textContent = 'Submitted';
 const nextBtn = document.createElement('button');
@@ -707,6 +823,10 @@ nextBtn.innerHTML = 'Next section →';
 nextBtn.onclick = nextSection;
 document.querySelector('.btn-row').appendChild(nextBtn);
 }
+
+// Save feedback alongside the response
+studentResponses[s.id].feedback = feedback;
+persist();
 }
 
 function nextSection() {
@@ -721,10 +841,229 @@ showComplete();
 function showComplete() {
 document.getElementById('progressBar').style.width = '100%';
 document.getElementById('stepLabel').textContent = 'Module complete';
-document.getElementById('moduleContent').innerHTML = `<div class="synthesis-card"> <h2>Module complete</h2> <p>You've worked through the Confederate constitutional case, Lincoln's three counter-arguments, and the three documents that transformed the war's meaning — the Emancipation Proclamation, the Gettysburg Address, and the Second Inaugural.</p> <p>The question those documents leave open is the one the next lecture takes up: after this war, after the 13th Amendment abolishes slavery, who is a citizen — and what does citizenship actually guarantee? That's the 14th Amendment.</p> <p>Bring your synthesis response to class. We'll use them to open the discussion.</p> </div>`;
+document.getElementById('moduleContent').innerHTML = `
+  <div class="synthesis-card">
+    <h2>Module complete</h2>
+    <p>You've worked through the Confederate constitutional case, Lincoln's three counter-arguments, and the three documents that transformed the war's meaning — the Emancipation Proclamation, the Gettysburg Address, and the Second Inaugural.</p>
+    <p>The question those documents leave open is the one the next lecture takes up: after this war, after the 13th Amendment abolishes slavery, who is a citizen — and what does citizenship actually guarantee? That's the 14th Amendment.</p>
+  </div>
+  <div class="submit-panel">
+    <h2>Submit your work to Prof. Hauselmann</h2>
+    <p class="hint">Your responses and the AI feedback for each section will be packaged into a PDF and sent to the professor. You can also download a copy for your own records.</p>
+    <label for="studentName">Full name</label>
+    <input type="text" id="studentName" placeholder="First Last" value="${(studentInfo.name || '').replace(/"/g,'&quot;')}">
+    <label for="studentSection">Course section</label>
+    <input type="text" id="studentSection" placeholder="e.g. HIST 101 — MW 9:30" value="${(studentInfo.section || '').replace(/"/g,'&quot;')}">
+    <div class="submit-row">
+      <button class="btn btn-secondary" onclick="exportPDF()">Download PDF</button>
+      <button class="btn btn-secondary" onclick="exportText()">Download text</button>
+      <button class="btn btn-primary" id="submitToProfBtn" onclick="submitToProfessor()">Submit to Professor</button>
+    </div>
+    <div class="submit-msg" id="submitMsg"></div>
+  </div>
+`;
 window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ── Export / submit ────────────────────────────────────────────────────────
+function collectInfo() {
+  const nameEl = document.getElementById('studentName');
+  const sectionEl = document.getElementById('studentSection');
+  if (nameEl) studentInfo.name = nameEl.value.trim();
+  if (sectionEl) studentInfo.section = sectionEl.value.trim();
+  persist();
+  return studentInfo;
+}
+
+function buildTextReport() {
+  const info = collectInfo();
+  const lines = [];
+  lines.push('HIST 101 — Secession & The War and Its Words');
+  lines.push('Interactive Module Responses');
+  lines.push('');
+  lines.push(`Student: ${info.name || '[not provided]'}`);
+  lines.push(`Section: ${info.section || '[not provided]'}`);
+  lines.push(`Submitted: ${new Date().toLocaleString()}`);
+  lines.push('');
+  lines.push('─'.repeat(60));
+  SECTIONS.forEach((s, i) => {
+    if (s.noReflection) return;
+    const r = studentResponses[s.id];
+    lines.push('');
+    lines.push(`SECTION ${i + 1}: ${s.title}`);
+    lines.push('');
+    lines.push('Prompt:');
+    lines.push(s.prompt);
+    lines.push('');
+    lines.push('Student response:');
+    lines.push(r && r.response ? r.response : '(no response)');
+    lines.push('');
+    lines.push('AI feedback:');
+    lines.push(r && r.feedback ? r.feedback : '(no feedback)');
+    lines.push('');
+    lines.push('─'.repeat(60));
+  });
+  return lines.join('\n');
+}
+
+function safeFileStem() {
+  const info = collectInfo();
+  const name = (info.name || 'student').replace(/[^a-zA-Z0-9]+/g, '_');
+  return `hist101-week14-${name}`;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportText() {
+  const txt = buildTextReport();
+  downloadBlob(new Blob([txt], { type: 'text/plain;charset=utf-8' }), `${safeFileStem()}.txt`);
+}
+
+function generatePDFBlob() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'in', format: 'letter' });
+  const info = collectInfo();
+  const margin = 0.75, pageH = 11, cW = 8.5 - margin * 2, lh = 0.2;
+  let y = margin;
+
+  const write = (text, size = 11, bold = false, indent = 0) => {
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.splitTextToSize(String(text || ''), cW - indent).forEach(line => {
+      if (y > pageH - margin) { doc.addPage(); y = margin; }
+      doc.text(line, margin + indent, y);
+      y += lh * (size / 10);
+    });
+  };
+  const gap = (n = 1) => { y += lh * n; };
+  const rule = () => {
+    if (y > pageH - margin - 0.2) { doc.addPage(); y = margin; }
+    doc.setDrawColor(200);
+    doc.line(margin, y, margin + cW, y);
+    y += lh;
+  };
+
+  write('HIST 101 — Secession & The War and Its Words', 14, true);
+  write('Interactive Module Responses', 11);
+  gap();
+  write(`Student: ${info.name || '[not provided]'}`, 10);
+  write(`Section: ${info.section || '[not provided]'}`, 10);
+  write(`Submitted: ${new Date().toLocaleString()}`, 10);
+  gap();
+  rule();
+
+  SECTIONS.forEach((s, i) => {
+    if (s.noReflection) return;
+    const r = studentResponses[s.id];
+    gap(0.5);
+    write(`Section ${i + 1}: ${s.title}`, 12, true);
+    gap(0.3);
+    write('Prompt', 10, true);
+    write(s.prompt, 10, false, 0.1);
+    gap(0.5);
+    write('Student response', 10, true);
+    write(r && r.response ? r.response : '(no response)', 10, false, 0.1);
+    gap(0.5);
+    write('AI feedback', 10, true);
+    write(r && r.feedback ? r.feedback : '(no feedback)', 10, false, 0.1);
+    gap(0.5);
+    rule();
+  });
+
+  return doc.output('blob');
+}
+
+function exportPDF() {
+  try {
+    const blob = generatePDFBlob();
+    downloadBlob(blob, `${safeFileStem()}.pdf`);
+  } catch (e) {
+    console.error(e);
+    alert('Could not generate PDF. Try "Download text" instead.');
+  }
+}
+
+async function submitToProfessor() {
+  const info = collectInfo();
+  const msgEl = document.getElementById('submitMsg');
+  const btn = document.getElementById('submitToProfBtn');
+
+  if (!info.name) {
+    alert('Please enter your full name before submitting.');
+    document.getElementById('studentName').focus();
+    return;
+  }
+  if (!info.section) {
+    alert('Please enter your course section before submitting.');
+    document.getElementById('studentSection').focus();
+    return;
+  }
+
+  // Make sure they actually completed the reflections
+  const missing = SECTIONS.filter(s => !s.noReflection && !(studentResponses[s.id] && studentResponses[s.id].response));
+  if (missing.length > 0) {
+    if (!confirm(`You have ${missing.length} section(s) without a saved response. Submit anyway?`)) return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  msgEl.className = 'submit-msg loading';
+  msgEl.textContent = 'Generating PDF and uploading your submission…';
+
+  try {
+    const db = getDB();
+    if (!db) throw new Error('Submission service unavailable.');
+
+    const pdfBlob = generatePDFBlob();
+    const safeName = info.name.replace(/[^a-zA-Z0-9]+/g, '_');
+    const ts = Date.now();
+    const filePath = `hist101-week14-secession-civil-war/${safeName}_${ts}.pdf`;
+
+    const { error: upErr } = await db.storage
+      .from('student-submissions')
+      .upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: false });
+    if (upErr) throw upErr;
+
+    const { data: urlData } = db.storage.from('student-submissions').getPublicUrl(filePath);
+
+    const { error: dbErr } = await db.from('worksheet_submissions').insert({
+      student_name: info.name,
+      section_number: info.section,
+      worksheet_type: 'hist101-week14-secession-civil-war',
+      file_path: filePath,
+      file_url: urlData && urlData.publicUrl,
+      form_data: { responses: studentResponses },
+      submitted_at: new Date().toISOString()
+    });
+    if (dbErr) console.warn('Metadata save warning:', dbErr.message);
+
+    msgEl.className = 'submit-msg success';
+    msgEl.innerHTML = `✓ Submitted successfully at ${new Date().toLocaleString()}. Prof. Hauselmann has received your work.`;
+    btn.textContent = 'Submitted';
+  } catch (err) {
+    console.error(err);
+    const subject = encodeURIComponent('HIST 101 — Week 14 Module Submission');
+    const body = encodeURIComponent(buildTextReport());
+    const mailto = `mailto:${PROFESSOR_EMAIL}?subject=${subject}&body=${body}`;
+    msgEl.className = 'submit-msg error';
+    msgEl.innerHTML = `Submission failed: ${err.message || 'network error'}. ` +
+      `Please <a href="${mailto}">email your work to Prof. Hauselmann</a> ` +
+      `or click <strong>Download PDF</strong> and attach it manually to an email.`;
+    btn.disabled = false;
+    btn.textContent = 'Submit to Professor';
+  }
+}
+
+restore();
 buildDots();
 renderSection(0);
 </script>
