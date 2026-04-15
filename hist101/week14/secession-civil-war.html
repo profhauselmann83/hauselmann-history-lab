@@ -790,19 +790,24 @@ persist();
 
 let feedback = '';
 try {
-const response = await fetch('https://api.anthropic.com/v1/messages', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-model: 'claude-sonnet-4-20250514',
-max_tokens: 1000,
-system: s.systemContext,
-messages: [{ role: 'user', content: text }]
-})
+// Route through a Supabase Edge Function — calling api.anthropic.com directly
+// from the browser is blocked by CORS and has no way to carry an API key
+// safely. The edge function injects the Anthropic key server-side.
+const db = getDB();
+if (!db) throw new Error('Supabase client unavailable');
+
+const { data, error } = await db.functions.invoke('get-reflection-feedback', {
+  body: {
+    system: s.systemContext,
+    prompt: s.prompt,
+    response: text,
+    section_title: s.title
+  }
 });
 
-const data = await response.json();
-feedback = data.content?.[0]?.text || 'Thanks for your response. Move on when ready.';
+if (error) throw error;
+
+feedback = (data && data.feedback) || 'Thanks for your response. Move on when ready.';
 aiText.innerHTML = feedback.replace(/\n/g, '<br>');
 
 btn.textContent = 'Submitted';
@@ -814,7 +819,8 @@ nextBtn.onclick = nextSection;
 document.querySelector('.btn-row').appendChild(nextBtn);
 
 } catch (e) {
-feedback = '(Feedback unavailable — network error.)';
+console.error('Feedback retrieval failed:', e);
+feedback = '(Feedback unavailable — ' + (e && e.message ? e.message : 'network error') + '.)';
 aiText.textContent = 'Could not retrieve feedback right now. You can move on to the next section.';
 btn.textContent = 'Submitted';
 const nextBtn = document.createElement('button');
