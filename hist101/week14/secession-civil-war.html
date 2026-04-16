@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -96,15 +95,29 @@ textarea:focus { outline: none; border-color: #2c5f8a; }
 .submit-msg.success { display: block; background: #f0f7ee; color: #2d5220; border: 1px solid #b8d9a8; }
 .submit-msg.error { display: block; background: #fdf5f5; color: #b03030; border: 1px solid #e8b8b8; }
 .hidden { display: none !important; }
+.instructor-banner { background: #2c3e50; color: #fff; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: none; align-items: center; gap: 10px; }
+.instructor-banner.visible { display: flex; }
+.instructor-badge { display: inline-block; background: #e8f0f8; color: #2c5f8a; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+.section-nav-bar { display: none; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+.section-nav-bar.visible { display: flex; }
+.section-nav-bar button { font-size: 12px; padding: 5px 10px; border: 1px solid #b8cde8; background: #f0f4fb; color: #2c5f8a; border-radius: 6px; cursor: pointer; font-family: inherit; }
+.section-nav-bar button:hover { background: #dce8f4; }
+.section-nav-bar button.snb-active { background: #2c5f8a; color: #fff; border-color: #2c5f8a; }
 </style>
 </head>
 <body>
 <div class="shell">
   <p class="course-label">HIST 101 — Democratic Norms &amp; the American Revolution</p>
   <h1 class="module-title">Secession &amp; The War and Its Words</h1>
-  <p class="module-subtitle">An interactive learning module. Work through each section, then submit your reflection before moving on.</p>
+  <p class="module-subtitle">An interactive learning module. Work through each section, then submit your reflection before moving on. <a href="#" onclick="checkInstructorMode();return false;" style="color:#bbb;font-size:12px;text-decoration:none;" title="Instructor access">&bull;&bull;&bull;</a></p>
   <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
   <p class="step-label" id="stepLabel">Section 1 of 8</p>
+  <div class="instructor-banner" id="instructorBanner">
+    <span class="instructor-badge">Instructor mode</span>
+    <span>Reflections and submission panel hidden &mdash; use the section nav to jump freely.</span>
+    <button onclick="exitInstructorMode()" style="margin-left:auto;background:transparent;border:1px solid #ffffff55;color:#fff;font-size:12px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit;">Exit</button>
+  </div>
+  <div class="section-nav-bar" id="sectionNavBar"></div>
   <div class="section-dots" id="sectionDots"></div>
   <div id="moduleContent"></div>
 </div>
@@ -437,6 +450,8 @@ const SECTIONS = [
 // ── State ──────────────────────────────────────────────────────────────────
 let currentSection = 0;
 let completedSections = new Set();
+let instructorMode = false;
+const INSTRUCTOR_PASS = 'hist101prof';
 const STORAGE_KEY = 'hist101-week14-secession-civil-war-v2';
 const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
@@ -463,6 +478,37 @@ function restore() {
   } catch(e){}
 }
 
+function checkInstructorMode() {
+  const pass = prompt('Enter instructor password:');
+  if (pass === INSTRUCTOR_PASS) {
+    instructorMode = true;
+    document.getElementById('instructorBanner').classList.add('visible');
+    document.getElementById('sectionNavBar').classList.add('visible');
+    document.getElementById('sectionDots').style.display = 'none';
+    buildSectionNav();
+    renderSection(currentSection);
+  } else if (pass !== null) {
+    alert('Incorrect password.');
+  }
+}
+function exitInstructorMode() {
+  instructorMode = false;
+  document.getElementById('instructorBanner').classList.remove('visible');
+  document.getElementById('sectionNavBar').classList.remove('visible');
+  document.getElementById('sectionDots').style.display = '';
+  renderSection(currentSection);
+}
+function buildSectionNav() {
+  const bar = document.getElementById('sectionNavBar');
+  bar.innerHTML = '';
+  SECTIONS.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = `${i + 1}. ${s.title}`;
+    if (i === currentSection) btn.classList.add('snb-active');
+    btn.onclick = () => { currentSection = i; renderSection(i); buildSectionNav(); };
+    bar.appendChild(btn);
+  });
+}
 function updateProgress() {
   const pct = Math.round((currentSection / (SECTIONS.length - 1)) * 100);
   document.getElementById('progressBar').style.width = pct + '%';
@@ -487,197 +533,407 @@ function renderSection(idx) {
   const s = SECTIONS[idx];
   const content = document.getElementById('moduleContent');
   let html = s.render();
+
   if (!s.noReflection) {
-    const reflLabel = s.isSynthesis ? 'Your synthesis' : 'Reflection';
-    const saved = studentResponses[s.id];
-    const savedText = (saved?.response || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    html += `
-      <div class="reflection-wrap">
+    if (instructorMode) {
+      html += `
+        <div style="background:#f0f4fb;border:1px solid #b8cde8;border-radius:10px;padding:1rem 1.25rem;margin-top:1.5rem;">
+          <p style="font-size:13px;color:#2c5f8a;font-weight:600;margin-bottom:.5rem;">INSTRUCTOR MODE — Reflection hidden</p>
+          <p style="font-size:13px;color:#334;margin-bottom:.75rem;">${s.prompt}</p>
+          <button class="btn btn-primary" onclick="nextSection()">Skip to next section &rarr;</button>
+        </div>`;
+    } else {
+      const reflLabel = s.isSynthesis ? 'Your synthesis' : 'Reflection';
+      const saved = studentResponses[s.id];
+      const savedText = (saved?.response || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const savedFollowUp = (saved?.followUp || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const phase = saved?.followUpFeedback ? 'done'
+                  : saved?.feedback ? 'followup'
+                  : 'initial';
+
+      html += `<div class="reflection-wrap" id="reflectionWrap">
         <div class="r-label">${reflLabel}</div>
-        <p class="r-prompt">${s.prompt}</p>
+        <p class="r-prompt">${s.prompt}</p>`;
+
+      if (phase === 'initial') {
+        html += `
         <textarea id="reflectionText" placeholder="Write your response here...">${savedText}</textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="submitBtn" onclick="submitInitial(${idx})">Submit response</button>
+        </div>
+        <div class="ai-response" id="aiResponse">
+          <div class="ai-label">Feedback &amp; follow-up question</div>
+          <div id="aiText"></div>
+        </div>`;
 
-```
-    <div class="btn-row">
-      <button class="btn btn-primary" id="submitBtn" onclick="submitReflection(${idx})">Submit response</button>
-    </div>
-    <div class="ai-response" id="aiResponse">
-      <div class="ai-label">Feedback</div>
-      <div id="aiText"></div>
-    </div>
-  </div>`;
-```
+      } else if (phase === 'followup') {
+        html += `
+        <div style="background:#f8f7f4;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:14px;color:#333;line-height:1.7;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-bottom:.4rem;">Your response</div>
+          ${savedText.replace(/\n/g,'<br>')}
+        </div>
+        <div class="ai-response visible" id="aiResponse">
+          <div class="ai-label">Feedback &amp; follow-up question</div>
+          <div id="aiText">${(saved?.feedback||'').replace(/\n/g,'<br>')}</div>
+        </div>
+        <div style="margin-top:1.25rem;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8a6f10;margin-bottom:.4rem;">Your follow-up response</div>
+          <textarea id="followUpText" placeholder="Respond to the question above...">${savedFollowUp}</textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="submitBtn" onclick="submitFollowUp(${idx})">Submit follow-up</button>
+          </div>
+          <div class="ai-response" id="aiResponse2">
+            <div class="ai-label">Closing response</div>
+            <div id="aiText2"></div>
+          </div>
+        </div>`;
 
-}
-if (s.noReflection) {
-html += `<div class="btn-row" style="margin-top:1.5rem;"><button class="btn btn-primary" onclick="nextSection()">Continue &rarr;</button></div>`;
-}
-content.innerHTML = html;
-window.scrollTo({ top: 0, behavior: ‘smooth’ });
-updateProgress();
+      } else {
+        // done — show full conversation read-only
+        html += `
+        <div style="background:#f8f7f4;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:14px;color:#333;line-height:1.7;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-bottom:.4rem;">Your response</div>
+          ${savedText.replace(/\n/g,'<br>')}
+        </div>
+        <div class="ai-response visible">
+          <div class="ai-label">Feedback &amp; follow-up question</div>
+          <div>${(saved?.feedback||'').replace(/\n/g,'<br>')}</div>
+        </div>
+        <div style="background:#f8f7f4;border-radius:8px;padding:.75rem 1rem;margin:1rem 0;font-size:14px;color:#333;line-height:1.7;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-bottom:.4rem;">Your follow-up response</div>
+          ${savedFollowUp.replace(/\n/g,'<br>')}
+        </div>
+        <div class="ai-response visible">
+          <div class="ai-label">Closing response</div>
+          <div>${(saved?.followUpFeedback||'').replace(/\n/g,'<br>')}</div>
+        </div>`;
+
+        // Final question field only on synthesis section
+        if (s.isSynthesis) {
+          const savedFQ = (saved?.finalQuestion||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+          html += `
+        <div style="margin-top:1.5rem;background:#fffdf0;border:1px solid #e0d890;border-radius:12px;padding:1.5rem;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8a6f10;margin-bottom:.5rem;">Final question</div>
+          <p style="font-size:15px;font-weight:500;color:#3d3000;margin-bottom:.75rem;line-height:1.6;">What question do you still have about this material — something that came up while you were working through it that you'd like to explore further or discuss in class?</p>
+          <textarea id="finalQuestionText" placeholder="Write your question here...">${savedFQ}</textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="fqBtn" onclick="saveFinalQuestion(${idx})">Save question</button>
+          </div>
+          <div id="fqMsg" style="display:none;margin-top:.5rem;font-size:13px;color:#4a7c35;"></div>
+        </div>`;
+        }
+
+        html += `<div class="btn-row" style="margin-top:1rem;">
+          <button class="btn btn-primary" onclick="nextSection()">Continue &rarr;</button>
+        </div>`;
+      }
+
+      html += `</div>`; // close reflection-wrap
+    }
+  }
+
+  if (s.noReflection) {
+    html += `<div class="btn-row" style="margin-top:1.5rem;"><button class="btn btn-primary" onclick="nextSection()">Continue &rarr;</button></div>`;
+  }
+
+  content.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateProgress();
+  if (instructorMode) buildSectionNav();
 }
 
-async function submitReflection(idx) {
-const text = document.getElementById(‘reflectionText’).value.trim();
-if (text.length < 30) { alert(‘Please write at least a few sentences before submitting.’); return; }
-const btn = document.getElementById(‘submitBtn’);
-btn.disabled = true; btn.textContent = ‘Submitting…’;
-const aiResp = document.getElementById(‘aiResponse’);
-const aiText = document.getElementById(‘aiText’);
-aiResp.classList.add(‘visible’);
-aiText.innerHTML = ‘<div class="typing-indicator"><span></span><span></span><span></span></div>’;
-const s = SECTIONS[idx];
-studentResponses[s.id] = { title: s.title, prompt: s.prompt, response: text, feedback: ‘’, timestamp: new Date().toISOString() };
-completedSections.add(idx); persist();
-let feedback = ‘’;
-try {
-const db = getDB();
-if (!db) throw new Error(‘Supabase client unavailable’);
-const { data, error } = await db.functions.invoke(‘get-reflection-feedback’, {
-body: { system: s.systemContext, prompt: s.prompt, response: text, section_title: s.title }
-});
-if (error) throw error;
-feedback = data?.feedback || ‘Thanks for your response. Move on when ready.’;
-aiText.innerHTML = feedback.replace(/\n/g,’<br>’);
-btn.textContent = ‘Submitted’;
-const nextBtn = document.createElement(‘button’);
-nextBtn.className = ‘btn btn-secondary’;
-nextBtn.innerHTML = ‘Next section →’;
-nextBtn.onclick = nextSection;
-document.querySelector(’.btn-row’).appendChild(nextBtn);
-} catch(e) {
-console.error(‘Feedback error:’, e);
-feedback = ‘(Feedback unavailable — ’ + (e?.message || ‘network error’) + ‘.)’;
-aiText.textContent = ‘Could not retrieve feedback right now. You can move on to the next section.’;
-btn.textContent = ‘Submitted’;
-const nextBtn = document.createElement(‘button’);
-nextBtn.className = ‘btn btn-secondary’;
-nextBtn.innerHTML = ‘Next section →’;
-nextBtn.onclick = nextSection;
-document.querySelector(’.btn-row’).appendChild(nextBtn);
+// ── Initial submission ────────────────────────────────────────────────────
+async function submitInitial(idx) {
+  const text = document.getElementById('reflectionText').value.trim();
+  if (text.length < 30) { alert('Please write at least a few sentences before submitting.'); return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const aiResp = document.getElementById('aiResponse');
+  const aiText = document.getElementById('aiText');
+  aiResp.classList.add('visible');
+  aiText.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  const s = SECTIONS[idx];
+  studentResponses[s.id] = { title: s.title, prompt: s.prompt, response: text, feedback: '', followUp: '', followUpFeedback: '', timestamp: new Date().toISOString() };
+  completedSections.add(idx); persist();
+  let feedback = '';
+  try {
+    const db = getDB();
+    if (!db) throw new Error('Supabase client unavailable');
+    const { data, error } = await db.functions.invoke('get-reflection-feedback', {
+      body: {
+        system: s.systemContext + '\n\nIMPORTANT: End your feedback with a specific follow-up question on a new line, prefixed with "Follow-up question:" — make it a genuine question that pushes deeper into the student\'s argument, not a general prompt.',
+        prompt: s.prompt, response: text, section_title: s.title
+      }
+    });
+    if (error) throw error;
+    feedback = data?.feedback || 'Thanks for your response.\n\nFollow-up question: What aspect of this argument do you find most difficult to accept, and why?';
+    aiText.innerHTML = feedback.replace(/\n/g,'<br>');
+    studentResponses[s.id].feedback = feedback; persist();
+    btn.textContent = 'Submitted';
+    // Reveal follow-up textarea
+    const wrap = document.getElementById('reflectionWrap');
+    const fuDiv = document.createElement('div');
+    fuDiv.style.cssText = 'margin-top:1.25rem;';
+    fuDiv.innerHTML = `
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8a6f10;margin-bottom:.4rem;">Your follow-up response</div>
+      <textarea id="followUpText" placeholder="Respond to the follow-up question above..."></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="submitBtn2" onclick="submitFollowUp(${idx})">Submit follow-up</button>
+      </div>
+      <div class="ai-response" id="aiResponse2">
+        <div class="ai-label">Closing response</div>
+        <div id="aiText2"></div>
+      </div>`;
+    wrap.appendChild(fuDiv);
+    fuDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {
+    console.error('Feedback error:', e);
+    feedback = '(Feedback unavailable — ' + (e?.message || 'network error') + '.) Follow-up question: What aspect of this argument do you find most challenging, and why?';
+    aiText.innerHTML = feedback.replace(/\n/g,'<br>');
+    studentResponses[s.id].feedback = feedback; persist();
+    btn.textContent = 'Submitted';
+    const wrap = document.getElementById('reflectionWrap');
+    const fuDiv = document.createElement('div');
+    fuDiv.style.cssText = 'margin-top:1.25rem;';
+    fuDiv.innerHTML = `
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8a6f10;margin-bottom:.4rem;">Your follow-up response</div>
+      <textarea id="followUpText" placeholder="Respond to the follow-up question above..."></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="submitBtn2" onclick="submitFollowUp(${idx})">Submit follow-up</button>
+      </div>
+      <div class="ai-response" id="aiResponse2">
+        <div class="ai-label">Closing response</div>
+        <div id="aiText2"></div>
+      </div>`;
+    wrap.appendChild(fuDiv);
+    fuDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
-studentResponses[s.id].feedback = feedback; persist();
+
+// ── Follow-up submission ──────────────────────────────────────────────────
+async function submitFollowUp(idx) {
+  const fuText = document.getElementById('followUpText').value.trim();
+  if (fuText.length < 20) { alert('Please write at least a sentence or two before submitting.'); return; }
+  const btn = document.getElementById('submitBtn2');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const aiResp2 = document.getElementById('aiResponse2');
+  const aiText2 = document.getElementById('aiText2');
+  aiResp2.classList.add('visible');
+  aiText2.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  const s = SECTIONS[idx];
+  studentResponses[s.id].followUp = fuText; persist();
+  const closingSystem = `You are providing a brief closing response in a discussion about: ${s.title}. The student's original response was: "${studentResponses[s.id].response}". Your feedback and follow-up question was: "${studentResponses[s.id].feedback}". Now the student has replied to your follow-up. Give a 2–3 sentence closing response: acknowledge what's strong in their follow-up, note one thing worth keeping in mind as they move forward, and optionally name what the next lecture will help them answer. Be collegial and concise. Do not ask another question.`;
+  let closingFeedback = '';
+  try {
+    const db = getDB();
+    if (!db) throw new Error('Supabase client unavailable');
+    const { data, error } = await db.functions.invoke('get-reflection-feedback', {
+      body: { system: closingSystem, prompt: 'Closing response', response: fuText, section_title: s.title }
+    });
+    if (error) throw error;
+    closingFeedback = data?.feedback || 'Good thinking — keep that question in mind as you move forward.';
+  } catch(e) {
+    closingFeedback = 'Good thinking — keep that question in mind as you move forward.';
+  }
+  aiText2.innerHTML = closingFeedback.replace(/\n/g,'<br>');
+  studentResponses[s.id].followUpFeedback = closingFeedback; persist();
+  btn.textContent = 'Submitted';
+
+  // Add final question field for synthesis, then Continue button
+  const wrap = document.getElementById('reflectionWrap');
+  if (s.isSynthesis) {
+    const fqDiv = document.createElement('div');
+    fqDiv.style.cssText = 'margin-top:1.5rem;background:#fffdf0;border:1px solid #e0d890;border-radius:12px;padding:1.5rem;';
+    fqDiv.innerHTML = `
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8a6f10;margin-bottom:.5rem;">Final question</div>
+      <p style="font-size:15px;font-weight:500;color:#3d3000;margin-bottom:.75rem;line-height:1.6;">What question do you still have about this material — something that came up while you were working through it that you'd like to explore further or discuss in class?</p>
+      <textarea id="finalQuestionText" placeholder="Write your question here..."></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="fqBtn" onclick="saveFinalQuestion(${idx})">Save question</button>
+      </div>
+      <div id="fqMsg" style="display:none;margin-top:.5rem;font-size:13px;color:#4a7c35;"></div>`;
+    wrap.appendChild(fqDiv);
+    fqDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  const continueDiv = document.createElement('div');
+  continueDiv.className = 'btn-row';
+  continueDiv.style.marginTop = '1rem';
+  continueDiv.innerHTML = `<button class="btn btn-primary" onclick="nextSection()">Continue &rarr;</button>`;
+  wrap.appendChild(continueDiv);
+  continueDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Final question save ───────────────────────────────────────────────────
+function saveFinalQuestion(idx) {
+  const text = document.getElementById('finalQuestionText').value.trim();
+  if (!text) { alert('Please write your question before saving.'); return; }
+  const s = SECTIONS[idx];
+  studentResponses[s.id].finalQuestion = text; persist();
+  const btn = document.getElementById('fqBtn');
+  btn.textContent = 'Saved ✓'; btn.disabled = true;
+  const msg = document.getElementById('fqMsg');
+  msg.textContent = 'Your question has been saved and will appear in the PDF.';
+  msg.style.display = 'block';
 }
 
 function nextSection() {
-if (currentSection < SECTIONS.length - 1) { currentSection++; renderSection(currentSection); }
-else showComplete();
+  if (currentSection < SECTIONS.length - 1) { currentSection++; renderSection(currentSection); }
+  else showComplete();
 }
 
 function showComplete() {
-document.getElementById(‘progressBar’).style.width = ‘100%’;
-document.getElementById(‘stepLabel’).textContent = ‘Module complete’;
-document.getElementById(‘moduleContent’).innerHTML = ` <div class="synthesis-card"> <h2>Module complete</h2> <p>You've worked through the Confederate constitutional case, Lincoln's four counter-arguments, Fort Sumter, and the three documents that transformed the war's meaning — the Emancipation Proclamation, the Gettysburg Address, and the Second Inaugural.</p> <p>The question those documents leave open is the one the next lecture takes up: after this war, after the 13th Amendment abolishes slavery, who is a citizen — and what does citizenship actually guarantee? That's the 14th Amendment.</p> <p>Bring your synthesis response to class. We'll use them to open the discussion.</p> </div> <div class="submit-panel"> <h2>Submit your work to Prof. Hauselmann</h2> <p class="hint">Your responses and the AI feedback for each section will be packaged into a PDF and sent to the professor. You can also download a copy for your own records.</p> <label for="studentName">Full name</label> <input type="text" id="studentName" placeholder="First Last" value="${(studentInfo.name||'').replace(/"/g,'&quot;')}"> <label for="studentSection">Course section</label> <input type="text" id="studentSection" placeholder="e.g. 3944" value="${(studentInfo.section||'').replace(/"/g,'&quot;')}"> <div class="submit-row"> <button class="btn btn-secondary" onclick="exportText()">Download text</button> <button class="btn btn-secondary" onclick="exportPDF()">Download PDF</button> <button class="btn btn-primary" id="submitToProfBtn" onclick="submitToProfessor()">Submit to Professor</button> </div> <div class="submit-msg" id="submitMsg"></div> </div>`;
-window.scrollTo({ top: 0, behavior: ‘smooth’ });
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('stepLabel').textContent = 'Module complete';
+  document.getElementById('moduleContent').innerHTML = `
+    <div class="synthesis-card">
+      <h2>Module complete</h2>
+      <p>You've worked through the Confederate constitutional case, Lincoln's four counter-arguments, Fort Sumter, and the three documents that transformed the war's meaning — the Emancipation Proclamation, the Gettysburg Address, and the Second Inaugural.</p>
+      <p>The question those documents leave open is the one the next lecture takes up: after this war, after the 13th Amendment abolishes slavery, who is a citizen — and what does citizenship actually guarantee? That's the 14th Amendment.</p>
+      <p>Bring your synthesis response to class. We'll use them to open the discussion.</p>
+    </div>
+    ${instructorMode ? `
+    <div class="btn-row" style="margin-top:1.5rem;">
+      <button class="btn btn-secondary" onclick="currentSection=0;renderSection(0);buildSectionNav();">&larr; Back to start</button>
+    </div>` : `
+    <div class="submit-panel">
+      <h2>Submit your work to Prof. Hauselmann</h2>
+      <p class="hint">Your responses and the AI feedback for each section will be packaged into a PDF and sent to the professor. You can also download a copy for your own records.</p>
+      <label for="studentName">Full name</label>
+      <input type="text" id="studentName" placeholder="First Last" value="${(studentInfo.name||'').replace(/"/g,'&quot;')}">
+      <label for="studentSection">Course section</label>
+      <input type="text" id="studentSection" placeholder="e.g. 3944" value="${(studentInfo.section||'').replace(/"/g,'&quot;')}">
+      <div class="submit-row">
+        <button class="btn btn-secondary" onclick="exportText()">Download text</button>
+        <button class="btn btn-secondary" onclick="exportPDF()">Download PDF</button>
+        <button class="btn btn-primary" id="submitToProfBtn" onclick="submitToProfessor()">Submit to Professor</button>
+      </div>
+      <div class="submit-msg" id="submitMsg"></div>
+    </div>`}`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (instructorMode) buildSectionNav();
 }
 
 // ── Export / Submit ────────────────────────────────────────────────────────
 function collectInfo() {
-const nameEl = document.getElementById(‘studentName’);
-const sectionEl = document.getElementById(‘studentSection’);
-if (nameEl) studentInfo.name = nameEl.value.trim();
-if (sectionEl) studentInfo.section = sectionEl.value.trim();
-persist(); return studentInfo;
+  const nameEl = document.getElementById('studentName');
+  const sectionEl = document.getElementById('studentSection');
+  if (nameEl) studentInfo.name = nameEl.value.trim();
+  if (sectionEl) studentInfo.section = sectionEl.value.trim();
+  persist(); return studentInfo;
 }
 function buildTextReport() {
-const info = collectInfo();
-const lines = [‘HIST 101 — Secession & The War and Its Words’,‘Interactive Module Responses’,’’,
-`Student: ${info.name||'[not provided]'}`,`Section: ${info.section||'[not provided]'}`,
-`Submitted: ${new Date().toLocaleString()}`,’’,‘─’.repeat(60)];
-SECTIONS.forEach((s,i) => {
-if (s.noReflection) return;
-const r = studentResponses[s.id];
-lines.push(’’,`SECTION ${i+1}: ${s.title}`,’’,‘Prompt:’,s.prompt,’’,‘Student response:’,
-r?.response||’(no response)’,’’,‘AI feedback:’,r?.feedback||’(no feedback)’,’’,‘─’.repeat(60));
-});
-return lines.join(’\n’);
+  const info = collectInfo();
+  const lines = ['HIST 101 — Secession & The War and Its Words','Interactive Module Responses','',
+    `Student: ${info.name||'[not provided]'}`,`Section: ${info.section||'[not provided]'}`,
+    `Submitted: ${new Date().toLocaleString()}`,'','─'.repeat(60)];
+  SECTIONS.forEach((s,i) => {
+    if (s.noReflection) return;
+    const r = studentResponses[s.id];
+    lines.push('',`SECTION ${i+1}: ${s.title}`,'',
+      'Prompt:', s.prompt, '',
+      'Student response:', r?.response||'(no response)', '',
+      'AI feedback & follow-up question:', r?.feedback||'(no feedback)', '',
+      'Student follow-up:', r?.followUp||'(no follow-up submitted)', '',
+      'AI closing response:', r?.followUpFeedback||'(no closing response)', '');
+    if (s.isSynthesis && r?.finalQuestion) {
+      lines.push('Final question from student:', r.finalQuestion, '');
+    }
+    lines.push('─'.repeat(60));
+  });
+  return lines.join('\n');
 }
 function safeFileStem() {
-const info = collectInfo();
-return `hist101-week14-${(info.name||'student').replace(/[^a-zA-Z0-9]+/g,'_')}`;
+  const info = collectInfo();
+  return `hist101-week14-${(info.name||'student').replace(/[^a-zA-Z0-9]+/g,'_')}`;
 }
 function downloadBlob(blob, filename) {
-const url = URL.createObjectURL(blob);
-const a = document.createElement(‘a’); a.href = url; a.download = filename;
-document.body.appendChild(a); a.click(); document.body.removeChild(a);
-setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function exportText() { downloadBlob(new Blob([buildTextReport()],{type:‘text/plain;charset=utf-8’}),`${safeFileStem()}.txt`); }
+function exportText() { downloadBlob(new Blob([buildTextReport()],{type:'text/plain;charset=utf-8'}),`${safeFileStem()}.txt`); }
 function generatePDFBlob() {
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF({ unit:‘in’, format:‘letter’ });
-const info = collectInfo();
-const margin=0.75,pageH=11,cW=8.5-margin*2,lh=0.2;
-let y=margin;
-const write=(text,size=11,bold=false,indent=0)=>{
-doc.setFontSize(size); doc.setFont(‘helvetica’,bold?‘bold’:‘normal’);
-doc.splitTextToSize(String(text||’’),cW-indent).forEach(line=>{
-if(y>pageH-margin){doc.addPage();y=margin;}
-doc.text(line,margin+indent,y); y+=lh*(size/10);
-});
-};
-const gap=(n=1)=>{y+=lh*n;};
-const rule=()=>{ if(y>pageH-margin-0.2){doc.addPage();y=margin;} doc.setDrawColor(200); doc.line(margin,y,margin+cW,y); y+=lh; };
-write(‘HIST 101 — Secession & The War and Its Words’,14,true);
-write(‘Interactive Module Responses’,11); gap();
-write(`Student: ${info.name||'[not provided]'}`,10);
-write(`Section: ${info.section||'[not provided]'}`,10);
-write(`Submitted: ${new Date().toLocaleString()}`,10); gap(); rule();
-SECTIONS.forEach((s,i)=>{
-if(s.noReflection) return;
-const r=studentResponses[s.id];
-gap(0.5); write(`Section ${i+1}: ${s.title}`,12,true); gap(0.3);
-write(‘Prompt’,10,true); write(s.prompt,10,false,0.1); gap(0.5);
-write(‘Student response’,10,true); write(r?.response||’(no response)’,10,false,0.1); gap(0.5);
-write(‘AI feedback’,10,true); write(r?.feedback||’(no feedback)’,10,false,0.1); gap(0.5); rule();
-});
-return doc.output(‘blob’);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'in', format:'letter' });
+  const info = collectInfo();
+  const margin=0.75,pageH=11,cW=8.5-margin*2,lh=0.2;
+  let y=margin;
+  const write=(text,size=11,bold=false,indent=0)=>{
+    doc.setFontSize(size); doc.setFont('helvetica',bold?'bold':'normal');
+    doc.splitTextToSize(String(text||''),cW-indent).forEach(line=>{
+      if(y>pageH-margin){doc.addPage();y=margin;}
+      doc.text(line,margin+indent,y); y+=lh*(size/10);
+    });
+  };
+  const gap=(n=1)=>{y+=lh*n;};
+  const rule=()=>{ if(y>pageH-margin-0.2){doc.addPage();y=margin;} doc.setDrawColor(200); doc.line(margin,y,margin+cW,y); y+=lh; };
+  write('HIST 101 — Secession & The War and Its Words',14,true);
+  write('Interactive Module Responses',11); gap();
+  write(`Student: ${info.name||'[not provided]'}`,10);
+  write(`Section: ${info.section||'[not provided]'}`,10);
+  write(`Submitted: ${new Date().toLocaleString()}`,10); gap(); rule();
+  SECTIONS.forEach((s,i)=>{
+    if(s.noReflection) return;
+    const r=studentResponses[s.id];
+    gap(0.5); write(`Section ${i+1}: ${s.title}`,12,true); gap(0.3);
+    write('Prompt',10,true); write(s.prompt,10,false,0.1); gap(0.5);
+    write('Student response',10,true); write(r?.response||'(no response)',10,false,0.1); gap(0.5);
+    write('AI feedback & follow-up question',10,true); write(r?.feedback||'(no feedback)',10,false,0.1); gap(0.5);
+    write('Student follow-up',10,true); write(r?.followUp||'(no follow-up submitted)',10,false,0.1); gap(0.5);
+    write('AI closing response',10,true); write(r?.followUpFeedback||'(no closing response)',10,false,0.1); gap(0.5);
+    if(s.isSynthesis && r?.finalQuestion){
+      write('Final question from student',10,true); write(r.finalQuestion,10,false,0.1); gap(0.5);
+    }
+    rule();
+  });
+  return doc.output('blob');
 }
 function exportPDF() {
-try { downloadBlob(generatePDFBlob(),`${safeFileStem()}.pdf`); }
-catch(e) { console.error(e); alert(‘Could not generate PDF. Try “Download text” instead.’); }
+  try { downloadBlob(generatePDFBlob(),`${safeFileStem()}.pdf`); }
+  catch(e) { console.error(e); alert('Could not generate PDF. Try "Download text" instead.'); }
 }
 async function submitToProfessor() {
-const info = collectInfo();
-const msgEl = document.getElementById(‘submitMsg’);
-const btn = document.getElementById(‘submitToProfBtn’);
-if (!info.name) { alert(‘Please enter your full name before submitting.’); document.getElementById(‘studentName’).focus(); return; }
-if (!info.section) { alert(‘Please enter your course section before submitting.’); document.getElementById(‘studentSection’).focus(); return; }
-const missing = SECTIONS.filter(s => !s.noReflection && !(studentResponses[s.id]?.response));
-if (missing.length > 0 && !confirm(`You have ${missing.length} section(s) without a saved response. Submit anyway?`)) return;
-btn.disabled = true; btn.textContent = ‘Submitting…’;
-msgEl.className = ‘submit-msg loading’; msgEl.textContent = ‘Generating PDF and uploading your submission…’;
-try {
-const db = getDB();
-if (!db) throw new Error(‘Submission service unavailable.’);
-const pdfBlob = generatePDFBlob();
-const safeName = info.name.replace(/[^a-zA-Z0-9]+/g,’_’);
-const filePath = `hist101-week14-secession-civil-war/${safeName}_${Date.now()}.pdf`;
-const { error: upErr } = await db.storage.from(‘student-submissions’).upload(filePath, pdfBlob, { contentType:‘application/pdf’, upsert:false });
-if (upErr) throw upErr;
-const { data: urlData } = db.storage.from(‘student-submissions’).getPublicUrl(filePath);
-const { error: dbErr } = await db.from(‘worksheet_submissions’).insert({
-student_name: info.name, section_number: info.section,
-worksheet_type: ‘hist101-week14-secession-civil-war’,
-file_path: filePath, file_url: urlData?.publicUrl,
-form_data: { responses: studentResponses }, submitted_at: new Date().toISOString()
-});
-if (dbErr) console.warn(‘Metadata save warning:’, dbErr.message);
-msgEl.className = ‘submit-msg success’;
-msgEl.innerHTML = `&#x2713; Submitted successfully at ${new Date().toLocaleString()}. Prof. Hauselmann has received your work.`;
-btn.textContent = ‘Submitted’;
-} catch(err) {
-console.error(err);
-const subject = encodeURIComponent(‘HIST 101 — Week 14 Module Submission’);
-const body = encodeURIComponent(buildTextReport());
-msgEl.className = ‘submit-msg error’;
-msgEl.innerHTML = `Submission failed: ${err.message||'network error'}. Please <a href="mailto:${PROFESSOR_EMAIL}?subject=${subject}&body=${body}">email your work to Prof. Hauselmann</a> or click <strong>Download PDF</strong> and attach it manually.`;
-btn.disabled = false; btn.textContent = ‘Submit to Professor’;
-}
+  const info = collectInfo();
+  const msgEl = document.getElementById('submitMsg');
+  const btn = document.getElementById('submitToProfBtn');
+  if (!info.name) { alert('Please enter your full name before submitting.'); document.getElementById('studentName').focus(); return; }
+  if (!info.section) { alert('Please enter your course section before submitting.'); document.getElementById('studentSection').focus(); return; }
+  const missing = SECTIONS.filter(s => !s.noReflection && !(studentResponses[s.id]?.response));
+  if (missing.length > 0 && !confirm(`You have ${missing.length} section(s) without a saved response. Submit anyway?`)) return;
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  msgEl.className = 'submit-msg loading'; msgEl.textContent = 'Generating PDF and uploading your submission…';
+  try {
+    const db = getDB();
+    if (!db) throw new Error('Submission service unavailable.');
+    const pdfBlob = generatePDFBlob();
+    const safeName = info.name.replace(/[^a-zA-Z0-9]+/g,'_');
+    const filePath = `hist101-week14-secession-civil-war/${safeName}_${Date.now()}.pdf`;
+    const { error: upErr } = await db.storage.from('student-submissions').upload(filePath, pdfBlob, { contentType:'application/pdf', upsert:false });
+    if (upErr) throw upErr;
+    const { data: urlData } = db.storage.from('student-submissions').getPublicUrl(filePath);
+    const { error: dbErr } = await db.from('worksheet_submissions').insert({
+      student_name: info.name, section_number: info.section,
+      worksheet_type: 'hist101-week14-secession-civil-war',
+      file_path: filePath, file_url: urlData?.publicUrl,
+      form_data: { responses: studentResponses }, submitted_at: new Date().toISOString()
+    });
+    if (dbErr) console.warn('Metadata save warning:', dbErr.message);
+    msgEl.className = 'submit-msg success';
+    msgEl.innerHTML = `&#x2713; Submitted successfully at ${new Date().toLocaleString()}. Prof. Hauselmann has received your work.`;
+    btn.textContent = 'Submitted';
+  } catch(err) {
+    console.error(err);
+    const subject = encodeURIComponent('HIST 101 — Week 14 Module Submission');
+    const body = encodeURIComponent(buildTextReport());
+    msgEl.className = 'submit-msg error';
+    msgEl.innerHTML = `Submission failed: ${err.message||'network error'}. Please <a href="mailto:${PROFESSOR_EMAIL}?subject=${subject}&body=${body}">email your work to Prof. Hauselmann</a> or click <strong>Download PDF</strong> and attach it manually.`;
+    btn.disabled = false; btn.textContent = 'Submit to Professor';
+  }
 }
 
 restore(); buildDots(); renderSection(0);
 </script>
-
 </body>
 </html>
