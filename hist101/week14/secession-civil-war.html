@@ -103,6 +103,12 @@ textarea:focus { outline: none; border-color: #2c5f8a; }
 .section-nav-bar button { font-size: 12px; padding: 5px 10px; border: 1px solid #b8cde8; background: #f0f4fb; color: #2c5f8a; border-radius: 6px; cursor: pointer; font-family: inherit; }
 .section-nav-bar button:hover { background: #dce8f4; }
 .section-nav-bar button.snb-active { background: #2c5f8a; color: #fff; border-color: #2c5f8a; }
+.section-image-wrap { margin-bottom: 1.5rem; border-radius: 10px; overflow: hidden; border: 1px solid #e0ddd6; background: #f5f4f0; }
+.section-image-wrap img { width: 100%; height: auto; display: block; }
+.section-image-caption { font-size: 12px; color: #888; padding: 8px 12px; line-height: 1.5; }
+.section-video-wrap { margin-bottom: 1.5rem; border-radius: 10px; overflow: hidden; border: 1px solid #e0ddd6; background: #000; aspect-ratio: 16/9; }
+.section-video-wrap iframe { width: 100%; height: 100%; display: block; border: none; }
+.section-video-caption { font-size: 12px; color: #888; padding: 8px 12px; background: #f5f4f0; border: 1px solid #e0ddd6; border-top: none; border-radius: 0 0 10px 10px; }
 </style>
 </head>
 <body>
@@ -124,6 +130,8 @@ textarea:focus { outline: none; border-color: #2c5f8a; }
 
 <script>
 const SECTIONS = [
+
+
 
 // ─── 0. Introduction ──────────────────────────────────────────────────────
 {
@@ -447,6 +455,42 @@ const SECTIONS = [
 
 ]; // end SECTIONS
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MEDIA CONFIG — fill in YouTube video IDs or image URLs per section if needed.
+// Leave any value as '' to show nothing for that section.
+// ─────────────────────────────────────────────────────────────────────────────
+const MEDIA = {
+  guiding:           { image: '', caption: '' },
+  secession_trigger: { image: '', caption: '' },
+  lincoln_response:  { image: '', caption: '', video: '', videoCaption: '' },
+  fort_sumter:       { image: '', caption: '' },
+  emancipation:      { image: '', caption: '' },
+  gettysburg:        { image: '', caption: '' },
+  second_inaugural:  { image: '', caption: '' },
+  synthesis:         { image: '', caption: '' },
+};
+
+function sectionMedia(id) {
+  const m = MEDIA[id];
+  if (!m) return '';
+  let html = '';
+  if (m.video) {
+    html += `<div style="margin-bottom:1.5rem;">
+      <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;">
+        <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;" src="https://www.youtube.com/embed/${m.video}?rel=0" allowfullscreen loading="lazy"></iframe>
+      </div>
+      ${m.videoCaption ? `<p style="font-size:13px;color:#666;margin-top:.5rem;">${m.videoCaption}</p>` : ''}
+    </div>`;
+  }
+  if (m.image) {
+    html += `<div style="margin-bottom:1.5rem;">
+      <img src="${m.image}" alt="${m.caption||''}" loading="lazy" style="width:100%;border-radius:8px;">
+      ${m.caption ? `<p style="font-size:13px;color:#666;margin-top:.5rem;">${m.caption}</p>` : ''}
+    </div>`;
+  }
+  return html;
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 let currentSection = 0;
 let completedSections = new Set();
@@ -532,7 +576,7 @@ function buildDots() {
 function renderSection(idx) {
   const s = SECTIONS[idx];
   const content = document.getElementById('moduleContent');
-  let html = s.render();
+  let html = sectionMedia(s.id) + s.render();
 
   if (!s.noReflection) {
     if (instructorMode) {
