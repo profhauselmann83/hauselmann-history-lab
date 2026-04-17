@@ -672,7 +672,8 @@
                         </span>
                         <span id="countStatus" class="counter-status too-short">Minimum 200 words required</span>
                     </div>
-                    <textarea id="reflection" placeholder="Type your reflection here..." oninput="updateWordCount()" required></textarea>
+                    <textarea id="reflection" placeholder="Type your reflection here..." oninput="updateWordCount()" onpaste="blockPaste(event)" ondrop="blockDrop(event)" oncontextmenu="blockContextMenu(event)" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="true" required></textarea>
+                    <p style="font-size: 0.85em; color: #7f8c8d; margin-top: 8px; font-style: italic;">📝 Please type your reflection directly. Copy-and-paste is disabled to encourage original thinking.</p>
                 </div>
             </section>
 
@@ -726,6 +727,23 @@
 
         let selectedOption = 1;
         let countdownInterval = null;
+
+        function blockPaste(event) {
+            event.preventDefault();
+            showMessage('⚠️ Copy-and-paste is disabled for this assignment. Please type your reflection directly.', 'error');
+            return false;
+        }
+
+        function blockDrop(event) {
+            event.preventDefault();
+            showMessage('⚠️ Dragging text into the response is disabled. Please type your reflection directly.', 'error');
+            return false;
+        }
+
+        function blockContextMenu(event) {
+            event.preventDefault();
+            return false;
+        }
 
         function selectOption(optionNumber, event) {
             selectedOption = optionNumber;
@@ -1008,6 +1026,22 @@
             updateWordCount();
             updateCountdown();
             countdownInterval = setInterval(updateCountdown, 1000);
+
+            // Block keyboard paste shortcuts on the reflection textarea
+            const reflectionEl = document.getElementById('reflection');
+            reflectionEl.addEventListener('keydown', (e) => {
+                // Block Ctrl+V, Cmd+V, Shift+Insert
+                if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                    e.preventDefault();
+                    showMessage('⚠️ Copy-and-paste is disabled for this assignment. Please type your reflection directly.', 'error');
+                    return false;
+                }
+                if (e.shiftKey && e.key === 'Insert') {
+                    e.preventDefault();
+                    showMessage('⚠️ Copy-and-paste is disabled for this assignment. Please type your reflection directly.', 'error');
+                    return false;
+                }
+            });
 
             if (!SUBMISSION_OPEN) {
                 showMessage('❌ This assignment is now closed.', 'error');
