@@ -910,6 +910,7 @@ let studentId   = '';
 let section     = '';
 let wordCount   = 0;
 let saveTimer   = null;
+let isDirty     = false;
 
 // ── STEP NAVIGATION ──────────────────────────────────────────────────────────
 const STEPS = ['step-login','step-write','step-pledge','step-submit','step-confirm'];
@@ -1088,7 +1089,9 @@ async function submitPaper() {
 
         if (error) throw error;
 
+        isDirty = false;
         localStorage.removeItem(DRAFT_KEY);
+        clearRemoteDraft();
 
         document.getElementById('confirm-details').innerHTML =
             `<strong>${studentName}</strong> &nbsp;|&nbsp; ID: ${studentId} &nbsp;|&nbsp; Section ${section}<br>` +
@@ -1177,50 +1180,175 @@ function updateWordCount() {
 }
 
 // ── DRAFT SAVE / LOAD ─────────────────────────────────────────────────────────
+const DRAFT_COURSE = 'HIST 105';
+
 function scheduleSave() {
+    isDirty = true;
     setBadge('saving');
     clearTimeout(saveTimer);
     saveTimer = setTimeout(saveDraft, 1800);
 }
 
+function currentDraftPayload() {
+    return {
+        title : document.getElementById('inp-title').value,
+        essay : document.getElementById('essay-area').value,
+        bib   : document.getElementById('bib-area').value
+    };
+}
+
 function saveDraft() {
+    const payload = currentDraftPayload();
     try {
         localStorage.setItem(DRAFT_KEY, JSON.stringify({
             id    : studentId,
-            title : document.getElementById('inp-title').value,
-            essay : document.getElementById('essay-area').value,
-            bib   : document.getElementById('bib-area').value,
+            ...payload,
             saved : new Date().toISOString()
         }));
+        isDirty = false;
         setBadge('saved');
     } catch (e) {
         setBadge('unsaved');
     }
+    saveDraftRemote(payload);
 }
 
-function loadDraft() {
+async function saveDraftRemote(payload) {
+    if (!studentId) return;
+    try {
+        await getDB().from('paper_drafts').upsert({
+            student_id   : studentId,
+            course       : DRAFT_COURSE,
+            title        : payload.title,
+            essay        : payload.essay,
+            bibliography : payload.bib,
+            updated_at   : new Date().toISOString()
+        }, { onConflict: 'student_id,course' });
+    } catch (_) { /* best-effort; localStorage is authoritative */ }
+}
+
+// Beacon-style flush for tab close / background. Uses fetch+keepalive so the
+// request survives the page being torn down.
+function saveDraftBeacon() {
+    if (!studentId) return;
+    const p = currentDraftPayload();
+    const body = JSON.stringify([{
+        student_id   : studentId,
+        course       : DRAFT_COURSE,
+        title        : p.title,
+        essay        : p.essay,
+        bibliography : p.bib,
+        updated_at   : new Date().toISOString()
+    }]);
+    try {
+        fetch(`${SUPABASE_URL}/rest/v1/paper_drafts?on_conflict=student_id,course`, {
+            method  : 'POST',
+            headers : {
+                'apikey'       : SUPABASE_ANON,
+                'Authorization': 'Bearer ' + SUPABASE_ANON,
+                'Content-Type' : 'application/json',
+                'Prefer'       : 'resolution=merge-duplicates,return=minimal'
+            },
+            body,
+            keepalive: true
+        });
+    } catch (_) { /* best-effort */ }
+}
+
+function flushSave() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    if (!isDirty) return;
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            id    : studentId,
+            ...currentDraftPayload(),
+            saved : new Date().toISOString()
+        }));
+        isDirty = false;
+        setBadge('saved');
+    } catch (_) {}
+    saveDraftBeacon();
+}
+
+async function fetchRemoteDraft() {
+    if (!studentId) return null;
+    try {
+        const { data } = await getDB()
+            .from('paper_drafts')
+            .select('title,essay,bibliography,updated_at')
+            .eq('student_id', studentId)
+            .eq('course', DRAFT_COURSE)
+            .maybeSingle();
+        return data || null;
+    } catch (_) { return null; }
+}
+
+async function loadDraft() {
+    let local = null;
     try {
         const raw = localStorage.getItem(DRAFT_KEY);
-        if (!raw) return;
-        const d = JSON.parse(raw);
-        if (d.id !== studentId) return;
-        if (d.title) document.getElementById('inp-title').value  = d.title;
-        if (d.essay) document.getElementById('essay-area').value = d.essay;
-        if (d.bib)   document.getElementById('bib-area').value   = d.bib;
-        updateWordCount();
-        setBadge('saved');
-    } catch (e) { /* ignore */ }
+        if (raw) {
+            const d = JSON.parse(raw);
+            if (d.id === studentId) local = d;
+        }
+    } catch (_) {}
+
+    const remote = await fetchRemoteDraft();
+
+    let chosen = null;
+    if (remote && local) {
+        chosen = new Date(remote.updated_at) > new Date(local.saved)
+            ? { title: remote.title, essay: remote.essay, bib: remote.bibliography }
+            : { title: local.title,  essay: local.essay,  bib: local.bib };
+    } else if (remote) {
+        chosen = { title: remote.title, essay: remote.essay, bib: remote.bibliography };
+    } else if (local) {
+        chosen = { title: local.title, essay: local.essay, bib: local.bib };
+    }
+
+    if (!chosen) return;
+    if (chosen.title) document.getElementById('inp-title').value  = chosen.title;
+    if (chosen.essay) document.getElementById('essay-area').value = chosen.essay;
+    if (chosen.bib)   document.getElementById('bib-area').value   = chosen.bib;
+    updateWordCount();
+    isDirty = false;
+    setBadge('saved');
+}
+
+async function clearRemoteDraft() {
+    if (!studentId) return;
+    try {
+        await getDB().from('paper_drafts')
+            .delete()
+            .eq('student_id', studentId)
+            .eq('course', DRAFT_COURSE);
+    } catch (_) {}
 }
 
 function clearDraft() {
     if (!confirm('Clear your saved draft? This cannot be undone.')) return;
     localStorage.removeItem(DRAFT_KEY);
+    clearRemoteDraft();
     document.getElementById('inp-title').value  = '';
     document.getElementById('essay-area').value = '';
     document.getElementById('bib-area').value   = '';
     updateWordCount();
+    isDirty = false;
     setBadge('unsaved');
 }
+
+// Flush unsaved keystrokes when the tab is hidden or the page is unloaded.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSave();
+});
+window.addEventListener('pagehide', flushSave);
+
+// Warn the student before leaving with unsaved changes.
+window.addEventListener('beforeunload', (e) => {
+    if (!isDirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+});
 
 function setBadge(state) {
     const b = document.getElementById('autosave-badge');
