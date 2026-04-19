@@ -1,0 +1,2540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+// Runs synchronously before any CSS or JS loads — most reliable way to detect preview mode
+if (window.location.search.indexOf('preview=true') !== -1) {
+  document.documentElement.classList.add('preview-mode');
+}
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIST 102 Final Exam — Prof. Hauselmann</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:        #1a1510;
+  --ink-mid:    #3a3028;
+  --ink-light:  #4a3e32;
+  --cream:      #f7f2e8;
+  --cream-dark: #ede5d4;
+  --cream-deep: #e0d5be;
+  --gold:       #7a5218;
+  --gold-light: #e8b84a;
+  --rust:       #8c3a1e;
+  --rust-light: #b84e28;
+  --sage:       #3d6053;
+  --canvas-blue:#1e4488;
+  --rule:       rgba(26,21,16,0.12);
+  --rule-strong:rgba(26,21,16,0.25);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 400;
+  background: var(--cream);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(154,111,42,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 70%, rgba(140,58,30,0.05) 0%, transparent 55%);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 24px 16px 60px;
+}
+
+.page-wrap { max-width: 860px; margin: 0 auto; }
+
+/* ── INSTRUCTOR PANEL ── */
+html.preview-mode #instrToggle {
+  display: block !important;
+}
+html.preview-mode #instrPanel {
+  display: block !important;
+  transform: translateX(0) !important;
+}
+
+#instrToggle {
+  display: none;
+  position: fixed; top: 18px; right: 18px; z-index: 800;
+  background: var(--canvas-blue); color: var(--gold-light);
+  border: 2px solid var(--gold); font-family: 'DM Mono', monospace;
+  font-size: 0.72em; letter-spacing: 2px; padding: 9px 16px;
+  cursor: pointer; text-transform: uppercase; box-shadow: 3px 3px 0 rgba(0,0,0,0.4);
+  transition: all 0.18s;
+}
+#instrToggle:hover { background: var(--gold); color: var(--ink); }
+
+#instrPanel {
+  display: none;
+  position: fixed; top: 0; right: 0; bottom: 0; width: 300px;
+  background: #12100c; border-left: 2px solid var(--gold);
+  z-index: 900; overflow-y: auto; padding: 0;
+  box-shadow: -6px 0 24px rgba(0,0,0,0.6);
+  transform: translateX(100%); transition: transform 0.25s ease;
+}
+#instrPanel.open { transform: translateX(0); }
+.ip-header {
+  background: var(--canvas-blue); padding: 16px 18px;
+  border-bottom: 2px solid var(--gold); position: sticky; top: 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ip-header-title { font-family: 'DM Mono', monospace; font-size: 0.72em; letter-spacing: 3px; color: var(--gold-light); text-transform: uppercase; }
+.ip-close { background: transparent; border: 1px solid var(--gold); color: var(--gold-light); font-family: 'DM Mono', monospace; font-size: 0.72em; letter-spacing: 1px; padding: 4px 10px; cursor: pointer; }
+.ip-close:hover { background: var(--gold); color: var(--ink); }
+
+.ip-section { padding: 16px 18px; border-bottom: 1px solid #2a2520; }
+.ip-label { font-family: 'DM Mono', monospace; font-size: 0.62em; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+
+.ip-nav-btn {
+  display: block; width: 100%; text-align: left;
+  background: rgba(255,255,255,0.04); border: 1px solid #2a2520;
+  color: #c8b8a0; font-family: 'DM Mono', monospace; font-size: 0.72em;
+  letter-spacing: 1px; padding: 9px 12px; margin-bottom: 5px;
+  cursor: pointer; transition: all 0.15s; text-transform: none;
+}
+.ip-nav-btn:hover { background: rgba(154,111,42,0.15); border-color: var(--gold); color: var(--gold-light); }
+.ip-nav-btn.ip-active { background: rgba(30,68,136,0.3); border-color: var(--canvas-blue); color: #a8c4e8; }
+.ip-nav-btn .ip-phase-num { color: var(--gold); margin-right: 8px; }
+
+.ip-status-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-family: 'DM Mono', monospace; font-size: 0.7em; color: #8a7a68; }
+.ip-status-val { color: #c8b8a0; }
+
+.ip-key-item { font-family: 'DM Mono', monospace; font-size: 0.68em; color: #8a7a68; padding: 3px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #1a1610; }
+.ip-key-item .ik-q { color: #c8b8a0; }
+.ip-key-item .ik-a { color: var(--gold-light); font-weight: bold; }
+
+.ip-action-btn {
+  width: 100%; padding: 10px 14px; margin-bottom: 7px;
+  font-family: 'DM Mono', monospace; font-size: 0.7em; letter-spacing: 2px;
+  text-transform: uppercase; cursor: pointer; border: 1px solid; transition: all 0.15s;
+}
+.ip-action-btn.fill { background: rgba(61,96,83,0.15); border-color: var(--sage); color: #a8d4c8; }
+.ip-action-btn.fill:hover { background: var(--sage); color: var(--cream); }
+.ip-action-btn.reset-attempt { background: rgba(140,58,30,0.15); border-color: var(--rust); color: #e8a090; }
+.ip-action-btn.reset-attempt:hover { background: var(--rust); color: var(--cream); }
+
+.ip-warning { font-family: 'DM Mono', monospace; font-size: 0.65em; color: #e8a020; letter-spacing: 1px; line-height: 1.6; padding: 10px 0; }
+
+/* ── EXAM HEADER ── */
+.exam-header {
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-top: 8px solid var(--rust);
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.45);
+  position: relative;
+  margin-bottom: 0;
+}
+.exam-meta {
+  background: var(--ink); color: #b0a090;
+  font-family: 'DM Mono', monospace; font-size: 0.72em;
+  letter-spacing: 3px; text-transform: uppercase; padding: 9px 22px;
+}
+.exam-stamp {
+  position: absolute; top: 14px; right: 20px;
+  border: 2.5px solid var(--rust); color: var(--rust);
+  font-family: 'DM Mono', monospace; font-size: 0.65em;
+  padding: 6px 10px; text-align: center;
+  transform: rotate(3deg); letter-spacing: 2px;
+  opacity: 0.82; line-height: 1.4;
+}
+.exam-title-area { padding: 28px 28px 22px; border-bottom: 2px solid var(--cream-deep); }
+.exam-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 0.74em;
+  letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 10px;
+}
+.exam-title-area h1 {
+  font-family: 'Playfair Display', serif; font-size: 2.2em;
+  font-weight: 900; color: var(--ink); line-height: 1.1; margin-bottom: 8px;
+}
+.exam-title-area h1 span { color: var(--rust); }
+.exam-subtitle { font-size: 1em; color: var(--ink-light); font-style: italic; }
+
+/* ── TIMER BAR ── */
+.timer-bar {
+  background: var(--ink-mid); padding: 11px 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+}
+.timer-left .t-label { font-family: 'DM Mono', monospace; font-size: 0.68em; color: #8a7a68; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; }
+.timer-display { font-family: 'DM Mono', monospace; font-size: 1.5em; color: var(--gold-light); letter-spacing: 3px; }
+.timer-display.warn { color: #e8a020; }
+.timer-display.crit { color: #ff5555; animation: blink 1s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+.timer-right { text-align: right; font-family: 'DM Mono', monospace; font-size: 0.72em; color: #7a6a58; letter-spacing: 1px; line-height: 1.8; }
+
+/* ── PROGRESS STRIP ── */
+.progress-strip {
+  display: flex; background: var(--cream-dark);
+  border: 2px solid var(--ink); border-top: none;
+  margin-bottom: 28px; overflow: hidden; flex-wrap: wrap;
+}
+.prog-step {
+  flex: 1; text-align: center; padding: 9px 6px;
+  font-family: 'DM Mono', monospace; font-size: 0.62em;
+  letter-spacing: 0.5px; color: var(--ink-light);
+  border-right: 1px solid var(--cream-deep);
+  cursor: default; transition: all 0.25s; line-height: 1.4; min-width: 55px;
+}
+.prog-step:last-child { border-right: none; }
+.prog-step.active { background: var(--rust); color: var(--cream); }
+.prog-step.done { background: var(--sage); color: #c8e4d8; }
+.prog-step .si { display: block; font-size: 1.15em; margin-bottom: 3px; }
+
+/* ── PANELS ── */
+.panel { display: none; animation: fadeUp 0.35s ease; }
+.panel.active { display: block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── CARDS ── */
+.card {
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  padding: 28px 30px;
+  margin-bottom: 22px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.28);
+  background-image: linear-gradient(135deg, var(--cream), var(--cream-dark));
+}
+.card-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 0.7em;
+  letter-spacing: 3px; color: var(--rust); text-transform: uppercase;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+}
+.card-eyebrow::after { content:''; flex:1; height:1px; background: var(--cream-deep); }
+.card h2 {
+  font-family: 'Playfair Display', serif; font-size: 1.55em;
+  font-weight: 700; color: var(--canvas-blue);
+  border-bottom: 2px solid var(--cream-deep); padding-bottom: 10px; margin-bottom: 18px;
+}
+.card p { line-height: 1.8; margin-bottom: 14px; color: var(--ink); }
+.card h3 { font-family: 'Playfair Display', serif; font-size: 1.1em; color: var(--ink); margin: 22px 0 10px; }
+
+/* ── PHASE BANNER ── */
+.phase-banner {
+  font-family: 'DM Mono', monospace; font-size: 0.7em;
+  letter-spacing: 3px; text-transform: uppercase;
+  padding: 7px 14px; margin-bottom: 18px; display: inline-block;
+}
+.pb-mc { background: var(--canvas-blue); color: #a8c4e8; }
+.pb-timeline { background: var(--sage); color: #c8e4d8; }
+.pb-source { background: var(--gold); color: var(--ink); }
+.pb-essay { background: var(--rust); color: #f0d8d0; }
+.pb-submit { background: var(--ink); color: var(--gold-light); }
+
+/* ── NOTICE / CALLOUT ── */
+.notice {
+  padding: 12px 16px; border-left: 4px solid var(--canvas-blue);
+  background: rgba(30,68,136,0.07); margin: 14px 0;
+  font-size: 0.92em; color: var(--ink-light); font-style: italic; line-height: 1.65;
+}
+.notice.warn { border-left-color: var(--rust); background: rgba(140,58,30,0.07); color: var(--rust); font-style: normal; font-weight: 600; }
+.notice.lock { border-left-color: var(--rust); background: rgba(140,58,30,0.08); color: var(--rust); font-style: normal; }
+
+/* ── MULTIPLE CHOICE ── */
+.mc-question {
+  background: #fffdf5; border: 1px solid var(--cream-deep);
+  border-left: 5px solid var(--gold); padding: 20px 22px; margin: 18px 0;
+}
+.mc-question .q-num {
+  font-family: 'DM Mono', monospace; font-size: 0.72em;
+  letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px;
+}
+.mc-question .q-text { font-weight: 600; color: var(--ink); line-height: 1.6; margin-bottom: 14px; font-size: 0.97em; }
+.mc-options { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.mc-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 14px; background: var(--cream); border: 1.5px solid var(--cream-deep);
+  cursor: pointer; transition: all 0.18s; border-radius: 2px; font-size: 0.93em; line-height: 1.55;
+}
+.mc-option:hover { border-color: var(--gold); background: rgba(154,111,42,0.06); }
+.mc-option.selected { border-color: var(--canvas-blue); background: rgba(30,68,136,0.08); }
+.mc-option.correct { border-color: var(--sage); background: rgba(61,96,83,0.12); }
+.mc-option.incorrect { border-color: var(--rust); background: rgba(140,58,30,0.08); }
+.mc-option input[type=radio] { margin-top: 2px; flex-shrink: 0; accent-color: var(--canvas-blue); }
+.mc-feedback { margin-top: 10px; font-size: 0.88em; padding: 8px 12px; border-left: 3px solid var(--sage); background: rgba(61,96,83,0.08); display: none; }
+
+/* ── TIMELINE DRAG ── */
+.timeline-pool, .timeline-answer {
+  min-height: 60px; padding: 10px; border: 2px dashed var(--cream-deep);
+  background: #fffdf5; margin: 12px 0; border-radius: 2px;
+}
+.timeline-answer { border-color: var(--ink-mid); background: rgba(26,21,16,0.04); }
+.timeline-answer-label {
+  font-family: 'DM Mono', monospace; font-size: 0.65em;
+  letter-spacing: 2px; color: var(--ink-light); text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.tl-item {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--cream-dark); border: 1.5px solid var(--ink-mid);
+  padding: 7px 12px; margin: 4px; cursor: grab;
+  font-size: 0.88em; font-family: 'DM Mono', monospace;
+  user-select: none; transition: all 0.15s; border-radius: 2px;
+}
+.tl-item:hover { border-color: var(--gold); background: rgba(154,111,42,0.1); }
+.tl-item.dragging { opacity: 0.45; cursor: grabbing; }
+.tl-item .tl-handle { color: var(--gold); font-size: 0.9em; }
+.tl-slot {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--cream); border: 1.5px solid var(--cream-deep);
+  padding: 8px 14px; margin: 5px 0; min-height: 44px;
+  transition: all 0.15s; border-radius: 2px;
+}
+.tl-slot.drag-over { border-color: var(--gold); background: rgba(154,111,42,0.08); }
+.tl-slot.filled { border-color: var(--ink-mid); }
+.tl-slot.correct-slot { border-color: var(--sage); background: rgba(61,96,83,0.1); }
+.tl-slot.incorrect-slot { border-color: var(--rust); background: rgba(140,58,30,0.08); }
+.tl-slot-num {
+  font-family: 'DM Mono', monospace; font-size: 0.72em;
+  background: var(--ink); color: var(--cream); padding: 2px 7px;
+  letter-spacing: 1px; flex-shrink: 0; min-width: 28px; text-align: center;
+}
+/* ── BEFORE/AFTER CHRONOLOGY ── */
+.ba-triad {
+  border: 1px solid var(--cream-deep); background: #fffdf7;
+  padding: 16px 18px; margin: 18px 0; border-radius: 2px;
+  border-left: 4px solid var(--gold);
+}
+.ba-anchor {
+  background: var(--ink); color: var(--cream); padding: 14px 18px;
+  margin: 10px 0; border-radius: 2px; position: relative;
+}
+.ba-anchor .ba-anchor-label {
+  font-family: 'DM Mono', monospace; font-size: 0.62em; letter-spacing: 3px;
+  color: var(--gold-light); text-transform: uppercase; margin-bottom: 4px;
+}
+.ba-anchor .ba-anchor-title {
+  font-family: 'Playfair Display', serif; font-size: 1.15em; font-weight: 700;
+  margin: 0 0 6px;
+}
+.ba-anchor .ba-anchor-year {
+  font-family: 'DM Mono', monospace; font-size: 0.78em; color: var(--gold-light);
+  margin-right: 10px;
+}
+.ba-anchor .ba-anchor-desc {
+  font-family: 'Source Serif 4', serif; font-size: 0.92em; line-height: 1.55;
+  color: #d8cdb8; margin: 6px 0 0;
+}
+.ba-slot-row {
+  display: grid; grid-template-columns: 80px 1fr; gap: 10px; align-items: stretch;
+  margin: 8px 0;
+}
+.ba-slot-label {
+  background: var(--cream-dark); color: var(--ink-mid);
+  font-family: 'DM Mono', monospace; font-size: 0.68em; letter-spacing: 2px;
+  text-transform: uppercase; padding: 10px 8px; text-align: center;
+  display: flex; align-items: center; justify-content: center; border-radius: 2px;
+}
+.ba-slot-label.ba-before { border-left: 3px solid var(--sage); }
+.ba-slot-label.ba-after  { border-left: 3px solid var(--rust); }
+.ba-slot {
+  min-height: 70px; padding: 10px 12px; border: 1.5px dashed var(--cream-deep);
+  background: var(--cream); border-radius: 2px; transition: all 0.15s;
+  display: flex; align-items: center;
+}
+.ba-slot.drag-over { border-color: var(--gold); background: rgba(154,111,42,0.08); border-style: solid; }
+.ba-slot.filled { border-style: solid; border-color: var(--ink-mid); background: #fffdf5; }
+.ba-slot.correct-slot { border-color: var(--sage); background: rgba(61,96,83,0.08); border-style: solid; }
+.ba-slot.incorrect-slot { border-color: var(--rust); background: rgba(140,58,30,0.08); border-style: solid; }
+.ba-slot-placeholder {
+  color: var(--ink-light); font-size: 0.85em; font-style: italic;
+  font-family: 'Source Serif 4', serif;
+}
+.ba-card {
+  display: block; width: 100%;
+  background: var(--cream-dark); border: 1.5px solid var(--ink-mid);
+  padding: 9px 12px; cursor: grab; user-select: none;
+  transition: all 0.15s; border-radius: 2px;
+}
+.ba-card:hover { border-color: var(--gold); background: rgba(154,111,42,0.1); }
+.ba-card.dragging { opacity: 0.45; cursor: grabbing; }
+.ba-card .ba-card-head {
+  display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px;
+}
+.ba-card .ba-card-title {
+  font-family: 'Playfair Display', serif; font-weight: 700;
+  font-size: 0.98em; color: var(--ink);
+}
+.ba-card .ba-card-year {
+  font-family: 'DM Mono', monospace; font-size: 0.72em;
+  color: var(--gold); letter-spacing: 1px;
+}
+.ba-card .ba-card-desc {
+  font-family: 'Source Serif 4', serif; font-size: 0.82em;
+  line-height: 1.45; color: var(--ink-mid); margin: 0;
+}
+.ba-pool {
+  padding: 14px 12px; border: 2px dashed var(--cream-deep);
+  background: #fffdf5; min-height: 80px; border-radius: 2px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin: 10px 0 18px;
+}
+.ba-pool.drag-over { border-color: var(--gold); background: rgba(154,111,42,0.06); }
+@media (max-width: 720px){
+  .ba-pool { grid-template-columns: 1fr; }
+  .ba-slot-row { grid-template-columns: 70px 1fr; }
+}
+.tl-check-btn {
+  font-family: 'DM Mono', monospace; font-size: 0.8em; letter-spacing: 2px;
+  padding: 9px 18px; border: 2px solid var(--sage); background: rgba(61,96,83,0.1);
+  color: var(--sage); cursor: pointer; text-transform: uppercase; transition: all 0.18s; margin-top: 14px;
+}
+.tl-check-btn:hover { background: var(--sage); color: var(--cream); }
+
+/* ── IMAGE IDENTIFICATION ── */
+.source-img-wrap {
+  border: 2px solid var(--ink); margin: 16px 0;
+  background: #111; text-align: center; position: relative;
+}
+.source-img-wrap img { max-width: 100%; display: block; margin: 0 auto; max-height: 340px; object-fit: contain; }
+.source-img-caption {
+  background: var(--ink); color: #b0a090;
+  font-family: 'DM Mono', monospace; font-size: 0.68em;
+  letter-spacing: 2px; padding: 7px 14px; text-align: left;
+}
+.doc-excerpt {
+  background: #fffdf5; border: 2px solid var(--cream-deep);
+  border-left: 6px solid var(--canvas-blue);
+  padding: 20px 22px; margin: 16px 0; font-size: 0.97em;
+  line-height: 1.85; position: relative;
+}
+.doc-excerpt::before {
+  content: '"'; position: absolute; top: -8px; left: 14px;
+  font-size: 2.8em; color: var(--canvas-blue); opacity: 0.18;
+  font-family: Georgia; line-height: 1;
+}
+.doc-source { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--cream-deep); font-size: 0.82em; color: var(--ink-light); font-style: italic; }
+
+/* ── QUESTION BLOCK ── */
+.question-block { margin: 20px 0; }
+.question-label {
+  font-family: 'DM Mono', monospace; font-size: 0.7em;
+  letter-spacing: 3px; color: var(--sage); text-transform: uppercase;
+  background: rgba(61,96,83,0.1); padding: 5px 12px;
+  border-left: 3px solid var(--sage); margin-bottom: 8px; display: inline-block;
+}
+.question-prompt { font-weight: 600; color: var(--ink); line-height: 1.65; margin-bottom: 10px; font-size: 0.96em; }
+.answer-input {
+  width: 100%; padding: 12px 14px; background: #fffdf6;
+  border: 2px solid var(--cream-deep); color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif; font-size: 0.95em;
+  line-height: 1.65; resize: vertical; transition: border-color 0.18s;
+}
+.answer-input:focus { outline: none; border-color: var(--canvas-blue); background: #fff; }
+.word-count { font-family: 'DM Mono', monospace; font-size: 0.75em; color: var(--ink-light); margin-top: 5px; text-align: right; }
+
+/* ── BUTTONS ── */
+.btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+.btn {
+  font-family: 'DM Mono', monospace; font-size: 0.88em;
+  letter-spacing: 2px; padding: 12px 26px;
+  border: 2px solid transparent; cursor: pointer;
+  transition: all 0.18s; text-transform: uppercase;
+}
+.btn-primary { background: var(--rust); color: var(--cream); border-color: #6a2a10; }
+.btn-primary:hover:not(:disabled) { background: #6a2a10; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+.btn-secondary { background: transparent; color: var(--ink); border-color: var(--cream-deep); }
+.btn-secondary:hover { border-color: var(--ink); background: rgba(0,0,0,0.04); }
+.btn-gold { background: var(--gold); color: var(--ink); border-color: #7a5020; }
+.btn-gold:hover:not(:disabled) { background: #7a5020; color: var(--cream); transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+.btn-sage { background: var(--sage); color: #d4ece4; border-color: #2a4a3e; }
+.btn-sage:hover:not(:disabled) { background: #2a4a3e; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+.btn:disabled { opacity: 0.42; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── STAMP / VERDICT ── */
+.stamp-center { text-align: center; padding: 12px 0; }
+.verdict-stamp {
+  font-family: 'DM Mono', monospace; font-size: 1.5em;
+  display: inline-block; padding: 9px 22px;
+  transform: rotate(-2.5deg); letter-spacing: 4px;
+}
+.vs-complete { color: var(--sage); border: 4px solid var(--sage); }
+
+/* ── EXAM SUMMARY BOX ── */
+.summary-box {
+  background: var(--cream-dark); border: 2px solid var(--cream-deep);
+  padding: 18px 22px; font-family: 'DM Mono', monospace;
+  font-size: 0.85em; line-height: 2.1; letter-spacing: 0.5px; margin: 18px 0;
+}
+
+/* ── LOCK SCREEN ── */
+#lockScreen {
+  display: none; position: fixed; inset: 0;
+  background: #100a04; z-index: 9999; overflow-y: auto; padding: 40px 16px;
+}
+#lockScreen.visible { display: block; }
+.lock-box {
+  max-width: 660px; margin: 0 auto; background: var(--cream);
+  border: 3px solid var(--ink); border-top: 8px solid var(--rust);
+  box-shadow: 10px 10px 0 rgba(0,0,0,0.5);
+}
+.lock-meta { background: var(--rust); color: var(--cream); font-family: 'DM Mono', monospace; font-size: 0.74em; letter-spacing: 3px; text-transform: uppercase; padding: 10px 20px; }
+.lock-body { padding: 34px 34px 38px; }
+.lock-body h2 { font-family: 'Playfair Display', serif; font-size: 1.6em; color: var(--rust); border-bottom: 2px solid var(--cream-deep); padding-bottom: 12px; margin-bottom: 16px; }
+.lock-body p { line-height: 1.8; margin-bottom: 14px; }
+.lock-stamp { font-family: 'DM Mono', monospace; font-size: 1.9em; color: var(--rust); border: 4px solid var(--rust); display: inline-block; padding: 8px 20px; transform: rotate(-2deg); letter-spacing: 4px; opacity: 0.88; margin: 10px 0 22px; }
+.lock-details { background: var(--cream-dark); border: 2px solid var(--cream-deep); padding: 14px 18px; font-family: 'DM Mono', monospace; font-size: 0.84em; line-height: 2; letter-spacing: 1px; margin: 16px 0; }
+.lock-contact { padding: 14px 16px; border-left: 4px solid var(--canvas-blue); background: rgba(30,68,136,0.07); font-size: 0.9em; }
+
+/* ── TIME EXPIRED ── */
+#timeExpiredOverlay { display: none; position: fixed; inset: 0; background: rgba(8,4,2,0.92); z-index: 9997; overflow-y: auto; padding: 40px 16px; }
+#timeExpiredOverlay.visible { display: block; }
+.te-box { max-width: 660px; margin: 0 auto; background: var(--cream); border: 3px solid var(--ink); border-top: 8px solid var(--rust); box-shadow: 10px 10px 0 rgba(0,0,0,0.55); }
+.te-meta { background: var(--rust); color: var(--cream); font-family: 'DM Mono', monospace; font-size: 0.74em; letter-spacing: 3px; text-transform: uppercase; padding: 10px 20px; }
+.te-body { padding: 32px 34px 38px; }
+.te-body h2 { font-family: 'Playfair Display', serif; font-size: 1.45em; color: var(--rust); border-bottom: 2px solid var(--cream-deep); padding-bottom: 10px; margin-bottom: 16px; }
+.te-stamp { font-family: 'DM Mono', monospace; font-size: 1.8em; color: var(--rust); border: 4px solid var(--rust); display: inline-block; padding: 8px 20px; transform: rotate(-2deg); letter-spacing: 4px; opacity: 0.88; margin: 8px 0 20px; }
+
+/* ── PREFLIGHT ── */
+#preflightOverlay { display: none; position: fixed; inset: 0; background: rgba(8,4,2,0.88); z-index: 9998; align-items: center; justify-content: center; }
+#preflightOverlay.visible { display: flex; }
+.preflight-box { background: var(--cream); border: 3px solid var(--ink); border-top: 6px solid var(--gold-light); padding: 38px 46px; text-align: center; box-shadow: 8px 8px 0 rgba(0,0,0,0.45); max-width: 400px; }
+.spinner { width: 38px; height: 38px; margin: 0 auto 18px; border: 4px solid var(--cream-deep); border-top-color: var(--rust); border-radius: 50%; animation: spin 0.85s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
+.preflight-box p { font-family: 'DM Mono', monospace; font-size: 0.88em; letter-spacing: 2px; color: var(--ink); margin-bottom: 10px; }
+
+/* ── STUDENT INFO FORM ── */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-group label { font-family: 'DM Mono', monospace; font-size: 0.74em; letter-spacing: 2px; color: var(--ink-light); text-transform: uppercase; }
+input[type=text] { width: 100%; padding: 10px 13px; background: #fffdf6; border: 2px solid var(--cream-deep); color: var(--ink); font-family: 'Source Serif 4', serif; font-size: 0.95em; transition: border-color 0.18s; }
+input[type=text]:focus { outline: none; border-color: var(--canvas-blue); background: #fff; }
+
+/* ── SCORE DISPLAY ── */
+.score-badge {
+  font-family: 'DM Mono', monospace; font-size: 0.8em; letter-spacing: 2px;
+  padding: 4px 12px; border-radius: 2px; margin-left: 8px; display: inline-block;
+}
+.sb-correct { background: rgba(61,96,83,0.15); color: var(--sage); border: 1px solid var(--sage); }
+.sb-incorrect { background: rgba(140,58,30,0.1); color: var(--rust); border: 1px solid var(--rust); }
+
+/* ── SUBMIT MESSAGE ── */
+.success-msg { background: var(--sage); color: #d4ece4; padding: 14px 18px; border-left: 4px solid var(--gold-light); font-family: 'DM Mono', monospace; letter-spacing: 1px; font-size: 0.9em; }
+.error-msg { background: rgba(140,58,30,0.12); color: var(--rust); padding: 14px 18px; border-left: 4px solid var(--rust); font-size: 0.9em; }
+
+/* ── CANVAS LINK ── */
+#canvasLinkDisplay { display: none; margin: 22px 0 0; padding: 14px 18px; background: rgba(30,68,136,0.08); border-left: 4px solid var(--canvas-blue); }
+#canvasLinkDisplay .cl-label { font-family: 'DM Mono', monospace; font-size: 0.72em; letter-spacing: 2px; color: var(--ink-light); text-transform: uppercase; margin-bottom: 10px; }
+
+/* ── TURNING POINT RADIO SELECT ── */
+.tp-option {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 16px; background: var(--cream); border: 1.5px solid var(--cream-deep);
+  margin: 8px 0; cursor: pointer; transition: all 0.18s;
+}
+.tp-option:hover { border-color: var(--gold); }
+.tp-option.selected { border-color: var(--canvas-blue); background: rgba(30,68,136,0.07); }
+.tp-option input[type=radio] { margin-top: 3px; flex-shrink: 0; accent-color: var(--canvas-blue); }
+.tp-option-text { font-size: 0.93em; line-height: 1.6; color: var(--ink); }
+.tp-option-text strong { display: block; font-weight: 700; margin-bottom: 3px; }
+
+@media (max-width: 600px) {
+  .info-grid { grid-template-columns: 1fr; }
+  .exam-title-area h1 { font-size: 1.7em; }
+  .timer-bar { flex-direction: column; align-items: flex-start; }
+  .prog-step { font-size: 0.55em; min-width: 40px; }
+}
+
+/* ════════════════════════════════════════════
+   EXAM SECURITY — CSS LAYER
+════════════════════════════════════════════ */
+* {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+textarea,
+input[type=text],
+input[type=email] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
+}
+img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+@media print {
+  body * { display: none !important; visibility: hidden !important; }
+  body::before {
+    display: block !important;
+    visibility: visible !important;
+    content: "This examination is not available for printing.";
+    font-family: Georgia, serif;
+    font-size: 1.2rem;
+    color: #1a1510;
+    text-align: center;
+    padding: 6rem 2rem;
+    position: absolute;
+    inset: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-meta">⚠ Exam Access Restricted — HIST 102 Final</div>
+    <div class="lock-body">
+      <div class="stamp-center"><div class="lock-stamp">ACCESS DENIED</div></div>
+      <h2>Exam Attempt Already Recorded</h2>
+      <p>Our records show that a final exam session has already been opened under your Student ID. This exam is limited to one attempt only.</p>
+      <p>If you believe this is an error — for example, if your browser crashed before you could begin — contact Prof. Hauselmann <strong>before</strong> attempting to re-enter.</p>
+      <div class="lock-details" id="lockDetails">Loading attempt details…</div>
+      <div class="lock-contact">
+        <strong>Contact Prof. Hauselmann:</strong><br>
+        Email: hauselmannh@yosemite.edu<br>
+        Canvas Inbox: Available 24/7
+      </div>
+      <p style="margin-top:16px; font-size:0.87em; color:var(--ink-light); font-style:italic;">All access attempts, including the timestamp of this blocked attempt, are logged automatically.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TIME EXPIRED -->
+<div id="timeExpiredOverlay">
+  <div class="te-box">
+    <div class="te-meta">⏰ Examination Time Limit Reached — HIST 102 Final</div>
+    <div class="te-body">
+      <div class="stamp-center"><div class="te-stamp">TIME EXPIRED</div></div>
+      <h2>Your 2-Hour Period Has Ended</h2>
+      <p>All answer fields are now locked. Your work has been preserved. Click <strong>Submit Now</strong> to submit your exam immediately.</p>
+      <div style="background:rgba(140,58,30,0.08);border:2px solid var(--rust);padding:12px 16px;margin:16px 0;font-family:'DM Mono',monospace;font-size:0.86em;color:var(--rust);">
+        Auto-submitting in <span id="graceCountdown">60</span> seconds.
+      </div>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn btn-sage" onclick="manualTimeExpiredSubmit()" style="font-size:1em;padding:15px 38px;">📤 Submit Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PREFLIGHT -->
+<div id="preflightOverlay">
+  <div class="preflight-box">
+    <div class="spinner"></div>
+    <p>VERIFYING ELIGIBILITY</p>
+    <p id="preflightStatus" style="font-size:0.76em;color:var(--ink-light);letter-spacing:1px;">Checking attempt records…</p>
+  </div>
+</div>
+
+<!-- INSTRUCTOR TOGGLE BUTTON -->
+<button id="instrToggle" onclick="toggleInstrPanel()">🔍 Instructor Panel</button>
+
+<!-- INSTRUCTOR SIDE PANEL -->
+<div id="instrPanel">
+  <div class="ip-header">
+    <div class="ip-header-title">🔍 Instructor Panel</div>
+    <button class="ip-close" onclick="toggleInstrPanel()">✕ Close</button>
+  </div>
+
+  <!-- Status -->
+  <div class="ip-section">
+    <div class="ip-label">Exam Status</div>
+    <div class="ip-status-row"><span>Mode</span><span class="ip-status-val" style="color:var(--gold-light);">PREVIEW — No DB writes</span></div>
+    <div class="ip-status-row"><span>Exam Password</span><span class="ip-status-val" style="color:var(--gold-light);" id="ip-password-display">—</span></div>
+    <div class="ip-status-row"><span>Current Phase</span><span class="ip-status-val" id="ip-phase-status">0 — Start</span></div>
+    <div class="ip-status-row"><span>Timer</span><span class="ip-status-val" id="ip-timer-status">Not started</span></div>
+    <div class="ip-status-row"><span>MC answered</span><span class="ip-status-val" id="ip-mc-status">0/20</span></div>
+    <div class="ip-status-row"><span>Before/After placed</span><span class="ip-status-val" id="ip-tl-status">0/10</span></div>
+    <div class="ip-warning">⚠ All attempt locks, timer expiry, and Supabase writes are disabled in preview mode.</div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="ip-section">
+    <div class="ip-label">Jump to Section</div>
+    <button class="ip-nav-btn ip-active" id="ipnav0" onclick="previewJump(0)"><span class="ip-phase-num">0</span>Student Info / Start</button>
+    <button class="ip-nav-btn" id="ipnav1" onclick="previewJump(1)"><span class="ip-phase-num">I</span>Multiple Choice (20 Qs)</button>
+    <button class="ip-nav-btn" id="ipnav2" onclick="previewJump(2)"><span class="ip-phase-num">II</span>Before &amp; After</button>
+    <button class="ip-nav-btn" id="ipnav3" onclick="previewJump(3)"><span class="ip-phase-num">III</span>Source Identification</button>
+    <button class="ip-nav-btn" id="ipnav4" onclick="previewJump(4)"><span class="ip-phase-num">IV</span>Legacy Essay</button>
+    <button class="ip-nav-btn" id="ipnav5" onclick="previewJump(5)"><span class="ip-phase-num">✓</span>Submit Page</button>
+  </div>
+
+  <!-- Actions -->
+  <div class="ip-section">
+    <div class="ip-label">Test Actions</div>
+    <button class="ip-action-btn fill" onclick="instrFillSample()">✦ Fill Sample Answers</button>
+    <button class="ip-action-btn fill" onclick="instrTestPDF()">📄 Generate Test PDF</button>
+    <button class="ip-action-btn reset-attempt" onclick="instrClearStorage()">🗑 Clear localStorage</button>
+  </div>
+
+  <!-- Answer Key -->
+  <div class="ip-section">
+    <div class="ip-label">MC Answer Key</div>
+    <div id="ip-answer-key">
+      <div class="ip-key-item"><span class="ik-q">Q1</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q2</span><span class="ik-a">C</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q3</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q4</span><span class="ik-a">C</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q5</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q6</span><span class="ik-a">A</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q7</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q8</span><span class="ik-a">C</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q9</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q10</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q11</span><span class="ik-a">C</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q12</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q13</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q14</span><span class="ik-a">C</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q15</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q16</span><span class="ik-a">A</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q17</span><span class="ik-a">C</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q18</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q19</span><span class="ik-a">B</span></div>
+      <div class="ip-key-item"><span class="ik-q">Q20</span><span class="ik-a">C</span></div>
+    </div>
+  </div>
+
+  <!-- Before/After Key -->
+  <div class="ip-section">
+    <div class="ip-label">Before &amp; After — Correct Placements</div>
+    <div class="ip-key-item"><span class="ik-q">A1-B</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Compromise of 1877 → Plessy</span></div>
+    <div class="ip-key-item"><span class="ik-q">A1-A</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Plessy → Niagara Movement (1905)</span></div>
+    <div class="ip-key-item"><span class="ik-q">A2-B</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Lend-Lease (Mar 1941) → Pearl Harbor</span></div>
+    <div class="ip-key-item"><span class="ik-q">A2-A</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Pearl Harbor → Internment (1942)</span></div>
+    <div class="ip-key-item"><span class="ik-q">A3-B</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">EO 9981 (1948) → Brown</span></div>
+    <div class="ip-key-item"><span class="ik-q">A3-A</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Brown → Montgomery Bus Boycott</span></div>
+    <div class="ip-key-item"><span class="ik-q">A4-B</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Tet Offensive (1968) → Fall of Saigon</span></div>
+    <div class="ip-key-item"><span class="ik-q">A4-A</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Fall of Saigon → Camp David (1978)</span></div>
+    <div class="ip-key-item"><span class="ik-q">A5-B</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">Oklahoma City (1995) → 9/11</span></div>
+    <div class="ip-key-item"><span class="ik-q">A5-A</span><span class="ik-a" style="font-size:0.82em;color:#c8b8a0;">9/11 → Hurricane Katrina (2005)</span></div>
+  </div>
+
+  <div class="ip-section" style="padding-bottom:30px;">
+    <div class="ip-label">Access URL</div>
+    <div class="ip-warning" style="word-break:break-all;" id="ip-url-display">—</div>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+<!-- HEADER -->
+<div class="exam-header">
+  <div class="exam-stamp">FINAL<br>EXAM<br>SECURE</div>
+  <div class="exam-meta">HIST 102 · US History After 1877 · Prof. Hauselmann · Spring 2026</div>
+  <div class="exam-title-area">
+    <div class="exam-eyebrow">Final Examination · Weeks 5–7</div>
+    <h1><span>HIST 102</span> Final Examination</h1>
+    <p class="exam-subtitle">Civil Rights, Cold War, and Contemporary America · Open Book · 2 Hours · 100 Points</p>
+  </div>
+  <div class="timer-bar">
+    <div class="timer-left">
+      <div class="t-label">Time Remaining</div>
+      <div class="timer-display" id="timerDisplay">2:00:00</div>
+    </div>
+    <div class="timer-right" id="sessionInfo">—</div>
+  </div>
+</div>
+
+<!-- PROGRESS STRIP -->
+<div class="progress-strip" id="progressStrip">
+  <div class="prog-step active" data-phase="0"><span class="si">📋</span>Start</div>
+  <div class="prog-step" data-phase="1"><span class="si">📝</span>Part I<br>MC</div>
+  <div class="prog-step" data-phase="2"><span class="si">📅</span>Part II<br>Before &amp; After</div>
+  <div class="prog-step" data-phase="3"><span class="si">🔍</span>Part III<br>Sources</div>
+  <div class="prog-step" data-phase="4"><span class="si">✍</span>Part IV<br>Essay</div>
+  <div class="prog-step" data-phase="5"><span class="si">📤</span>Submit</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PHASE 0 — START / STUDENT INFO
+══════════════════════════════════════════════════ -->
+<div class="panel active" id="phase0">
+  <div class="card">
+    <div class="card-eyebrow">Examination Instructions</div>
+    <h2>HIST 102 Final Examination</h2>
+    <p>This exam covers <strong>Weeks 5–7</strong>: The Civil Rights Movement, The Cold War and Social Change, and Contemporary America. It is <strong>open book</strong> — you may consult your notes, the OpenStax textbook, and Haass's <em>The Bill of Obligations</em>. You may not use Google, AI tools, or any other outside resources.</p>
+
+    <div class="notice warn">⚠ This exam may only be opened once. Your Student ID is recorded the moment you click Begin. You have exactly 2 hours from that point.</div>
+
+    <div style="background:rgba(154,111,42,0.07);border:1px solid var(--cream-deep);border-left:5px solid var(--gold);padding:18px 20px;margin:18px 0;">
+      <div class="card-eyebrow" style="margin-bottom:10px;">Exam Format &amp; Points</div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.92em;">
+        <tr style="border-bottom:1px solid var(--cream-deep);">
+          <td style="padding:7px 10px;font-weight:700;">Part I — Multiple Choice</td>
+          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">20 questions · 20 pts</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);">
+          <td style="padding:7px 10px;font-weight:700;">Part II — Before &amp; After Chronology</td>
+          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">10 events · 20 pts</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);">
+          <td style="padding:7px 10px;font-weight:700;">Part III — Source Identification</td>
+          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">3 documents · 30 pts</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 10px;font-weight:700;">Part IV — Legacy Essay</td>
+          <td style="padding:7px 10px;font-family:'DM Mono',monospace;color:var(--gold);text-align:right;">1 essay · 30 pts</td>
+        </tr>
+        <tr style="border-top:2px solid var(--ink-mid);background:var(--cream-dark);">
+          <td style="padding:9px 10px;font-weight:700;">Total</td>
+          <td style="padding:9px 10px;font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);text-align:right;">100 points</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="background:rgba(140,58,30,0.05);border:1px solid var(--cream-deep);border-left:5px solid var(--rust);padding:18px 20px;margin:18px 0;">
+      <div class="card-eyebrow" style="margin-bottom:10px;color:var(--rust);">Exam Rules</div>
+      <ul style="margin-left:1.2em;line-height:2.1;color:var(--ink);font-size:0.93em;">
+        <li><strong>Open book</strong> — notes, OpenStax, and Haass are permitted.</li>
+        <li><strong>No Google, no AI tools, no outside websites.</strong></li>
+        <li>All written work must be your own. Copy and paste is disabled.</li>
+        <li>You may not go back once you advance past Part I.</li>
+        <li>The timer runs continuously and cannot be paused.</li>
+        <li>Your start time and Student ID are recorded at the moment you click Begin.</li>
+        <li>Do not close this window — answers are saved automatically.</li>
+      </ul>
+    </div>
+
+    <div style="margin-top:26px;border-top:2px solid var(--cream-deep);padding-top:22px;">
+      <h3>Enter Your Information to Begin</h3>
+      <div class="info-grid" style="margin-top:14px;">
+        <div class="field-group">
+          <label>First Name</label>
+          <input type="text" id="s-first" placeholder="First name">
+        </div>
+        <div class="field-group">
+          <label>Last Name</label>
+          <input type="text" id="s-last" placeholder="Last name">
+        </div>
+        <div class="field-group">
+          <label>W Number</label>
+          <input type="text" id="s-wnum" placeholder="W1234567" autocomplete="off">
+        </div>
+        <div class="field-group">
+          <label>Section</label>
+          <input type="text" id="s-section" placeholder="e.g., 9994">
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:16px 18px;background:rgba(140,58,30,0.05);border:1px solid var(--cream-deep);border-left:4px solid var(--rust);">
+        <div class="field-group">
+          <label style="color:var(--rust);">Exam Access Code</label>
+          <input type="password" id="s-password" placeholder="Enter the access code provided by your instructor" autocomplete="off" style="width:100%;padding:10px 13px;background:#fffdf6;border:2px solid var(--cream-deep);color:var(--ink);font-family:'Source Serif 4',serif;font-size:0.95em;transition:border-color 0.18s;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.7em;color:var(--ink-light);margin-top:5px;letter-spacing:1px;">Your instructor will announce this code at the start of the exam period.</div>
+        </div>
+      </div>
+    </div>
+    <div class="notice" style="margin-top:18px;">By clicking Begin Examination you confirm that all work is your own and that you understand the rules above. <strong>The timer starts and your attempt is recorded immediately.</strong></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="beginBtn" onclick="beginExam()">Begin Examination →</button>
+  </div>
+  <div id="beginError" style="margin-top:14px;display:none;"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PHASE 1 — MULTIPLE CHOICE (20 questions, 20 pts)
+══════════════════════════════════════════════════ -->
+<div class="panel" id="phase1">
+  <div class="card">
+    <div class="phase-banner pb-mc">Part I — Multiple Choice · 20 Points</div>
+    <div class="card-eyebrow">20 Questions · 1 pt each</div>
+    <h2>Multiple Choice</h2>
+    <p>Choose the best answer for each question. You may use your notes and textbook. Each question is worth 1 point.</p>
+    <div class="notice">Select your answer for each question before advancing to Part II. You cannot return to this section once you move on.</div>
+
+    <!-- Q1 — Brown v. Board -->
+    <div class="mc-question" id="mcq1">
+      <div class="q-num">Question 1 of 20</div>
+      <div class="q-text">The Supreme Court's ruling in <em>Brown v. Board of Education</em> (1954) is significant because it:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc1','A',this)"><input type="radio" name="mc1"> A. Required the immediate integration of all Southern schools within one year</li>
+        <li class="mc-option" onclick="selectMC('mc1','B',this)"><input type="radio" name="mc1"> B. Overturned the "separate but equal" doctrine of <em>Plessy v. Ferguson</em> in public education</li>
+        <li class="mc-option" onclick="selectMC('mc1','C',this)"><input type="radio" name="mc1"> C. Extended voting rights to all African American citizens</li>
+        <li class="mc-option" onclick="selectMC('mc1','D',this)"><input type="radio" name="mc1"> D. Prohibited private businesses from refusing service based on race</li>
+      </ul>
+    </div>
+
+    <!-- Q2 — Montgomery Bus Boycott -->
+    <div class="mc-question" id="mcq2">
+      <div class="q-num">Question 2 of 20</div>
+      <div class="q-text">The Montgomery Bus Boycott (1955–1956) was most significant because it:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc2','A',this)"><input type="radio" name="mc2"> A. Immediately ended segregation on all forms of public transportation nationwide</li>
+        <li class="mc-option" onclick="selectMC('mc2','B',this)"><input type="radio" name="mc2"> B. Was the first successful civil rights lawsuit filed under the Fourteenth Amendment</li>
+        <li class="mc-option" onclick="selectMC('mc2','C',this)"><input type="radio" name="mc2"> C. Demonstrated the power of sustained nonviolent direct action and launched Martin Luther King Jr. as a national civil rights leader</li>
+        <li class="mc-option" onclick="selectMC('mc2','D',this)"><input type="radio" name="mc2"> D. Marked the first time federal troops were sent to enforce desegregation</li>
+      </ul>
+    </div>
+
+    <!-- Q3 — Civil Rights Act 1964 -->
+    <div class="mc-question" id="mcq3">
+      <div class="q-num">Question 3 of 20</div>
+      <div class="q-text">The Civil Rights Act of 1964 accomplished all of the following EXCEPT:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc3','A',this)"><input type="radio" name="mc3"> A. Prohibited discrimination in public accommodations based on race, color, religion, or national origin</li>
+        <li class="mc-option" onclick="selectMC('mc3','B',this)"><input type="radio" name="mc3"> B. Abolished literacy tests and poll taxes used to prevent African Americans from voting</li>
+        <li class="mc-option" onclick="selectMC('mc3','C',this)"><input type="radio" name="mc3"> C. Prohibited employment discrimination and created the Equal Employment Opportunity Commission</li>
+        <li class="mc-option" onclick="selectMC('mc3','D',this)"><input type="radio" name="mc3"> D. Authorized the federal government to withhold funding from segregated schools</li>
+      </ul>
+    </div>
+
+    <!-- Q4 — Malcolm X / Black Power -->
+    <div class="mc-question" id="mcq4">
+      <div class="q-num">Question 4 of 20</div>
+      <div class="q-text">Malcolm X and the Black Power movement challenged Martin Luther King Jr.'s approach primarily by arguing that:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc4','A',this)"><input type="radio" name="mc4"> A. Segregation was more effective than integration for African American progress</li>
+        <li class="mc-option" onclick="selectMC('mc4','B',this)"><input type="radio" name="mc4"> B. Legal reform through the courts was the only path to racial equality</li>
+        <li class="mc-option" onclick="selectMC('mc4','C',this)"><input type="radio" name="mc4"> C. African Americans should build independent political and economic power, and had the right to self-defense against violence</li>
+        <li class="mc-option" onclick="selectMC('mc4','D',this)"><input type="radio" name="mc4"> D. The Civil Rights Movement should focus only on Southern states and avoid Northern cities</li>
+      </ul>
+    </div>
+
+    <!-- Q5 — Voting Rights Act 1965 -->
+    <div class="mc-question" id="mcq5">
+      <div class="q-num">Question 5 of 20</div>
+      <div class="q-text">The Voting Rights Act of 1965 was passed in part because of the events at:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc5','A',this)"><input type="radio" name="mc5"> A. Little Rock, Arkansas, where nine Black students integrated Central High School</li>
+        <li class="mc-option" onclick="selectMC('mc5','B',this)"><input type="radio" name="mc5"> B. Selma, Alabama, where state troopers attacked peaceful marchers on the Edmund Pettus Bridge</li>
+        <li class="mc-option" onclick="selectMC('mc5','C',this)"><input type="radio" name="mc5"> C. Birmingham, Alabama, where firefighters used hoses against children</li>
+        <li class="mc-option" onclick="selectMC('mc5','D',this)"><input type="radio" name="mc5"> D. Greensboro, North Carolina, where four students sat in at a segregated lunch counter</li>
+      </ul>
+    </div>
+
+    <!-- Q6 — Stonewall -->
+    <div class="mc-question" id="mcq6">
+      <div class="q-num">Question 6 of 20</div>
+      <div class="q-text">The Stonewall Riots of June 1969 are generally regarded as:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc6','A',this)"><input type="radio" name="mc6"> A. A catalyst for the modern gay liberation movement and LGBTQ political organizing</li>
+        <li class="mc-option" onclick="selectMC('mc6','B',this)"><input type="radio" name="mc6"> B. The first organized labor strike in New York City</li>
+        <li class="mc-option" onclick="selectMC('mc6','C',this)"><input type="radio" name="mc6"> C. A response to the Vietnam War draft</li>
+        <li class="mc-option" onclick="selectMC('mc6','D',this)"><input type="radio" name="mc6"> D. Part of the Black Power protests of the late 1960s</li>
+      </ul>
+    </div>
+
+    <!-- Q7 — Truman Doctrine / containment -->
+    <div class="mc-question" id="mcq7">
+      <div class="q-num">Question 7 of 20</div>
+      <div class="q-text">The Truman Doctrine (1947) committed the United States to:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc7','A',this)"><input type="radio" name="mc7"> A. Rebuilding Germany and Japan into democracies through direct occupation</li>
+        <li class="mc-option" onclick="selectMC('mc7','B',this)"><input type="radio" name="mc7"> B. Supporting "free peoples" resisting communism, establishing containment as U.S. foreign policy</li>
+        <li class="mc-option" onclick="selectMC('mc7','C',this)"><input type="radio" name="mc7"> C. Disarming the Soviet Union through United Nations inspections</li>
+        <li class="mc-option" onclick="selectMC('mc7','D',this)"><input type="radio" name="mc7"> D. Forming a military alliance with Western European nations, later called NATO</li>
+      </ul>
+    </div>
+
+    <!-- Q8 — McCarthyism -->
+    <div class="mc-question" id="mcq8">
+      <div class="q-num">Question 8 of 20</div>
+      <div class="q-text">McCarthyism in the early 1950s is best described as:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc8','A',this)"><input type="radio" name="mc8"> A. A cautious program of background checks for federal employees</li>
+        <li class="mc-option" onclick="selectMC('mc8','B',this)"><input type="radio" name="mc8"> B. A series of Supreme Court rulings limiting executive power during the Cold War</li>
+        <li class="mc-option" onclick="selectMC('mc8','C',this)"><input type="radio" name="mc8"> C. A period of intense anti-communist suspicion marked by congressional investigations, blacklists, and accusations that often damaged innocent people's careers and civil liberties</li>
+        <li class="mc-option" onclick="selectMC('mc8','D',this)"><input type="radio" name="mc8"> D. A grassroots movement to promote American diplomatic engagement with the Soviet Union</li>
+      </ul>
+    </div>
+
+    <!-- Q9 — Cuban Missile Crisis -->
+    <div class="mc-question" id="mcq9">
+      <div class="q-num">Question 9 of 20</div>
+      <div class="q-text">The Cuban Missile Crisis (October 1962) is significant because it:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc9','A',this)"><input type="radio" name="mc9"> A. Led to the immediate overthrow of Fidel Castro's government</li>
+        <li class="mc-option" onclick="selectMC('mc9','B',this)"><input type="radio" name="mc9"> B. Brought the United States and Soviet Union to the brink of nuclear war and resulted in a negotiated withdrawal of missiles from both Cuba and Turkey</li>
+        <li class="mc-option" onclick="selectMC('mc9','C',this)"><input type="radio" name="mc9"> C. Ended the Cold War by demonstrating the futility of nuclear weapons</li>
+        <li class="mc-option" onclick="selectMC('mc9','D',this)"><input type="radio" name="mc9"> D. Began the American war in Vietnam</li>
+      </ul>
+    </div>
+
+    <!-- Q10 — Vietnam War / Gulf of Tonkin -->
+    <div class="mc-question" id="mcq10">
+      <div class="q-num">Question 10 of 20</div>
+      <div class="q-text">The Gulf of Tonkin Resolution (1964) is historically important because it:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc10','A',this)"><input type="radio" name="mc10"> A. Formally declared war on North Vietnam through Congress</li>
+        <li class="mc-option" onclick="selectMC('mc10','B',this)"><input type="radio" name="mc10"> B. Gave President Johnson broad authority to use military force in Vietnam without a formal declaration of war — later criticized as an abuse of executive power</li>
+        <li class="mc-option" onclick="selectMC('mc10','C',this)"><input type="radio" name="mc10"> C. Ended direct American combat involvement in Southeast Asia</li>
+        <li class="mc-option" onclick="selectMC('mc10','D',this)"><input type="radio" name="mc10"> D. Established the draft lottery system that governed Vietnam-era conscription</li>
+      </ul>
+    </div>
+
+    <!-- Q11 — Tet Offensive -->
+    <div class="mc-question" id="mcq11">
+      <div class="q-num">Question 11 of 20</div>
+      <div class="q-text">The Tet Offensive (January 1968) changed American public opinion about the Vietnam War primarily because:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc11','A',this)"><input type="radio" name="mc11"> A. It was the first time North Vietnamese forces used chemical weapons against U.S. troops</li>
+        <li class="mc-option" onclick="selectMC('mc11','B',this)"><input type="radio" name="mc11"> B. It resulted in the largest American military casualties of the entire war</li>
+        <li class="mc-option" onclick="selectMC('mc11','C',this)"><input type="radio" name="mc11"> C. It contradicted official claims that the U.S. was winning the war, as enemy forces launched coordinated attacks across South Vietnam including the U.S. Embassy in Saigon</li>
+        <li class="mc-option" onclick="selectMC('mc11','D',this)"><input type="radio" name="mc11"> D. It led directly to the fall of Saigon and the end of the war</li>
+      </ul>
+    </div>
+
+    <!-- Q12 — Watergate -->
+    <div class="mc-question" id="mcq12">
+      <div class="q-num">Question 12 of 20</div>
+      <div class="q-text">The Watergate scandal (1972–1974) resulted in:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc12','A',this)"><input type="radio" name="mc12"> A. The impeachment and conviction of President Richard Nixon</li>
+        <li class="mc-option" onclick="selectMC('mc12','B',this)"><input type="radio" name="mc12"> B. President Nixon's resignation to avoid near-certain impeachment, and a lasting erosion of public trust in the federal government</li>
+        <li class="mc-option" onclick="selectMC('mc12','C',this)"><input type="radio" name="mc12"> C. A constitutional amendment limiting the president to a single term</li>
+        <li class="mc-option" onclick="selectMC('mc12','D',this)"><input type="radio" name="mc12"> D. The creation of the modern intelligence community through the National Security Act</li>
+      </ul>
+    </div>
+
+    <!-- Q13 — Second-wave feminism / Roe -->
+    <div class="mc-question" id="mcq13">
+      <div class="q-num">Question 13 of 20</div>
+      <div class="q-text">The Supreme Court's decision in <em>Roe v. Wade</em> (1973):</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc13','A',this)"><input type="radio" name="mc13"> A. Guaranteed women equal pay for equal work in the federal workplace</li>
+        <li class="mc-option" onclick="selectMC('mc13','B',this)"><input type="radio" name="mc13"> B. Established a constitutional right to abortion based on a right to privacy — a landmark of second-wave feminism that also energized opposition from the religious right</li>
+        <li class="mc-option" onclick="selectMC('mc13','C',this)"><input type="radio" name="mc13"> C. Ratified the Equal Rights Amendment as part of the Constitution</li>
+        <li class="mc-option" onclick="selectMC('mc13','D',this)"><input type="radio" name="mc13"> D. Prohibited sex-based discrimination in college athletics</li>
+      </ul>
+    </div>
+
+    <!-- Q14 — Reaganomics -->
+    <div class="mc-question" id="mcq14">
+      <div class="q-num">Question 14 of 20</div>
+      <div class="q-text">"Reaganomics" refers to the economic policies of the 1980s that emphasized:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc14','A',this)"><input type="radio" name="mc14"> A. Increased federal spending on welfare and social programs</li>
+        <li class="mc-option" onclick="selectMC('mc14','B',this)"><input type="radio" name="mc14"> B. Higher taxes on wealthy Americans to reduce the federal deficit</li>
+        <li class="mc-option" onclick="selectMC('mc14','C',this)"><input type="radio" name="mc14"> C. Tax cuts, deregulation, reduced social spending, and increased military spending — based on the theory that benefits would "trickle down" to the middle class and poor</li>
+        <li class="mc-option" onclick="selectMC('mc14','D',this)"><input type="radio" name="mc14"> D. Government ownership of major industries to stabilize the economy</li>
+      </ul>
+    </div>
+
+    <!-- Q15 — End of Cold War -->
+    <div class="mc-question" id="mcq15">
+      <div class="q-num">Question 15 of 20</div>
+      <div class="q-text">Which of the following best explains why the Cold War ended when it did (1989–1991)?</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc15','A',this)"><input type="radio" name="mc15"> A. The United States and Soviet Union signed a formal peace treaty ending hostilities</li>
+        <li class="mc-option" onclick="selectMC('mc15','B',this)"><input type="radio" name="mc15"> B. A combination of Soviet economic weakness, Gorbachev's reforms (glasnost and perestroika), and popular movements across Eastern Europe led to the collapse of communist governments and, ultimately, the Soviet Union itself</li>
+        <li class="mc-option" onclick="selectMC('mc15','C',this)"><input type="radio" name="mc15"> C. President Reagan ordered the military invasion of East Germany, forcing the fall of the Berlin Wall</li>
+        <li class="mc-option" onclick="selectMC('mc15','D',this)"><input type="radio" name="mc15"> D. The United Nations voted to dissolve the Warsaw Pact</li>
+      </ul>
+    </div>
+
+    <!-- Q16 — 9/11 and Patriot Act -->
+    <div class="mc-question" id="mcq16">
+      <div class="q-num">Question 16 of 20</div>
+      <div class="q-text">The USA PATRIOT Act, passed shortly after the September 11, 2001 attacks:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc16','A',this)"><input type="radio" name="mc16"> A. Significantly expanded federal surveillance powers — drawing lasting criticism that it traded civil liberties for national security</li>
+        <li class="mc-option" onclick="selectMC('mc16','B',this)"><input type="radio" name="mc16"> B. Declared war on Afghanistan and Iraq</li>
+        <li class="mc-option" onclick="selectMC('mc16','C',this)"><input type="radio" name="mc16"> C. Banned all immigration from Muslim-majority countries</li>
+        <li class="mc-option" onclick="selectMC('mc16','D',this)"><input type="radio" name="mc16"> D. Created the Federal Bureau of Investigation</li>
+      </ul>
+    </div>
+
+    <!-- Q17 — Iraq War / 2003 -->
+    <div class="mc-question" id="mcq17">
+      <div class="q-num">Question 17 of 20</div>
+      <div class="q-text">The U.S. invasion of Iraq in 2003 was publicly justified primarily on the grounds that:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc17','A',this)"><input type="radio" name="mc17"> A. Iraq had carried out the September 11 attacks against the United States</li>
+        <li class="mc-option" onclick="selectMC('mc17','B',this)"><input type="radio" name="mc17"> B. Iraq had invaded Kuwait and was threatening Saudi oil supplies</li>
+        <li class="mc-option" onclick="selectMC('mc17','C',this)"><input type="radio" name="mc17"> C. Saddam Hussein's regime possessed weapons of mass destruction and had ties to al-Qaeda — claims that were later largely discredited</li>
+        <li class="mc-option" onclick="selectMC('mc17','D',this)"><input type="radio" name="mc17"> D. Iraq had tested nuclear weapons in violation of the Nuclear Non-Proliferation Treaty</li>
+      </ul>
+    </div>
+
+    <!-- Q18 — Hurricane Katrina -->
+    <div class="mc-question" id="mcq18">
+      <div class="q-num">Question 18 of 20</div>
+      <div class="q-text">The federal government's response to Hurricane Katrina (2005) became historically important because it:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc18','A',this)"><input type="radio" name="mc18"> A. Demonstrated an unprecedented successful mobilization of federal resources to a natural disaster</li>
+        <li class="mc-option" onclick="selectMC('mc18','B',this)"><input type="radio" name="mc18"> B. Exposed severe failures of federal, state, and local emergency response and laid bare long-standing inequalities of race and class in New Orleans</li>
+        <li class="mc-option" onclick="selectMC('mc18','C',this)"><input type="radio" name="mc18"> C. Led directly to the creation of the Department of Homeland Security</li>
+        <li class="mc-option" onclick="selectMC('mc18','D',this)"><input type="radio" name="mc18"> D. Marked the first time the National Guard was used in a domestic emergency</li>
+      </ul>
+    </div>
+
+    <!-- Q19 — 2008 election / Obama -->
+    <div class="mc-question" id="mcq19">
+      <div class="q-num">Question 19 of 20</div>
+      <div class="q-text">Barack Obama's election in November 2008 was historically significant primarily because:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc19','A',this)"><input type="radio" name="mc19"> A. He was the youngest person ever elected president</li>
+        <li class="mc-option" onclick="selectMC('mc19','B',this)"><input type="radio" name="mc19"> B. He was the first African American elected president of the United States, taking office amid the worst financial crisis since the Great Depression</li>
+        <li class="mc-option" onclick="selectMC('mc19','C',this)"><input type="radio" name="mc19"> C. He defeated an incumbent president seeking re-election</li>
+        <li class="mc-option" onclick="selectMC('mc19','D',this)"><input type="radio" name="mc19"> D. He won without carrying a single Southern state</li>
+      </ul>
+    </div>
+
+    <!-- Q20 — Haass / obligations -->
+    <div class="mc-question" id="mcq20">
+      <div class="q-num">Question 20 of 20</div>
+      <div class="q-text">In <em>The Bill of Obligations</em>, Richard Haass argues that a functioning democracy requires:</div>
+      <ul class="mc-options">
+        <li class="mc-option" onclick="selectMC('mc20','A',this)"><input type="radio" name="mc20"> A. A constitutional amendment guaranteeing proportional representation</li>
+        <li class="mc-option" onclick="selectMC('mc20','B',this)"><input type="radio" name="mc20"> B. Stricter enforcement of voting laws and an end to the filibuster</li>
+        <li class="mc-option" onclick="selectMC('mc20','C',this)"><input type="radio" name="mc20"> C. Not only rights but also obligations — including being informed, getting involved, rejecting violence, staying open to compromise, and valuing norms</li>
+        <li class="mc-option" onclick="selectMC('mc20','D',this)"><input type="radio" name="mc20"> D. The elimination of political parties in favor of nonpartisan governance</li>
+      </ul>
+    </div>
+
+    <div id="mc-score-display" style="margin-top:18px;display:none;"></div>
+  </div>
+  <div class="notice lock">⚠ Once you advance to Part II, you cannot return to Part I.</div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="advanceMC()">Part II: Before &amp; After →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PHASE 2 — TIMELINE SEQUENCING (20 pts)
+══════════════════════════════════════════════════ -->
+<div class="panel" id="phase2">
+  <div class="card">
+    <div class="phase-banner pb-timeline">Part II — Before &amp; After · 20 Points</div>
+    <div class="card-eyebrow">10 Placements · 2 pts each</div>
+    <h2>Context &amp; Chronology</h2>
+    <p>Below are <strong>five anchor events</strong> from across the course, each with a brief description. For each anchor, drag one event from the pool into the <strong>Before</strong> slot and one into the <strong>After</strong> slot. Each card in the pool names an event, gives its year, and describes what happened.</p>
+    <div class="notice">This is not just about dates — read the descriptions. Each event belongs to a specific period and fits logically before or after only <em>one</em> of the anchors. Think about causes, consequences, and historical context.</div>
+
+    <h3 style="margin-top:22px;">Events to Place</h3>
+    <p style="font-size:0.88em;color:var(--ink-light);margin-bottom:6px;">Drag cards from this pool into the Before and After slots below. You can drag cards back here to undo.</p>
+    <div class="ba-pool" id="baPool" ondragover="baDragOverPool(event)" ondrop="baDropToPool(event)">
+      <div class="ba-card" draggable="true" data-id="ba_1" data-target="A1" data-pos="before">
+        <div class="ba-card-head"><span class="ba-card-title">Compromise of 1877</span><span class="ba-card-year">1877</span></div>
+        <p class="ba-card-desc">Disputed presidential election resolved when Republicans agreed to withdraw federal troops from the South in exchange for the White House. Signaled the end of federal Reconstruction and opened the way for Southern states to impose new racial hierarchies.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_2" data-target="A1" data-pos="after">
+        <div class="ba-card-head"><span class="ba-card-title">Niagara Movement</span><span class="ba-card-year">1905</span></div>
+        <p class="ba-card-desc">Founded by W.E.B. Du Bois and a group of African American intellectuals demanding full civil and political rights, directly challenging Booker T. Washington's accommodationist strategy. A forerunner of the NAACP.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_3" data-target="A2" data-pos="before">
+        <div class="ba-card-head"><span class="ba-card-title">Lend-Lease Act</span><span class="ba-card-year">March 1941</span></div>
+        <p class="ba-card-desc">Congress authorized the United States to supply war material to Britain and later other Allies without formally entering combat. Ended any pretense of strict neutrality as the nation edged toward direct involvement in World War II.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_4" data-target="A2" data-pos="after">
+        <div class="ba-card-head"><span class="ba-card-title">Japanese American Internment</span><span class="ba-card-year">1942</span></div>
+        <p class="ba-card-desc">Following Executive Order 9066, roughly 120,000 Japanese Americans — most of them U.S. citizens — were forcibly removed from the West Coast and confined in government camps without trial, a wartime civil liberties violation later formally apologized for by Congress.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_5" data-target="A3" data-pos="before">
+        <div class="ba-card-head"><span class="ba-card-title">Executive Order 9981</span><span class="ba-card-year">1948</span></div>
+        <p class="ba-card-desc">President Harry Truman ordered the desegregation of the U.S. armed forces, one of the first major federal acts against institutional racial segregation in the modern era and an important signal that the federal government might take civil rights seriously.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_6" data-target="A3" data-pos="after">
+        <div class="ba-card-head"><span class="ba-card-title">Montgomery Bus Boycott</span><span class="ba-card-year">1955–1956</span></div>
+        <p class="ba-card-desc">Sparked when Rosa Parks refused to give up her seat, a year-long Black-led boycott of the Montgomery, Alabama bus system ended in federal court victory and launched a young Baptist minister named Martin Luther King Jr. into national leadership.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_7" data-target="A4" data-pos="before">
+        <div class="ba-card-head"><span class="ba-card-title">Tet Offensive</span><span class="ba-card-year">1968</span></div>
+        <p class="ba-card-desc">A coordinated North Vietnamese and Viet Cong attack on cities across South Vietnam during the Lunar New Year. Though militarily repulsed, it shattered official U.S. claims that the war was being won and became a turning point in American public opinion.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_8" data-target="A4" data-pos="after">
+        <div class="ba-card-head"><span class="ba-card-title">Camp David Accords</span><span class="ba-card-year">1978</span></div>
+        <p class="ba-card-desc">President Jimmy Carter brokered a framework agreement between Egypt and Israel that led to a formal peace treaty — a rare post-Vietnam American foreign-policy success and a signal that U.S. diplomacy could still shape the international order.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_9" data-target="A5" data-pos="before">
+        <div class="ba-card-head"><span class="ba-card-title">Oklahoma City Bombing</span><span class="ba-card-year">1995</span></div>
+        <p class="ba-card-desc">A truck bomb destroyed a federal office building in Oklahoma City, killing 168 people. Carried out by an American anti-government extremist, it was the deadliest act of domestic terrorism in U.S. history to that point and raised new questions about radicalization at home.</p>
+      </div>
+      <div class="ba-card" draggable="true" data-id="ba_10" data-target="A5" data-pos="after">
+        <div class="ba-card-head"><span class="ba-card-title">Hurricane Katrina</span><span class="ba-card-year">2005</span></div>
+        <p class="ba-card-desc">A Category 3 hurricane breached levees and flooded New Orleans. Over 1,800 people died and hundreds of thousands were displaced. The failure of federal, state, and local response laid bare enduring inequalities of race and class in American disaster policy.</p>
+      </div>
+    </div>
+
+    <!-- ANCHOR 1 -->
+    <div class="ba-triad" data-anchor="A1">
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-before">Before</div>
+        <div class="ba-slot" id="slotA1_before" data-anchor="A1" data-pos="before" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A1','before')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>before</em> Plessy…</span>
+        </div>
+      </div>
+      <div class="ba-anchor">
+        <div class="ba-anchor-label">Anchor Event</div>
+        <div class="ba-anchor-title"><em>Plessy v. Ferguson</em></div>
+        <div><span class="ba-anchor-year">1896</span></div>
+        <p class="ba-anchor-desc">Supreme Court upheld a Louisiana law mandating racially segregated railroad cars, establishing the "separate but equal" doctrine that legalized Jim Crow for the next half-century.</p>
+      </div>
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-after">After</div>
+        <div class="ba-slot" id="slotA1_after" data-anchor="A1" data-pos="after" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A1','after')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>after</em> Plessy…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANCHOR 2 -->
+    <div class="ba-triad" data-anchor="A2">
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-before">Before</div>
+        <div class="ba-slot" id="slotA2_before" data-anchor="A2" data-pos="before" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A2','before')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>before</em> Pearl Harbor…</span>
+        </div>
+      </div>
+      <div class="ba-anchor">
+        <div class="ba-anchor-label">Anchor Event</div>
+        <div class="ba-anchor-title">Attack on Pearl Harbor</div>
+        <div><span class="ba-anchor-year">December 7, 1941</span></div>
+        <p class="ba-anchor-desc">Japanese naval aircraft attacked the U.S. Pacific Fleet at Pearl Harbor, Hawaii. The next day Congress declared war on Japan, and within days Germany and Italy declared war on the United States, bringing America fully into World War II.</p>
+      </div>
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-after">After</div>
+        <div class="ba-slot" id="slotA2_after" data-anchor="A2" data-pos="after" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A2','after')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>after</em> Pearl Harbor…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANCHOR 3 -->
+    <div class="ba-triad" data-anchor="A3">
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-before">Before</div>
+        <div class="ba-slot" id="slotA3_before" data-anchor="A3" data-pos="before" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A3','before')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>before</em> Brown…</span>
+        </div>
+      </div>
+      <div class="ba-anchor">
+        <div class="ba-anchor-label">Anchor Event</div>
+        <div class="ba-anchor-title"><em>Brown v. Board of Education</em></div>
+        <div><span class="ba-anchor-year">1954</span></div>
+        <p class="ba-anchor-desc">Unanimous Supreme Court decision declared that state-mandated school segregation violated the Fourteenth Amendment's Equal Protection Clause, overturning <em>Plessy v. Ferguson</em> and providing the legal foundation for the modern Civil Rights Movement.</p>
+      </div>
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-after">After</div>
+        <div class="ba-slot" id="slotA3_after" data-anchor="A3" data-pos="after" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A3','after')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>after</em> Brown…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANCHOR 4 -->
+    <div class="ba-triad" data-anchor="A4">
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-before">Before</div>
+        <div class="ba-slot" id="slotA4_before" data-anchor="A4" data-pos="before" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A4','before')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>before</em> Fall of Saigon…</span>
+        </div>
+      </div>
+      <div class="ba-anchor">
+        <div class="ba-anchor-label">Anchor Event</div>
+        <div class="ba-anchor-title">Fall of Saigon</div>
+        <div><span class="ba-anchor-year">April 1975</span></div>
+        <p class="ba-anchor-desc">North Vietnamese forces captured the South Vietnamese capital, ending the Vietnam War with an American defeat. Images of the U.S. embassy evacuation became iconic symbols of the war's failure and the limits of American power.</p>
+      </div>
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-after">After</div>
+        <div class="ba-slot" id="slotA4_after" data-anchor="A4" data-pos="after" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A4','after')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>after</em> Fall of Saigon…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANCHOR 5 -->
+    <div class="ba-triad" data-anchor="A5">
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-before">Before</div>
+        <div class="ba-slot" id="slotA5_before" data-anchor="A5" data-pos="before" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A5','before')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>before</em> 9/11…</span>
+        </div>
+      </div>
+      <div class="ba-anchor">
+        <div class="ba-anchor-label">Anchor Event</div>
+        <div class="ba-anchor-title">September 11 Attacks</div>
+        <div><span class="ba-anchor-year">September 11, 2001</span></div>
+        <p class="ba-anchor-desc">Coordinated al-Qaeda hijackers crashed commercial airliners into the World Trade Center and the Pentagon; a fourth was brought down by passengers in Pennsylvania. Nearly 3,000 people killed. The attacks launched two decades of U.S. military action and a reshaped national security state.</p>
+      </div>
+      <div class="ba-slot-row">
+        <div class="ba-slot-label ba-after">After</div>
+        <div class="ba-slot" id="slotA5_after" data-anchor="A5" data-pos="after" ondragover="baDragOver(event)" ondragleave="baDragLeave(event)" ondrop="baDropItem(event,'A5','after')">
+          <span class="ba-slot-placeholder">Drop the event that came <em>after</em> 9/11…</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="advanceTimeline()">Part III: Source Identification →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PHASE 3 — SOURCE IDENTIFICATION (30 pts)
+══════════════════════════════════════════════════ -->
+<div class="panel" id="phase3">
+  <div class="card">
+    <div class="phase-banner pb-source">Part III — Source Identification · 30 Points</div>
+    <div class="card-eyebrow">2 Documents + 1 Photograph · 10 pts each</div>
+    <h2>What Does This Source Tell Us?</h2>
+    <p>Examine each of the three primary sources below — two written documents and one photograph. For each one, answer the two questions that follow. You are being asked to think like a historian: <strong>What can you determine from this source, and what are its limits?</strong></p>
+    <div class="notice">You may use your notes. Focus on context, purpose, and what the document reveals about its era.</div>
+  </div>
+
+  <!-- SOURCE 1 — MLK Letter from Birmingham Jail -->
+  <div class="card">
+    <div class="card-eyebrow">Document 1 of 3</div>
+    <h2>Source A</h2>
+    <div class="doc-excerpt">
+      <p>"We know through painful experience that freedom is never voluntarily given by the oppressor; it must be demanded by the oppressed... For years now I have heard the word 'wait.' It rings in the ear of every Negro with piercing familiarity. This 'wait' has almost always meant 'never.' We must come to see, with one of our distinguished jurists, that 'justice too long delayed is justice denied.'... One who breaks an unjust law must do so openly, lovingly, and with a willingness to accept the penalty."</p>
+      <div class="doc-source">Source: Letter written from jail by an American civil rights leader, April 1963, addressed to white clergymen who had urged him to slow down his protest campaign.</div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">Source A — Q1 (5 pts)</div>
+      <div class="question-prompt"><strong>Identify and contextualize:</strong> Who is the likely author of this letter, and what specific historical campaign does it come from? What specific details in the language point you toward that conclusion? What does this document reveal about the strategy and philosophy of the movement it represents?</div>
+      <textarea class="answer-input" id="sa1q1" rows="5" placeholder="Identify the author and campaign, cite specific language clues, and explain the historical context…" oninput="wc('sa1q1','wc_sa1q1')"></textarea>
+      <div class="word-count" id="wc_sa1q1">0 words</div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">Source A — Q2 (5 pts)</div>
+      <div class="question-prompt"><strong>Corroborate or complicate:</strong> Connect this document to Haass's argument in <em>The Bill of Obligations</em> about rejecting violence. Does this author's stance confirm Haass's claim that nonviolent civil disobedience is the most effective path to change, or does it complicate that claim? Use a specific detail from this letter to support your answer.</div>
+      <textarea class="answer-input" id="sa1q2" rows="5" placeholder="Connect the source to Haass and cite a specific detail from the letter…" oninput="wc('sa1q2','wc_sa1q2')"></textarea>
+      <div class="word-count" id="wc_sa1q2">0 words</div>
+    </div>
+  </div>
+
+  <!-- SOURCE 2 — Reagan at Brandenburg Gate -->
+  <div class="card">
+    <div class="card-eyebrow">Document 2 of 3</div>
+    <h2>Source B</h2>
+    <div class="doc-excerpt">
+      <p>"We welcome change and openness; for we believe that freedom and security go together, that the advance of human liberty can only strengthen the cause of world peace. There is one sign the Soviets can make that would be unmistakable, that would advance dramatically the cause of freedom and peace. General Secretary Gorbachev, if you seek peace, if you seek prosperity for the Soviet Union and Eastern Europe, if you seek liberalization: Come here to this gate! Mr. Gorbachev, open this gate! Mr. Gorbachev, tear down this wall!"</p>
+      <div class="doc-source">Source: Speech delivered in West Berlin by a U.S. president, June 1987.</div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">Source B — Q1 (5 pts)</div>
+      <div class="question-prompt"><strong>Identify and contextualize:</strong> Who is the speaker, and at what monument is this speech being delivered? What year of the Cold War does this represent, and what is the specific geopolitical situation the speaker is addressing? Identify at least two specific phrases that reveal the speaker's ideological framing.</div>
+      <textarea class="answer-input" id="sa2q1" rows="5" placeholder="Identify the speaker, location, and moment — cite two specific phrases that reveal ideological framing…" oninput="wc('sa2q1','wc_sa2q1')"></textarea>
+      <div class="word-count" id="wc_sa2q1">0 words</div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">Source B — Q2 (5 pts)</div>
+      <div class="question-prompt"><strong>Evaluate as historical evidence:</strong> What is the purpose of this speech — what was it designed to accomplish politically, and for which audiences? Historians debate how much this speech actually contributed to the fall of the Berlin Wall two years later. What are the limits of using this speech as evidence for <em>what ended the Cold War</em>?</div>
+      <textarea class="answer-input" id="sa2q2" rows="5" placeholder="Discuss the speech's political purpose, audiences, and its limits as evidence for ending the Cold War…" oninput="wc('sa2q2','wc_sa2q2')"></textarea>
+      <div class="word-count" id="wc_sa2q2">0 words</div>
+    </div>
+  </div>
+
+  <!-- SOURCE 3 — PHOTOGRAPH: Bloody Sunday, Selma 1965 -->
+  <div class="card">
+    <div class="card-eyebrow">Document 3 of 3</div>
+    <h2>Source C</h2>
+
+    <div style="background:rgba(154,111,42,0.06);border:1px solid var(--cream-deep);border-left:4px solid var(--gold);padding:10px 16px;margin-bottom:16px;font-family:'DM Mono',monospace;font-size:0.74em;letter-spacing:1px;color:var(--ink-mid);">
+      <strong style="color:var(--gold);letter-spacing:2px;text-transform:uppercase;">Directions</strong><br>
+      Examine the photograph below and answer the questions that follow.
+    </div>
+
+    <!-- PHOTOGRAPH -->
+    <div style="border:2px solid var(--ink);margin:0 0 16px;background:#1a1510;text-align:center;position:relative;">
+      <img id="bloody-sunday-img"
+           src="selma-bloody-sunday-1965.jpg"
+           alt="Selma to Montgomery — March 7, 1965. State troopers in helmets and gas masks advance on a line of unarmed African American marchers at the foot of the Edmund Pettus Bridge. Marchers fall back under blows from nightsticks as tear gas drifts across the scene."
+           style="max-width:100%;max-height:480px;object-fit:contain;display:block;margin:0 auto;-webkit-user-drag:none;pointer-events:none;"
+           draggable="false"
+           oncontextmenu="return false;">
+      <div style="background:var(--ink);color:#b0a090;font-family:'DM Mono',monospace;font-size:0.68em;letter-spacing:2px;padding:8px 16px;text-align:left;">
+        "Bloody Sunday" &nbsp;·&nbsp; Edmund Pettus Bridge, Selma, Alabama &nbsp;·&nbsp; March 7, 1965
+      </div>
+    </div>
+
+    <!-- SOURCE CONTEXT -->
+    <div class="doc-excerpt" style="border-left-color:var(--rust);">
+      <p>On March 7, 1965, roughly 600 civil rights marchers attempted to walk from Selma, Alabama, to the state capital in Montgomery to demand voting rights. At the Edmund Pettus Bridge on the edge of Selma, Alabama state troopers and a local sheriff's posse attacked the marchers with nightsticks and tear gas. Television networks interrupted evening programming to broadcast footage of the attack. Within eight days, President Lyndon Johnson addressed a joint session of Congress and introduced what would become the Voting Rights Act of 1965.</p>
+      <div class="doc-source">Source: News photograph taken on March 7, 1965, at the Edmund Pettus Bridge. Widely distributed in the American press the following day.</div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">Source C — Q1 (5 pts)</div>
+      <div class="question-prompt"><strong>How is this photograph useful as historical evidence?</strong> What does it reveal about the Civil Rights Movement and about the response of state authorities to nonviolent protest? Identify at least two specific visual details and explain what each tells us about the confrontation and the era.</div>
+      <textarea class="answer-input" id="sa3q1" rows="5" placeholder="Describe specific details you observe in the photograph and explain what they reveal as historical evidence…" oninput="wc('sa3q1','wc_sa3q1')"></textarea>
+      <div class="word-count" id="wc_sa3q1">0 words</div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">Source C — Q2 (5 pts) · Connection to Earlier Course Material</div>
+      <div class="question-prompt"><strong>The marchers at Selma were demanding voting rights that had been guaranteed — on paper — nearly a century earlier.</strong> Connect this 1965 image to the Reconstruction era you studied in Weeks 1–2. What did the <strong>Fifteenth Amendment (1870)</strong> promise, and what happened to that promise between Reconstruction's end in 1877 and the moment this photograph was taken? Then, drawing on Haass, explain what role a <em>free press</em> played in 1965 that was missing — or blocked — in the decades in between.</div>
+      <textarea class="answer-input" id="sa3q2" rows="6" placeholder="Trace the arc from the 15th Amendment through Jim Crow disenfranchisement to Selma. Why did this image produce federal action in 1965 when earlier abuses had not?…" oninput="wc('sa3q2','wc_sa3q2')"></textarea>
+      <div class="word-count" id="wc_sa3q2">0 words</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="advanceSources()">Part IV: Legacy Essay →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PHASE 4 — LEGACY ESSAY (30 pts)
+══════════════════════════════════════════════════ -->
+<div class="panel" id="phase4">
+  <div class="card">
+    <div class="phase-banner pb-essay">Part IV — Legacy Essay · 30 Points</div>
+    <div class="card-eyebrow">350–600 words · Open Book · 30 pts</div>
+    <h2>The Legacy Essay</h2>
+
+    <div style="background:var(--canvas-blue);color:#f0e8d8;padding:18px 22px;margin:16px 0;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.72em;letter-spacing:2px;color:var(--gold-light);margin-bottom:8px;">Essay Question</div>
+      <p style="font-size:1.05em;font-weight:700;margin:0;line-height:1.6;">Between 1945 and the present, which single event or development do you consider the most consequential in shaping the America you live in today? Defend your choice with specific historical evidence, <em>trace its roots to an earlier period of American history (pre-1945) covered in this course</em>, and explain why the alternatives you did <em>not</em> choose matter less.</p>
+    </div>
+
+    <p>First, <strong>select your development</strong> from the options below. Then write your essay in the text box provided.</p>
+    <div class="notice">Your essay must include: <strong>(1)</strong> a clear thesis stating your choice and why it matters; <strong>(2)</strong> at least two specific pieces of historical evidence from Weeks 4–7 supporting your argument; <strong>(3)</strong> a <em>roots paragraph</em> tracing your chosen development back to a specific earlier moment, movement, or institution from <strong>Weeks 1–3</strong> (Reconstruction, Gilded Age, or Progressive Era); and <strong>(4)</strong> one sentence explaining why a different development on the list was <em>not</em> the most important. Minimum 350 words.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-eyebrow">Step 1 — Choose Your Development</div>
+    <h2>Select One</h2>
+    <p>Choose the event or development you will argue was most consequential for shaping contemporary America. You are committing to defending this choice in your essay.</p>
+
+    <div id="tp-options">
+      <label class="tp-option" onclick="selectTP(this,'A')">
+        <input type="radio" name="tp" value="A">
+        <div class="tp-option-text">
+          <strong>A. The Civil Rights Movement (1954–1965)</strong>
+          The legal dismantling of Jim Crow through <em>Brown v. Board</em>, the Civil Rights Act of 1964, and the Voting Rights Act of 1965 transformed American citizenship, opened the door to every subsequent rights movement, and created the multiracial democracy America is still negotiating today.
+        </div>
+      </label>
+      <label class="tp-option" onclick="selectTP(this,'B')">
+        <input type="radio" name="tp" value="B">
+        <div class="tp-option-text">
+          <strong>B. The Cold War and the national security state (1947–1991)</strong>
+          Four decades of superpower rivalry reshaped the federal government, expanded executive power, produced the military-industrial complex, drew the United States into wars in Korea and Vietnam, and left behind a global posture and surveillance architecture that still define American foreign policy.
+        </div>
+      </label>
+      <label class="tp-option" onclick="selectTP(this,'C')">
+        <input type="radio" name="tp" value="C">
+        <div class="tp-option-text">
+          <strong>C. The Vietnam War and the crisis of trust (1964–1975)</strong>
+          Vietnam, combined with Watergate, shattered postwar faith in the credibility of the federal government, gave rise to a cynical political culture, and established the pattern of open, undeclared war that shaped every subsequent American military intervention.
+        </div>
+      </label>
+      <label class="tp-option" onclick="selectTP(this,'D')">
+        <input type="radio" name="tp" value="D">
+        <div class="tp-option-text">
+          <strong>D. The Reagan Revolution and the conservative turn (1980–1989)</strong>
+          Tax cuts, deregulation, attacks on the welfare state, and the cultural alliance between economic conservatism and the religious right redefined the terms of American politics — setting the baseline that every administration since, Democratic or Republican, has had to negotiate.
+        </div>
+      </label>
+      <label class="tp-option" onclick="selectTP(this,'E')">
+        <input type="radio" name="tp" value="E">
+        <div class="tp-option-text">
+          <strong>E. September 11, 2001 and the War on Terror</strong>
+          The 9/11 attacks and the wars in Afghanistan and Iraq that followed remade the federal security apparatus, normalized open-ended military conflict and mass surveillance, and reshaped American politics, civil liberties, and attitudes toward immigration for a generation.
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-eyebrow">Step 2 — Write Your Essay</div>
+    <h2>Your Argument</h2>
+
+    <div style="background:rgba(154,111,42,0.07);border:1px solid var(--cream-deep);border-left:4px solid var(--gold);padding:14px 18px;margin-bottom:18px;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.7em;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">SCORING RUBRIC — 30 points</div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.88em;">
+        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Thesis</td><td style="padding:6px 10px;color:var(--ink-light);">Clear, arguable claim stating the development and why it matters most · 7 pts</td></tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Evidence</td><td style="padding:6px 10px;color:var(--ink-light);">At least two specific, accurate historical facts from Weeks 4–7 that support your argument · 10 pts</td></tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Roots Paragraph</td><td style="padding:6px 10px;color:var(--ink-light);">Traces the development's origins back to a specific pre-1945 moment, movement, or institution from Weeks 1–3 · 6 pts</td></tr>
+        <tr style="border-bottom:1px solid var(--cream-deep);"><td style="padding:6px 10px;font-weight:700;">Counterargument</td><td style="padding:6px 10px;color:var(--ink-light);">Acknowledges and dismisses at least one alternative development · 4 pts</td></tr>
+        <tr><td style="padding:6px 10px;font-weight:700;">Clarity &amp; Writing</td><td style="padding:6px 10px;color:var(--ink-light);">Well-organized, clear prose with a conclusion · 3 pts</td></tr>
+      </table>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">Legacy Essay (350–600 words)</div>
+      <div class="question-prompt" id="essay-prompt-display" style="background:rgba(30,68,136,0.06);padding:10px 14px;border-left:3px solid var(--canvas-blue);">Select your development above to see your essay prompt confirmed here.</div>
+      <textarea class="answer-input" id="essay-response" rows="22" placeholder="Begin with your thesis. Present at least two specific pieces of historical evidence from Weeks 4–7. Include a dedicated paragraph tracing your development's roots to a specific moment, movement, or institution from Weeks 1–3 (Reconstruction, Gilded Age, or Progressive Era). Address one alternative development. Conclude with why this development's consequences still matter today…" oninput="wc('essay-response','essay-wc')"></textarea>
+      <div class="word-count" id="essay-wc">0 words · minimum 350</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-gold" onclick="advanceEssay()">Review &amp; Submit →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PHASE 5 — SUBMIT
+══════════════════════════════════════════════════ -->
+<div class="panel" id="phase5">
+  <div class="card">
+    <div class="phase-banner pb-submit">Examination Complete · Submit Your Work</div>
+    <div class="stamp-center"><div class="verdict-stamp vs-complete">EXAM COMPLETE</div></div>
+    <div class="card-eyebrow">Final Submission</div>
+    <h2>Three Steps to Submit</h2>
+    <div class="summary-box" id="examSummary">—</div>
+
+    <!-- Step 1 -->
+    <div id="step1-block" style="border:2px solid var(--cream-deep);margin:16px 0;overflow:hidden;">
+      <div style="background:var(--ink);padding:10px 18px;display:flex;align-items:center;gap:12px;">
+        <span id="step1-icon" style="font-family:'DM Mono',monospace;font-size:1.1em;color:var(--gold-light);">① </span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.74em;letter-spacing:2px;color:#c8b8a0;text-transform:uppercase;">Submit to Prof. Hauselmann &amp; Download PDF</span>
+      </div>
+      <div style="padding:16px 18px;">
+        <p style="font-size:0.93em;margin-bottom:14px;">Click the button below. This does two things at once: <strong>records your submission in Prof. Hauselmann's database</strong> and <strong>automatically downloads your PDF</strong>. Do not skip this step.</p>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:0;">
+          <button class="btn btn-primary" id="submitBtn" onclick="submitExam()" style="font-size:1em;padding:14px 32px;">📤 Submit &amp; Download PDF</button>
+        </div>
+        <div id="submitMessage" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="step2-block" style="border:2px solid var(--cream-deep);margin:16px 0;overflow:hidden;opacity:0.4;pointer-events:none;transition:opacity 0.4s;">
+      <div style="background:var(--ink);padding:10px 18px;display:flex;align-items:center;gap:12px;">
+        <span id="step2-icon" style="font-family:'DM Mono',monospace;font-size:1.1em;color:#6b5e50;">② </span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.74em;letter-spacing:2px;color:#6b5e50;text-transform:uppercase;">Check Your PDF Downloaded</span>
+      </div>
+      <div style="padding:16px 18px;">
+        <p style="font-size:0.93em;margin-bottom:12px;">Your PDF should have downloaded automatically. If it did not, click the button below to download it manually. <strong>You must have this file to complete Step 3.</strong></p>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:0;">
+          <button class="btn btn-secondary" id="manualDownloadBtn" onclick="downloadPDF()" style="font-size:0.9em;">📄 Re-download PDF</button>
+        </div>
+        <div style="margin-top:12px;padding:10px 14px;background:rgba(61,96,83,0.08);border-left:3px solid var(--sage);font-size:0.88em;color:var(--ink-light);">
+          <strong>Your file name:</strong> <span id="pdf-filename-display" style="font-family:'DM Mono',monospace;font-size:0.9em;">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="step3-block" style="border:2px solid var(--cream-deep);margin:16px 0;overflow:hidden;opacity:0.4;pointer-events:none;transition:opacity 0.4s;">
+      <div style="background:var(--ink);padding:10px 18px;display:flex;align-items:center;gap:12px;">
+        <span id="step3-icon" style="font-family:'DM Mono',monospace;font-size:1.1em;color:#6b5e50;">③ </span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.74em;letter-spacing:2px;color:#6b5e50;text-transform:uppercase;">Upload PDF to Canvas</span>
+      </div>
+      <div style="padding:16px 18px;">
+        <p style="font-size:0.93em;margin-bottom:14px;">Open the Canvas assignment using the button below and upload the PDF file you just downloaded. Your submission is not complete until it appears in Canvas.</p>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:0;">
+          <a id="canvasBtn" href="CANVAS_URL_PLACEHOLDER" target="_blank" class="btn btn-gold" style="text-decoration:none;font-size:1em;padding:14px 32px;" onclick="handleCanvasNavigation(event)">📋 Go to Canvas Assignment →</a>
+        </div>
+        <div class="notice" style="margin-top:14px;">After uploading, you will see a submission confirmation in Canvas. That confirmation is your receipt — keep it.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+
+<!-- EXAM CLOSED OVERLAY -->
+<div id="examClosedOverlay" style="display:none;position:fixed;inset:0;background:#100a04;z-index:99999;overflow-y:auto;padding:40px 16px;">
+  <div style="max-width:600px;margin:60px auto;background:var(--cream);border:3px solid var(--ink);border-top:8px solid var(--sage);box-shadow:10px 10px 0 rgba(0,0,0,0.5);">
+    <div style="background:var(--sage);color:#d4ece4;font-family:'DM Mono',monospace;font-size:0.74em;letter-spacing:3px;text-transform:uppercase;padding:10px 20px;">✓ Examination Submitted — HIST 102 Final</div>
+    <div style="padding:36px 36px 40px;">
+      <div style="text-align:center;padding:10px 0 22px;">
+        <div style="font-family:'DM Mono',monospace;font-size:2em;color:var(--sage);border:4px solid var(--sage);display:inline-block;padding:10px 24px;transform:rotate(-1.5deg);letter-spacing:4px;">SUBMITTED</div>
+      </div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6em;color:var(--ink);border-bottom:2px solid var(--cream-deep);padding-bottom:12px;margin-bottom:18px;">Your exam is complete.</h2>
+      <p style="line-height:1.8;margin-bottom:14px;">A new tab has opened with the Canvas assignment. Upload your PDF there to finish your submission.</p>
+      <p style="line-height:1.8;margin-bottom:14px;"><strong>This exam window is now closed.</strong> You do not need to keep it open. Once your PDF is uploaded to Canvas and you see the submission confirmation, you are done.</p>
+      <div style="background:rgba(61,96,83,0.08);border:1px solid var(--cream-deep);border-left:4px solid var(--sage);padding:14px 16px;font-family:'DM Mono',monospace;font-size:0.82em;letter-spacing:0.5px;line-height:1.9;margin:18px 0;">
+        <div id="closedOverlay-summary" style="color:#3a3028;"></div>
+      </div>
+      <p style="font-size:0.88em;color:var(--ink-light);font-style:italic;margin-top:16px;">If the Canvas tab did not open, <a id="canvasFallbackLink" href="#" target="_blank" style="color:var(--canvas-blue);">click here to open it</a>.</p>
+      <div style="text-align:center;margin-top:28px;">
+        <button onclick="window.close()" style="font-family:'DM Mono',monospace;font-size:0.82em;letter-spacing:2px;padding:11px 24px;background:transparent;border:2px solid var(--ink-light);color:var(--ink-light);cursor:pointer;text-transform:uppercase;">Close This Window</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIGURATION — update before publishing
+// ══════════════════════════════════════════════════════
+const CANVAS_URL     = 'CANVAS_URL_PLACEHOLDER';
+const SUPABASE_URL   = 'https://bqrluqymscucvbiaaeai.supabase.co';
+const SUPABASE_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
+const EXAM_MINUTES   = 120;
+const EXAM_PASSWORD  = 'FINALEXAM2026';  // ← change this before publishing
+const PREVIEW_MODE   = new URLSearchParams(window.location.search).get('preview') === 'true';
+const GRACE_SECONDS  = 60;
+
+// ── ANSWER KEY ──────────────────────────────────────
+const MC_ANSWERS = {
+  mc1:'B', mc2:'C', mc3:'B', mc4:'C', mc5:'B',
+  mc6:'A', mc7:'B', mc8:'C', mc9:'B', mc10:'B',
+  mc11:'C', mc12:'B', mc13:'B', mc14:'C', mc15:'B',
+  mc16:'A', mc17:'C', mc18:'B', mc19:'B', mc20:'C'
+};
+// Before/After — each card has a correct target anchor (A1-A5) and position (before/after)
+// BA_CORRECT[cardId] = { anchor: 'A1', pos: 'before' }
+const BA_CORRECT = {
+  ba_1:  { anchor:'A1', pos:'before' },  // Compromise of 1877 → before Plessy
+  ba_2:  { anchor:'A1', pos:'after'  },  // Niagara Movement → after Plessy
+  ba_3:  { anchor:'A2', pos:'before' },  // Lend-Lease → before Pearl Harbor
+  ba_4:  { anchor:'A2', pos:'after'  },  // Internment → after Pearl Harbor
+  ba_5:  { anchor:'A3', pos:'before' },  // EO 9981 → before Brown
+  ba_6:  { anchor:'A3', pos:'after'  },  // Montgomery → after Brown
+  ba_7:  { anchor:'A4', pos:'before' },  // Tet Offensive → before Fall of Saigon
+  ba_8:  { anchor:'A4', pos:'after'  },  // Camp David → after Fall of Saigon
+  ba_9:  { anchor:'A5', pos:'before' },  // Oklahoma City → before 9/11
+  ba_10: { anchor:'A5', pos:'after'  }   // Katrina → after 9/11
+};
+const BA_LABELS = {
+  ba_1: 'Compromise of 1877',
+  ba_2: 'Niagara Movement (1905)',
+  ba_3: 'Lend-Lease Act (Mar 1941)',
+  ba_4: 'Japanese American Internment (1942)',
+  ba_5: 'Executive Order 9981 (1948)',
+  ba_6: 'Montgomery Bus Boycott (1955–56)',
+  ba_7: 'Tet Offensive (1968)',
+  ba_8: 'Camp David Accords (1978)',
+  ba_9: 'Oklahoma City Bombing (1995)',
+  ba_10: 'Hurricane Katrina (2005)'
+};
+const ANCHOR_LABELS = {
+  A1: 'Plessy v. Ferguson (1896)',
+  A2: 'Pearl Harbor (1941)',
+  A3: 'Brown v. Board (1954)',
+  A4: 'Fall of Saigon (1975)',
+  A5: '9/11 Attacks (2001)'
+};
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let phase        = 0;
+let startTime    = null;
+let endTime      = null;
+let timerInt     = null;
+let graceInt     = null;
+let timeExpired  = false;
+let attemptId    = null;
+let mcAnswers    = {};
+let baPlacements = {};  // { 'A1_before': 'ba_1', 'A1_after': 'ba_2', ... }
+let selectedTP   = null;
+let pdfFilename  = '';
+
+// ══════════════════════════════════════════════════════
+//  SUPABASE — plain fetch helpers
+// ══════════════════════════════════════════════════════
+function sbInsert(table, payload) {
+  return fetch(SUPABASE_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Prefer':        'return=representation'
+    },
+    body: JSON.stringify(payload)
+  }).then(function(r){ return r.json(); });
+}
+
+function sbSelect(table, filters) {
+  var url = SUPABASE_URL + '/rest/v1/' + table + '?';
+  if (filters) url += filters + '&';
+  url += 'limit=1';
+  return fetch(url, {
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    }
+  }).then(function(r){ return r.json(); });
+}
+
+function sbUpdate(table, filters, payload) {
+  var url = SUPABASE_URL + '/rest/v1/' + table + '?' + filters;
+  return fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Prefer':        'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  });
+}
+
+function sbUpload(bucket, path, blob) {
+  return fetch(SUPABASE_URL + '/storage/v1/object/' + bucket + '/' + path, {
+    method: 'POST',
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type':  'application/pdf'
+    },
+    body: blob
+  }).then(function(r){ return r.json(); });
+}
+
+function sbPublicUrl(bucket, path) {
+  return SUPABASE_URL + '/storage/v1/object/public/' + bucket + '/' + path;
+}
+
+// ══════════════════════════════════════════════════════
+//  INSTRUCTOR PANEL
+// ══════════════════════════════════════════════════════
+function toggleInstrPanel() {
+  const panel = document.getElementById('instrPanel');
+  panel.classList.toggle('open');
+  updateInstrStatus();
+}
+function updateInstrStatus() {
+  const phaseNames = ['0 — Start','1 — Multiple Choice','2 — Before & After','3 — Sources','4 — Essay','5 — Submit'];
+  const ps = document.getElementById('ip-phase-status');
+  if (ps) ps.textContent = phaseNames[phase] || phase;
+  const ts = document.getElementById('ip-timer-status');
+  if (ts) ts.textContent = startTime ? elapsedStr() + ' elapsed' : 'Not started';
+  const ms = document.getElementById('ip-mc-status');
+  if (ms) ms.textContent = Object.keys(mcAnswers).length + '/20';
+  const tls = document.getElementById('ip-tl-status');
+  if (tls) tls.textContent = Object.keys(baPlacements).length + '/10';
+  const urlEl = document.getElementById('ip-url-display');
+  if (urlEl) urlEl.textContent = window.location.href.split('?')[0] + '?preview=true';
+  const pwEl = document.getElementById('ip-password-display');
+  if (pwEl) pwEl.textContent = EXAM_PASSWORD;
+  for (let i=0;i<=5;i++){
+    const btn = document.getElementById(`ipnav${i}`);
+    if (btn) btn.classList.toggle('ip-active', i===phase);
+  }
+}
+function instrFillSample() {
+  document.getElementById('s-first').value    = 'Test';
+  document.getElementById('s-last').value     = 'Student';
+  document.getElementById('s-wnum').value     = 'W1234567';
+  document.getElementById('s-section').value  = '9994';
+  document.getElementById('s-password').value = EXAM_PASSWORD;
+  Object.keys(MC_ANSWERS).forEach(q => {
+    mcAnswers[q] = MC_ANSWERS[q];
+    const opts = document.querySelectorAll(`input[name="${q}"]`);
+    const letters = ['A','B','C','D'];
+    opts.forEach((opt,i)=>{
+      const li = opt.closest('.mc-option');
+      li.classList.remove('selected');
+      if (letters[i] === MC_ANSWERS[q]) { opt.checked=true; li.classList.add('selected'); }
+    });
+  });
+  baPlacements = {};
+  Object.entries(BA_CORRECT).forEach(([cardId, target])=>{
+    baPlacements[target.anchor + '_' + target.pos] = cardId;
+  });
+  baRenderSlots();
+  document.getElementById('sa1q1').value = `This letter is almost certainly Martin Luther King Jr.'s Letter from Birmingham Jail, written in April 1963 during the Birmingham campaign. The reference to addressing white clergymen who urged him to slow down, the phrase "justice too long delayed is justice denied," and the emphasis on accepting the penalty for breaking unjust laws openly and lovingly all point to King's distinctive philosophy of nonviolent direct action.`;
+  document.getElementById('sa1q2').value = `King's stance largely confirms Haass's argument about rejecting violence, but complicates it in a crucial way. King endorses nonviolence but insists that the oppressed must demand freedom rather than wait for it, and the line "freedom is never voluntarily given by the oppressor" suggests nonviolence works precisely because it forces a confrontation that a free press can witness. Haass's framework needs King's corrective: nonviolence is a strategy, not a form of patience.`;
+  document.getElementById('sa2q1').value = `This is President Ronald Reagan speaking at the Brandenburg Gate in West Berlin on June 12, 1987, addressing Soviet General Secretary Mikhail Gorbachev directly. The phrase "if you seek peace, if you seek prosperity" uses Cold War rhetorical parallelism, while "tear down this wall" frames the Berlin Wall as the physical embodiment of Soviet tyranny. The speech positions the United States as the spokesman for "freedom" against Soviet oppression.`;
+  document.getElementById('sa2q2').value = `The speech was designed to score propaganda points with Western allies and to pressure Gorbachev publicly during his reform efforts. Its limits as evidence for what ended the Cold War are significant: the wall came down in 1989 primarily because of internal Soviet economic collapse, Gorbachev's glasnost and perestroika, and mass popular movements in East Germany and across Eastern Europe — not because of an American speech. A speech is evidence of rhetoric, not causation.`;
+  document.getElementById('sa3q1').value = `The photograph is powerful evidence of the gap between nonviolent protest and violent state response. Two details stand out: the state troopers wear helmets and gas masks while the marchers walk unarmed in ordinary clothing, which shows which side brought the tools of violence; and the marchers are falling back in formation rather than fighting, which shows they deliberately refused to respond in kind. Together these details illustrate why the movement called it Bloody Sunday.`;
+  document.getElementById('sa3q2').value = `The Fifteenth Amendment, ratified in 1870, declared that the right to vote could not be denied on the basis of race. But when federal troops withdrew after the Compromise of 1877, that promise was systematically destroyed. Southern states imposed poll taxes, literacy tests, grandfather clauses, and white primaries, and the Supreme Court's ruling in Plessy v. Ferguson (1896) gave constitutional cover to the whole apparatus of Jim Crow. For roughly ninety years between the 15th Amendment and the march at Selma, Black disenfranchisement in the South was not a secret — it was known, documented, and tolerated. What changed in 1965 was not the injustice; what changed was the audience. Haass argues that a free press is an essential check on state abuse of power, and Selma is the proof. Earlier abuses — lynching, intimidation at polling places, the destruction of Black political organizing during Redemption — happened largely outside the view of a national audience, reported on (if at all) in segregated or sympathetic Southern papers. By 1965, television cameras brought state violence into Northern living rooms in real time, and the gap between constitutional promise and lived reality became impossible for the federal government to ignore. The image suggests that nonviolence alone does not win — it wins when witnessed, and the long gap between 1877 and 1965 is the record of what happens when witnesses are absent.`;
+  const opt = document.querySelector('.tp-option input[value="A"]');
+  if (opt) { opt.closest('.tp-option').click(); }
+  document.getElementById('essay-response').value = `The most consequential development in shaping the America I live in today is the Civil Rights Movement of the 1950s and 1960s. Before this movement, Jim Crow segregation was the legal foundation of American life in the South and an informal reality elsewhere. After it, the basic framework of American citizenship had been fundamentally rewritten.
+
+The specific evidence is decisive. Brown v. Board of Education (1954) overturned Plessy v. Ferguson and ended the legal fiction of "separate but equal." The Civil Rights Act of 1964 prohibited discrimination in public accommodations and employment. The Voting Rights Act of 1965, forced onto the national agenda by the televised violence on the Edmund Pettus Bridge, dismantled the machinery of Southern voter suppression. Together these changes did not just transform Black American life — they created the legal and moral template every subsequent rights movement has used, from the Stonewall generation's gay liberation to second-wave feminism to disability rights.
+
+The movement's roots run a full century back into the course. The Thirteenth, Fourteenth, and Fifteenth Amendments, ratified between 1865 and 1870 during Radical Reconstruction, were supposed to guarantee citizenship, equal protection, and the vote to formerly enslaved people. But the Compromise of 1877 withdrew federal enforcement, and over the next three decades the Redeemer governments and the Supreme Court in Plessy v. Ferguson (1896) systematically hollowed out those amendments until they were dead letters. What the Civil Rights Movement did in the 1950s and 1960s was not invent a new America; it finally enforced the constitutional promise that Reconstruction had written down and then watched the country abandon. Selma is Reconstruction's argument, winning on the second attempt.
+
+One might argue the Cold War was more consequential, since it shaped foreign policy for half a century. But the Cold War's institutional legacies — NATO, the CIA, the defense budget — exist alongside a society that can still recognize itself as the one that existed in 1945. The America before 1964 and the America after are legally different countries.
+
+The Civil Rights Movement matters most because every argument Americans are still having in 2026 — about voting rights, about police violence, about who counts as a full citizen — is an argument whose terms the movement set, and whose terms Reconstruction first attempted to set a century before.`;
+  ['sa1q1','sa1q2','sa2q1','sa2q2','sa3q1','sa3q2','essay-response'].forEach(id=>{
+    const el=document.getElementById(id);
+    const disp=document.getElementById(id==='essay-response'?'essay-wc':'wc_'+id);
+    if(el&&disp){ const n=countWords(el.value); disp.textContent=n+' word'+(n===1?'':'s'); }
+  });
+  updateInstrStatus();
+  alert('✓ Sample answers filled. You can now test PDF generation and navigation.');
+}
+function instrTestPDF() {
+  if (!document.getElementById('s-first').value) { alert('Fill sample answers first.'); return; }
+  if (!startTime) startTime = new Date();
+  endTime = new Date();
+  downloadPDF();
+}
+function instrClearStorage() {
+  if (confirm('Clear all saved exam data from localStorage?')) {
+    localStorage.removeItem('hist102_final_v1');
+    alert('Cleared.');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════════════════
+function startTimer() {
+  startTime = new Date();
+  timerInt  = setInterval(tickTimer, 1000);
+  tickTimer();
+}
+function tickTimer() {
+  if (!startTime) return;
+  const elapsed  = Math.floor((new Date() - startTime) / 1000);
+  const total    = EXAM_MINUTES * 60;
+  const remaining = total - elapsed;
+  const d = document.getElementById('timerDisplay');
+  if (!d) return;
+  d.classList.remove('warn','crit');
+  if (remaining <= 0) {
+    d.textContent = '0:00:00';
+    d.classList.add('crit');
+    if (!timeExpired && !PREVIEW_MODE) triggerExpiry();
+    return;
+  }
+  const h = Math.floor(remaining/3600);
+  const m = String(Math.floor((remaining%3600)/60)).padStart(2,'0');
+  const s = String(remaining%60).padStart(2,'0');
+  d.textContent = `${h}:${m}:${s}`;
+  if (remaining <= 600) d.classList.add('crit');
+  else if (remaining <= 1800) d.classList.add('warn');
+  const si = document.getElementById('sessionInfo');
+  if (si) si.textContent = `Started ${startTime.toLocaleTimeString()} · Now ${new Date().toLocaleTimeString()}`;
+  if (PREVIEW_MODE) updateInstrStatus();
+}
+function elapsedStr() {
+  if (!startTime) return 'N/A';
+  const s = Math.floor((new Date()-startTime)/1000);
+  return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m ${s%60}s`;
+}
+function triggerExpiry() {
+  timeExpired = true;
+  clearInterval(timerInt);
+  lockFields();
+  document.getElementById('timeExpiredOverlay').classList.add('visible');
+  let sec = GRACE_SECONDS;
+  document.getElementById('graceCountdown').textContent = sec;
+  graceInt = setInterval(()=>{
+    sec--;
+    const el = document.getElementById('graceCountdown');
+    if (el) el.textContent = sec;
+    if (sec<=0){ clearInterval(graceInt); forceSubmit(); }
+  },1000);
+}
+function lockFields() {
+  document.querySelectorAll('input,textarea').forEach(el=>{el.disabled=true;});
+  document.querySelectorAll('.btn:not(#submitBtn)').forEach(el=>{el.disabled=true;});
+}
+async function forceSubmit() {
+  document.getElementById('timeExpiredOverlay').classList.remove('visible');
+  endTime = new Date();
+  buildSummary();
+  goToPhase(5);
+  await submitExam();
+}
+function manualTimeExpiredSubmit() {
+  clearInterval(graceInt);
+  forceSubmit();
+}
+
+// ══════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════
+function goToPhase(n) {
+  document.getElementById(`phase${phase}`).classList.remove('active');
+  document.getElementById(`phase${n}`).classList.add('active');
+  phase = n;
+  updateProgress();
+  if (PREVIEW_MODE) updateInstrStatus();
+  window.scrollTo(0,0);
+  autoSave();
+}
+function updateProgress() {
+  document.querySelectorAll('.prog-step').forEach((el,i)=>{
+    el.classList.remove('active','done');
+    if (i<phase) el.classList.add('done');
+    else if (i===phase) el.classList.add('active');
+  });
+}
+function previewJump(n) {
+  if (!document.getElementById('s-first').value) {
+    document.getElementById('s-first').value    = 'PREVIEW';
+    document.getElementById('s-last').value     = 'Hauselmann';
+    document.getElementById('s-wnum').value     = 'W0000000';
+    document.getElementById('s-section').value  = '9994';
+    document.getElementById('s-password').value = EXAM_PASSWORD;
+  }
+  if (n > 0 && !startTime) {
+    startTimer();
+  }
+  if (n === 0) {
+    clearInterval(timerInt);
+    timerInt = null;
+    startTime = null;
+  }
+  if (n === 5) {
+    if (!endTime) endTime = new Date();
+    buildSummary();
+    unlockSubmitSteps();
+  }
+  document.getElementById(`phase${phase}`).classList.remove('active');
+  document.getElementById(`phase${n}`).classList.add('active');
+  phase = n;
+  updateProgress();
+  updateInstrStatus();
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════════════
+//  BEGIN EXAM
+// ══════════════════════════════════════════════════════
+async function beginExam() {
+  const first   = document.getElementById('s-first').value.trim();
+  const last    = document.getElementById('s-last').value.trim();
+  const wnum    = document.getElementById('s-wnum').value.trim();
+  const section = document.getElementById('s-section').value.trim();
+  const password = document.getElementById('s-password').value.trim();
+  if (!first||!last){ alert('Please enter your first and last name.'); return; }
+  if (!wnum){ alert('Please enter your Student ID number.'); return; }
+  if (!section){ alert('Please enter your section number.'); return; }
+  if (!password){ alert('Please enter the exam access code.'); return; }
+  if (password.toUpperCase() !== EXAM_PASSWORD.toUpperCase()){
+    const el = document.getElementById('s-password');
+    el.style.borderColor = 'var(--rust)';
+    el.value = '';
+    el.placeholder = 'Incorrect — try again';
+    setTimeout(()=>{ el.style.borderColor=''; el.placeholder='Enter the access code provided by your instructor'; }, 2500);
+    alert('Incorrect access code. Please check with your instructor.');
+    return;
+  }
+
+  const btn = document.getElementById('beginBtn');
+  btn.disabled = true;
+
+  if (PREVIEW_MODE){ startTimer(); goToPhase(1); return; }
+
+  showPreflight('Checking attempt records for '+wnum+'…');
+  try {
+    const wnumUpper = wnum.trim().toUpperCase();
+    const existing = await sbSelect('exam_attempts',
+      'student_id=ilike.' + encodeURIComponent(wnumUpper) +
+      '&worksheet_type=eq.hist102-final');
+
+    if (!Array.isArray(existing)) {
+      hidePreflight();
+      document.getElementById('beginBtn').disabled = false;
+      document.getElementById('beginError').style.display = 'block';
+      document.getElementById('beginError').innerHTML =
+        '<div style="background:rgba(140,58,30,0.1);border-left:4px solid var(--rust);padding:12px 16px;color:var(--rust);font-size:0.9em;">' +
+        '⚠ Could not verify your eligibility. Please check your internet connection and try again, or contact Prof. Hauselmann at hauselmannh@yosemite.edu.' +
+        '</div>';
+      return;
+    }
+
+    if (existing.length > 0) {
+      hidePreflight();
+      showLock(existing[0]);
+      sbInsert('exam_attempts', {
+        student_name: first+' '+last, student_id: wnumUpper,
+        section_number: section, worksheet_type: 'hist102-final',
+        attempt_status: 'blocked', started_at: new Date().toISOString(),
+        notes: 'Blocked: prior attempt ' + existing[0].id
+      });
+      return;
+    }
+
+    hidePreflight();
+    await registerAndStart(first+' '+last, wnum, section);
+
+  } catch(e) {
+    console.error('beginExam catch:', e);
+    hidePreflight();
+    document.getElementById('beginBtn').disabled = false;
+    document.getElementById('beginError').style.display = 'block';
+    document.getElementById('beginError').innerHTML =
+      '<div style="background:rgba(140,58,30,0.1);border-left:4px solid var(--rust);padding:12px 16px;color:var(--rust);font-size:0.9em;">' +
+      '⚠ Unable to connect to the exam server. Please check your internet connection and try again.' +
+      '</div>';
+  }
+}
+async function registerAndStart(name,wnum,section) {
+  try {
+    const result = await sbInsert('exam_attempts', {
+      student_name: name, student_id: wnum.trim().toUpperCase(),
+      section_number: section, worksheet_type: 'hist102-final',
+      attempt_status: 'started', started_at: new Date().toISOString()
+    });
+    if (Array.isArray(result) && result[0]) attemptId = result[0].id;
+  } catch(e){ console.error(e); }
+  startTimer(); goToPhase(1);
+}
+function showPreflight(msg){ document.getElementById('preflightStatus').textContent=msg; document.getElementById('preflightOverlay').classList.add('visible'); }
+function hidePreflight(){ document.getElementById('preflightOverlay').classList.remove('visible'); }
+function showLock(d) {
+  const det = document.getElementById('lockDetails');
+  det.innerHTML = `Student: ${d.student_name||'—'}<br>W Number: ${d.student_id||'—'}<br>Started: ${d.started_at?new Date(d.started_at).toLocaleString():'Unknown'}<br>Status: ${d.attempt_status==='completed'?'COMPLETED':'IN PROGRESS'}`;
+  document.getElementById('lockScreen').classList.add('visible');
+}
+
+// ══════════════════════════════════════════════════════
+//  MULTIPLE CHOICE
+// ══════════════════════════════════════════════════════
+function selectMC(qId, choice, el) {
+  document.querySelectorAll(`input[name="${qId}"]`).forEach(r=>r.checked=false);
+  el.querySelector('input').checked = true;
+  document.querySelectorAll(`.mc-option`).forEach(o=>{
+    if(o.querySelector(`input[name="${qId}"]`)) o.classList.remove('selected');
+  });
+  el.classList.add('selected');
+  mcAnswers[qId] = choice;
+  if (PREVIEW_MODE) updateInstrStatus();
+}
+function scoreMC() {
+  let score = 0;
+  Object.keys(MC_ANSWERS).forEach(q=>{
+    if (mcAnswers[q] === MC_ANSWERS[q]) score += 1;
+  });
+  return score;
+}
+function advanceMC() {
+  if (!PREVIEW_MODE) {
+    const unanswered = Object.keys(MC_ANSWERS).filter(q=>!mcAnswers[q]);
+    if (unanswered.length > 0) {
+      if (!confirm(`You have ${unanswered.length} unanswered question(s). Unanswered questions receive 0 points. Continue anyway?`)) return;
+    }
+  }
+  goToPhase(2);
+}
+
+// ══════════════════════════════════════════════════════
+//  BEFORE & AFTER DRAG & DROP
+// ══════════════════════════════════════════════════════
+let draggedId = null;
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('.ba-card').forEach(el=>{
+    el.addEventListener('dragstart', e=>{ draggedId = el.dataset.id; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    el.addEventListener('dragend',   e=>{ el.classList.remove('dragging'); });
+  });
+  const cBtn = document.getElementById('canvasBtn');
+  if (cBtn && CANVAS_URL !== 'CANVAS_URL_PLACEHOLDER') cBtn.href = CANVAS_URL;
+});
+
+window.addEventListener('load', function() {
+  if (PREVIEW_MODE) {
+    var toggle = document.getElementById('instrToggle');
+    var panel  = document.getElementById('instrPanel');
+    if (toggle) toggle.style.cssText = 'display:block !important';
+    if (panel)  {
+      panel.style.cssText = 'display:block !important; transform:translateX(0) !important';
+      panel.classList.add('open');
+    }
+    updateProgress();
+    updateInstrStatus();
+  }
+});
+function baDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function baDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function baDragOverPool(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function baDropToPool(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!draggedId) return;
+  // Remove this card from any slot it currently sits in
+  Object.keys(baPlacements).forEach(k=>{ if(baPlacements[k]===draggedId) delete baPlacements[k]; });
+  baReturnCardToPool(draggedId);
+  draggedId = null;
+  if (PREVIEW_MODE) updateInstrStatus();
+}
+function baDropItem(e, anchor, pos) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!draggedId) return;
+  const key = anchor + '_' + pos;
+  // Remove dragged card from any existing slot
+  Object.keys(baPlacements).forEach(k=>{ if(baPlacements[k]===draggedId) delete baPlacements[k]; });
+  // Evict any card currently in this slot back to the pool
+  const prev = baPlacements[key];
+  if (prev) baReturnCardToPool(prev);
+  // Place the dragged card
+  baPlacements[key] = draggedId;
+  baRenderSlots();
+  draggedId = null;
+  if (PREVIEW_MODE) updateInstrStatus();
+}
+function baReturnCardToPool(cardId) {
+  const card = document.querySelector(`.ba-card[data-id="${cardId}"]`);
+  const pool = document.getElementById('baPool');
+  if (card && pool) pool.appendChild(card);
+}
+function baRenderSlots() {
+  const anchors = ['A1','A2','A3','A4','A5'];
+  const positions = ['before','after'];
+  const placeholders = {
+    A1_before: 'Drop the event that came <em>before</em> Plessy…',
+    A1_after:  'Drop the event that came <em>after</em> Plessy…',
+    A2_before: 'Drop the event that came <em>before</em> Pearl Harbor…',
+    A2_after:  'Drop the event that came <em>after</em> Pearl Harbor…',
+    A3_before: 'Drop the event that came <em>before</em> Brown…',
+    A3_after:  'Drop the event that came <em>after</em> Brown…',
+    A4_before: 'Drop the event that came <em>before</em> Fall of Saigon…',
+    A4_after:  'Drop the event that came <em>after</em> Fall of Saigon…',
+    A5_before: 'Drop the event that came <em>before</em> 9/11…',
+    A5_after:  'Drop the event that came <em>after</em> 9/11…'
+  };
+  anchors.forEach(a => {
+    positions.forEach(p => {
+      const key = a + '_' + p;
+      const slot = document.getElementById('slot' + key);
+      if (!slot) return;
+      slot.classList.remove('filled','correct-slot','incorrect-slot');
+      // Move any existing card inside back to the pool (it will be re-added if still assigned)
+      const existing = slot.querySelector('.ba-card');
+      if (existing) document.getElementById('baPool').appendChild(existing);
+      // Clear slot contents
+      slot.innerHTML = '';
+      if (baPlacements[key]) {
+        const card = document.querySelector(`.ba-card[data-id="${baPlacements[key]}"]`);
+        if (card) { slot.appendChild(card); slot.classList.add('filled'); }
+      } else {
+        const ph = document.createElement('span');
+        ph.className = 'ba-slot-placeholder';
+        ph.innerHTML = placeholders[key] || 'Drop here…';
+        slot.appendChild(ph);
+      }
+    });
+  });
+}
+function tlScore() {
+  let correct = 0;
+  Object.keys(baPlacements).forEach(key => {
+    const cardId = baPlacements[key];
+    const [anchor, pos] = key.split('_');
+    const correctTarget = BA_CORRECT[cardId];
+    if (correctTarget && correctTarget.anchor === anchor && correctTarget.pos === pos) correct++;
+  });
+  return correct * 2;
+}
+function advanceTimeline() { goToPhase(3); }
+
+// ══════════════════════════════════════════════════════
+//  SOURCE IDENTIFICATION
+// ══════════════════════════════════════════════════════
+function advanceSources() {
+  if (!PREVIEW_MODE) {
+    const fields = ['sa1q1','sa1q2','sa2q1','sa2q2','sa3q1','sa3q2'];
+    const empty  = fields.filter(f=>!document.getElementById(f).value.trim());
+    if (empty.length>0) { if (!confirm(`${empty.length} source question(s) are blank. Continue anyway?`)) return; }
+  }
+  goToPhase(4);
+}
+
+// ══════════════════════════════════════════════════════
+//  LEGACY ESSAY
+// ══════════════════════════════════════════════════════
+const TP_LABELS = {
+  A:'A. The Civil Rights Movement (1954–1965)',
+  B:'B. The Cold War and the national security state',
+  C:'C. The Vietnam War and the crisis of trust',
+  D:'D. The Reagan Revolution and the conservative turn',
+  E:'E. September 11, 2001 and the War on Terror'
+};
+function selectTP(el, val) {
+  document.querySelectorAll('.tp-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+  selectedTP = val;
+  document.getElementById('essay-prompt-display').textContent =
+    `Your development: ${TP_LABELS[val]}. Defend this choice with specific evidence and address why one alternative matters less.`;
+}
+function advanceEssay() {
+  if (!PREVIEW_MODE) {
+    if (!selectedTP){ alert('Please select a development before continuing.'); return; }
+    const essay = document.getElementById('essay-response').value.trim();
+    if (!essay){ alert('Please write your essay before submitting.'); return; }
+    const wc = countWords(essay);
+    if (wc < 350){ alert(`Your essay is only ${wc} words. Minimum is 350.`); return; }
+  }
+  endTime = new Date();
+  clearInterval(timerInt);
+  buildSummary();
+  goToPhase(5);
+}
+
+// ══════════════════════════════════════════════════════
+//  SUMMARY
+// ══════════════════════════════════════════════════════
+function buildSummary() {
+  const name    = `${document.getElementById('s-first').value} ${document.getElementById('s-last').value}`.trim();
+  const wnum    = document.getElementById('s-wnum').value;
+  const section = document.getElementById('s-section').value;
+  const mcScore = scoreMC();
+  const tlScr   = tlScore();
+  const essayWC = countWords(document.getElementById('essay-response').value);
+  document.getElementById('examSummary').innerHTML =
+    `<strong>Student:</strong> ${name} &nbsp;|&nbsp; <strong>W#:</strong> ${wnum} &nbsp;|&nbsp; <strong>Section:</strong> ${section}<br>`+
+    `<strong>Started:</strong> ${startTime?startTime.toLocaleString():'—'} &nbsp;·&nbsp; <strong>Completed:</strong> ${endTime?endTime.toLocaleString():'—'}<br>`+
+    `<strong>Time used:</strong> ${elapsedStr()}<br><br>`+
+    `<strong>Part I MC:</strong> ${mcScore}/20 auto-scored &nbsp;·&nbsp; <strong>Part II Before/After:</strong> ${tlScr}/20 auto-scored<br>`+
+    `<strong>Part III Sources:</strong> Submitted for instructor grading (30 pts)<br>`+
+    `<strong>Part IV Essay:</strong> ${essayWC} words · Development: ${selectedTP?TP_LABELS[selectedTP]:'—'} (30 pts instructor graded)`;
+}
+
+// ══════════════════════════════════════════════════════
+//  WORD COUNT
+// ══════════════════════════════════════════════════════
+function countWords(t){ if(!t||!t.trim()) return 0; return t.trim().split(/\s+/).length; }
+function wc(inputId, displayId) {
+  const el = document.getElementById(inputId);
+  const disp = document.getElementById(displayId);
+  if (!el||!disp) return;
+  const n = countWords(el.value);
+  disp.textContent = n + ' word' + (n===1?'':'s');
+}
+
+// ══════════════════════════════════════════════════════
+//  PDF GENERATION
+// ══════════════════════════════════════════════════════
+function buildPDF() {
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF();
+  let y=18;
+  const ph=doc.internal.pageSize.height, m=18;
+  const lh=6.8;
+  function add(text,sz=10,bold=false) {
+    doc.setFontSize(sz); doc.setFont(undefined,bold?'bold':'normal');
+    const lines=doc.splitTextToSize(String(text||'[blank]'),172);
+    lines.forEach(l=>{if(y>ph-m){doc.addPage();y=18;} doc.text(l,18,y);y+=lh;});
+    y+=2;
+  }
+  const name=`${document.getElementById('s-first').value} ${document.getElementById('s-last').value}`.trim();
+  const wnum=document.getElementById('s-wnum').value;
+  const section=document.getElementById('s-section').value;
+  add('HIST 102 — Final Examination',15,true); y+=2;
+  add('US History After 1877 · Prof. Hauselmann · Spring 2026',11);
+  if(PREVIEW_MODE) add('[INSTRUCTOR PREVIEW — NOT A REAL SUBMISSION]',10,true);
+  add(`Student: ${name}  |  W#: ${wnum}  |  Section: ${section}`,11,true);
+  add(`Started: ${startTime?startTime.toLocaleString():'—'}   Completed: ${endTime?endTime.toLocaleString():'—'}`,9);
+  add(`Time used: ${elapsedStr()}`,9); y+=4;
+
+  add('PART I — MULTIPLE CHOICE  (auto-scored)',13,true);
+  let mcScore=0;
+  for(let i=1;i<=20;i++){
+    const q=`mc${i}`, ans=mcAnswers[q]||'[No answer]', correct=MC_ANSWERS[q];
+    const ok = ans===correct;
+    if(ok) mcScore+=1;
+    add(`Q${i}: Selected: ${ans}  |  Correct: ${correct}  |  ${ok?'CORRECT +1':'INCORRECT 0'}`,9);
+  }
+  add(`Part I Score: ${mcScore} / 20`,10,true); y+=4;
+
+  add('PART II — BEFORE & AFTER  (auto-scored)',13,true);
+  let tlScr2=0;
+  const anchorOrder = ['A1','A2','A3','A4','A5'];
+  anchorOrder.forEach(a => {
+    add(`Anchor ${a}: ${ANCHOR_LABELS[a]}`,10,true);
+    ['before','after'].forEach(pos => {
+      const key = a + '_' + pos;
+      const placed = baPlacements[key];
+      const correct = placed && BA_CORRECT[placed] && BA_CORRECT[placed].anchor===a && BA_CORRECT[placed].pos===pos;
+      if (correct) tlScr2+=2;
+      const posLabel = pos==='before' ? 'Before' : 'After';
+      add(`  ${posLabel}: ${placed?BA_LABELS[placed]:'[Empty]'}  |  ${correct?'CORRECT +2':'INCORRECT 0'}`,9);
+    });
+  });
+  add(`Part II Score: ${tlScr2} / 20`,10,true); y+=4;
+
+  add('PART III — SOURCE IDENTIFICATION  (instructor graded, 30 pts)',13,true);
+  [['sa1q1','Source A — Q1 (Identify & Contextualize)'],['sa1q2','Source A — Q2 (Corroborate/Complicate)'],
+   ['sa2q1','Source B — Q1 (Identify & Contextualize)'],['sa2q2','Source B — Q2 (Evaluate as Evidence)'],
+   ['sa3q1','Source C — Q1 (Photograph as Evidence)'],['sa3q2','Source C — Q2 (Connection to Reconstruction & the Free Press)']
+  ].forEach(([id,lbl])=>{
+    add(lbl+':',10,true);
+    add(document.getElementById(id).value||'[No answer]',9);
+    y+=2;
+  });
+  y+=2;
+
+  add('PART IV — LEGACY ESSAY  (instructor graded, 30 pts)',13,true);
+  add(`Selected development: ${selectedTP?TP_LABELS[selectedTP]:'[No selection]'}`,10,true);
+  const essayWC=countWords(document.getElementById('essay-response').value);
+  add(`Word count: ${essayWC}`,9); y+=2;
+  add(document.getElementById('essay-response').value||'[No essay]',10);
+  y+=4;
+  add(`AUTO-SCORED TOTAL (Parts I+II): ${mcScore+tlScr2} / 40`,12,true);
+  add(`Parts III+IV require instructor grading (+60 possible)`,10);
+  return doc;
+}
+
+function downloadPDF() {
+  const first = document.getElementById('s-first').value.trim();
+  const wnum  = document.getElementById('s-wnum').value.trim();
+  if(!first){ alert('Student name required.'); return; }
+  try {
+    const doc = buildPDF();
+    const dt  = new Date().toISOString().split('T')[0];
+    const prefix = PREVIEW_MODE ? 'PREVIEW_' : '';
+    pdfFilename = `${prefix}HIST102_Final_${first}_${wnum}_${dt}.pdf`;
+    doc.save(pdfFilename);
+    const fnEl = document.getElementById('pdf-filename-display');
+    if (fnEl) fnEl.textContent = pdfFilename;
+    return true;
+  } catch(e){ console.error(e); alert('PDF error: '+e.message); return false; }
+}
+
+// ══════════════════════════════════════════════════════
+//  SUBMIT
+// ══════════════════════════════════════════════════════
+async function submitExam() {
+  const btn = document.getElementById('submitBtn');
+  const msg = document.getElementById('submitMessage');
+  btn.disabled = true;
+  btn.textContent = '⏳ Submitting…';
+  msg.innerHTML = '<div style="padding:10px;color:var(--ink-light);font-style:italic;font-size:0.9em;">Recording your submission and generating PDF…</div>';
+
+  const first = document.getElementById('s-first').value.trim();
+  const wnum  = document.getElementById('s-wnum').value.trim();
+  const name  = `${first} ${document.getElementById('s-last').value.trim()}`.trim();
+  const section = document.getElementById('s-section').value.trim();
+
+  if (!name || !wnum) { alert('Name and W Number required.'); btn.disabled=false; btn.textContent='📤 Submit & Download PDF'; return; }
+
+  const pdfOk = downloadPDF();
+
+  if (PREVIEW_MODE) {
+    msg.innerHTML = '<div class="notice" style="font-size:0.9em;">🔍 <strong>Preview Mode</strong> — Supabase write skipped. PDF downloaded normally.</div>';
+    btn.textContent = '✓ Done (Preview)';
+    unlockSubmitSteps();
+    return;
+  }
+
+  try {
+    const doc  = buildPDF();
+    const blob = doc.output('blob');
+    const ts   = new Date().toISOString().replace(/[:.]/g,'-');
+    const safeName = name.replace(/[^a-zA-Z0-9]/g,'_');
+    const safeW    = wnum.replace(/[^a-zA-Z0-9]/g,'_');
+    const filePath = 'hist102-final/' + section + '/' + safeName + '_' + safeW + '_' + ts + '.pdf';
+
+    const uploadResult = await sbUpload('student-submissions', filePath, blob);
+    if (uploadResult && uploadResult.error) throw new Error(uploadResult.error.message);
+
+    const fileUrl = sbPublicUrl('student-submissions', filePath);
+
+    await sbInsert('worksheet_submissions', {
+      student_name: name, section_number: section,
+      worksheet_type: 'hist102-final',
+      file_path: filePath, file_url: fileUrl,
+      form_data: {
+        student_wnum: wnum,
+        development_choice: selectedTP||'',
+        essay_text: document.getElementById('essay-response').value,
+        essay_wc: countWords(document.getElementById('essay-response').value),
+        mc_answers: JSON.stringify(mcAnswers),
+        mc_score: scoreMC(),
+        tl_placements: JSON.stringify(baPlacements),
+        tl_score: tlScore(),
+        sa1q1: document.getElementById('sa1q1').value,
+        sa1q2: document.getElementById('sa1q2').value,
+        sa2q1: document.getElementById('sa2q1').value,
+        sa2q2: document.getElementById('sa2q2').value,
+        sa3q1: document.getElementById('sa3q1').value,
+        sa3q2: document.getElementById('sa3q2').value,
+        exam_start: startTime?startTime.toISOString():null,
+        exam_end: endTime?endTime.toISOString():new Date().toISOString(),
+        elapsed: elapsedStr()
+      },
+      submitted_at: new Date().toISOString()
+    });
+
+    if (attemptId) {
+      sbUpdate('exam_attempts', 'id=eq.' + attemptId, {
+        attempt_status: 'completed',
+        completed_at: new Date().toISOString(),
+        file_url: fileUrl
+      });
+    }
+
+    msg.innerHTML = '<div class="success-msg">✅ Submission recorded. Your PDF downloaded automatically. Complete Step 3 to finish.</div>';
+    btn.textContent = '✓ Submitted';
+    unlockSubmitSteps();
+
+  } catch(e) {
+    console.error(e);
+    msg.innerHTML = '<div class="error-msg">⚠ Database recording failed (' + e.message + '), but your PDF was downloaded. Proceed to upload it to Canvas — Prof. Hauselmann can recover your data from the PDF.</div>';
+    btn.textContent = '⚠ Partial — See Message';
+    unlockSubmitSteps();
+  }
+}
+
+function handleCanvasNavigation(e) {
+  setTimeout(function() {
+    showExamClosedOverlay();
+  }, 300);
+}
+
+function showExamClosedOverlay() {
+  const name    = (document.getElementById('s-first').value + ' ' + document.getElementById('s-last').value).trim();
+  const wnum    = document.getElementById('s-wnum').value;
+  const fn      = pdfFilename || 'your exam PDF';
+  const sumEl   = document.getElementById('closedOverlay-summary');
+  if (sumEl) {
+    sumEl.innerHTML =
+      '<strong>Student:</strong> ' + name + ' &nbsp;·&nbsp; <strong>W#:</strong> ' + wnum + '<br>' +
+      '<strong>PDF file:</strong> ' + fn + '<br>' +
+      '<strong>Next step:</strong> Upload this PDF to the Canvas assignment that just opened.';
+  }
+  const canvasHref = document.getElementById('canvasBtn') ? document.getElementById('canvasBtn').href : '#';
+  const fallback = document.getElementById('canvasFallbackLink');
+  if (fallback) fallback.href = canvasHref;
+  document.getElementById('examClosedOverlay').style.display = 'block';
+  document.querySelectorAll('textarea, input, button:not([onclick="window.close()"])').forEach(function(el) {
+    el.disabled = true;
+  });
+}
+
+function unlockSubmitSteps() {
+  const s2 = document.getElementById('step2-block');
+  const s3 = document.getElementById('step3-block');
+  if (s2) { s2.style.opacity='1'; s2.style.pointerEvents='auto'; }
+  if (s3) { s3.style.opacity='1'; s3.style.pointerEvents='auto'; }
+  const i1 = document.getElementById('step1-icon');
+  if (i1) { i1.textContent='✓ '; i1.style.color='var(--sage)'; }
+  const i2 = document.getElementById('step2-icon');
+  if (i2) i2.style.color='var(--gold-light)';
+  const i3 = document.getElementById('step3-icon');
+  if (i3) i3.style.color='var(--gold-light)';
+  const cBtn = document.getElementById('canvasBtn');
+  if (cBtn && CANVAS_URL !== 'CANVAS_URL_PLACEHOLDER') cBtn.href = CANVAS_URL;
+  const fnEl = document.getElementById('pdf-filename-display');
+  if (fnEl && pdfFilename) fnEl.textContent = pdfFilename;
+}
+
+// ══════════════════════════════════════════════════════
+//  COPY / PASTE PROTECTION
+// ══════════════════════════════════════════════════════
+document.addEventListener('paste', e=>{
+  if (PREVIEW_MODE) return;
+  const t=e.target;
+  if(t.tagName!=='TEXTAREA'&&t.tagName!=='INPUT') return;
+  e.preventDefault();
+  t.style.outline='3px solid var(--rust)';
+  const old=document.getElementById('paste-toast');
+  if(old) old.remove();
+  const toast=document.createElement('div');
+  toast.id='paste-toast';
+  toast.style.cssText='position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--rust);color:var(--cream);padding:11px 22px;font-family:"DM Mono",monospace;letter-spacing:1px;font-size:0.9em;z-index:9999;border:2px solid var(--cream-deep);box-shadow:4px 4px 0 rgba(0,0,0,0.4);';
+  toast.textContent='⚠ Paste is not permitted on this exam.';
+  document.body.appendChild(toast);
+  setTimeout(()=>{ t.style.outline=''; if(toast.parentNode) toast.remove(); },2000);
+});
+
+// ══════════════════════════════════════════════════════
+//  AUTO SAVE
+// ══════════════════════════════════════════════════════
+function autoSave() {
+  if(PREVIEW_MODE) return;
+  const state={phase, mcAnswers:JSON.stringify(mcAnswers), ba:JSON.stringify(baPlacements), tp:selectedTP, startTime:startTime?startTime.toISOString():null};
+  document.querySelectorAll('input[type=text],textarea').forEach(el=>{ if(el.id) state[el.id]=el.value; });
+  try { localStorage.setItem('hist102_final_v1', JSON.stringify(state)); } catch(e){}
+}
+setInterval(autoSave, 30000);
+
+// ══════════════════════════════════════════════════════
+//  BEFOREUNLOAD
+// ══════════════════════════════════════════════════════
+window.addEventListener('beforeunload', e=>{
+  if(PREVIEW_MODE) return;
+  if(phase>0&&phase<5){ e.preventDefault(); e.returnValue='Exam in progress.'; return e.returnValue; }
+});
+
+</script>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  EXAM SECURITY — JavaScript Layer
+//  Preview mode bypasses all locks
+// ════════════════════════════════════════════════════════
+(function() {
+  const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
+  if (isPreview) return;
+
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (isPreview) return;
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && ['c','a','s','p','u','f','g'].includes(e.key.toLowerCase())) {
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if ((e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'a') &&
+          (tag === 'TEXTAREA' || tag === 'INPUT')) return;
+      e.preventDefault(); return false;
+    }
+    if (ctrl && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) {
+      e.preventDefault(); return false;
+    }
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+    if (e.key === 'PrintScreen') {
+      e.preventDefault();
+      showPrintScreenWarning();
+      return false;
+    }
+  });
+
+  document.addEventListener('copy', function(e) {
+    if (isPreview) return;
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (tag === 'TEXTAREA' || tag === 'INPUT') return;
+    e.preventDefault();
+    return false;
+  });
+  document.addEventListener('cut', function(e) {
+    if (isPreview) return;
+    e.preventDefault(); return false;
+  });
+
+  document.addEventListener('dragstart', function(e) {
+    if (isPreview) return;
+    if (e.target.classList && (e.target.classList.contains('tl-item') || e.target.classList.contains('ba-card'))) return;
+    e.preventDefault(); return false;
+  });
+
+  var _origPrint = window.print;
+  window.print = function() {
+    if (isPreview) { _origPrint.call(window); return; }
+    showPrintWarning();
+  };
+  window.addEventListener('beforeprint', function(e) {
+    if (isPreview) return;
+    e.preventDefault();
+    showPrintWarning();
+  });
+
+  function showPrintWarning() {
+    var toast = document.getElementById('security-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'security-toast';
+      toast.style.cssText = [
+        'position:fixed','top:20px','left:50%','transform:translateX(-50%)',
+        'background:#8c3a1e','color:#f7f2e8',
+        'padding:14px 28px','font-family:"DM Mono",monospace',
+        'font-size:0.88em','letter-spacing:2px',
+        'z-index:99999','border:2px solid #e0d5be',
+        'box-shadow:4px 4px 0 rgba(0,0,0,0.4)',
+        'text-align:center','max-width:460px','line-height:1.6'
+      ].join(';');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '⚠ Printing is not permitted during this examination.';
+    toast.style.display = 'block';
+    setTimeout(function() { toast.style.display = 'none'; }, 3500);
+  }
+
+  function showPrintScreenWarning() {
+    var toast = document.getElementById('security-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'security-toast';
+      toast.style.cssText = [
+        'position:fixed','top:20px','left:50%','transform:translateX(-50%)',
+        'background:#8c3a1e','color:#f7f2e8',
+        'padding:14px 28px','font-family:"DM Mono",monospace',
+        'font-size:0.88em','letter-spacing:2px',
+        'z-index:99999','border:2px solid #e0d5be',
+        'box-shadow:4px 4px 0 rgba(0,0,0,0.4)',
+        'text-align:center','max-width:460px','line-height:1.6'
+      ].join(';');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '⚠ Screenshots are not permitted during this examination.';
+    toast.style.display = 'block';
+    setTimeout(function() { toast.style.display = 'none'; }, 3500);
+  }
+
+})();
+</script>
+
+</body>
+</html>
