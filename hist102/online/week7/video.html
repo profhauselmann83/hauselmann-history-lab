@@ -8,8 +8,18 @@
   <link rel="stylesheet" href="../style.css">
   <style>
     .video-wrap-page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-    .video-embed { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; background: var(--ink); border-radius: 4px; overflow: hidden; margin-bottom: 1.5rem; border: 1px solid var(--rule-strong); }
-    .video-embed iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+    .video-embed { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; background: var(--ink); border-radius: 4px; overflow: hidden; margin-bottom: 0; border: 1px solid var(--rule-strong); }
+    .video-embed iframe, .video-embed > div { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+
+    .watch-progress { background: var(--ink); color: var(--cream); border: 1px solid var(--ink); border-top: 0; border-radius: 0 0 4px 4px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .watch-progress-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(247,242,232,0.55); white-space: nowrap; }
+    .watch-bar-wrap { flex: 1; min-width: 140px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+    .watch-bar { height: 100%; background: #c8922a; border-radius: 4px; transition: width 0.5s ease; width: 0%; }
+    .watch-bar.complete { background: #7ecb98; }
+    .watch-status { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: rgba(247,242,232,0.7); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .watch-status.done { color: #7ecb98; }
+    .watch-threshold { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,242,232,0.4); white-space: nowrap; }
+
     .video-meta { background: var(--cream-dark); border: 1px solid var(--rule-strong); border-left: 4px solid var(--gold); border-radius: 0 4px 4px 0; padding: 1.15rem 1.5rem; margin-bottom: 2rem; }
     .video-meta h3 { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; }
     .video-meta p { font-size: 0.95rem; color: var(--ink-mid); line-height: 1.7; margin-bottom: 0.5rem; }
@@ -22,11 +32,33 @@
     .video-covers li { font-size: 0.92rem; color: var(--ink-mid); margin-bottom: 0.6rem; line-height: 1.65; }
     .video-covers li strong { color: var(--ink); }
 
-    .slides-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
-    .slides-btn { flex: 1; min-width: 220px; background: var(--cream-dark); border: 1px solid var(--rule-strong); border-radius: 4px; padding: 1rem 1.25rem; text-decoration: none; color: var(--ink); display: flex; flex-direction: column; transition: background 0.2s, border-color 0.2s; }
-    .slides-btn:hover { background: var(--cream-deep); border-color: var(--gold); text-decoration: none; color: var(--ink); }
-    .slides-btn-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
-    .slides-btn-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; }
+    .reflection-block { background: #fff; border: 1px solid var(--rule-strong); border-top: 3px solid var(--rust, #8c3a1e); border-radius: 0 0 4px 4px; padding: 1.5rem; margin-bottom: 2rem; }
+    .reflection-block h3 { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--rust, #8c3a1e); margin: 0 0 0.5rem; }
+    .reflection-block .reflection-prompt { font-size: 0.95rem; color: var(--ink-mid); line-height: 1.7; margin: 0 0 1rem; }
+    .reflection-block textarea { width: 100%; min-height: 180px; padding: 0.85rem 1rem; font-family: 'Source Serif 4', Georgia, serif; font-size: 1rem; line-height: 1.65; color: var(--ink); background: var(--cream); border: 1px solid var(--rule-strong); border-radius: 4px; resize: vertical; box-sizing: border-box; }
+    .reflection-block textarea:focus { outline: none; border-color: var(--gold); background: #fff; }
+    .reflection-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 0.6rem; }
+    .reflection-wc { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.08em; color: var(--ink-light); }
+    .reflection-wc.low { color: var(--rust, #8c3a1e); }
+    .reflection-wc.good { color: #3d6053; }
+    .reflection-save { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); opacity: 0; transition: opacity 0.3s; }
+    .reflection-save.visible { opacity: 1; }
+
+    .gate-card { background: var(--cream-dark); border: 1px solid var(--rule-strong); border-left: 4px solid var(--rust, #8c3a1e); border-radius: 0 4px 4px 0; padding: 1.15rem 1.5rem; margin-bottom: 2rem; }
+    .gate-card.ready { border-left-color: #3d6053; background: #eaf1ec; }
+    .gate-card h4 { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--rust, #8c3a1e); margin: 0 0 0.75rem; }
+    .gate-card.ready h4 { color: #3d6053; }
+    .gate-checklist { list-style: none; padding: 0; margin: 0 0 1rem; font-size: 0.92rem; color: var(--ink-mid); }
+    .gate-checklist li { padding: 0.25rem 0 0.25rem 1.75rem; position: relative; }
+    .gate-checklist li::before { content: '\2715'; position: absolute; left: 0; top: 0.25rem; color: var(--rust, #8c3a1e); font-weight: 700; width: 1.25rem; text-align: center; }
+    .gate-checklist li.done::before { content: '\2713'; color: #3d6053; }
+    .submit-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    .submit-btn-video { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.8rem 1.5rem; border-radius: 3px; border: 1px solid var(--ink); background: var(--ink); color: var(--cream); cursor: pointer; transition: all 0.2s; }
+    .submit-btn-video:hover:not(:disabled) { background: var(--ink-mid); border-color: var(--ink-mid); }
+    .submit-btn-video:disabled { opacity: 0.4; cursor: not-allowed; }
+    .submit-msg { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: #3d6053; }
+
+    .nav-btn-disabled { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -56,7 +88,14 @@
 <div class="video-wrap-page">
 
   <div class="video-embed">
-    <iframe src="https://www.youtube.com/embed/qi2vdOSoFFI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="102 Minutes That Changed America"></iframe>
+    <div id="video-player"></div>
+  </div>
+
+  <div class="watch-progress" aria-live="polite">
+    <span class="watch-progress-label">Watch progress</span>
+    <div class="watch-bar-wrap"><div class="watch-bar" id="watch-bar"></div></div>
+    <span class="watch-status" id="watch-status">0% watched</span>
+    <span class="watch-threshold">Required: 80%</span>
   </div>
 
   <div class="video-meta">
@@ -76,19 +115,193 @@
     </ul>
   </div>
 
-  <div class="callout callout-note" style="margin-bottom:2rem">
-    <span class="callout-label">After watching</span>
-    Continue to <strong>Reading 7.1</strong>, where you'll work through the first half of OpenStax Ch. 31 &mdash; from the fall of the Soviet Union through 9/11 and the invasions of Afghanistan and Iraq. Reading 7.1 Question 4 asks you to connect the footage you just watched to the historical narrative.
+  <div class="reflection-block">
+    <h3>Your reflection</h3>
+    <p class="reflection-prompt">In your own words, write a reflection on what you watched. What stayed with you? What did the footage show that a written account could not? Where did you notice the people on camera searching for language to describe what they were seeing? <strong>Minimum 100 words.</strong> This reflection will be included in your Week 7 PDF submission.</p>
+    <textarea id="video-reflection" data-key="hist102_w7_video_reflection" placeholder="Write your reflection here. Your response saves automatically as you type."></textarea>
+    <div class="reflection-foot">
+      <span class="reflection-wc" id="reflection-wc">0 words</span>
+      <span class="reflection-save" id="reflection-save">Saved</span>
+    </div>
+  </div>
+
+  <div class="gate-card" id="gate-card">
+    <h4 id="gate-title">Before you continue</h4>
+    <ul class="gate-checklist">
+      <li id="gate-watch">Watch at least 80% of the film</li>
+      <li id="gate-reflect">Write a reflection of at least 100 words</li>
+    </ul>
+    <div class="submit-row">
+      <button type="button" class="submit-btn-video" id="submit-reflection" disabled>Submit reflection &amp; continue</button>
+      <span class="submit-msg" id="submit-msg"></span>
+    </div>
   </div>
 
   <div class="page-footer">
     <a class="nav-btn nav-btn-prev" href="index.html">&larr; Overview</a>
     <span class="footer-label">Page 2 of 7 &nbsp;&middot;&nbsp; Video Lecture</span>
-    <a class="nav-btn nav-btn-next" href="reading-1.html">Reading 7.1 &rarr;</a>
+    <a class="nav-btn nav-btn-next nav-btn-disabled" id="next-link" href="reading-1.html" aria-disabled="true">Reading 7.1 &rarr;</a>
   </div>
 
 </div>
 
+<!-- YOUTUBE API — video watch tracking + reflection gate -->
+<script>
+(function(){
+  var VIDEO_ID       = 'qi2vdOSoFFI';
+  var WATCH_LS_KEY   = 'hist102_w7_video_watched';
+  var REFLECT_LS_KEY = 'hist102_w7_video_reflection';
+  var GATE_LS_KEY    = 'hist102_w7_video_gate_passed';
+  var WATCH_REQ      = 0.80;
+  var WORD_REQ       = 100;
+  var POLL_MS        = 4000;
+
+  var player     = null;
+  var maxWatched = 0;
+  var pollTimer  = null;
+
+  try {
+    var sv = parseFloat(localStorage.getItem(WATCH_LS_KEY) || '0');
+    if (sv > 0) { maxWatched = Math.min(sv, 1); updateWatchBar(maxWatched); }
+  } catch(e) {}
+
+  var ytTag = document.createElement('script');
+  ytTag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(ytTag);
+
+  window.onYouTubeIframeAPIReady = function() {
+    player = new YT.Player('video-player', {
+      videoId: VIDEO_ID,
+      playerVars: { rel: 0, modestbranding: 1, origin: window.location.origin },
+      events: { onStateChange: function(e) {
+        if (e.data === 1) { if (!pollTimer) pollTimer = setInterval(tick, POLL_MS); }
+        else { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } tick(); }
+      }}
+    });
+  };
+
+  function tick() {
+    if (!player || typeof player.getCurrentTime !== 'function') return;
+    try {
+      var cur = player.getCurrentTime();
+      var dur = player.getDuration();
+      if (!dur || isNaN(dur)) return;
+      var frac = cur / dur;
+      if (isNaN(frac)) return;
+      if (frac > maxWatched) {
+        maxWatched = Math.min(frac, 1);
+        try { localStorage.setItem(WATCH_LS_KEY, String(maxWatched)); } catch(e) {}
+      }
+      updateWatchBar(maxWatched);
+      updateGate();
+    } catch(e) {}
+  }
+
+  function updateWatchBar(frac) {
+    var pct = Math.min(Math.round(frac * 100), 100);
+    var bar = document.getElementById('watch-bar');
+    var st  = document.getElementById('watch-status');
+    if (bar) { bar.style.width = pct + '%'; bar.classList.toggle('complete', pct >= 80); }
+    if (st)  { st.textContent = pct + '% watched'; st.classList.toggle('done', pct >= 80); }
+  }
+
+  // Reflection textarea
+  var ta         = document.getElementById('video-reflection');
+  var wcEl       = document.getElementById('reflection-wc');
+  var saveEl     = document.getElementById('reflection-save');
+  var submitBtn  = document.getElementById('submit-reflection');
+  var submitMsg  = document.getElementById('submit-msg');
+  var nextLink   = document.getElementById('next-link');
+  var gateCard   = document.getElementById('gate-card');
+  var gateTitle  = document.getElementById('gate-title');
+  var gateWatch  = document.getElementById('gate-watch');
+  var gateReflect= document.getElementById('gate-reflect');
+
+  try {
+    var saved = localStorage.getItem(REFLECT_LS_KEY);
+    if (saved) ta.value = saved;
+  } catch(e) {}
+
+  function wordCount(s) { return s.trim() ? s.trim().split(/\s+/).length : 0; }
+
+  function renderWordCount() {
+    var n = wordCount(ta.value);
+    wcEl.textContent = n + ' word' + (n === 1 ? '' : 's') + ' \u00B7 minimum ' + WORD_REQ;
+    wcEl.classList.remove('low','good');
+    if (n === 0) { /* neutral */ }
+    else if (n < WORD_REQ) wcEl.classList.add('low');
+    else wcEl.classList.add('good');
+  }
+
+  function updateGate() {
+    var watchOK   = maxWatched >= WATCH_REQ;
+    var reflectOK = wordCount(ta.value) >= WORD_REQ;
+    gateWatch.classList.toggle('done', watchOK);
+    gateReflect.classList.toggle('done', reflectOK);
+    var ready = watchOK && reflectOK;
+    submitBtn.disabled = !ready;
+    gateCard.classList.toggle('ready', ready);
+    gateTitle.textContent = ready ? 'Ready to submit' : 'Before you continue';
+
+    // If already submitted in a prior session, unlock next link automatically.
+    var submitted = false;
+    try { submitted = localStorage.getItem(GATE_LS_KEY) === '1'; } catch(e) {}
+    if (submitted) {
+      nextLink.classList.remove('nav-btn-disabled');
+      nextLink.setAttribute('aria-disabled','false');
+      submitBtn.textContent = 'Submitted \u2014 continue to Reading 7.1';
+      submitBtn.disabled = false;
+      submitMsg.textContent = '\u2713 Reflection submitted. It will appear in your Week 7 PDF.';
+    }
+  }
+
+  var saveTimer;
+  ta.addEventListener('input', function() {
+    renderWordCount();
+    updateGate();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function() {
+      try { localStorage.setItem(REFLECT_LS_KEY, ta.value); } catch(e) {}
+      saveEl.classList.add('visible');
+      setTimeout(function() { saveEl.classList.remove('visible'); }, 1200);
+    }, 500);
+  });
+
+  submitBtn.addEventListener('click', function() {
+    if (submitBtn.disabled) return;
+    try {
+      localStorage.setItem(REFLECT_LS_KEY, ta.value);
+      localStorage.setItem(GATE_LS_KEY, '1');
+      localStorage.setItem(GATE_LS_KEY + '_at', String(Date.now()));
+    } catch(e) {}
+    nextLink.classList.remove('nav-btn-disabled');
+    nextLink.setAttribute('aria-disabled','false');
+    submitBtn.textContent = 'Submitted \u2014 continue to Reading 7.1';
+    submitMsg.textContent = '\u2713 Reflection submitted. It will appear in your Week 7 PDF.';
+
+    try {
+      if (window.sbInsert) {
+        var token = {};
+        try { token = JSON.parse(localStorage.getItem('hist102_access_w7') || '{}'); } catch(e) {}
+        sbInsert('video_reflections', {
+          student_name:  token.name || 'anonymous',
+          student_w_num: token.wnum || '',
+          week_id:       'w7',
+          video_id:      VIDEO_ID,
+          watched_pct:   Math.round(maxWatched * 100),
+          word_count:    wordCount(ta.value),
+          reflection:    ta.value
+        });
+      }
+    } catch(e) {}
+  });
+
+  renderWordCount();
+  updateGate();
+})();
+</script>
+
+<script src="../supabase-config.js"></script>
 <script src="../security.js"></script>
 </body>
 </html>

@@ -520,6 +520,13 @@ function generatePDF(){
   var r2Answers = R2_Q_KEYS.map(readLS);
   var r2Notes   = R2_N_STORAGE.map(readLS);
 
+  // Video reflection (102 Minutes That Changed America)
+  var videoReflection = readLS('hist102_w7_video_reflection');
+  var videoWatchedFrac = parseFloat(readLS('hist102_w7_video_watched') || '0');
+  if (isNaN(videoWatchedFrac)) videoWatchedFrac = 0;
+  var videoWatchedPct = Math.min(Math.round(videoWatchedFrac * 100), 100);
+  var videoReflectionWords = wordCount(videoReflection);
+
   // Source-analysis answers (prefer live DOM, fall back to localStorage)
   var saAnswers = {};
   FIELDS.forEach(function(f){
@@ -589,6 +596,16 @@ function generatePDF(){
     doc.setTextColor(107,94,80);
     doc.text(storedName + (storedWnum ? '  \u00B7  '+storedWnum : '') + '  \u00B7  Generated '+new Date().toLocaleDateString(), margin, 68);
     y = 100;
+
+    // ── Video Reflection ────────────────────────────────────
+    addText('Video Reflection \u2014 102 Minutes That Changed America', 14, 'bold', [154,111,42]);
+    y += 6;
+    doc.setDrawColor(224,213,190); doc.line(margin, y, pageW-margin, y); y += 10;
+    addText('Watched: ' + videoWatchedPct + '%  \u00B7  ' + videoReflectionWords + ' words', 9, 'italic', [107,94,80]);
+    y += 6;
+    addText(videoReflection || '(no reflection entered)', 10, 'normal', [30,21,16], 14);
+    y += 6;
+    sectionRule();
 
     // ── Reading 7.1 ─────────────────────────────────────────
     addText('Reading 7.1 \u2014 The Post-Cold War Order and the Forever War (OpenStax Ch. 31, I\u2013III)', 14, 'bold', [154,111,42]);
@@ -664,7 +681,7 @@ function generatePDF(){
     y += 20; checkPage(40);
     doc.setDrawColor(26,21,16); doc.line(margin,y,pageW-margin,y); y += 14;
     doc.setFontSize(8); doc.setFont('times','normal'); doc.setTextColor(107,94,80);
-    doc.text(readingAnswered+'/12 reading questions answered  \u00B7  '+saCompleted+'/'+FIELDS.length+' source-analysis items  \u00B7  Essay: '+historicalWords+' words  \u00B7  HIST 102 Spring 2026', margin, y);
+    doc.text('Video: '+videoWatchedPct+'% watched, reflection '+videoReflectionWords+' words  \u00B7  '+readingAnswered+'/12 reading questions answered  \u00B7  '+saCompleted+'/'+FIELDS.length+' source-analysis items  \u00B7  Essay: '+historicalWords+' words  \u00B7  HIST 102 Spring 2026', margin, y);
 
     var filename = 'HIST102_W7_Complete_'+(storedWnum||'student')+'.pdf';
     doc.save(filename);
@@ -678,7 +695,10 @@ function generatePDF(){
         student_w_num: storedWnum,
         week_id: 'w7',
         total_questions: readingAnswered + saCompleted,
-        all_complete: (readingAnswered === 12 && saCompleted === FIELDS.length)
+        all_complete: (readingAnswered === 12 && saCompleted === FIELDS.length),
+        video_watched_pct: videoWatchedPct,
+        video_reflection_words: videoReflectionWords,
+        video_reflection: videoReflection
       };
       [0,1,2,3,4,5].forEach(function(i){
         var n = i+1;
