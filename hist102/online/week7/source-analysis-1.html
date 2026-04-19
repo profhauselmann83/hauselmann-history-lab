@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="../access-guard.js" data-week="w7" data-gate="gate.html"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Analysis 7.1 &mdash; Iraq Resolutions | HIST 102</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .reading-body { -webkit-user-select:none; -moz-user-select:none; user-select:none; }
+    .reading-nav { position:sticky; top:42px; background:var(--cream); border-bottom:1px solid var(--rule-strong); z-index:100; }
+    .reading-nav-inner { max-width:860px; margin:0 auto; padding:0 1.5rem; display:flex; overflow-x:auto; scrollbar-width:none; }
+    .reading-nav-inner::-webkit-scrollbar { display:none; }
+    .rnav-item { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-light); padding:0.65rem 1rem; white-space:nowrap; text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .2s,border-color .2s; }
+    .rnav-item:hover { color:var(--ink); border-bottom-color:var(--rule-strong); text-decoration:none; }
+    .reading-layout { display:grid; grid-template-columns:1fr 240px; gap:2.5rem; align-items:start; max-width:1100px; margin:0 auto; padding: 2rem 1.5rem 3rem; }
+    @media(max-width:720px){ .reading-layout{grid-template-columns:1fr;} .reading-sidebar{display:none;} }
+    .reading-sidebar { position:sticky; top:90px; }
+    .sidebar-card { background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:4px; padding:1.1rem 1.25rem; margin-bottom:1rem; }
+    .sidebar-card h4 { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.65rem; }
+    .sidebar-card ul { padding-left:1rem; margin:0; }
+    .sidebar-card li { font-size:0.82rem; color:var(--ink-mid); margin-bottom:0.35rem; line-height:1.55; }
+    .timeline-item { font-size:0.78rem; color:var(--ink-mid); margin-bottom:0.65rem; line-height:1.5; padding-left:0; list-style:none; }
+    .timeline-date { display:block; font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.15rem; }
+
+    /* Source document blocks */
+    .source-doc { background:#fff; border:1px solid var(--rule-strong); border-radius:4px; margin:2rem 0; overflow:hidden; }
+    .source-doc-header { background:var(--ink); color:var(--cream); padding:1rem 1.5rem; }
+    .source-doc-label { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-light); margin-bottom:0.25rem; }
+    .source-doc-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:600; color:var(--cream); margin-bottom:0.25rem; }
+    .source-doc-cite { font-family:'Source Serif 4',Georgia,serif; font-size:0.82rem; font-style:italic; color:rgba(247,242,232,0.7); }
+    .source-doc-body { padding:1.5rem 1.75rem; background:var(--cream); }
+    .source-doc-body p { font-family:'Source Serif 4',Georgia,serif; font-size:0.95rem; line-height:1.75; color:var(--ink-mid); margin-bottom:0.9rem; }
+    .source-doc-body p:last-child { margin-bottom:0; }
+    .source-doc-body p strong { color:var(--ink); }
+
+    /* Close-reading question blocks */
+    .question-block { background:#fff; border:1px solid var(--rule-strong); border-top:3px solid var(--gold); border-radius:0 0 4px 4px; padding:1.5rem; margin:1.25rem 0 2rem; clear:both; }
+    .question-block-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+    .question-block-label::after { content:''; flex:1; height:1px; background:rgba(154,111,42,0.2); }
+    .question-item { margin-bottom:1.5rem; }
+    .question-item:last-child { margin-bottom:0; }
+    .question-text { font-family:'Playfair Display',serif; font-size:0.97rem; font-weight:600; color:var(--ink); margin-bottom:0.5rem; line-height:1.45; }
+    .answer-requirement { font-size:0.78rem; color:var(--ink-light); font-style:italic; margin-bottom:0.6rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
+    .req-tag { font-family:'DM Mono',monospace; font-size:0.6rem; font-style:normal; letter-spacing:0.08em; text-transform:uppercase; color:var(--rust); background:rgba(140,58,30,0.07); border:1px solid rgba(140,58,30,0.2); border-radius:2px; padding:0.1rem 0.4rem; }
+    .answer-area { width:100%; min-height:90px; padding:0.75rem 1rem; border:1px solid var(--rule-strong); border-radius:3px; background:var(--cream); font-family:'Source Serif 4',Georgia,serif; font-size:0.92rem; font-weight:300; color:var(--ink); line-height:1.7; resize:vertical; transition:border-color .2s,box-shadow .2s; -webkit-user-select:text; user-select:text; }
+    .answer-area.tall { min-height:180px; }
+    .answer-area:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(154,111,42,0.1); }
+    .answer-area::placeholder { color:var(--ink-light); opacity:0.6; font-style:italic; }
+    .answer-meta { display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem; }
+    .word-count { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.08em; color:var(--ink-light); }
+    .word-count.low { color:var(--rust); }
+    .word-count.good { color:var(--sage); }
+    .save-indicator { font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; color:var(--sage); opacity:0; transition:opacity .3s; }
+    .save-indicator.visible { opacity:1; }
+
+    /* Comparison table */
+    .compare-table { width:100%; border-collapse:collapse; margin:1rem 0; }
+    .compare-table th, .compare-table td { border:1px solid var(--rule-strong); padding:0.85rem 1rem; vertical-align:top; text-align:left; font-size:0.9rem; }
+    .compare-table th { background:var(--ink); color:var(--cream); font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; }
+    .compare-table td.senator-cell { background:var(--cream-dark); font-family:'Playfair Display',serif; font-weight:600; color:var(--ink); width:18%; }
+    .compare-table textarea { width:100%; min-height:70px; padding:0.5rem 0.65rem; border:1px solid var(--rule-strong); border-radius:3px; background:#fff; font-family:'Source Serif 4',Georgia,serif; font-size:0.88rem; color:var(--ink); line-height:1.6; resize:vertical; -webkit-user-select:text; user-select:text; }
+    .compare-table textarea:focus { outline:none; border-color:var(--gold); }
+
+    .notes-progress { background:var(--cream-dark); border:1px solid var(--rule-strong); border-radius:4px; padding:0.9rem 1.25rem; margin-bottom:2rem; display:flex; align-items:center; gap:1rem; }
+    .notes-progress-bar-wrap { flex:1; height:6px; background:var(--cream-deep); border-radius:3px; overflow:hidden; }
+    .notes-progress-bar { height:100%; background:var(--gold); border-radius:3px; transition:width .4s ease; width:0%; }
+    .notes-progress-label { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.08em; white-space:nowrap; color:var(--ink-light); }
+
+    .historical-q-block { background:linear-gradient(135deg, rgba(140,58,30,0.06), rgba(154,111,42,0.04)); border:1px solid var(--gold); border-left:4px solid var(--rust); border-radius:0 4px 4px 0; padding:1.5rem 1.75rem; margin:2.5rem 0 2rem; }
+    .historical-q-label { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--rust); margin-bottom:0.75rem; }
+    .historical-q-title { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--ink); line-height:1.35; margin-bottom:0.85rem; font-style:italic; }
+    .historical-q-guide { font-size:0.9rem; line-height:1.7; color:var(--ink-mid); margin-bottom:0.65rem; }
+    .historical-q-guide strong { color:var(--ink); }
+
+    .notetaking-advice { background:rgba(30,68,136,0.05); border:1px solid rgba(30,68,136,0.2); border-left:4px solid var(--canvas-blue); border-radius:0 4px 4px 0; padding:1.1rem 1.5rem; margin-bottom:1.75rem; }
+    .notetaking-advice h4 { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--canvas-blue); margin-bottom:0.65rem; }
+    .notetaking-advice p { font-size:0.92rem; color:var(--ink-mid); line-height:1.75; margin-bottom:0.7rem; }
+    .notetaking-advice p:last-child { margin-bottom:0; }
+    .notetaking-advice strong { color:var(--ink); }
+
+    .pdf-section { background: linear-gradient(135deg, rgba(26,21,16,0.97), rgba(58,48,40,0.97)); color: var(--cream); border-radius: 6px; padding: 2rem 2.25rem; margin-top: 2.5rem; text-align: center; }
+    .pdf-section-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.75rem; }
+    .pdf-section h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--cream); margin-bottom: 0.75rem; }
+    .pdf-section p { font-size: 0.95rem; color: rgba(247,242,232,0.75); line-height: 1.7; margin-bottom: 1.25rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .pdf-btn { background: var(--gold); color: var(--cream); font-family: 'DM Mono', monospace; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; border: none; padding: 0.85rem 2rem; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+    .pdf-btn:hover:not(:disabled) { background: var(--gold-light); }
+    .pdf-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .pdf-msg { margin-top: 1rem; font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em; color: var(--gold-light); opacity: 0; transition: opacity 0.3s; }
+    .pdf-msg.visible { opacity: 1; }
+
+    .reading-content h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--ink); margin: 2.25rem 0 0.75rem; padding-top: 0.5rem; }
+    .reading-content h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-style: italic; color: var(--ink-mid); margin: 1.5rem 0 0.5rem; }
+    .reading-content p { font-size: 0.98rem; line-height: 1.8; color: var(--ink-mid); margin-bottom: 1.1rem; }
+    .reading-content p strong { color: var(--ink); }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step done" href="index.html"><span class="step-num">&#10003;</span> Overview</a>
+    <a class="prog-step done" href="video.html"><span class="step-num">&#10003;</span> Video</a>
+    <a class="prog-step done" href="reading-1.html"><span class="step-num">&#10003;</span> Reading 7.1</a>
+    <a class="prog-step done" href="reading-2.html"><span class="step-num">&#10003;</span> Reading 7.2</a>
+    <a class="prog-step active" href="source-analysis-1.html"><span class="step-num">5</span> Source Analysis</a>
+  </div>
+</nav>
+
+<nav class="reading-nav">
+  <div class="reading-nav-inner">
+    <a class="rnav-item" href="#background">Background</a>
+    <a class="rnav-item" href="#docA">Doc A: Clinton</a>
+    <a class="rnav-item" href="#docB">Doc B: Byrd</a>
+    <a class="rnav-item" href="#docC">Doc C: Santorum</a>
+    <a class="rnav-item" href="#compare">Compare Senators</a>
+    <a class="rnav-item" href="#historical">Historical Question</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 7 &nbsp;&middot;&nbsp; Step 5</div>
+    <h1>Source Analysis 7.1</h1>
+    <p class="page-subtitle">Iraq Resolutions &mdash; Senate floor debate, October 10, 2002</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~30 min</span>
+      <span class="chip chip-due">Due Sunday</span>
+      <span class="chip chip-pts">10 pts</span>
+    </div>
+  </div>
+</header>
+
+<div id="page-content"><main>
+
+  <div class="notetaking-advice">
+    <h4>About this exercise</h4>
+    <p>Since the United States invaded Iraq in 2003, the decision has been intensely debated. You will read three excerpts from senators' speeches delivered on the Senate floor on <strong>October 10, 2002</strong>, the day before the Senate voted to authorize the use of military force against Iraq. Two of the senators ended up supporting the resolution (Clinton, Santorum), and one opposed it (Byrd). All three were speaking in the same chamber, on the same day, about the same resolution.</p>
+    <p>Your historical question is: <strong>What did U.S. senators disagree about when debating the Iraq Resolution?</strong> Note the phrasing. The question is not whether you agree with them, or which side was right. The question is about the <em>shape</em> of the disagreement itself &mdash; what the senators treated as settled, what they treated as contested, and what kinds of reasons they gave.</p>
+  </div>
+
+  <div class="notes-progress">
+    <div class="notes-progress-bar-wrap"><div class="notes-progress-bar" id="progressBar"></div></div>
+    <span class="notes-progress-label" id="progressLabel">0/10 complete</span>
+  </div>
+
+  <div class="reading-layout">
+    <div class="reading-body reading-content" id="readingBody">
+
+      <!-- Background -->
+      <h2 id="background">Background</h2>
+      <p>On <strong>September 26, 2002</strong>, Senator Tom Daschle (Democrat, South Dakota) and Senator Trent Lott (Republican, Mississippi) introduced a resolution, based on a White House proposal, to authorize the President to use military force against Iraq. The debate consumed two weeks of Senate floor time. On October 10, 2002, the House passed the resolution. On October 11, the Senate passed it 77&ndash;23. President Bush signed it into law on October 16.</p>
+      <p>The stated reasons for the resolution centered on Iraq's alleged weapons of mass destruction (WMDs) and an alleged connection to the attacks of September 11, 2001. U.S. forces invaded Iraq in March 2003; U.S. forces withdrew in December 2011. <strong>4,486 U.S. soldiers died during the war. Estimates of Iraqi deaths range from approximately 100,000 to more than 500,000. WMDs were never found in Iraq.</strong></p>
+
+      <!-- ══ DOCUMENT A ══ -->
+      <div class="source-doc" id="docA">
+        <div class="source-doc-header">
+          <div class="source-doc-label">Document A</div>
+          <div class="source-doc-title">Senator Hillary Clinton (D&mdash;New York)</div>
+          <div class="source-doc-cite">Floor speech, U.S. Senate &nbsp;&middot;&nbsp; October 10, 2002 &nbsp;&middot;&nbsp; <em>Voted YES on the resolution</em></div>
+        </div>
+        <div class="source-doc-body">
+          <p>If left unchecked, Saddam Hussein will continue to increase his capability to wage biological and chemical warfare and will keep trying to develop nuclear weapons&hellip; The question is how do we do our best to both defuse the threat Saddam Hussein poses to his people, the region, including Israel, and the United States, and at the same time, work to maximize our international support and strengthen the United Nations&hellip;</p>
+          <p>I believe the best course is to go to the United Nations for a strong resolution that <strong>scraps the 1998 restrictions on inspections and calls for complete, unlimited inspections, with cooperation expected and demanded from Iraq.</strong> I know the administration wants more, including an explicit authorization to use force, but we may not be able to secure that now, perhaps even later&hellip;</p>
+          <p>Even though the resolution before the Senate is not as strong as I would like in requiring the diplomatic route first and placing highest priority on a simple, clear requirement for unlimited inspections, I take the President at his word that he will try hard to pass a United Nations resolution and seek to avoid war, if possible.</p>
+          <p>Because <strong>bipartisan support</strong> for this resolution makes success in the United Nations more likely and war less likely, and because a good faith effort by the United States, even if it fails, will bring more allies and legitimacy to our cause, I have concluded, after careful and serious consideration, that a vote for the resolution best serves the security of our Nation&hellip;</p>
+          <p>I come to this decision from the perspective of a Senator from New York who has seen <strong>all too closely the consequences of last year's terrible attacks on our Nation.</strong> In balancing the risks of action versus inaction, I think New Yorkers, who have gone through the fires of hell, may be more attuned to the risk of not acting. I know I am.</p>
+          <p>So it is with conviction that I support this resolution as being in the best interests of our Nation. A vote for it is not a vote to rush to war; it is a vote that puts awesome responsibility in the hands of our President. And we say to him: Use these powers wisely and as a last resort. And it is a vote that says clearly to Saddam Hussein: <strong>This is your last chance; disarm or be disarmed.</strong></p>
+        </div>
+      </div>
+
+      <!-- Close Reading — Clinton -->
+      <div class="question-block">
+        <div class="question-block-label">Close Reading &mdash; Document A (Clinton)</div>
+        <div class="question-item">
+          <div class="question-text">Q1a. According to Senator Clinton, what are her reasons for supporting the resolution? Note at least two specific reasons she gives.</div>
+          <div class="answer-requirement"><span>2&ndash;3 sentences</span><span class="req-tag">Cite Clinton specifically</span></div>
+          <textarea class="answer-area" id="q_clinton_why" data-key="hist102_w7_sa1_q_clinton_why" placeholder="List at least two reasons Clinton gives for her YES vote."></textarea>
+          <div class="answer-meta"><span class="word-count" id="wc_q_clinton_why">0 words</span><span class="save-indicator" id="si_q_clinton_why">&#10003; Saved</span></div>
+        </div>
+        <div class="question-item">
+          <div class="question-text">Q1b. What historical or personal experience does Clinton draw on to explain her vote? How does she use that experience to justify her position?</div>
+          <div class="answer-requirement"><span>2&ndash;3 sentences</span><span class="req-tag">Quote or paraphrase the passage</span></div>
+          <textarea class="answer-area" id="q_clinton_history" data-key="hist102_w7_sa1_q_clinton_history" placeholder="Name the experience and explain how Clinton uses it."></textarea>
+          <div class="answer-meta"><span class="word-count" id="wc_q_clinton_history">0 words</span><span class="save-indicator" id="si_q_clinton_history">&#10003; Saved</span></div>
+        </div>
+      </div>
+
+      <!-- ══ DOCUMENT B ══ -->
+      <div class="source-doc" id="docB">
+        <div class="source-doc-header">
+          <div class="source-doc-label">Document B</div>
+          <div class="source-doc-title">Senator Robert Byrd (D&mdash;West Virginia)</div>
+          <div class="source-doc-cite">Floor speech, U.S. Senate &nbsp;&middot;&nbsp; October 10, 2002 &nbsp;&middot;&nbsp; <em>Voted NO on the resolution</em></div>
+        </div>
+        <div class="source-doc-body">
+          <p>38 years ago I, Robert C. Byrd, voted on the <strong>Tonkin Gulf Resolution</strong> &mdash; the resolution that authorized the President to use military force to &ldquo;repel armed attacks&rdquo; and &ldquo;to prevent further Communist aggression&rdquo; in Southeast Asia. It was this resolution that provided the basis for American involvement in the war in Vietnam. It was the resolution that led to <strong>the longest war in American history. It led to the deaths of 58,000 Americans, and 150,000 Americans being wounded in action.</strong></p>
+          <p>After all that carnage, we began to learn that, in voting for the Tonkin Gulf Resolution, we were basing our votes on bad information. We learned that the claims the administration made on the need for the Tonkin Gulf Resolution were simply not true, and <strong>history is repeating itself</strong>&hellip;</p>
+          <p>For all those spouting jingoes about going to war with Iraq, about the urgent need for regime change no matter what the cost, about the need to take out the evil dictator &mdash; and make no mistakes, I know and understand that Saddam Hussein is an evil dictator &mdash; I urge Senators to go down on The Capital Mall and look at the Vietnam memorial. Nearly every day you will find someone at that wall weeping for a loved one, a father, a son, a brother, a friend, whose name is on that wall&hellip;</p>
+          <p>Congress is again being asked to vote on the use of force <strong>without hard evidence that the country poses an immediate threat to the national security of the United States.</strong> We are being asked to vote on a resolution authorizing the use of force in a hyped up, politically charged atmosphere in an election year. Congress is again being rushed into a judgment.</p>
+          <p>This is why I stand here today, before this Chamber, and before this Nation, urging, pleading for some sanity, for more time to consider this resolution, for more hard evidence on the need for this resolution. <strong>If the need for taking military action against Iraq is so obvious and so needed and so urgent, then why are nearly every one of our allies opposed to it?</strong>&hellip; People are correct to point out that September 11 changed everything. We need to be more careful. We need to build up our intelligence efforts and our homeland security. But do we go around pounding everybody, anybody, who might pose a threat to our security?</p>
+        </div>
+      </div>
+
+      <!-- Close Reading — Byrd -->
+      <div class="question-block">
+        <div class="question-block-label">Close Reading &mdash; Document B (Byrd)</div>
+        <div class="question-item">
+          <div class="question-text">Q2a. Byrd opens his speech by referring to a vote he personally cast 38 years earlier. Which vote, and what argument is he making by invoking it?</div>
+          <div class="answer-requirement"><span>2&ndash;3 sentences</span><span class="req-tag">Name the earlier vote and the parallel</span></div>
+          <textarea class="answer-area" id="q_byrd_history" data-key="hist102_w7_sa1_q_byrd_history" placeholder="Name the 1964 vote. Explain Byrd's parallel."></textarea>
+          <div class="answer-meta"><span class="word-count" id="wc_q_byrd_history">0 words</span><span class="save-indicator" id="si_q_byrd_history">&#10003; Saved</span></div>
+        </div>
+        <div class="question-item">
+          <div class="question-text">Q2b. Notice that Byrd calls Saddam Hussein &ldquo;an evil dictator&rdquo; but still opposes the resolution. What does this tell you about what Byrd is actually arguing &mdash; and about what he is <em>not</em> arguing?</div>
+          <div class="answer-requirement"><span>2&ndash;3 sentences</span><span class="req-tag">Distinguish his argument from others</span></div>
+          <textarea class="answer-area" id="q_byrd_argue" data-key="hist102_w7_sa1_q_byrd_argue" placeholder="What is Byrd NOT disputing? What IS he disputing?"></textarea>
+          <div class="answer-meta"><span class="word-count" id="wc_q_byrd_argue">0 words</span><span class="save-indicator" id="si_q_byrd_argue">&#10003; Saved</span></div>
+        </div>
+      </div>
+
+      <!-- ══ DOCUMENT C ══ -->
+      <div class="source-doc" id="docC">
+        <div class="source-doc-header">
+          <div class="source-doc-label">Document C</div>
+          <div class="source-doc-title">Senator Rick Santorum (R&mdash;Pennsylvania)</div>
+          <div class="source-doc-cite">Floor speech, U.S. Senate &nbsp;&middot;&nbsp; October 10, 2002 &nbsp;&middot;&nbsp; <em>Voted YES on the resolution</em></div>
+        </div>
+        <div class="source-doc-body">
+          <p>I believe President Bush will do everything possible before deciding to commit U.S. military forces against Saddam Hussein's regime. The President has not decided to employ military force, nor does this resolution demand that he do so. Rather, the resolution signals to the President that Congress stands behind his decision to employ military force if Saddam Hussein fails to disarm or abide by all relevant United Nations Security Council resolutions&hellip;</p>
+          <p>In plain terms, the threat posed by Saddam Hussein is analogous to the threat posed by <strong>a drunk driver</strong>. The drunk driver is a threat to all on and in close proximity to the road&hellip; Saddam is this drunk driver careening along the road, a threat to all those innocents who have the misfortune to cross his path. <strong>It is time to get Saddam off the road before he can kill or injure innocents who cross his path.</strong></p>
+          <p>Looking the other way will not and cannot improve the situation in Iraq and the threat Saddam Hussein poses to the world. There is a parallel between today's situation and the situation that confronted the civilized Western World of the 1930s. <strong>In that era, democratic leaders sought to appease the ambitions of Adolph Hitler and the Third Reich. World War II, the Holocaust and millions of military and civilian casualties are the outcome of that deferral of action.</strong></p>
+          <p>In conclusion, given the events of September 11th, given the past transgressions of Saddam Hussein, and given the threat posed to the world by his weapons of mass destruction programs, it is imperative that we provide President Bush with the strongest hand possible to seek compliance with all applicable U.N. Security Council resolutions. The attacks of September 11th and the fateful decisions not taken in the 1930s illustrate that there is a cost to not taking corrective action in a prompt and decisive fashion.</p>
+          <p>It is my sincere hope that this resolution will rally the United Nations Security Council to draft a strong resolution forcing the disarmament of Saddam Hussein and his regime of terror. If the U.N. fails to act, the U.S. must do what is in the best interest of our national security interests and disarm Saddam Hussein&hellip; To do or expect anything less is to <strong>shirk our moral obligation</strong> to meet the national security obligations of our country.</p>
+        </div>
+      </div>
+
+      <!-- Close Reading — Santorum -->
+      <div class="question-block">
+        <div class="question-block-label">Close Reading &mdash; Document C (Santorum)</div>
+        <div class="question-item">
+          <div class="question-text">Q3a. Santorum uses two explicit analogies to argue for his position: a &ldquo;drunk driver&rdquo; and a 1930s historical reference. Identify each analogy, and explain what each is meant to accomplish as a rhetorical move.</div>
+          <div class="answer-requirement"><span>3&ndash;4 sentences</span><span class="req-tag">Name both analogies</span></div>
+          <textarea class="answer-area" id="q_santorum_analogies" data-key="hist102_w7_sa1_q_santorum_analogies" placeholder="Name each analogy and explain what it's doing rhetorically."></textarea>
+          <div class="answer-meta"><span class="word-count" id="wc_q_santorum_analogies">0 words</span><span class="save-indicator" id="si_q_santorum_analogies">&#10003; Saved</span></div>
+        </div>
+        <div class="question-item">
+          <div class="question-text">Q3b. Santorum ends by calling action a &ldquo;moral obligation.&rdquo; How does this framing work differently from Clinton's framing of the resolution as a pragmatic path to UN inspections?</div>
+          <div class="answer-requirement"><span>2&ndash;3 sentences</span><span class="req-tag">Compare the two framings</span></div>
+          <textarea class="answer-area" id="q_santorum_moral" data-key="hist102_w7_sa1_q_santorum_moral" placeholder="Compare Santorum's moral framing to Clinton's pragmatic framing."></textarea>
+          <div class="answer-meta"><span class="word-count" id="wc_q_santorum_moral">0 words</span><span class="save-indicator" id="si_q_santorum_moral">&#10003; Saved</span></div>
+        </div>
+      </div>
+
+      <!-- ══ COMPARISON MATRIX ══ -->
+      <h2 id="compare">Comparing the Three Senators</h2>
+      <p>All three senators were speaking on the same day, about the same resolution. Clinton and Santorum both voted YES; Byrd voted NO. But the <em>reasons</em> they gave and the <em>disagreements</em> among them cut across party lines in interesting ways.</p>
+      <p>In the table below, write briefly about how each senator <strong>disagreed with</strong> each of the other two. Think about what each pair was actually arguing about &mdash; the nature of the threat, the reliability of the intelligence, the lessons of the past, the meaning of moral obligation.</p>
+
+      <div class="question-block" style="padding:1rem">
+        <div class="question-block-label">Q4 &mdash; How the senators disagreed with each other</div>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>This senator&hellip;</th>
+              <th>&hellip;disagreed with</th>
+              <th>Describe the disagreement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="senator-cell" rowspan="2">Clinton</td>
+              <td>Byrd</td>
+              <td><textarea id="q_cmp_cb" data-key="hist102_w7_sa1_q_cmp_cb" placeholder="How did Clinton disagree with Byrd? Were they arguing about the same thing?"></textarea></td>
+            </tr>
+            <tr>
+              <td>Santorum</td>
+              <td><textarea id="q_cmp_cs" data-key="hist102_w7_sa1_q_cmp_cs" placeholder="How did Clinton disagree with Santorum? Both voted YES — what split them?"></textarea></td>
+            </tr>
+            <tr>
+              <td class="senator-cell" rowspan="2">Byrd</td>
+              <td>Clinton</td>
+              <td><textarea id="q_cmp_bc" data-key="hist102_w7_sa1_q_cmp_bc" placeholder="How did Byrd disagree with Clinton?"></textarea></td>
+            </tr>
+            <tr>
+              <td>Santorum</td>
+              <td><textarea id="q_cmp_bs" data-key="hist102_w7_sa1_q_cmp_bs" placeholder="How did Byrd disagree with Santorum? Consider the 1930s vs. 1960s historical parallels."></textarea></td>
+            </tr>
+            <tr>
+              <td class="senator-cell" rowspan="2">Santorum</td>
+              <td>Clinton</td>
+              <td><textarea id="q_cmp_sc" data-key="hist102_w7_sa1_q_cmp_sc" placeholder="How did Santorum disagree with Clinton?"></textarea></td>
+            </tr>
+            <tr>
+              <td>Byrd</td>
+              <td><textarea id="q_cmp_sb" data-key="hist102_w7_sa1_q_cmp_sb" placeholder="How did Santorum disagree with Byrd?"></textarea></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══ HISTORICAL QUESTION ══ -->
+      <div class="historical-q-block" id="historical">
+        <div class="historical-q-label">Historical Question &nbsp;&middot;&nbsp; Source-Based Essay</div>
+        <div class="historical-q-title">What did U.S. senators disagree about when debating the Iraq Resolution?</div>
+        <div class="historical-q-guide">
+          <p>Using <strong>evidence from all three documents</strong>, write a focused response of at least <strong>250 words</strong> answering the question above. Your goal is not to say which senator was &ldquo;right&rdquo; &mdash; it is to identify and explain <strong>what the disagreement was actually about</strong>.</p>
+          <p>A strong response will do three things:</p>
+          <ol style="padding-left:1.25rem; margin:0 0 0.75rem;">
+            <li style="font-size:0.9rem; color:var(--ink-mid); line-height:1.7; margin-bottom:0.3rem;"><strong>Identify what the three senators agreed on.</strong> (There is more common ground here than first appears.)</li>
+            <li style="font-size:0.9rem; color:var(--ink-mid); line-height:1.7; margin-bottom:0.3rem;"><strong>Name the specific points of disagreement</strong> &mdash; about the evidence, the risk, the historical parallels, the role of the UN, the meaning of 9/11, or the nature of moral obligation.</li>
+            <li style="font-size:0.9rem; color:var(--ink-mid); line-height:1.7;"><strong>Cite specific passages</strong> from at least two of the three documents. Use short direct quotations (in quotation marks) or paraphrases that clearly reference the source.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="question-block">
+        <div class="question-block-label">Q5 &mdash; Your Response (minimum 250 words)</div>
+        <div class="question-item">
+          <div class="answer-requirement"><span>At least 250 words</span><span class="req-tag">Evidence from 2+ documents</span><span class="req-tag">Identify the actual shape of the disagreement</span></div>
+          <textarea class="answer-area tall" id="q_historical" data-key="hist102_w7_sa1_q_historical" placeholder="Begin by identifying what was NOT in dispute among the three senators. Then identify the specific disagreements — about evidence, about history, about what 9/11 meant, about moral obligation. Draw on at least two documents with direct citations."></textarea>
+          <div class="answer-meta"><span class="word-count" id="wc_q_historical">0 words</span><span class="save-indicator" id="si_q_historical">&#10003; Saved</span></div>
+        </div>
+      </div>
+
+    </div><!-- /reading-body -->
+
+    <aside class="reading-sidebar">
+      <div class="sidebar-card">
+        <h4>U.S.&ndash;Iraq Timeline</h4>
+        <ul style="list-style:none; padding-left:0;">
+          <li class="timeline-item"><span class="timeline-date">1980s</span>U.S. supported Iraq during the Iran&ndash;Iraq War.</li>
+          <li class="timeline-item"><span class="timeline-date">Aug 2, 1990</span>Iraq invaded Kuwait.</li>
+          <li class="timeline-item"><span class="timeline-date">Jan&ndash;Feb 1991</span>U.S.-led coalition drove Iraqi forces out of Kuwait. Hussein not removed.</li>
+          <li class="timeline-item"><span class="timeline-date">Apr 1991</span>UN Security Council established weapons inspections in Iraq.</li>
+          <li class="timeline-item"><span class="timeline-date">Oct 31, 1998</span>Clinton signed the Iraq Liberation Act, making regime change U.S. policy.</li>
+          <li class="timeline-item"><span class="timeline-date">Dec 16&ndash;19, 1998</span>U.S. and U.K. bombed Iraq after inspector interference.</li>
+          <li class="timeline-item"><span class="timeline-date">Sep 11, 2001</span>Al-Qaeda attacks on WTC, Pentagon, UA 93. 2,996 killed.</li>
+          <li class="timeline-item"><span class="timeline-date">Jan 29, 2002</span>Bush names Iraq part of an &ldquo;axis of evil.&rdquo;</li>
+          <li class="timeline-item"><span class="timeline-date">Sep 26, 2002</span>Daschle&ndash;Lott resolution introduced.</li>
+          <li class="timeline-item"><span class="timeline-date">Oct 10, 2002</span><strong>Speeches you are reading. House passed resolution.</strong></li>
+          <li class="timeline-item"><span class="timeline-date">Oct 11, 2002</span>Senate passed resolution 77&ndash;23.</li>
+          <li class="timeline-item"><span class="timeline-date">Oct 16, 2002</span>Bush signed the resolution into law.</li>
+          <li class="timeline-item"><span class="timeline-date">Mar 2003</span>U.S.-led coalition invaded Iraq.</li>
+          <li class="timeline-item"><span class="timeline-date">Dec 2011</span>U.S. forces withdrew.</li>
+          <li class="timeline-item"><span class="timeline-date">Never</span>WMDs were not found.</li>
+        </ul>
+      </div>
+      <div class="sidebar-card" style="background:rgba(154,111,42,0.05);border-color:rgba(154,111,42,0.2)">
+        <h4 style="color:var(--gold)">What to look for</h4>
+        <ul>
+          <li>Historical parallels each senator draws</li>
+          <li>What each treats as settled vs. contested</li>
+          <li>Who they address &mdash; UN? Congress? The public?</li>
+          <li>How each uses September 11</li>
+          <li>What each says about <em>evidence</em></li>
+        </ul>
+      </div>
+    </aside>
+  </div><!-- /reading-layout -->
+
+  <!-- PDF Download -->
+  <div class="pdf-section">
+    <div class="pdf-section-label">Final Step &mdash; Source Analysis</div>
+    <h3>Download Your Source Analysis PDF</h3>
+    <p>This compiles your close-reading answers, comparison matrix, and historical-question essay into a single formatted document. Save it and submit it to Canvas by Sunday at 11:59 PM.</p>
+    <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">&#x2193; &nbsp; Download Source Analysis PDF</button>
+    <div class="pdf-msg" id="pdfMsg"></div>
+  </div>
+
+  <div class="page-footer">
+    <a class="nav-btn nav-btn-prev" href="reading-2.html">&larr; Reading 7.2</a>
+    <span class="footer-label">Page 5 of 7 &nbsp;&middot;&nbsp; Source Analysis</span>
+    <a class="nav-btn nav-btn-next" href="paper-submission.html">Research Paper &rarr;</a>
+  </div>
+</main></div>
+
+<script>
+document.getElementById('readingBody').addEventListener('contextmenu', e => e.preventDefault());
+document.getElementById('readingBody').addEventListener('selectstart', e => { if(e.target.tagName==='TEXTAREA') return; e.preventDefault(); });
+document.getElementById('readingBody').addEventListener('copy',  e => { if(e.target.tagName==='TEXTAREA') return; e.preventDefault(); });
+document.getElementById('readingBody').addEventListener('paste', e => { if(e.target.tagName==='TEXTAREA') return; e.preventDefault(); });
+
+const TOTAL = 13; // 6 close-reading answers + 6 comparison cells + 1 historical question
+
+const FIELDS = [
+  { id:'q_clinton_why',       key:'hist102_w7_sa1_q_clinton_why',       label:'Clinton — Reasons to support the resolution' },
+  { id:'q_clinton_history',   key:'hist102_w7_sa1_q_clinton_history',   label:'Clinton — Historical/personal experience' },
+  { id:'q_byrd_history',      key:'hist102_w7_sa1_q_byrd_history',      label:'Byrd — The Tonkin Gulf parallel' },
+  { id:'q_byrd_argue',        key:'hist102_w7_sa1_q_byrd_argue',        label:'Byrd — What he is actually arguing' },
+  { id:'q_santorum_analogies',key:'hist102_w7_sa1_q_santorum_analogies',label:'Santorum — The two analogies' },
+  { id:'q_santorum_moral',    key:'hist102_w7_sa1_q_santorum_moral',    label:'Santorum — Moral framing vs. Clinton pragmatic framing' },
+  { id:'q_cmp_cb',            key:'hist102_w7_sa1_q_cmp_cb',            label:'Clinton vs. Byrd' },
+  { id:'q_cmp_cs',            key:'hist102_w7_sa1_q_cmp_cs',            label:'Clinton vs. Santorum' },
+  { id:'q_cmp_bc',            key:'hist102_w7_sa1_q_cmp_bc',            label:'Byrd vs. Clinton' },
+  { id:'q_cmp_bs',            key:'hist102_w7_sa1_q_cmp_bs',            label:'Byrd vs. Santorum' },
+  { id:'q_cmp_sc',            key:'hist102_w7_sa1_q_cmp_sc',            label:'Santorum vs. Clinton' },
+  { id:'q_cmp_sb',            key:'hist102_w7_sa1_q_cmp_sb',            label:'Santorum vs. Byrd' },
+  { id:'q_historical',        key:'hist102_w7_sa1_q_historical',        label:'Historical Question — What did they disagree about?' }
+];
+
+function countWords(s){ return s.trim()==='' ? 0 : s.trim().split(/\s+/).length; }
+
+function updateWordCount(ta){
+  const el = document.getElementById('wc_'+ta.id);
+  if(!el) return;
+  const wc = countWords(ta.value);
+  el.textContent = wc+' word'+(wc!==1?'s':'');
+  if(ta.id === 'q_historical'){
+    el.className = 'word-count '+(wc===0?'':wc<250?'low':'good');
+  } else {
+    el.className = 'word-count '+(wc===0?'':wc<15?'low':'good');
+  }
+}
+
+function saveField(ta){
+  try{ localStorage.setItem(ta.dataset.key, ta.value); } catch(e){}
+  const si = document.getElementById('si_'+ta.id);
+  if(si){ si.classList.add('visible'); setTimeout(()=>si.classList.remove('visible'),1500); }
+  updateProgress();
+}
+
+function loadAnswers(){
+  FIELDS.forEach(function(f){
+    const ta = document.getElementById(f.id);
+    if(!ta) return;
+    ta.dataset.key = f.key;
+    try{ const v = localStorage.getItem(f.key); if(v){ ta.value = v; updateWordCount(ta); } }catch(e){}
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  let done = 0;
+  FIELDS.forEach(function(f){
+    const ta = document.getElementById(f.id);
+    if(!ta) return;
+    const w = countWords(ta.value);
+    const threshold = (f.id === 'q_historical') ? 250 : 10;
+    if(w >= threshold) done++;
+  });
+  const pct = Math.round(done/FIELDS.length * 100);
+  const bar = document.getElementById('progressBar');
+  const lbl = document.getElementById('progressLabel');
+  if(bar) bar.style.width = pct + '%';
+  if(lbl) lbl.textContent = done + '/' + FIELDS.length + ' complete';
+}
+
+document.querySelectorAll('textarea').forEach(function(ta){
+  if(!ta.dataset.key) return;
+  let t;
+  ta.addEventListener('input', function(){
+    updateWordCount(ta);
+    clearTimeout(t);
+    t = setTimeout(function(){ saveField(ta); }, 800);
+  });
+});
+
+loadAnswers();
+
+// ── PDF Generation ──────────────────────────────────────────
+function generatePDF(){
+  var btn = document.getElementById('pdfBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating PDF\u2026';
+
+  var storedName = 'Student', storedWnum = '';
+  try {
+    var token = JSON.parse(localStorage.getItem('hist102_access_w7') || '{}');
+    if(token.name) storedName = token.name;
+    if(token.wnum) storedWnum = token.wnum;
+  } catch(e){}
+
+  // Collect answers
+  var answers = {};
+  var totalAnswered = 0;
+  FIELDS.forEach(function(f){
+    var v = '';
+    var el = document.getElementById(f.id);
+    if(el) v = el.value;
+    if(!v){ try{ v = localStorage.getItem(f.key) || ''; }catch(e){} }
+    answers[f.id] = v;
+    var words = v.trim() ? v.trim().split(/\s+/).length : 0;
+    var threshold = (f.id === 'q_historical') ? 250 : 10;
+    if(words >= threshold) totalAnswered++;
+  });
+  var historicalWords = answers['q_historical'].trim() ? answers['q_historical'].trim().split(/\s+/).length : 0;
+
+  try {
+    var { jsPDF } = window.jspdf;
+    var doc    = new jsPDF({ unit:'pt', format:'letter' });
+    var margin = 60;
+    var pageW  = doc.internal.pageSize.getWidth();
+    var pageH  = doc.internal.pageSize.getHeight();
+    var maxW   = pageW - margin * 2;
+    var y      = margin;
+
+    function checkPage(needed){
+      if(y + needed > pageH - margin){ doc.addPage(); y = margin; }
+    }
+    function addText(text, fontSize, style, color, lineH){
+      doc.setFontSize(fontSize);
+      doc.setFont('times', style || 'normal');
+      if(color) doc.setTextColor(color[0],color[1],color[2]);
+      else doc.setTextColor(30,21,16);
+      var lines = doc.splitTextToSize(text || '', maxW);
+      checkPage(lines.length * (lineH || fontSize * 1.3));
+      doc.text(lines, margin, y);
+      y += lines.length * (lineH || fontSize * 1.3);
+    }
+    function addIndentedText(text, fontSize, style, color, lineH){
+      var indent = margin + 16;
+      var indentW = maxW - 16;
+      doc.setFontSize(fontSize);
+      doc.setFont('times', style || 'normal');
+      if(color) doc.setTextColor(color[0],color[1],color[2]);
+      else doc.setTextColor(30,21,16);
+      var lines = doc.splitTextToSize(text || '', indentW);
+      checkPage(lines.length * (lineH || fontSize * 1.3));
+      doc.text(lines, indent, y);
+      y += lines.length * (lineH || fontSize * 1.3);
+    }
+
+    // Header
+    doc.setFillColor(26,21,16);
+    doc.rect(0,0,pageW,80,'F');
+    doc.setFontSize(18); doc.setFont('times','bold'); doc.setTextColor(247,242,232);
+    doc.text('HIST 102 \u2014 US History After 1877', margin, 32);
+    doc.setFontSize(12); doc.setFont('times','normal'); doc.setTextColor(200,146,42);
+    doc.text('Source Analysis 7.1  \u00B7  Iraq Resolutions (October 10, 2002)', margin, 52);
+    doc.setTextColor(107,94,80);
+    doc.text(storedName + (storedWnum ? '  \u00B7  '+storedWnum : '') + '  \u00B7  Generated '+new Date().toLocaleDateString(), margin, 68);
+    y = 100;
+
+    // Close-reading section
+    addText('Close-Reading Responses', 14, 'bold', [154,111,42]);
+    y += 6;
+
+    var closeReadingIds = ['q_clinton_why','q_clinton_history','q_byrd_history','q_byrd_argue','q_santorum_analogies','q_santorum_moral'];
+    closeReadingIds.forEach(function(fid){
+      var f = FIELDS.find(function(x){ return x.id === fid; });
+      if(!f) return;
+      checkPage(60);
+      doc.setDrawColor(224,213,190); doc.line(margin, y, pageW-margin, y); y += 10;
+      addText(f.label, 10, 'bold', [61,96,83]); y += 2;
+      addText(answers[fid] || '(no answer entered)', 10, 'normal', [30,21,16], 14);
+      y += 10;
+    });
+
+    y += 10; checkPage(30);
+    doc.setDrawColor(154,111,42); doc.line(margin,y,pageW-margin,y); y += 20;
+
+    // Comparison matrix
+    addText('Comparison Matrix \u2014 How the Senators Disagreed', 14, 'bold', [154,111,42]);
+    y += 6;
+    var cmpIds = ['q_cmp_cb','q_cmp_cs','q_cmp_bc','q_cmp_bs','q_cmp_sc','q_cmp_sb'];
+    cmpIds.forEach(function(fid){
+      var f = FIELDS.find(function(x){ return x.id === fid; });
+      if(!f) return;
+      checkPage(50);
+      doc.setDrawColor(224,213,190); doc.line(margin, y, pageW-margin, y); y += 10;
+      addText(f.label, 10, 'bold', [61,96,83]); y += 2;
+      addText(answers[fid] || '(no answer entered)', 10, 'normal', [30,21,16], 14);
+      y += 10;
+    });
+
+    y += 10; checkPage(30);
+    doc.setDrawColor(154,111,42); doc.line(margin,y,pageW-margin,y); y += 20;
+
+    // Historical question
+    addText('Historical Question \u2014 Source-Based Essay', 14, 'bold', [154,111,42]);
+    y += 4;
+    addText('What did U.S. senators disagree about when debating the Iraq Resolution?', 11, 'italic', [107,94,80]);
+    y += 8;
+    addText(answers['q_historical'] || '(no answer entered)', 11, 'normal', [30,21,16], 15);
+
+    // Footer
+    y += 20; checkPage(40);
+    doc.setDrawColor(26,21,16); doc.line(margin,y,pageW-margin,y); y += 14;
+    doc.setFontSize(8); doc.setFont('times','normal'); doc.setTextColor(107,94,80);
+    doc.text(totalAnswered+'/'+FIELDS.length+' items complete  \u00B7  Essay: '+historicalWords+' words  \u00B7  HIST 102 Spring 2026', margin, y);
+
+    var filename = 'HIST102_W7_SourceAnalysis_'+(storedWnum||'student')+'.pdf';
+    doc.save(filename);
+
+    // Log to Supabase
+    try{ sbInsert('pdf_downloads',{ student_name:storedName, student_w_num:storedWnum, week_id:'w7-sa1', answers_count:totalAnswered, filename:filename }); }catch(e){}
+
+    try{
+      var sub = {
+        student_name: storedName,
+        student_w_num: storedWnum,
+        week_id: 'w7-sa1',
+        total_questions: totalAnswered,
+        all_complete: (totalAnswered === FIELDS.length)
+      };
+      FIELDS.forEach(function(f){
+        var words = answers[f.id].trim() ? answers[f.id].trim().split(/\s+/).length : 0;
+        sub[f.id+'_answer'] = answers[f.id];
+        sub[f.id+'_words']  = words;
+      });
+      sbInsert('worksheet_submissions', sub);
+    }catch(e){}
+
+    var msgEl = document.getElementById('pdfMsg');
+    msgEl.textContent = '\u2713 PDF downloaded \u2014 '+totalAnswered+'/'+FIELDS.length+' items complete. Submit it to Canvas by Sunday at 11:59 PM.';
+    msgEl.classList.add('visible');
+    btn.disabled = false;
+    btn.textContent = '\u2193  Download Source Analysis PDF';
+
+  } catch(err){
+    console.error('PDF error:', err);
+    btn.disabled = false;
+    btn.textContent = '\u2193  Download Source Analysis PDF';
+    alert('PDF generation failed. Please try again or contact Prof. Hauselmann.');
+  }
+}
+</script>
+<script src="../supabase-config.js"></script>
+<script src="../security.js"></script>
+</body>
+</html>

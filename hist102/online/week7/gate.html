@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 7 Access | HIST 102</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,700&family=Source+Serif+4:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a1510;
+      --ink-mid: #3a3028;
+      --ink-light: #6b5e50;
+      --cream: #f7f2e8;
+      --cream-dark: #ede5d4;
+      --gold: #9a6f2a;
+      --gold-light: #c8922a;
+      --rust: #8c3a1e;
+      --sage: #3d6053;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ink);
+      color: var(--cream);
+      font-family: 'Source Serif 4', Georgia, serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+    .masthead { text-align: center; margin-bottom: 2.5rem; max-width: 500px; }
+    .masthead-course { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 1rem; }
+    .masthead-week { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(247,242,232,0.5); display: inline-block; padding: 0.3rem 0.75rem; border: 1px solid rgba(247,242,232,0.15); border-radius: 2px; margin-bottom: 1.25rem; }
+    .masthead-title { font-family: 'Playfair Display', serif; font-size: 2.1rem; font-weight: 700; line-height: 1.15; color: var(--cream); margin-bottom: 0.75rem; }
+    .masthead-sub { font-family: 'Source Serif 4', Georgia, serif; font-style: italic; font-size: 1rem; color: rgba(247,242,232,0.65); }
+    .masthead-divider { width: 60px; height: 1px; background: var(--gold); margin: 1.5rem auto 0; }
+
+    .gate-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(247,242,232,0.04);
+      border: 1px solid rgba(247,242,232,0.1);
+      border-radius: 6px;
+      padding: 2rem 2rem 1.75rem;
+      backdrop-filter: blur(4px);
+    }
+    .gate-card h2 { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-light); text-align: center; margin-bottom: 1.5rem; }
+
+    .pledge-box {
+      background: rgba(26,21,16,0.4);
+      border-left: 3px solid var(--gold);
+      padding: 1rem 1.15rem;
+      margin-bottom: 1.5rem;
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.86rem;
+      font-style: italic;
+      line-height: 1.6;
+      color: rgba(247,242,232,0.85);
+      border-radius: 0 3px 3px 0;
+    }
+    .pledge-box strong { color: var(--gold-light); font-style: normal; font-weight: 600; }
+
+    .form-field { margin-bottom: 1.1rem; }
+    .field-label { display: block; font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(247,242,232,0.55); margin-bottom: 0.4rem; }
+    .field-input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      background: rgba(247,242,232,0.06);
+      border: 1px solid rgba(247,242,232,0.15);
+      border-radius: 3px;
+      color: var(--cream);
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    .field-input:focus { outline: none; border-color: var(--gold-light); background: rgba(255,255,255,0.09); }
+    .field-input::placeholder { color: rgba(247,242,232,0.25); }
+    .field-hint { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.06em; color: rgba(247,242,232,0.3); margin-top: 0.3rem; }
+    .field-code { font-family: 'DM Mono', monospace; font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .field-code::placeholder { font-family: 'DM Mono', monospace; letter-spacing: 0.04em; text-transform: none; }
+
+    .error-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      color: #ff9999;
+      background: rgba(140,58,30,0.15);
+      border: 1px solid rgba(140,58,30,0.3);
+      border-radius: 3px;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--gold);
+      color: var(--cream);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.5rem;
+    }
+    .submit-btn:hover { background: var(--gold-light); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .gate-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: rgba(247,242,232,0.25);
+    }
+    .gate-footer a { color: rgba(247,242,232,0.4); text-decoration: none; }
+    .gate-footer a:hover { color: rgba(247,242,232,0.7); }
+  </style>
+</head>
+<body>
+
+  <div class="masthead">
+    <p class="masthead-course">HIST 102 &nbsp;&middot;&nbsp; Spring 2026</p>
+    <span class="masthead-week">Week 7</span>
+    <h1 class="masthead-title">Contemporary America and Beyond</h1>
+    <p class="masthead-sub">April 20 &ndash; 26, 2026</p>
+    <div class="masthead-divider"></div>
+  </div>
+
+  <div class="gate-card">
+    <h2>Weekly Access</h2>
+
+    <div class="pledge-box">
+      By entering this week, I confirm that I will complete the readings, annotations, and assignments <strong>on my own</strong>, and that any work I submit reflects my own understanding.
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <form id="gateForm" autocomplete="off">
+      <div class="form-field">
+        <label class="field-label" for="firstName">First Name</label>
+        <input type="text" id="firstName" class="field-input" required>
+      </div>
+      <div class="form-field">
+        <label class="field-label" for="lastName">Last Name</label>
+        <input type="text" id="lastName" class="field-input" required>
+      </div>
+      <div class="form-field">
+        <label class="field-label" for="wnum">Student ID (W Number)</label>
+        <input type="text" id="wnum" class="field-input field-code" placeholder="W1234567" required>
+        <div class="field-hint">Format: W followed by 7 digits</div>
+      </div>
+      <div class="form-field">
+        <label class="field-label" for="code">Weekly Access Code</label>
+        <input type="text" id="code" class="field-input field-code" placeholder="Enter code from puzzle page" required>
+        <div class="field-hint">Revealed after completing the puzzle</div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Enter Week 7</button>
+    </form>
+
+    <div class="gate-footer">
+      <a href="puzzle.html">&larr; Back to puzzle</a>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var WEEK_ID       = 'w7';
+  var WEEK_PASSWORD = 'POLARIZED';
+  var WEEK_LABEL    = 'Week 7 \u2014 Contemporary America and Beyond';
+  var REDIRECT_URL  = 'index.html';
+  var ACCESS_EXPIRY = 7 * 24 * 60 * 60 * 1000;
+
+  // If already granted, skip straight through
+  try {
+    var existing = JSON.parse(localStorage.getItem('hist102_access_' + WEEK_ID) || '{}');
+    if(existing.granted && existing.timestamp && (Date.now() - existing.timestamp < ACCESS_EXPIRY)){
+      window.location.replace(REDIRECT_URL);
+      return;
+    }
+  } catch(e){}
+
+  var form      = document.getElementById('gateForm');
+  var errorMsg  = document.getElementById('errorMsg');
+  var submitBtn = document.getElementById('submitBtn');
+
+  function showError(msg){
+    errorMsg.textContent = msg;
+    errorMsg.classList.add('show');
+  }
+  function clearError(){
+    errorMsg.classList.remove('show');
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    clearError();
+
+    var first = document.getElementById('firstName').value.trim();
+    var last  = document.getElementById('lastName').value.trim();
+    var wnum  = document.getElementById('wnum').value.trim().toUpperCase();
+    var code  = document.getElementById('code').value.trim().toUpperCase();
+
+    if(!first || !last){ showError('Please enter your first and last name.'); return; }
+    if(!/^W\d{7}$/.test(wnum)){ showError('W Number must be W followed by 7 digits (e.g. W1234567).'); return; }
+    if(code !== WEEK_PASSWORD){ showError('Access code is incorrect. Return to the puzzle and try again.'); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Entering\u2026';
+
+    var name = first + ' ' + last;
+    var payload = {
+      granted: true,
+      timestamp: Date.now(),
+      name: name,
+      wnum: wnum,
+      week: WEEK_ID
+    };
+    try { localStorage.setItem('hist102_access_' + WEEK_ID, JSON.stringify(payload)); } catch(err){}
+
+    // Log to Supabase (non-blocking)
+    if(typeof sbInsert === 'function'){
+      try {
+        sbInsert('gate_entries', {
+          student_name: name,
+          student_w_num: wnum,
+          week_id: WEEK_ID,
+          week_label: WEEK_LABEL,
+          pledge_text: 'I confirm I will complete this week\u2019s work on my own.'
+        });
+      } catch(err){}
+    }
+
+    setTimeout(function(){ window.location.href = REDIRECT_URL; }, 400);
+  });
+})();
+</script>
+
+<script src="../supabase-config.js"></script>
+</body>
+</html>

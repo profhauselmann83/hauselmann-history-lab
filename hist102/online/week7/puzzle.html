@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unlock Week 7 | HIST 102</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .puzzle-wrap { max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    .puzzle-intro { background: var(--cream-dark); border: 1px solid var(--rule-strong); border-left: 4px solid var(--gold); border-radius: 0 4px 4px 0; padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
+    .puzzle-intro h3 { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.6rem; }
+    .puzzle-intro p { font-size: 0.95rem; line-height: 1.65; color: var(--ink-mid); }
+    .code-reveal { background: var(--ink); color: var(--cream); padding: 1.5rem; border-radius: 4px; margin-bottom: 2rem; text-align: center; }
+    .code-reveal-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(247,242,232,0.5); margin-bottom: 0.75rem; }
+    .code-letters { display: flex; justify-content: center; gap: 0.4rem; flex-wrap: wrap; }
+    .code-slot { width: 2.4rem; height: 2.8rem; border: 1px solid rgba(247,242,232,0.2); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 500; letter-spacing: 0.05em; background: rgba(247,242,232,0.04); transition: all 0.3s; }
+    .code-slot.filled { background: rgba(200,146,42,0.15); border-color: var(--gold-light); color: var(--gold-light); }
+    .puzzle-q { background: #fff; border: 1px solid var(--rule-strong); border-top: 3px solid var(--gold); border-radius: 0 0 4px 4px; padding: 1.5rem; margin-bottom: 1.5rem; transition: opacity 0.3s; }
+    .puzzle-q.locked { opacity: 0.5; pointer-events: none; }
+    .puzzle-q.solved { border-top-color: var(--sage); background: rgba(61,96,83,0.05); }
+    .puzzle-q-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .puzzle-q.solved .puzzle-q-label { color: var(--sage); }
+    .puzzle-q-label::after { content: ''; flex: 1; height: 1px; background: rgba(154,111,42,0.2); }
+    .puzzle-q.solved .puzzle-q-label::after { background: rgba(61,96,83,0.2); }
+    .puzzle-q-text { font-family: 'Playfair Display', serif; font-size: 1.02rem; font-weight: 600; color: var(--ink); margin-bottom: 1rem; line-height: 1.5; }
+    .puzzle-options { display: flex; flex-direction: column; gap: 0.5rem; }
+    .puzzle-option { background: var(--cream); border: 1px solid var(--rule-strong); border-radius: 3px; padding: 0.75rem 1rem; font-family: 'Source Serif 4', Georgia, serif; font-size: 0.92rem; color: var(--ink); text-align: left; cursor: pointer; transition: all 0.2s; }
+    .puzzle-option:hover:not(:disabled) { border-color: var(--gold); background: rgba(154,111,42,0.05); }
+    .puzzle-option:disabled { cursor: not-allowed; opacity: 0.5; }
+    .puzzle-option.wrong { background: rgba(140,58,30,0.08); border-color: var(--rust); color: var(--rust); }
+    .puzzle-option.correct { background: rgba(61,96,83,0.1); border-color: var(--sage); color: var(--sage); font-weight: 500; }
+    .reveal-letter { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--sage); margin-top: 0.75rem; text-align: center; font-weight: 500; }
+    .victory { display: none; background: var(--ink); color: var(--cream); padding: 2.5rem 2rem; border-radius: 4px; text-align: center; margin-top: 2rem; }
+    .victory.show { display: block; }
+    .victory-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.75rem; }
+    .victory-code { font-family: 'DM Mono', monospace; font-size: 2.4rem; font-weight: 500; letter-spacing: 0.25em; color: var(--gold-light); display: block; margin: 1rem 0; }
+    .victory-sub { font-family: 'Source Serif 4', Georgia, serif; font-size: 0.9rem; color: rgba(247,242,232,0.7); margin-bottom: 1.5rem; }
+    .victory-cta { display: inline-block; font-family: 'DM Mono', monospace; font-size: 0.78rem; letter-spacing: 0.08em; background: var(--gold); color: var(--cream); padding: 0.75rem 2rem; border-radius: 4px; text-decoration: none; transition: background 0.2s; }
+    .victory-cta:hover { background: var(--gold-light); color: var(--cream); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav class="progress-strip">
+  <div class="progress-inner">
+    <a class="prog-step active" href="puzzle.html"><span class="step-num">1</span> Unlock Week 7</a>
+    <a class="prog-step" href="gate.html"><span class="step-num">2</span> Enter Code</a>
+    <a class="prog-step" href="index.html"><span class="step-num">3</span> Overview</a>
+    <a class="prog-step" href="video.html"><span class="step-num">4</span> Video</a>
+    <a class="prog-step" href="reading-1.html"><span class="step-num">5</span> Reading 7.1</a>
+    <a class="prog-step" href="#"><span class="step-num">6</span> &hellip;</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="page-eyebrow">Week 7 &nbsp;&middot;&nbsp; Apr 20 &ndash; 26</div>
+    <h1>Unlock Week 7</h1>
+    <p class="page-subtitle">Answer all nine questions correctly to reveal your access code</p>
+    <div class="header-chips">
+      <span class="chip chip-time">~12 min</span>
+      <span class="chip chip-site">Reviews Week 6</span>
+    </div>
+  </div>
+</header>
+
+<div class="puzzle-wrap">
+
+  <div class="puzzle-intro">
+    <h3>How this works</h3>
+    <p>Answer each question correctly to reveal one letter of your Week 7 access code. Wrong answers are shown immediately &mdash; select again until you find the right one. Questions unlock in order.</p>
+  </div>
+
+  <div class="code-reveal">
+    <div class="code-reveal-label">Your Access Code</div>
+    <div class="code-letters" id="codeLetters">
+      <div class="code-slot" data-slot="0"></div>
+      <div class="code-slot" data-slot="1"></div>
+      <div class="code-slot" data-slot="2"></div>
+      <div class="code-slot" data-slot="3"></div>
+      <div class="code-slot" data-slot="4"></div>
+      <div class="code-slot" data-slot="5"></div>
+      <div class="code-slot" data-slot="6"></div>
+      <div class="code-slot" data-slot="7"></div>
+      <div class="code-slot" data-slot="8"></div>
+    </div>
+  </div>
+
+  <!-- Question 1: Letter P -->
+  <div class="puzzle-q" id="q1" data-idx="0" data-letter="P">
+    <div class="puzzle-q-label">Question 1 &nbsp;&middot;&nbsp; Containment</div>
+    <div class="puzzle-q-text">George Kennan's 1946 &ldquo;Long Telegram&rdquo; and the subsequent Truman Doctrine established what core U.S. Cold War strategy toward the Soviet Union?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">Rollback &mdash; actively liberating countries already under Soviet control</button>
+      <button class="puzzle-option" data-correct="true">Containment &mdash; preventing the spread of communism beyond where it already existed</button>
+      <button class="puzzle-option" data-correct="false">D&eacute;tente &mdash; easing tensions through negotiated agreements</button>
+      <button class="puzzle-option" data-correct="false">Massive retaliation &mdash; threatening nuclear response to any Soviet aggression</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 2: Letter O -->
+  <div class="puzzle-q locked" id="q2" data-idx="1" data-letter="O">
+    <div class="puzzle-q-label">Question 2 &nbsp;&middot;&nbsp; The Red Scare</div>
+    <div class="puzzle-q-text">Senator Joseph McCarthy's 1950 speech in Wheeling, West Virginia claimed what, launching the most intense period of the postwar Red Scare?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">That Alger Hiss had passed atomic secrets to the Soviets</button>
+      <button class="puzzle-option" data-correct="true">That he had a list of 205 communists working in the State Department</button>
+      <button class="puzzle-option" data-correct="false">That Hollywood had been infiltrated by Soviet agents</button>
+      <button class="puzzle-option" data-correct="false">That the Rosenbergs were the tip of a vast spy network</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 3: Letter L -->
+  <div class="puzzle-q locked" id="q3" data-idx="2" data-letter="L">
+    <div class="puzzle-q-label">Question 3 &nbsp;&middot;&nbsp; Cuban Missile Crisis</div>
+    <div class="puzzle-q-text">Richard Haass uses the October 1962 Cuban Missile Crisis as his central example of principled compromise. What did Kennedy &ldquo;hold firm&rdquo; on, and what did he &ldquo;flex&rdquo; on?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">Held firm on regime change in Cuba; flexed on the naval blockade</button>
+      <button class="puzzle-option" data-correct="true">Held firm on Soviet missile removal; flexed with a no-invasion pledge and a secret withdrawal of U.S. Jupiter missiles from Turkey</button>
+      <button class="puzzle-option" data-correct="false">Held firm on public humiliation of Khrushchev; flexed on aid to Cuba</button>
+      <button class="puzzle-option" data-correct="false">Held firm on an immediate airstrike; flexed on UN oversight</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 4: Letter A -->
+  <div class="puzzle-q locked" id="q4" data-idx="3" data-letter="A">
+    <div class="puzzle-q-text">Question 4 &nbsp;&middot;&nbsp; Vietnam</div>
+    <div class="puzzle-q-text">The Tet Offensive of January 1968 is usually described as a military defeat for the North Vietnamese but a political victory. Why?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">It led to the immediate withdrawal of all U.S. combat forces from Vietnam</button>
+      <button class="puzzle-option" data-correct="false">It destroyed the South Vietnamese army, forcing peace negotiations</button>
+      <button class="puzzle-option" data-correct="true">Despite heavy communist casualties, the scale of the attack contradicted U.S. claims that victory was near and turned American public opinion against the war</button>
+      <button class="puzzle-option" data-correct="false">It prompted China to enter the war on the North's side, escalating the conflict</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 5: Letter R -->
+  <div class="puzzle-q locked" id="q5" data-idx="4" data-letter="R">
+    <div class="puzzle-q-label">Question 5 &nbsp;&middot;&nbsp; Watergate</div>
+    <div class="puzzle-q-text">The June 23, 1972 &ldquo;smoking gun&rdquo; tape &mdash; released after the Supreme Court's <em>United States v. Nixon</em> ruling &mdash; showed Nixon doing what, just six days after the Watergate break-in?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">Personally ordering the break-in at Democratic headquarters</button>
+      <button class="puzzle-option" data-correct="true">Approving a plan to have the CIA tell the FBI to halt its Watergate investigation on false national-security grounds</button>
+      <button class="puzzle-option" data-correct="false">Paying hush money directly to the burglars</button>
+      <button class="puzzle-option" data-correct="false">Firing the special prosecutor investigating the break-in</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 6: Letter I -->
+  <div class="puzzle-q locked" id="q6" data-idx="5" data-letter="I">
+    <div class="puzzle-q-label">Question 6 &nbsp;&middot;&nbsp; Reaganomics</div>
+    <div class="puzzle-q-text">Supply-side economics &mdash; the theory at the heart of Reagan's 1981 tax cut &mdash; argued that cutting taxes on high earners would do what?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">Directly raise middle-class wages through mandated profit-sharing</button>
+      <button class="puzzle-option" data-correct="true">Spur investment and growth, which would eventually &ldquo;trickle down&rdquo; to workers and generate enough new revenue to offset the cuts</button>
+      <button class="puzzle-option" data-correct="false">Force a balanced budget by starving the federal government of funds</button>
+      <button class="puzzle-option" data-correct="false">Reduce inflation by tightening the money supply</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 7: Letter Z -->
+  <div class="puzzle-q locked" id="q7" data-idx="6" data-letter="Z">
+    <div class="puzzle-q-label">Question 7 &nbsp;&middot;&nbsp; The New Right</div>
+    <div class="puzzle-q-text">Phyllis Schlafly's STOP ERA campaign successfully blocked the Equal Rights Amendment. What was her core strategic argument to middle-class women?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">That the ERA was unconstitutional under existing case law</button>
+      <button class="puzzle-option" data-correct="false">That the ERA would require the federal government to fund abortion</button>
+      <button class="puzzle-option" data-correct="true">That the ERA would strip housewives of privileges and protections &mdash; the &ldquo;STOP&rdquo; in STOP ERA stood for &ldquo;Stop Taking Our Privileges&rdquo;</button>
+      <button class="puzzle-option" data-correct="false">That the ERA was a Soviet plot to weaken American families</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 8: Letter E -->
+  <div class="puzzle-q locked" id="q8" data-idx="7" data-letter="E">
+    <div class="puzzle-q-label">Question 8 &nbsp;&middot;&nbsp; End of the Cold War</div>
+    <div class="puzzle-q-text">Which combination of Soviet leader Mikhail Gorbachev's reforms &mdash; alongside economic stagnation and the Afghan war &mdash; helped dissolve the Soviet Union by December 1991?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">D&eacute;tente and containment</button>
+      <button class="puzzle-option" data-correct="true">Glasnost (openness) and perestroika (restructuring)</button>
+      <button class="puzzle-option" data-correct="false">Collectivization and the Five-Year Plans</button>
+      <button class="puzzle-option" data-correct="false">Shock therapy and privatization</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <!-- Question 9: Letter D -->
+  <div class="puzzle-q locked" id="q9" data-idx="8" data-letter="D">
+    <div class="puzzle-q-label">Question 9 &nbsp;&middot;&nbsp; Productive Friction</div>
+    <div class="puzzle-q-text">Week 6's productive friction asked: Haass treats compromise as inherently principled, but some Cold War-era compromises were moral failures. Which historical example best illustrates this tension?</div>
+    <div class="puzzle-options">
+      <button class="puzzle-option" data-correct="false">The Nixon-Kissinger opening to China, which isolated Taiwan</button>
+      <button class="puzzle-option" data-correct="true">The compromises on the Civil Rights Act of 1964 and Voting Rights Act of 1965, where Southern Democratic support came at the cost of limiting federal enforcement &mdash; trading Black citizens' rights as bargaining chips</button>
+      <button class="puzzle-option" data-correct="false">SALT I, which locked in Soviet strategic parity with the United States</button>
+      <button class="puzzle-option" data-correct="false">Reagan's INF Treaty, which critics said gave up too much to Gorbachev</button>
+    </div>
+    <div class="reveal-letter" style="display:none"></div>
+  </div>
+
+  <div class="victory" id="victory">
+    <div class="victory-label">Week 7 Unlocked</div>
+    <p style="font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;color:rgba(247,242,232,0.9);">Your access code is</p>
+    <span class="victory-code" id="victoryCode">POLARIZED</span>
+    <p class="victory-sub">Write this down. You'll need it on the next page to enter Week 7.</p>
+    <a class="victory-cta" href="gate.html">Continue to Gate &rarr;</a>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var questions = document.querySelectorAll('.puzzle-q');
+  var slots     = document.querySelectorAll('.code-slot');
+  var victory   = document.getElementById('victory');
+  var solved    = 0;
+
+  // Shuffle answer options within each question (Fisher–Yates).
+  // Each page load gives a different order so the correct answer isn't always in the same slot.
+  questions.forEach(function(q){
+    var container = q.querySelector('.puzzle-options');
+    if(!container) return;
+    var optArr = Array.prototype.slice.call(container.querySelectorAll('.puzzle-option'));
+    for(var i = optArr.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = optArr[i]; optArr[i] = optArr[j]; optArr[j] = tmp;
+    }
+    // Re-append in the new order
+    optArr.forEach(function(btn){ container.appendChild(btn); });
+  });
+
+  questions.forEach(function(q){
+    var opts = q.querySelectorAll('.puzzle-option');
+    opts.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(q.classList.contains('solved') || q.classList.contains('locked')) return;
+        var correct = btn.getAttribute('data-correct') === 'true';
+        if(correct){
+          btn.classList.add('correct');
+          q.classList.add('solved');
+          opts.forEach(function(b){ b.disabled = true; });
+          var idx = parseInt(q.getAttribute('data-idx'), 10);
+          var letter = q.getAttribute('data-letter');
+          slots[idx].textContent = letter;
+          slots[idx].classList.add('filled');
+          var reveal = q.querySelector('.reveal-letter');
+          reveal.textContent = '\u2713 Revealed letter: ' + letter;
+          reveal.style.display = 'block';
+          solved++;
+          var next = q.nextElementSibling;
+          while(next && !next.classList.contains('puzzle-q')) next = next.nextElementSibling;
+          if(next) next.classList.remove('locked');
+          if(solved === questions.length){
+            setTimeout(function(){
+              victory.classList.add('show');
+              victory.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+          }
+        } else {
+          btn.classList.add('wrong');
+          btn.disabled = true;
+        }
+      });
+    });
+  });
+})();
+</script>
+
+<script src="../security.js"></script>
+</body>
+</html>
