@@ -362,10 +362,10 @@
 
   <!-- PDF Download -->
   <div class="pdf-section">
-    <div class="pdf-section-label">Final Step &mdash; Source Analysis</div>
-    <h3>Download Your Source Analysis PDF</h3>
-    <p>This compiles your close-reading answers, comparison matrix, and historical-question essay into a single formatted document. Save it and submit it to Canvas by Sunday at 11:59 PM.</p>
-    <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">&#x2193; &nbsp; Download Source Analysis PDF</button>
+    <div class="pdf-section-label">Final Step &mdash; Complete Week 7 PDF</div>
+    <h3>Download Your Week 7 PDF</h3>
+    <p>This compiles <strong>everything</strong> into a single document: all 12 Reading 7.1 and 7.2 answers with their notes, your Source Analysis close-reading responses, the comparison matrix, and the historical-question essay. Save this one file and submit it to Canvas by Sunday at 11:59 PM.</p>
+    <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">&#x2193; &nbsp; Download Week 7 PDF</button>
     <div class="pdf-msg" id="pdfMsg"></div>
   </div>
 
@@ -459,6 +459,45 @@ document.querySelectorAll('textarea').forEach(function(ta){
 
 loadAnswers();
 
+// ── Reading 7.1 / 7.2 labels + storage keys ────────────────
+const R1_Q_KEYS = ['hist102_w7_r1_q1','hist102_w7_r1_q2','hist102_w7_r1_q3','hist102_w7_r1_q4','hist102_w7_r1_q5','hist102_w7_r1_q6'];
+const R1_N_STORAGE = ['hist102_w7_r1_n1','hist102_w7_r1_n2','hist102_w7_r1_n3','hist102_w7_r1_n4','hist102_w7_r1_n5','hist102_w7_r1_n6'];
+const R2_Q_KEYS = ['hist102_w7_r2_q1','hist102_w7_r2_q2','hist102_w7_r2_q3','hist102_w7_r2_q4','hist102_w7_r2_q5','hist102_w7_r2_q6'];
+const R2_N_STORAGE = ['hist102_w7_r2_n1','hist102_w7_r2_n2','hist102_w7_r2_n3','hist102_w7_r2_n4','hist102_w7_r2_n5','hist102_w7_r2_n6'];
+
+const Q_LABELS_R1 = [
+  'Q1 \u2014 January 6 and Historical Patterns',
+  'Q2 \u2014 The 1991 Gulf War and the Decision Not to Go to Baghdad',
+  'Q3 \u2014 The Reagan Revolution Under Clinton',
+  'Q4 \u2014 Cold War Origins of the War on Terror',
+  'Q5 \u2014 Iraq, WMDs, and the Haass Taxonomy',
+  'Q6 \u2014 Synthesis: Continuity from 1989 to 2003'
+];
+const N_LABELS_R1 = [
+  'My Notes \u2014 Introduction & Framing',
+  'My Notes \u2014 Soviet Collapse & Gulf War',
+  'My Notes \u2014 The Clinton Years & 2000 Election',
+  'My Notes \u2014 9/11 & the Bush Doctrine',
+  'My Notes \u2014 The Iraq War Begins',
+  'My Notes \u2014 Synthesis & Connections'
+];
+const Q_LABELS_R2 = [
+  'Q7 \u2014 Katrina, Race, and the American State',
+  'Q8 \u2014 Bipartisan Deregulation and the 2008 Crash',
+  'Q9 \u2014 The Affordable Care Act and Its Opposition',
+  'Q10 \u2014 2020 Election Denial and Haass\u2019s Framework',
+  'Q11 \u2014 The Pandemic and the Duty to Be Informed',
+  'Q12 \u2014 Capstone Synthesis: One Lesson From This Course'
+];
+const N_LABELS_R2 = [
+  'My Notes \u2014 Bush\u2019s Second Term',
+  'My Notes \u2014 The Great Recession',
+  'My Notes \u2014 Obama, Tea Party, ACA',
+  'My Notes \u2014 Trump, 2020, January 6',
+  'My Notes \u2014 The Pandemic',
+  'My Notes \u2014 Closing Synthesis & Paper Ideas'
+];
+
 // ── PDF Generation ──────────────────────────────────────────
 function generatePDF(){
   var btn = document.getElementById('pdfBtn');
@@ -472,20 +511,34 @@ function generatePDF(){
     if(token.wnum) storedWnum = token.wnum;
   } catch(e){}
 
-  // Collect answers
-  var answers = {};
-  var totalAnswered = 0;
+  function readLS(key){ try{ return localStorage.getItem(key) || ''; } catch(e){ return ''; } }
+  function wordCount(s){ return s.trim() ? s.trim().split(/\s+/).length : 0; }
+
+  // Reading 7.1 and 7.2 answers + notes (from localStorage)
+  var r1Answers = R1_Q_KEYS.map(readLS);
+  var r1Notes   = R1_N_STORAGE.map(readLS);
+  var r2Answers = R2_Q_KEYS.map(readLS);
+  var r2Notes   = R2_N_STORAGE.map(readLS);
+
+  // Source-analysis answers (prefer live DOM, fall back to localStorage)
+  var saAnswers = {};
   FIELDS.forEach(function(f){
     var v = '';
     var el = document.getElementById(f.id);
     if(el) v = el.value;
-    if(!v){ try{ v = localStorage.getItem(f.key) || ''; }catch(e){} }
-    answers[f.id] = v;
-    var words = v.trim() ? v.trim().split(/\s+/).length : 0;
-    var threshold = (f.id === 'q_historical') ? 250 : 10;
-    if(words >= threshold) totalAnswered++;
+    if(!v) v = readLS(f.key);
+    saAnswers[f.id] = v;
   });
-  var historicalWords = answers['q_historical'].trim() ? answers['q_historical'].trim().split(/\s+/).length : 0;
+
+  // Stats
+  var readingAnswered = 0;
+  r1Answers.concat(r2Answers).forEach(function(a){ if(wordCount(a) >= 10) readingAnswered++; });
+  var saCompleted = 0;
+  FIELDS.forEach(function(f){
+    var threshold = (f.id === 'q_historical') ? 250 : 10;
+    if(wordCount(saAnswers[f.id]) >= threshold) saCompleted++;
+  });
+  var historicalWords = wordCount(saAnswers['q_historical']);
 
   try {
     var { jsPDF } = window.jspdf;
@@ -521,6 +574,10 @@ function generatePDF(){
       doc.text(lines, indent, y);
       y += lines.length * (lineH || fontSize * 1.3);
     }
+    function sectionRule(){
+      y += 10; checkPage(30);
+      doc.setDrawColor(154,111,42); doc.line(margin,y,pageW-margin,y); y += 20;
+    }
 
     // Header
     doc.setFillColor(26,21,16);
@@ -528,15 +585,49 @@ function generatePDF(){
     doc.setFontSize(18); doc.setFont('times','bold'); doc.setTextColor(247,242,232);
     doc.text('HIST 102 \u2014 US History After 1877', margin, 32);
     doc.setFontSize(12); doc.setFont('times','normal'); doc.setTextColor(200,146,42);
-    doc.text('Source Analysis 7.1  \u00B7  Iraq Resolutions (October 10, 2002)', margin, 52);
+    doc.text('Week 7  \u00B7  Contemporary America  \u00B7  Readings + Source Analysis', margin, 52);
     doc.setTextColor(107,94,80);
     doc.text(storedName + (storedWnum ? '  \u00B7  '+storedWnum : '') + '  \u00B7  Generated '+new Date().toLocaleDateString(), margin, 68);
     y = 100;
 
-    // Close-reading section
-    addText('Close-Reading Responses', 14, 'bold', [154,111,42]);
+    // ── Reading 7.1 ─────────────────────────────────────────
+    addText('Reading 7.1 \u2014 The Post-Cold War Order and the Forever War (OpenStax Ch. 31, I\u2013III)', 14, 'bold', [154,111,42]);
+    y += 6;
+    Q_LABELS_R1.forEach(function(label, i){
+      checkPage(60);
+      doc.setDrawColor(224,213,190); doc.line(margin, y, pageW-margin, y); y += 10;
+      addText(label, 10, 'bold', [61,96,83]); y += 2;
+      addText(r1Answers[i] || '(no answer entered)', 10, 'normal', [30,21,16], 14); y += 6;
+      if(r1Notes[i]){
+        addText(N_LABELS_R1[i], 9, 'bold', [30,68,136]); y += 1;
+        addIndentedText(r1Notes[i], 9, 'italic', [58,80,110], 13); y += 6;
+      }
+      y += 6;
+    });
+    sectionRule();
+
+    // ── Reading 7.2 ─────────────────────────────────────────
+    addText('Reading 7.2 \u2014 Great Recession, Obama, and American Carnage (OpenStax Ch. 31, IV\u2013X)', 14, 'bold', [154,111,42]);
+    y += 6;
+    Q_LABELS_R2.forEach(function(label, i){
+      checkPage(60);
+      doc.setDrawColor(224,213,190); doc.line(margin, y, pageW-margin, y); y += 10;
+      addText(label, 10, 'bold', [61,96,83]); y += 2;
+      addText(r2Answers[i] || '(no answer entered)', 10, 'normal', [30,21,16], 14); y += 6;
+      if(r2Notes[i]){
+        addText(N_LABELS_R2[i], 9, 'bold', [30,68,136]); y += 1;
+        addIndentedText(r2Notes[i], 9, 'italic', [58,80,110], 13); y += 6;
+      }
+      y += 6;
+    });
+    sectionRule();
+
+    // ── Source Analysis 7.1 ─────────────────────────────────
+    addText('Source Analysis 7.1 \u2014 Iraq Resolutions (October 10, 2002)', 14, 'bold', [154,111,42]);
     y += 6;
 
+    addText('Close-Reading Responses', 12, 'bold', [61,96,83]);
+    y += 4;
     var closeReadingIds = ['q_clinton_why','q_clinton_history','q_byrd_history','q_byrd_argue','q_santorum_analogies','q_santorum_moral'];
     closeReadingIds.forEach(function(fid){
       var f = FIELDS.find(function(x){ return x.id === fid; });
@@ -544,16 +635,13 @@ function generatePDF(){
       checkPage(60);
       doc.setDrawColor(224,213,190); doc.line(margin, y, pageW-margin, y); y += 10;
       addText(f.label, 10, 'bold', [61,96,83]); y += 2;
-      addText(answers[fid] || '(no answer entered)', 10, 'normal', [30,21,16], 14);
+      addText(saAnswers[fid] || '(no answer entered)', 10, 'normal', [30,21,16], 14);
       y += 10;
     });
 
-    y += 10; checkPage(30);
-    doc.setDrawColor(154,111,42); doc.line(margin,y,pageW-margin,y); y += 20;
-
-    // Comparison matrix
-    addText('Comparison Matrix \u2014 How the Senators Disagreed', 14, 'bold', [154,111,42]);
     y += 6;
+    addText('Comparison Matrix \u2014 How the Senators Disagreed', 12, 'bold', [61,96,83]);
+    y += 4;
     var cmpIds = ['q_cmp_cb','q_cmp_cs','q_cmp_bc','q_cmp_bs','q_cmp_sc','q_cmp_sb'];
     cmpIds.forEach(function(fid){
       var f = FIELDS.find(function(x){ return x.id === fid; });
@@ -561,58 +649,61 @@ function generatePDF(){
       checkPage(50);
       doc.setDrawColor(224,213,190); doc.line(margin, y, pageW-margin, y); y += 10;
       addText(f.label, 10, 'bold', [61,96,83]); y += 2;
-      addText(answers[fid] || '(no answer entered)', 10, 'normal', [30,21,16], 14);
+      addText(saAnswers[fid] || '(no answer entered)', 10, 'normal', [30,21,16], 14);
       y += 10;
     });
 
-    y += 10; checkPage(30);
-    doc.setDrawColor(154,111,42); doc.line(margin,y,pageW-margin,y); y += 20;
-
-    // Historical question
-    addText('Historical Question \u2014 Source-Based Essay', 14, 'bold', [154,111,42]);
+    y += 6;
+    addText('Historical Question \u2014 Source-Based Essay', 12, 'bold', [61,96,83]);
     y += 4;
     addText('What did U.S. senators disagree about when debating the Iraq Resolution?', 11, 'italic', [107,94,80]);
     y += 8;
-    addText(answers['q_historical'] || '(no answer entered)', 11, 'normal', [30,21,16], 15);
+    addText(saAnswers['q_historical'] || '(no answer entered)', 11, 'normal', [30,21,16], 15);
 
     // Footer
     y += 20; checkPage(40);
     doc.setDrawColor(26,21,16); doc.line(margin,y,pageW-margin,y); y += 14;
     doc.setFontSize(8); doc.setFont('times','normal'); doc.setTextColor(107,94,80);
-    doc.text(totalAnswered+'/'+FIELDS.length+' items complete  \u00B7  Essay: '+historicalWords+' words  \u00B7  HIST 102 Spring 2026', margin, y);
+    doc.text(readingAnswered+'/12 reading questions answered  \u00B7  '+saCompleted+'/'+FIELDS.length+' source-analysis items  \u00B7  Essay: '+historicalWords+' words  \u00B7  HIST 102 Spring 2026', margin, y);
 
-    var filename = 'HIST102_W7_SourceAnalysis_'+(storedWnum||'student')+'.pdf';
+    var filename = 'HIST102_W7_Complete_'+(storedWnum||'student')+'.pdf';
     doc.save(filename);
 
     // Log to Supabase
-    try{ sbInsert('pdf_downloads',{ student_name:storedName, student_w_num:storedWnum, week_id:'w7-sa1', answers_count:totalAnswered, filename:filename }); }catch(e){}
+    try{ sbInsert('pdf_downloads',{ student_name:storedName, student_w_num:storedWnum, week_id:'w7', answers_count:(readingAnswered+saCompleted), filename:filename }); }catch(e){}
 
     try{
       var sub = {
         student_name: storedName,
         student_w_num: storedWnum,
-        week_id: 'w7-sa1',
-        total_questions: totalAnswered,
-        all_complete: (totalAnswered === FIELDS.length)
+        week_id: 'w7',
+        total_questions: readingAnswered + saCompleted,
+        all_complete: (readingAnswered === 12 && saCompleted === FIELDS.length)
       };
+      [0,1,2,3,4,5].forEach(function(i){
+        var n = i+1;
+        sub['r1_q'+n+'_answer'] = r1Answers[i];
+        sub['r1_q'+n+'_words']  = wordCount(r1Answers[i]);
+        sub['r2_q'+n+'_answer'] = r2Answers[i];
+        sub['r2_q'+n+'_words']  = wordCount(r2Answers[i]);
+      });
       FIELDS.forEach(function(f){
-        var words = answers[f.id].trim() ? answers[f.id].trim().split(/\s+/).length : 0;
-        sub[f.id+'_answer'] = answers[f.id];
-        sub[f.id+'_words']  = words;
+        sub[f.id+'_answer'] = saAnswers[f.id];
+        sub[f.id+'_words']  = wordCount(saAnswers[f.id]);
       });
       sbInsert('worksheet_submissions', sub);
     }catch(e){}
 
     var msgEl = document.getElementById('pdfMsg');
-    msgEl.textContent = '\u2713 PDF downloaded \u2014 '+totalAnswered+'/'+FIELDS.length+' items complete. Submit it to Canvas by Sunday at 11:59 PM.';
+    msgEl.textContent = '\u2713 PDF downloaded \u2014 readings '+readingAnswered+'/12, source analysis '+saCompleted+'/'+FIELDS.length+'. Submit it to Canvas by Sunday at 11:59 PM.';
     msgEl.classList.add('visible');
     btn.disabled = false;
-    btn.textContent = '\u2193  Download Source Analysis PDF';
+    btn.textContent = '\u2193  Download Week 7 PDF';
 
   } catch(err){
     console.error('PDF error:', err);
     btn.disabled = false;
-    btn.textContent = '\u2193  Download Source Analysis PDF';
+    btn.textContent = '\u2193  Download Week 7 PDF';
     alert('PDF generation failed. Please try again or contact Prof. Hauselmann.');
   }
 }
