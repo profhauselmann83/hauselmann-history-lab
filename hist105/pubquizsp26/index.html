@@ -14,8 +14,6 @@
     --text: #f0ead6; --muted: #888; --red: #e74c3c;
   }
   body { background: var(--bg); color: var(--text); font-family: 'Crimson Pro', Georgia, serif; min-height: 100vh; }
-
-  /* ── SCREENS ── */
   .screen { display: none; min-height: 100vh; }
   .screen.active { display: flex; flex-direction: column; }
 
@@ -27,9 +25,9 @@
   .big-title { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem,6vw,4.5rem);
     font-weight: 900; line-height: 1.1; margin-bottom: .4rem; }
   .big-sub { font-style: italic; color: var(--gold); font-size: 1.2rem; margin-bottom: 2.5rem; }
-  .team-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 1.75rem; width: 100%; max-width: 500px; margin-bottom: 1.5rem; text-align: left; }
-  .team-box h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 1rem; }
+  .lobby-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.75rem; width: 100%; max-width: 500px; margin-bottom: 1.25rem; text-align: left; }
+  .lobby-panel h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 1rem; }
   .team-row { display: flex; gap: .5rem; margin-bottom: .5rem; }
   .team-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 6px;
     padding: .55rem .8rem; color: var(--text); font-family: 'Crimson Pro', serif; font-size: 1rem; outline: none; }
@@ -40,15 +38,23 @@
   .btn-add-team { background: none; border: 1px dashed var(--border); color: var(--muted);
     width: 100%; padding: .45rem; border-radius: 6px; cursor: pointer; font-size: .9rem; margin-top: .4rem; }
   .btn-add-team:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Timer selector */
+  .timer-select-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .timer-opt { background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+    padding: .5rem 1rem; cursor: pointer; font-family: 'DM Mono', monospace; font-size: .85rem;
+    color: var(--muted); transition: all .15s; }
+  .timer-opt:hover { border-color: var(--gold); color: var(--gold); }
+  .timer-opt.selected { background: var(--green); border-color: var(--green); color: var(--text); }
+
   .btn-start { background: var(--green); border: none; color: var(--text);
     font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700;
-    padding: .85rem 2.5rem; border-radius: 8px; cursor: pointer; width: 100%; max-width: 500px; }
+    padding: .85rem 2.5rem; border-radius: 8px; cursor: pointer; width: 100%; max-width: 500px; margin-top: .5rem; }
   .btn-start:hover { background: #3a7a52; }
   .lobby-tip { margin-top: 1.25rem; color: var(--muted); font-size: .88rem;
     font-style: italic; max-width: 480px; }
 
   /* ── GAME ── */
-  #game { flex-direction: column; }
   .game-wrap { display: grid; grid-template-columns: 1fr 272px; flex: 1; min-height: 100vh; }
   .g-header { grid-column: 1/-1; background: var(--surface); border-bottom: 1px solid var(--border);
     padding: .9rem 1.4rem; display: flex; align-items: center; justify-content: space-between; }
@@ -57,8 +63,6 @@
   .g-round-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; }
   .g-round-sub { font-size: .88rem; font-style: italic; color: var(--muted); }
   .g-qcount { font-family: 'DM Mono', monospace; font-size: .82rem; color: var(--muted); }
-
-  /* Question area */
   .q-area { padding: 2.25rem 2.5rem; display: flex; flex-direction: column; justify-content: center; min-height: 55vh; }
   .q-tags { display: flex; gap: .6rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
   .tag { font-family: 'DM Mono', monospace; font-size: .62rem; letter-spacing: .18em;
@@ -70,28 +74,22 @@
   .tag-double { color: var(--red); border-color: var(--red); background: rgba(231,76,60,.1); }
   .q-text { font-family: 'Playfair Display', serif; font-size: clamp(1.3rem,2.8vw,1.9rem);
     font-weight: 700; line-height: 1.4; margin-bottom: 1.75rem; }
-
-  /* Timer */
   .timer-row { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.4rem; }
   .timer-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .timer-bar { height: 100%; background: var(--gold); border-radius: 3px; transition: width .95s linear, background .4s; }
   .timer-bar.urgent { background: var(--red); }
-  .timer-num { font-family: 'DM Mono', monospace; font-size: 1.35rem; color: var(--gold); min-width: 2.2ch; text-align: right; }
+  .timer-num { font-family: 'DM Mono', monospace; font-size: 1.35rem; color: var(--gold); min-width: 3ch; text-align: right; }
   .timer-num.urgent { color: var(--red); animation: pulse 1s infinite; }
-
-  /* Hint */
   .hint-box { background: #1a1500; border: 1px solid #c4a35a55; border-radius: 8px;
     padding: .9rem 1.1rem; margin-bottom: 1rem; }
   .hint-label { font-family: 'DM Mono', monospace; font-size: .6rem; letter-spacing: .22em;
     color: var(--gold); text-transform: uppercase; margin-bottom: .35rem; }
   .hint-text { font-style: italic; color: #d4b870; font-size: 1rem; }
-
-  /* Controls */
   .controls { display: flex; gap: .65rem; flex-wrap: wrap; margin-top: 1.25rem; }
   .btn { font-family: 'Crimson Pro', serif; font-size: .98rem; font-weight: 600;
     padding: .6rem 1.3rem; border-radius: 6px; cursor: pointer; border: none; }
-  .btn-primary { background: var(--green); color: var(--text); }
-  .btn-primary:hover { background: #3a7a52; }
+  .btn-primary  { background: var(--green); color: var(--text); }
+  .btn-primary:hover  { background: #3a7a52; }
   .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
   .btn-hint-btn { background: #1a1500; color: var(--gold); border: 1px solid #c4a35a55; }
@@ -99,16 +97,16 @@
   .btn-end-round { background: #3a2800; color: var(--gold); border: 1px solid var(--gold); font-weight: 700; }
   .btn-end-round:hover { background: #4a3400; }
 
-  /* Sidebar */
+  /* ── SIDEBAR ── */
   .sidebar { background: var(--surface); border-left: 1px solid var(--border); padding: 1.1rem; overflow-y: auto; }
   .sb-title { font-family: 'DM Mono', monospace; font-size: .63rem; letter-spacing: .22em;
     color: var(--gold); text-transform: uppercase; margin-bottom: .9rem; }
   .team-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
     padding: .7rem; margin-bottom: .55rem; }
   .team-card.leader { border-color: var(--gold); }
-  .tc-name { font-family: 'Playfair Display', serif; font-size: .92rem; margin-bottom: .3rem; }
+  .tc-name  { font-family: 'Playfair Display', serif; font-size: .92rem; margin-bottom: .3rem; }
   .tc-score { font-family: 'DM Mono', monospace; font-size: 1.45rem; color: var(--gold); }
-  .tc-btns { display: flex; gap: .35rem; margin-top: .4rem; }
+  .tc-btns  { display: flex; gap: .35rem; margin-top: .4rem; }
   .sc-btn { flex: 1; background: none; border: 1px solid var(--border); color: var(--muted);
     border-radius: 4px; padding: .22rem; cursor: pointer; font-size: .85rem; }
   .sc-btn:hover { border-color: var(--gold); color: var(--gold); }
@@ -126,11 +124,11 @@
   .rv-header { background: var(--surface); border-bottom: 1px solid var(--border);
     padding: 1.1rem 1.75rem; display: flex; justify-content: space-between; align-items: center; }
   .rv-title { font-family: 'Playfair Display', serif; font-size: 1.55rem; font-weight: 900; color: var(--gold); }
-  .rv-sub { font-family: 'DM Mono', monospace; font-size: .67rem; letter-spacing: .2em;
+  .rv-sub   { font-family: 'DM Mono', monospace; font-size: .67rem; letter-spacing: .2em;
     color: var(--muted); text-transform: uppercase; margin-top: .15rem; }
-  .rv-body { flex: 1; max-width: 860px; width: 100%; margin: 0 auto; padding: 2rem 1.75rem; }
-  .rv-dots { display: flex; gap: .35rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
-  .rv-dot { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border);
+  .rv-body  { flex: 1; max-width: 860px; width: 100%; margin: 0 auto; padding: 2rem 1.75rem; }
+  .rv-dots  { display: flex; gap: .35rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+  .rv-dot   { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border);
     font-family: 'DM Mono', monospace; font-size: .58rem; color: var(--muted);
     display: flex; align-items: center; justify-content: center; }
   .rv-dot.done    { background: var(--green); border-color: var(--green); color: #fff; }
@@ -175,9 +173,9 @@
   .p-block { width: 96px; border-radius: 4px 4px 0 0; display: flex; align-items: center;
     justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #fff; }
   .p1 { height: 116px; background: var(--gold); }
-  .p2 { height: 86px;  background: #aaa; }
-  .p3 { height: 62px;  background: #cd7f32; }
-  .others { color: var(--muted); font-family: 'DM Mono', monospace; font-size: .85rem; }
+  .p2 { height: 86px; background: #aaa; }
+  .p3 { height: 62px; background: #cd7f32; }
+  .others { color: var(--muted); font-family: 'DM Mono', monospace; font-size: .85rem; line-height: 1.8; }
 
   @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
   @keyframes pulse  { 0%,100% { opacity:1; } 50% { opacity:.55; } }
@@ -185,25 +183,35 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     LOBBY
-════════════════════════════════════════════════════════════════════════════ -->
+<!-- LOBBY -->
 <div id="lobby" class="screen active">
   <div class="badge">HIST 105 · Prof. Hauselmann · Final Review</div>
   <h1 class="big-title">History from Below<br>Pub Quiz</h1>
   <p class="big-sub">6 rounds · 30 questions · Western Civilization Since 1648</p>
-  <div class="team-box">
+
+  <div class="lobby-panel">
     <h3>Set up your teams</h3>
     <div id="team-inputs"></div>
     <button class="btn-add-team" onclick="addTeam()">+ Add team</button>
   </div>
+
+  <div class="lobby-panel">
+    <h3>Time per question</h3>
+    <div class="timer-select-row" id="timer-opts">
+      <div class="timer-opt" data-val="20" onclick="selectTimer(20)">20 s</div>
+      <div class="timer-opt" data-val="30" onclick="selectTimer(30)">30 s</div>
+      <div class="timer-opt selected" data-val="45" onclick="selectTimer(45)">45 s</div>
+      <div class="timer-opt" data-val="60" onclick="selectTimer(60)">60 s</div>
+      <div class="timer-opt" data-val="90" onclick="selectTimer(90)">90 s</div>
+    </div>
+  </div>
+
   <button class="btn-start" onclick="startGame()">Start the Quiz</button>
-  <p class="lobby-tip">Project this on your laptop. Teams write answers on paper — you reveal points after each two-round block using the Answer Reveal screen.</p>
+  <p class="lobby-tip">Project this on your laptop. Teams write answers on paper —
+    answers are revealed one at a time after each round.</p>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     GAME
-════════════════════════════════════════════════════════════════════════════ -->
+<!-- GAME -->
 <div id="game" class="screen">
   <div class="game-wrap">
     <div class="g-header" style="grid-column:1/-1">
@@ -214,14 +222,12 @@
       </div>
       <div class="g-qcount" id="g-qcount"></div>
     </div>
-
-    <!-- Question area -->
     <div class="q-area">
-      <div class="q-tags" id="q-tags"></div>
-      <div class="q-text" id="q-text"></div>
+      <div class="q-tags"  id="q-tags"></div>
+      <div class="q-text"  id="q-text"></div>
       <div class="timer-row">
         <div class="timer-track"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
-        <div class="timer-num"  id="timer-num">60s</div>
+        <div class="timer-num" id="timer-num"></div>
       </div>
       <div id="hint-box" class="hint-box" style="display:none">
         <div class="hint-label">💡 Hint</div>
@@ -229,8 +235,6 @@
       </div>
       <div class="controls" id="controls"></div>
     </div>
-
-    <!-- Sidebar -->
     <div class="sidebar">
       <div class="sb-title">Scoreboard</div>
       <div id="sidebar-teams"></div>
@@ -242,9 +246,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     REVEAL SCREEN
-════════════════════════════════════════════════════════════════════════════ -->
+<!-- REVEAL SCREEN -->
 <div id="reveal" class="screen">
   <div class="rv-header">
     <div>
@@ -254,9 +256,9 @@
     <div id="rv-count" style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--muted)"></div>
   </div>
   <div class="rv-body">
-    <div class="rv-dots" id="rv-dots"></div>
+    <div class="rv-dots"   id="rv-dots"></div>
     <div class="rv-rlabel" id="rv-rlabel"></div>
-    <div class="rv-q" id="rv-q"></div>
+    <div class="rv-q"      id="rv-q"></div>
     <div id="rv-answer-area"></div>
     <div class="rv-controls">
       <button class="btn btn-primary" id="rv-btn" onclick="revealOrNext()"></button>
@@ -266,20 +268,18 @@
   <div class="rv-scores" id="rv-scores"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     END SCREEN
-════════════════════════════════════════════════════════════════════════════ -->
+<!-- END SCREEN -->
 <div id="end" class="screen">
   <div class="badge">Quiz Complete</div>
   <h1 class="big-title" style="font-size:2.8rem;margin-bottom:.4rem">And the winner is…</h1>
   <div class="podium" id="podium"></div>
-  <div class="others" id="others"></div>
+  <div class="others"  id="others"></div>
   <br>
   <button class="btn-start" style="max-width:280px;margin-top:1rem" onclick="resetGame()">Play Again</button>
 </div>
 
 <script>
-// ── DATA ─────────────────────────────────────────────────────────────────────
+// ── QUESTION BANK ─────────────────────────────────────────────────────────────
 const ROUNDS = [
   {
     id:1, title:"Round 1 · Bread & Barricades",
@@ -291,7 +291,7 @@ const ROUNDS = [
         a:"1832", hint:"It's not 1789 (the Revolution). It's not 1848. It happened under King Louis-Philippe.", diff:"Easy", pop:"🎭 Les Misérables" },
       { q:"The week in May 1871 when the Versailles government crushed the Paris Commune — killing up to 30,000 people in seven days — has a dramatic name. What is it?",
         a:"Bloody Week (La Semaine Sanglante)", hint:"Think about what word describes 30,000 deaths in a single week. It's exactly what it sounds like.", diff:"Easy", pop:null },
-      { q:"She was a teacher who fought on the Commune's barricades, organized women's education, and was nicknamed 'the Red Virgin of Montmartre.' Pelz names her as evidence that women were not background characters in the Commune. Who was she?",
+      { q:"She was a teacher who fought on the Commune's barricades, organized women's education, and was nicknamed 'the Red Virgin of Montmartre.' Who was she?",
         a:"Louise Michel", hint:"Her first name is the same as the 14th King of France. Her last name sounds like a common first name.", diff:"Medium", pop:null },
       { q:"Pelz explains why 1848 always ends in defeat with one formula. Finish the sentence: 'Formal equality is politically ________; actual economic equality is not.'",
         a:"Acceptable", hint:"It's the word that means 'tolerable' or 'okay' — the one word that completes the contrast.", diff:"Easy", pop:null }
@@ -301,7 +301,7 @@ const ROUNDS = [
     id:2, title:"Round 2 · The War Below",
     subtitle:"World War I & the Russian Revolution",
     questions:[
-      { q:"Soldiers on opposite sides of the Western Front developed informal arrangements not to shoot each other unnecessarily — sometimes sharing food across the wire. Pelz uses this as evidence of resistance from below. What is this system called?",
+      { q:"Soldiers on opposite sides of the Western Front developed informal arrangements not to shoot each other unnecessarily. Pelz uses this as evidence of resistance from below. What is this system called?",
         a:"Live and Let Live", hint:"It's a common English phrase — the idea of leaving someone alone if they leave you alone.", diff:"Easy", pop:null },
       { q:"The February Revolution of 1917 didn't start with Lenin or the Bolsheviks. It started with women in Petrograd demonstrating for bread on a specific international holiday. Which holiday?",
         a:"International Women's Day", hint:"It's a holiday still celebrated on March 8th every year around the world.", diff:"Easy", pop:null },
@@ -323,9 +323,9 @@ const ROUNDS = [
         a:"Elite political intrigue / backroom deal (Hindenburg, von Papen, industrialists appointed him)", hint:"Think about who actually put Hitler in the Chancellor's chair — it wasn't the voters.", diff:"Medium", pop:null },
       { q:"In 1943, non-Jewish German women stood outside a Berlin detention center for days demanding the release of their Jewish husbands. Goebbels backed down. What is this act of resistance called?",
         a:"The Rosenstrasse protest", hint:"It's named after the street in Berlin where the detention center was located.", diff:"Easy", pop:null },
-      { q:"The German Communist Party (KPD) had a disastrous policy in the early 1930s of calling the Social Democrats by what insulting two-word name — a policy that prevented a united front against Hitler?",
+      { q:"The German Communist Party (KPD) had a disastrous policy of calling the Social Democrats by what insulting two-word name — a policy that prevented a united front against Hitler?",
         a:"Social fascists", hint:"They took the word 'fascist' and added a word that sounds like 'socialist' — combining the two into an insult.", diff:"Medium", pop:null },
-      { q:"Pelz argues German industrialists supported Hitler not out of panic but as a calculated move. In his exact words, their support was 'not merely a response to crisis' but a way of doing what to it?",
+      { q:"Pelz argues German industrialists supported Hitler not out of panic but as a calculated move. Their support was 'not merely a response to crisis' but a way of doing what to it?",
         a:"Utilizing it / utilizing the crisis", hint:"It's a single verb — the idea that they USED the crisis rather than just reacted to it.", diff:"Medium", pop:null }
     ]
   },
@@ -337,7 +337,7 @@ const ROUNDS = [
         a:"Post-revisionist", hint:"It comes AFTER revisionism — it's the school that tries to synthesize the first two views.", diff:"Easy", pop:null },
       { q:"Churchill called it 'the naughty document.' In October 1944 in Moscow, he and Stalin divided southeastern Europe into spheres of influence on a single sheet of paper. What is this deal called?",
         a:"The Percentages Deal", hint:"Churchill literally wrote percentages — like '90% Soviet' for Romania — on a piece of paper and slid it across the table.", diff:"Medium", pop:null },
-      { q:"After East German workers rose up in 1953, Bertolt Brecht wrote a short, biting poem suggesting the government should 'dissolve the people and elect another.' What is the poem called?",
+      { q:"After East German workers rose up in 1953, Bertolt Brecht wrote a short poem suggesting the government should 'dissolve the people and elect another.' What is the poem called?",
         a:"The Solution", hint:"It's a one-word title — ironic, because the government's 'solution' to the problem of the people is to get rid of the people.", diff:"Easy", pop:null },
       { q:"📺 The Americans follows KGB spies living as suburban Americans. Which Cold War school would say the show's whole premise — that BOTH sides ran covert operations — supports their argument?",
         a:"Revisionist (or post-revisionist)", hint:"The school that argues America was also aggressive and interventionist — not just the Soviets.", diff:"Medium", pop:"📺 The Americans" },
@@ -351,13 +351,13 @@ const ROUNDS = [
     questions:[
       { q:"🎬 The 1989 German film Good Bye, Lenin! is a comedy about a son who hides the fall of the Wall from his sick mother. What is the ONE-WORD German term for East German nostalgia for life before unification?",
         a:"Ostalgie", hint:"It combines the German word for 'East' (Ost) with the French word for nostalgia.", diff:"Easy", pop:"🎬 Good Bye, Lenin!" },
-      { q:"Alexander Dubček's 1968 reform movement in Czechoslovakia had a famous four-word slogan. It promised a more humane version of the existing system. What was the slogan?",
+      { q:"Alexander Dubček's 1968 reform movement in Czechoslovakia had a famous four-word slogan. What was it?",
         a:"Socialism with a Human Face", hint:"It kept the first word (the system) but added three words promising it would be kinder.", diff:"Easy", pop:null },
-      { q:"May 1968 in France was unique among that year's global protests because the student movement fused with something much larger. What did it trigger that made it different from student protests elsewhere?",
+      { q:"May 1968 in France was unique among that year's global protests. What did the student movement trigger that made it different from student protests elsewhere?",
         a:"A general strike (~10 million workers — the largest wildcat strike in French history)", hint:"It wasn't just students. The whole working class joined — factories, transport, everything stopped.", diff:"Medium", pop:null },
-      { q:"On the night of November 9, 1989, East German border guards stood at the Berlin Wall doing nothing — waiting for orders that never came. In one word: what kind of collapse does Pelz say this illustrates?",
+      { q:"On November 9, 1989, East German border guards stood at the Berlin Wall waiting for orders that never came. In one word: what kind of collapse does Pelz say this illustrates?",
         a:"Structural (collapse)", hint:"It wasn't military defeat. It wasn't a CIA operation. The system simply stopped when people stopped obeying.", diff:"Medium", pop:null },
-      { q:"Philosopher Slavoj Žižek tells a story about Willy Brandt explaining to Gorbachev WHY capitalism made welfare concessions during the Cold War. What was Brandt's reason?",
+      { q:"Slavoj Žižek tells a story about Willy Brandt explaining to Gorbachev WHY capitalism made welfare concessions during the Cold War. What was Brandt's reason?",
         a:"Because there was a serious threat of an alternative (the Soviet model) — remove the threat, remove the concession", hint:"Why would capitalism share if it didn't have to? Think about what leverage the left had during the Cold War.", diff:"Hard", pop:null }
     ]
   },
@@ -369,7 +369,7 @@ const ROUNDS = [
         a:"Louise Michel", hint:"She appeared back in Round 1. Her last name sounds like a common first name.", diff:"Easy", pop:"🎵 Taylor Swift — The Man" },
       { q:"The three-lens method we used all semester to analyze primary sources. Name all three lenses — you need all three for the point.",
         a:"Argument, Omissions, Audience", hint:"What is the source SAYING? What is it NOT saying? WHO is it talking to?", diff:"Easy", pop:null },
-      { q:"📺 In Breaking Bad, Walter White tells himself he is not a villain — he is just 'utilizing the situation.' Which Pelz formulation from Chapter 10 does Walter White accidentally echo?",
+      { q:"📺 In Breaking Bad, Walter White tells himself he is not a villain — he is just 'utilizing the situation.' Which Pelz formulation from Chapter 10 does this accidentally echo?",
         a:"The ruling class 'utilized the crisis' to bring Hitler to power", hint:"Pelz says German industrialists did not just REACT to the economic crisis — they did something more calculated with it.", diff:"Medium", pop:"📺 Breaking Bad" },
       { q:"What is the name of Pelz's book — the one you've been reading all semester?",
         a:"A People's History of Modern Europe", hint:"The title tells you exactly whose story Pelz thinks history should be about.", diff:"Easy", pop:null },
@@ -379,22 +379,17 @@ const ROUNDS = [
   }
 ];
 
-// Reveal pairs: after rounds 2 and 4 (0-indexed: after index 1 and 3)
-const REVEAL_AFTER = [1, 3]; // round indices that trigger reveal screen
-const REVEAL_PAIRS = [[0,1],[2,3],[4,5]];
-
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let teams = [{id:1,name:"Team 1",score:0},{id:2,name:"Team 2",score:0},{id:3,name:"Team 3",score:0}];
 let nextId = 4;
-let roundIdx = 0, qIdx = 0;
-let hintShown = false;
-let timer = 60, timerInterval = null;
-let revealPairIdx = 0, revealAnsIdx = 0, revealShown = false;
+let timerDuration = 45;
+let roundIdx = 0, qIdx = 0, hintShown = false;
+let timer = 45, timerInterval = null;
+let revealRoundIdx = 0, revealAnsIdx = 0, revealShown = false;
 
 // ── LOBBY ─────────────────────────────────────────────────────────────────────
 function renderTeamInputs() {
-  const el = document.getElementById('team-inputs');
-  el.innerHTML = teams.map((t,i) => `
+  document.getElementById('team-inputs').innerHTML = teams.map((t,i) => `
     <div class="team-row">
       <input class="team-input" value="${t.name}" oninput="teams[${i}].name=this.value" placeholder="Team ${i+1}">
       ${teams.length > 2 ? `<button class="btn-remove" onclick="removeTeam(${t.id})">×</button>` : ''}
@@ -412,6 +407,13 @@ function removeTeam(id) {
   if (teams.length <= 2) return;
   teams = teams.filter(t => t.id !== id);
   renderTeamInputs();
+}
+
+function selectTimer(val) {
+  timerDuration = val;
+  document.querySelectorAll('.timer-opt').forEach(el => {
+    el.classList.toggle('selected', +el.dataset.val === val);
+  });
 }
 
 function startGame() {
@@ -432,18 +434,17 @@ function loadQuestion() {
   const q = round.questions[qIdx];
   hintShown = false;
 
-  document.getElementById('g-rbadge').textContent = `Round ${round.id} of ${ROUNDS.length}`;
-  document.getElementById('g-rtitle').textContent = round.title;
-  document.getElementById('g-rsub').textContent   = round.subtitle;
-  document.getElementById('g-qcount').textContent = `Q ${qIdx+1} / ${round.questions.length}`;
-  document.getElementById('q-text').textContent   = q.q;
+  document.getElementById('g-rbadge').textContent  = `Round ${round.id} of ${ROUNDS.length}`;
+  document.getElementById('g-rtitle').textContent  = round.title;
+  document.getElementById('g-rsub').textContent    = round.subtitle;
+  document.getElementById('g-qcount').textContent  = `Q ${qIdx+1} / ${round.questions.length}`;
+  document.getElementById('q-text').textContent    = q.q;
   document.getElementById('hint-text').textContent = q.hint;
   document.getElementById('hint-box').style.display = 'none';
 
-  // Tags
-  const tags = document.getElementById('q-tags');
-  tags.innerHTML = `<span class="tag tag-${q.diff.toLowerCase()}">${q.diff}</span>` +
-    (q.pop ? `<span class="tag tag-pop">${q.pop}</span>` : '') +
+  document.getElementById('q-tags').innerHTML =
+    `<span class="tag tag-${q.diff.toLowerCase()}">${q.diff}</span>` +
+    (q.pop    ? `<span class="tag tag-pop">${q.pop}</span>` : '') +
     (q.double ? `<span class="tag tag-double">⚡ Double Points</span>` : '');
 
   resetTimer();
@@ -455,20 +456,19 @@ function loadQuestion() {
 function renderControls() {
   const round = ROUNDS[roundIdx];
   const isLastQ = qIdx === round.questions.length - 1;
-  const triggerReveal = isLastQ && REVEAL_AFTER.includes(roundIdx);
-  const isLastEver = isLastQ && roundIdx === ROUNDS.length - 1;
+  const isLastRound = roundIdx === ROUNDS.length - 1;
 
-  let html = `<button class="btn btn-secondary" onclick="startTimer()">▶ Start</button>
-    <button class="btn btn-secondary" onclick="pauseTimer()">⏸ Pause</button>`;
-  if (!hintShown) html += `<button class="btn btn-hint-btn" onclick="showHint()">💡 Hint</button>`;
-  if (triggerReveal) {
-    html += `<button class="btn btn-end-round" onclick="nextQ()" style="margin-left:auto">End Round & Reveal Answers →</button>`;
-  } else if (isLastEver) {
-    html += `<button class="btn btn-primary" onclick="nextQ()" style="margin-left:auto">Finish →</button>`;
-  } else {
-    html += `<button class="btn btn-primary" onclick="nextQ()" style="margin-left:auto">Next Question →</button>`;
-  }
-  document.getElementById('controls').innerHTML = html;
+  let nextLabel;
+  if (isLastQ && isLastRound) nextLabel = 'End Round & Reveal Answers →';
+  else if (isLastQ)           nextLabel = 'End Round & Reveal Answers →';
+  else                        nextLabel = 'Next Question →';
+
+  document.getElementById('controls').innerHTML =
+    `<button class="btn btn-secondary" onclick="startTimer()">▶ Start</button>
+     <button class="btn btn-secondary" onclick="pauseTimer()">⏸ Pause</button>
+     ${!hintShown ? `<button class="btn btn-hint-btn" onclick="showHint()">💡 Hint</button>` : ''}
+     <button class="btn ${isLastQ ? 'btn-end-round' : 'btn-primary'}"
+       onclick="nextQ()" style="margin-left:auto">${nextLabel}</button>`;
 }
 
 function showHint() {
@@ -483,19 +483,12 @@ function nextQ() {
   const isLastQ = qIdx === round.questions.length - 1;
 
   if (isLastQ) {
-    if (REVEAL_AFTER.includes(roundIdx)) {
-      // Trigger reveal
-      revealPairIdx = REVEAL_AFTER.indexOf(roundIdx);
-      revealAnsIdx = 0;
-      revealShown = false;
-      loadReveal();
-      show('reveal');
-    } else if (roundIdx === ROUNDS.length - 1) {
-      showEnd();
-    } else {
-      roundIdx++; qIdx = 0;
-      loadQuestion();
-    }
+    // Always go to reveal after each round
+    revealRoundIdx = roundIdx;
+    revealAnsIdx = 0;
+    revealShown = false;
+    loadReveal();
+    show('reveal');
   } else {
     qIdx++;
     loadQuestion();
@@ -505,10 +498,9 @@ function nextQ() {
 // ── TIMER ─────────────────────────────────────────────────────────────────────
 function resetTimer() {
   clearInterval(timerInterval);
-  timer = 60;
+  timer = timerDuration;
   updateTimerDisplay();
 }
-
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -517,29 +509,27 @@ function startTimer() {
     updateTimerDisplay();
   }, 1000);
 }
-
 function pauseTimer() { clearInterval(timerInterval); }
-
 function updateTimerDisplay() {
+  const pct = (timer / timerDuration) * 100;
   const bar = document.getElementById('timer-bar');
   const num = document.getElementById('timer-num');
-  const pct = (timer / 60) * 100;
   bar.style.width = pct + '%';
-  bar.className = 'timer-bar' + (timer <= 10 ? ' urgent' : '');
+  bar.className   = 'timer-bar' + (timer <= 10 ? ' urgent' : '');
   num.textContent = timer + 's';
-  num.className = 'timer-num' + (timer <= 10 ? ' urgent' : '');
+  num.className   = 'timer-num' + (timer <= 10 ? ' urgent' : '');
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
 function renderSidebar() {
   const sorted = [...teams].sort((a,b) => b.score - a.score);
-  const maxScore = sorted[0]?.score ?? 0;
+  const max = sorted[0]?.score ?? 0;
   document.getElementById('sidebar-teams').innerHTML = sorted.map(t => `
-    <div class="team-card${t.score===maxScore&&t.score>0?' leader':''}">
-      <div class="tc-name">${t.score===maxScore&&t.score>0?'👑 ':''}${t.name}</div>
+    <div class="team-card${t.score===max&&t.score>0?' leader':''}">
+      <div class="tc-name">${t.score===max&&t.score>0?'👑 ':''}${t.name}</div>
       <div class="tc-score">${t.score}</div>
       <div class="tc-btns">
-        <button class="sc-btn" onclick="adjust(${t.id},1)">+1</button>
+        <button class="sc-btn"       onclick="adjust(${t.id},1)">+1</button>
         <button class="sc-btn minus" onclick="adjust(${t.id},-1)">−1</button>
       </div>
     </div>`).join('');
@@ -564,19 +554,12 @@ function adjust(id, delta) {
 }
 
 // ── REVEAL SCREEN ─────────────────────────────────────────────────────────────
-function getRevealQuestions() {
-  return REVEAL_PAIRS[revealPairIdx].flatMap(ri =>
-    (ROUNDS[ri]?.questions||[]).map((q,qi) => ({...q, roundTitle:ROUNDS[ri].title, roundId:ROUNDS[ri].id, qi:qi+1}))
-  );
-}
-
 function loadReveal() {
-  const qs = getRevealQuestions();
-  const pairLabels = ["Rounds 1 & 2","Rounds 3 & 4","Rounds 5 & 6"];
-  document.getElementById('rv-sub').textContent = pairLabels[revealPairIdx] + ' · Mark your sheets';
-
+  const round = ROUNDS[revealRoundIdx];
+  const qs = round.questions;
+  document.getElementById('rv-sub').textContent = `${round.title} · Mark your sheets`;
   renderRevealDots(qs);
-  renderRevealQuestion(qs);
+  renderRevealQuestion(qs, round);
   renderRevealScores();
 }
 
@@ -586,15 +569,15 @@ function renderRevealDots(qs) {
   ).join('');
 }
 
-function renderRevealQuestion(qs) {
-  const q = qs[revealAnsIdx];
+function renderRevealQuestion(qs, round) {
+  const q     = qs[revealAnsIdx];
   const total = qs.length;
-  document.getElementById('rv-count').textContent = `${revealAnsIdx+1} / ${total}`;
-  document.getElementById('rv-rlabel').textContent = `${q.roundTitle} · Q${q.qi}`;
-  document.getElementById('rv-q').textContent = q.q;
-
   const isLast = revealAnsIdx === total - 1;
-  const pairLabels = ["Rounds 1 & 2","Rounds 3 & 4","Rounds 5 & 6"];
+  const isLastRound = revealRoundIdx === ROUNDS.length - 1;
+
+  document.getElementById('rv-count').textContent  = `${revealAnsIdx+1} / ${total}`;
+  document.getElementById('rv-rlabel').textContent = `${round.title} · Q${revealAnsIdx+1}`;
+  document.getElementById('rv-q').textContent      = q.q;
 
   if (revealShown) {
     document.getElementById('rv-answer-area').innerHTML = `
@@ -603,30 +586,31 @@ function renderRevealQuestion(qs) {
         <div class="rv-atext">${q.a}</div>
         ${q.note ? `<div class="rv-anote">${q.note}</div>` : ''}
       </div>`;
-    document.getElementById('rv-btn').textContent = isLast
-      ? (revealPairIdx === 2 ? 'See Final Scores →' : `Start ${pairLabels[revealPairIdx+1]} →`)
+    const nextBtnLabel = isLast
+      ? (isLastRound ? 'See Final Scores →' : `Next Round →`)
       : 'Next Answer →';
+    document.getElementById('rv-btn').textContent       = nextBtnLabel;
     document.getElementById('rv-remaining').textContent = isLast ? '' : `${total - revealAnsIdx - 1} more to go`;
   } else {
     document.getElementById('rv-answer-area').innerHTML = `
       <div class="rv-placeholder" onclick="revealOrNext()">
         <span>CLICK TO REVEAL ANSWER</span>
       </div>`;
-    document.getElementById('rv-btn').textContent = 'Reveal Answer';
+    document.getElementById('rv-btn').textContent       = 'Reveal Answer';
     document.getElementById('rv-remaining').textContent = '';
   }
 }
 
 function renderRevealScores() {
   const sorted = [...teams].sort((a,b) => b.score - a.score);
-  const maxScore = sorted[0]?.score ?? 0;
+  const max = sorted[0]?.score ?? 0;
   document.getElementById('rv-scores').innerHTML = sorted.map(t => `
-    <div class="rv-chip${t.score===maxScore&&t.score>0?' leader':''}">
-      ${t.score===maxScore&&t.score>0?'👑 ':''}
+    <div class="rv-chip${t.score===max&&t.score>0?' leader':''}">
+      ${t.score===max&&t.score>0?'👑 ':''}
       <span class="rv-cname">${t.name}</span>
       <span class="rv-cscore">${t.score}</span>
       <div class="rv-cbtns">
-        <button class="rv-cbtn" onclick="rvAdjust(${t.id},1)">+1</button>
+        <button class="rv-cbtn"       onclick="rvAdjust(${t.id},1)">+1</button>
         <button class="rv-cbtn minus" onclick="rvAdjust(${t.id},-1)">−</button>
       </div>
     </div>`).join('');
@@ -639,18 +623,17 @@ function rvAdjust(id, delta) {
 }
 
 function revealOrNext() {
-  const qs = getRevealQuestions();
+  const qs = ROUNDS[revealRoundIdx].questions;
   const isLast = revealAnsIdx === qs.length - 1;
 
   if (!revealShown) {
     revealShown = true;
   } else if (isLast) {
-    // Continue after reveal
-    const nextRoundIdx = REVEAL_PAIRS[revealPairIdx][1] + 1;
-    if (nextRoundIdx >= ROUNDS.length) {
+    // Move on after this round's reveal
+    if (revealRoundIdx === ROUNDS.length - 1) {
       showEnd();
     } else {
-      roundIdx = nextRoundIdx;
+      roundIdx = revealRoundIdx + 1;
       qIdx = 0;
       show('game');
       loadQuestion();
@@ -661,32 +644,33 @@ function revealOrNext() {
     revealShown = false;
   }
   renderRevealDots(qs);
-  renderRevealQuestion(qs);
+  renderRevealQuestion(qs, ROUNDS[revealRoundIdx]);
 }
 
 // ── END SCREEN ────────────────────────────────────────────────────────────────
 function showEnd() {
   const sorted = [...teams].sort((a,b) => b.score - a.score);
-  const medals = ['p1','p2','p3'];
-  const order = sorted.length >= 2 ? [1,0,2] : [0];
+  const order  = [1,0,2];
+  const blocks = ['p2','p1','p3'];
+  const medals = ['🥈','🥇','🥉'];
   document.getElementById('podium').innerHTML = order.map(pos => {
     const t = sorted[pos];
     if (!t) return '';
     return `<div class="p-place">
       <div class="p-name">${t.name}</div>
       <div class="p-pts">${t.score} pts</div>
-      <div class="p-block ${medals[pos]||'p3'}">${pos===0?'🥇':pos===1?'🥈':'🥉'}</div>
+      <div class="p-block ${blocks[pos]}">${medals[pos]}</div>
     </div>`;
   }).join('');
-  document.getElementById('others').innerHTML = sorted.slice(3).map((t,i) =>
-    `${i+4}. ${t.name} — ${t.score} pts`).join('<br>');
+  document.getElementById('others').innerHTML =
+    sorted.slice(3).map((t,i) => `${i+4}. ${t.name} — ${t.score} pts`).join('<br>');
   show('end');
 }
 
 function resetGame() {
-  roundIdx=0; qIdx=0; hintShown=false; timer=60;
+  roundIdx=0; qIdx=0; hintShown=false; timer=timerDuration;
   clearInterval(timerInterval);
-  teams.forEach(t => t.score = 0);
+  teams.forEach(t => t.score=0);
   renderTeamInputs();
   show('lobby');
 }
