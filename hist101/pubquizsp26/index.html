@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -30,773 +29,563 @@
     --timer-danger: #c0392b;
   }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-background: var(–bg);
-color: var(–text);
-font-family: ‘Crimson Pro’, Georgia, serif;
-min-height: 100vh;
-overflow-x: hidden;
-}
-
-.screen { display: none; min-height: 100vh; }
-.screen.active { display: flex; }
-
-/* ── LOBBY ── */
-#lobby {
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 40px 20px;
-background:
-radial-gradient(ellipse at 20% 50%, rgba(42,79,150,0.12) 0%, transparent 60%),
-radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
-var(–bg);
-}
-
-.lobby-badge {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 3px;
-text-transform: uppercase;
-color: var(–parchment-dim);
-border: 1px solid var(–border);
-padding: 6px 16px;
-border-radius: 20px;
-margin-bottom: 20px;
-background: var(–surface);
-}
-
-.lobby-title {
-font-family: ‘Playfair Display’, serif;
-font-size: clamp(32px, 5vw, 56px);
-font-weight: 900;
-color: var(–parchment);
-text-align: center;
-line-height: 1.15;
-margin-bottom: 8px;
-max-width: 700px;
-}
-
-.lobby-subtitle {
-font-family: ‘Crimson Pro’, serif;
-font-size: 20px;
-color: var(–parchment-dim);
-text-align: center;
-margin-bottom: 40px;
-font-style: italic;
-}
-
-.lobby-card {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 12px;
-padding: 32px;
-width: 100%;
-max-width: 520px;
-margin-bottom: 16px;
-}
-
-.lobby-card h3 {
-font-family: ‘Playfair Display’, serif;
-font-size: 18px;
-color: var(–parchment);
-margin-bottom: 20px;
-}
-
-.team-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-
-.team-input-row { display: flex; align-items: center; gap: 10px; }
-
-.team-num {
-font-family: ‘DM Mono’, monospace;
-font-size: 12px;
-color: var(–muted);
-width: 28px;
-flex-shrink: 0;
-text-align: right;
-}
-
-.team-input-row input {
-flex: 1;
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 8px;
-padding: 10px 14px;
-color: var(–text);
-font-family: ‘Crimson Pro’, serif;
-font-size: 16px;
-outline: none;
-transition: border-color 0.2s;
-}
-.team-input-row input:focus { border-color: var(–navy-light); }
-.team-input-row input::placeholder { color: var(–muted); }
-
-.btn-remove {
-background: none;
-border: 1px solid var(–border);
-color: var(–muted);
-border-radius: 6px;
-width: 32px; height: 32px;
-cursor: pointer;
-font-size: 16px;
-display: flex; align-items: center; justify-content: center;
-transition: all 0.2s;
-flex-shrink: 0;
-}
-.btn-remove:hover { border-color: var(–red-light); color: var(–red-light); }
-
-/* Timer picker */
-.timer-picker {
-margin-top: 20px;
-padding-top: 20px;
-border-top: 1px solid var(–border);
-}
-
-.timer-picker-label {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-text-transform: uppercase;
-color: var(–muted);
-margin-bottom: 12px;
-display: block;
-}
-
-.timer-options {
-display: flex;
-gap: 8px;
-flex-wrap: wrap;
-}
-
-.timer-opt {
-flex: 1;
-min-width: 60px;
-padding: 10px 8px;
-border-radius: 8px;
-border: 1px solid var(–border);
-background: var(–surface);
-color: var(–muted);
-cursor: pointer;
-font-family: ‘DM Mono’, monospace;
-font-size: 14px;
-text-align: center;
-transition: all 0.2s;
-}
-.timer-opt:hover { border-color: var(–navy-light); color: var(–text); }
-.timer-opt.selected {
-border-color: var(–navy-light);
-background: var(–navy);
-color: var(–parchment);
-}
-
-.lobby-actions { display: flex; gap: 10px; margin-top: 20px; }
-
-.btn-add {
-background: var(–surface);
-border: 1px dashed var(–border);
-color: var(–parchment-dim);
-border-radius: 8px;
-padding: 9px 16px;
-cursor: pointer;
-font-family: ‘Crimson Pro’, serif;
-font-size: 15px;
-transition: all 0.2s;
-}
-.btn-add:hover { border-color: var(–navy-light); color: var(–text); }
-
-.btn-start {
-flex: 1;
-background: var(–navy);
-border: none;
-color: var(–parchment);
-border-radius: 8px;
-padding: 14px 24px;
-cursor: pointer;
-font-family: ‘Playfair Display’, serif;
-font-size: 18px;
-font-weight: 700;
-transition: all 0.2s;
-letter-spacing: 0.5px;
-}
-.btn-start:hover { background: var(–navy-light); transform: translateY(-1px); box-shadow: 0 4px 20px var(–accent-glow); }
-
-.lobby-tip {
-font-family: ‘Crimson Pro’, serif;
-font-size: 15px;
-color: var(–muted);
-text-align: center;
-max-width: 480px;
-line-height: 1.6;
-font-style: italic;
-}
-
-/* ── GAME ── */
-#game { flex-direction: row; align-items: stretch; }
-
-.game-main {
-flex: 1;
-display: flex;
-flex-direction: column;
-min-height: 100vh;
-overflow-y: auto;
-}
-
-.game-header {
-background: var(–surface);
-border-bottom: 1px solid var(–border);
-padding: 14px 28px;
-display: flex;
-align-items: center;
-gap: 16px;
-flex-wrap: wrap;
-}
-
-.round-badge {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-text-transform: uppercase;
-background: var(–navy);
-color: var(–parchment);
-padding: 5px 12px;
-border-radius: 20px;
-flex-shrink: 0;
-}
-
-.round-title {
-font-family: ‘Playfair Display’, serif;
-font-size: 18px;
-font-weight: 700;
-color: var(–parchment);
-flex: 1;
-}
-
-.round-subtitle {
-font-family: ‘Crimson Pro’, serif;
-font-size: 14px;
-color: var(–muted);
-font-style: italic;
-}
-
-.q-counter {
-font-family: ‘DM Mono’, monospace;
-font-size: 13px;
-color: var(–muted);
-flex-shrink: 0;
-}
-
-.question-area {
-flex: 1;
-display: flex;
-flex-direction: column;
-padding: 32px 28px;
-gap: 20px;
-max-width: 860px;
-width: 100%;
-margin: 0 auto;
-}
-
-.q-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-
-.tag {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 1px;
-text-transform: uppercase;
-padding: 4px 10px;
-border-radius: 4px;
-border: 1px solid;
-}
-.tag-easy { color: #5aaa7a; border-color: #2d5a3d; background: rgba(45,90,61,0.2); }
-.tag-medium { color: var(–gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.1); }
-.tag-hard { color: var(–red-light); border-color: rgba(231,76,60,0.4); background: rgba(231,76,60,0.1); }
-.tag-pop { color: var(–parchment-dim); border-color: var(–border); background: var(–surface); }
-.tag-double { color: var(–gold); border-color: var(–gold); background: rgba(201,168,76,0.15); font-weight: 700; }
-
-.question-card {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 12px;
-padding: 32px 36px;
-}
-
-.question-text {
-font-family: ‘Playfair Display’, serif;
-font-size: clamp(20px, 2.5vw, 28px);
-line-height: 1.5;
-color: var(–parchment);
-}
-
-.timer-wrap { display: flex; align-items: center; gap: 16px; }
-
-.timer-bar-track {
-flex: 1;
-height: 8px;
-background: var(–border);
-border-radius: 4px;
-overflow: hidden;
-}
-
-.timer-bar-fill {
-height: 100%;
-border-radius: 4px;
-transition: width 1s linear, background-color 0.5s;
-width: 100%;
-background: var(–timer-full);
-}
-
-.timer-num {
-font-family: ‘DM Mono’, monospace;
-font-size: 28px;
-font-weight: 500;
-color: var(–parchment);
-min-width: 48px;
-text-align: right;
-transition: color 0.3s;
-}
-.timer-num.warn { color: var(–timer-warn); }
-.timer-num.danger { color: var(–timer-danger); }
-
-.hint-box {
-background: var(–surface);
-border: 1px solid var(–border);
-border-left: 3px solid var(–gold);
-border-radius: 8px;
-padding: 14px 18px;
-font-family: ‘Crimson Pro’, serif;
-font-size: 17px;
-font-style: italic;
-color: var(–parchment-dim);
-display: none;
-}
-.hint-box.visible { display: block; }
-
-.controls {
-display: flex;
-gap: 10px;
-flex-wrap: wrap;
-padding-bottom: 20px;
-}
-
-.btn-ctrl {
-padding: 12px 20px;
-border-radius: 8px;
-border: none;
-cursor: pointer;
-font-family: ‘Crimson Pro’, serif;
-font-size: 16px;
-font-weight: 600;
-transition: all 0.2s;
-display: flex;
-align-items: center;
-gap: 6px;
-}
-.btn-play { background: var(–green); color: var(–parchment); }
-.btn-play:hover { background: var(–green-light); }
-.btn-pause { background: var(–surface); border: 1px solid var(–border); color: var(–text); }
-.btn-pause:hover { border-color: var(–gold); color: var(–gold); }
-.btn-hint { background: var(–surface); border: 1px solid var(–border); color: var(–gold); }
-.btn-hint:hover { border-color: var(–gold); background: rgba(201,168,76,0.1); }
-.btn-next { background: var(–navy); color: var(–parchment); margin-left: auto; }
-.btn-next:hover { background: var(–navy-light); box-shadow: 0 4px 16px var(–accent-glow); }
-.btn-ctrl:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-
-/* ── SIDEBAR ── */
-.sidebar {
-width: 272px;
-flex-shrink: 0;
-background: var(–surface);
-border-left: 1px solid var(–border);
-display: flex;
-flex-direction: column;
-position: sticky;
-top: 0;
-height: 100vh;
-overflow-y: auto;
-}
-
-.sidebar-header { padding: 16px 18px 12px; border-bottom: 1px solid var(–border); }
-
-.sidebar-header h3 {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-text-transform: uppercase;
-color: var(–muted);
-}
-
-/* Timer display in sidebar */
-.sidebar-timer {
-padding: 10px 18px;
-border-bottom: 1px solid var(–border);
-display: flex;
-align-items: center;
-gap: 8px;
-}
-
-.sidebar-timer-label {
-font-family: ‘DM Mono’, monospace;
-font-size: 10px;
-letter-spacing: 2px;
-text-transform: uppercase;
-color: var(–muted);
-flex: 1;
-}
-
-.sidebar-timer-val {
-font-family: ‘DM Mono’, monospace;
-font-size: 13px;
-color: var(–parchment-dim);
-}
-
-.score-list {
-flex: 1;
-padding: 12px 14px;
-display: flex;
-flex-direction: column;
-gap: 8px;
-}
-
-.score-row {
-display: flex;
-align-items: center;
-gap: 8px;
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 8px;
-padding: 8px 10px;
-transition: border-color 0.3s;
-}
-.score-row.leader { border-color: var(–gold); }
-
-.score-crown { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
-
-.score-name {
-flex: 1;
-font-family: ‘Crimson Pro’, serif;
-font-size: 15px;
-color: var(–text);
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis;
-}
-
-.score-num {
-font-family: ‘DM Mono’, monospace;
-font-size: 16px;
-font-weight: 500;
-color: var(–parchment);
-min-width: 28px;
-text-align: center;
-}
-
-.score-btns { display: flex; gap: 4px; }
-
-.btn-score {
-width: 26px; height: 26px;
-border-radius: 5px;
-border: 1px solid var(–border);
-cursor: pointer;
-font-size: 14px;
-font-weight: 700;
-display: flex; align-items: center; justify-content: center;
-transition: all 0.15s;
-background: var(–surface);
-color: var(–text);
-line-height: 1;
-font-family: ‘DM Mono’, monospace;
-}
-.btn-score.plus { color: #5aaa7a; }
-.btn-score.plus:hover { background: #2d5a3d; border-color: #5aaa7a; }
-.btn-score.minus { color: var(–red-light); }
-.btn-score.minus:hover { background: rgba(231,76,60,0.15); border-color: var(–red-light); }
-
-.round-nav { padding: 14px 18px; border-top: 1px solid var(–border); }
-
-.round-nav-label {
-font-family: ‘DM Mono’, monospace;
-font-size: 10px;
-letter-spacing: 2px;
-text-transform: uppercase;
-color: var(–muted);
-margin-bottom: 10px;
-}
-
-.round-dots { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.round-dot {
-width: 28px; height: 28px;
-border-radius: 50%;
-border: 1px solid var(–border);
-background: var(–card);
-cursor: pointer;
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-color: var(–muted);
-display: flex; align-items: center; justify-content: center;
-transition: all 0.2s;
-}
-.round-dot:hover { border-color: var(–navy-light); color: var(–text); }
-.round-dot.active { background: var(–navy); border-color: var(–navy-light); color: var(–parchment); }
-.round-dot.done { background: var(–surface); border-color: var(–border); color: var(–muted); }
-
-/* ── REVEAL ── */
-#reveal {
-flex-direction: column;
-align-items: center;
-justify-content: flex-start;
-padding: 0;
-background: var(–bg);
-}
-
-.reveal-header {
-width: 100%;
-background: var(–surface);
-border-bottom: 1px solid var(–border);
-padding: 18px 40px;
-display: flex;
-align-items: center;
-gap: 20px;
-}
-
-.reveal-title {
-font-family: ‘Playfair Display’, serif;
-font-size: 22px;
-font-weight: 700;
-color: var(–parchment);
-flex: 1;
-}
-
-.reveal-round-label {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-color: var(–muted);
-text-transform: uppercase;
-}
-
-.reveal-progress {
-display: flex;
-gap: 6px;
-padding: 0 40px;
-margin-top: 20px;
-flex-wrap: wrap;
-justify-content: center;
-width: 100%;
-}
-
-.reveal-dot {
-width: 10px; height: 10px;
-border-radius: 50%;
-background: var(–border);
-transition: background 0.3s;
-}
-.reveal-dot.done { background: var(–gold); }
-.reveal-dot.current { background: var(–navy-light); }
-
-.reveal-card-wrap {
-flex: 1;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 40px;
-width: 100%;
-max-width: 760px;
-margin: 0 auto;
-}
-
-.reveal-q-label {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-text-transform: uppercase;
-color: var(–muted);
-margin-bottom: 12px;
-align-self: flex-start;
-}
-
-.reveal-q-text {
-font-family: ‘Crimson Pro’, serif;
-font-size: 18px;
-font-style: italic;
-color: var(–muted);
-margin-bottom: 24px;
-align-self: flex-start;
-line-height: 1.5;
-}
-
-.reveal-answer-box {
-width: 100%;
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 12px;
-padding: 40px;
-cursor: pointer;
-transition: all 0.3s;
-min-height: 120px;
-display: flex;
-align-items: center;
-justify-content: center;
-margin-bottom: 16px;
-}
-
-.reveal-answer-box.hidden-answer:hover {
-border-color: var(–navy-light);
-box-shadow: 0 0 20px var(–accent-glow);
-}
-
-.reveal-placeholder {
-font-family: ‘DM Mono’, monospace;
-font-size: 14px;
-letter-spacing: 2px;
-color: var(–muted);
-text-transform: uppercase;
-}
-
-.reveal-answer-text {
-font-family: ‘Playfair Display’, serif;
-font-size: clamp(22px, 3vw, 36px);
-font-weight: 700;
-color: var(–parchment);
-text-align: center;
-line-height: 1.3;
-display: none;
-}
-
-.reveal-answer-box.shown { border-color: var(–gold); background: rgba(201,168,76,0.06); cursor: default; }
-.reveal-answer-box.shown .reveal-placeholder { display: none; }
-.reveal-answer-box.shown .reveal-answer-text { display: block; }
-
-.reveal-next-btn {
-background: var(–navy);
-border: none;
-color: var(–parchment);
-border-radius: 8px;
-padding: 14px 28px;
-cursor: pointer;
-font-family: ‘Playfair Display’, serif;
-font-size: 17px;
-font-weight: 700;
-transition: all 0.2s;
-}
-.reveal-next-btn:hover { background: var(–navy-light); box-shadow: 0 4px 20px var(–accent-glow); }
-
-.reveal-score-strip {
-width: 100%;
-background: var(–surface);
-border-top: 1px solid var(–border);
-padding: 14px 40px;
-display: flex;
-gap: 12px;
-flex-wrap: wrap;
-align-items: center;
-justify-content: center;
-}
-
-.strip-team {
-display: flex;
-align-items: center;
-gap: 8px;
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 8px;
-padding: 7px 12px;
-}
-
-.strip-name { font-family: ‘Crimson Pro’, serif; font-size: 14px; color: var(–text); }
-.strip-score { font-family: ‘DM Mono’, monospace; font-size: 15px; color: var(–parchment); }
-.strip-btns { display: flex; gap: 4px; }
-
-/* ── PODIUM ── */
-#podium {
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 60px 40px;
-background:
-radial-gradient(ellipse at 50% 30%, rgba(201,168,76,0.12) 0%, transparent 60%),
-var(–bg);
-min-height: 100vh;
-}
-
-.podium-title {
-font-family: ‘Playfair Display’, serif;
-font-size: clamp(28px, 5vw, 52px);
-font-weight: 900;
-color: var(–parchment);
-margin-bottom: 8px;
-text-align: center;
-}
-
-.podium-subtitle {
-font-family: ‘Crimson Pro’, serif;
-font-size: 18px;
-font-style: italic;
-color: var(–parchment-dim);
-margin-bottom: 48px;
-}
-
-.podium-blocks {
-display: flex;
-align-items: flex-end;
-justify-content: center;
-gap: 12px;
-margin-bottom: 40px;
-flex-wrap: wrap;
-}
-
-.podium-block { display: flex; flex-direction: column; align-items: center; border-radius: 8px 8px 0 0; }
-.podium-block .pb-name { font-family: ‘Playfair Display’, serif; font-size: 16px; font-weight: 700; color: var(–parchment); margin-bottom: 6px; text-align: center; max-width: 140px; word-break: break-word; }
-.podium-block .pb-score { font-family: ‘DM Mono’, monospace; font-size: 22px; color: var(–parchment); margin-bottom: 8px; }
-.podium-block .pb-medal { font-size: 28px; margin-bottom: 8px; }
-.podium-block .pb-stand { width: 140px; display: flex; align-items: center; justify-content: center; border-radius: 6px 6px 0 0; }
-.podium-block .pb-place { font-family: ‘DM Mono’, monospace; font-size: 24px; font-weight: 500; color: rgba(255,255,255,0.7); }
-
-.pb-1st .pb-stand { background: linear-gradient(135deg, #b8860b, #daa520); height: 120px; }
-.pb-2nd .pb-stand { background: linear-gradient(135deg, #708090, #a0a0a8); height: 90px; }
-.pb-3rd .pb-stand { background: linear-gradient(135deg, #7a4f2a, #a0613c); height: 65px; }
-
-.podium-rest { display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; min-width: 300px; width: 100%; max-width: 440px; }
-
-.podium-rest-row { display: flex; align-items: center; gap: 12px; background: var(–card); border: 1px solid var(–border); border-radius: 8px; padding: 10px 16px; }
-.podium-rest-place { font-family: ‘DM Mono’, monospace; font-size: 13px; color: var(–muted); width: 24px; }
-.podium-rest-name { flex: 1; font-family: ‘Crimson Pro’, serif; font-size: 16px; color: var(–text); }
-.podium-rest-score { font-family: ‘DM Mono’, monospace; font-size: 16px; color: var(–parchment); }
-
-.btn-play-again {
-background: var(–navy);
-border: none;
-color: var(–parchment);
-border-radius: 8px;
-padding: 14px 32px;
-cursor: pointer;
-font-family: ‘Playfair Display’, serif;
-font-size: 18px;
-font-weight: 700;
-transition: all 0.2s;
-}
-.btn-play-again:hover { background: var(–navy-light); box-shadow: 0 4px 20px var(–accent-glow); transform: translateY(-2px); }
-
-.hidden { display: none !important; }
-
-@media (max-width: 768px) {
-.sidebar { width: 220px; }
-.question-area { padding: 20px 16px; }
-.reveal-card-wrap { padding: 24px 16px; }
-}
-@media (max-width: 600px) {
-#game { flex-direction: column; }
-.sidebar { width: 100%; height: auto; position: relative; border-left: none; border-top: 1px solid var(–border); }
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  #lobby {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(42,79,150,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      var(--bg);
+  }
+
+  .lobby-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--parchment-dim);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    background: var(--surface);
+  }
+
+  .lobby-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900;
+    color: var(--parchment);
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    max-width: 700px;
+  }
+
+  .lobby-subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-size: 20px;
+    color: var(--parchment-dim);
+    text-align: center;
+    margin-bottom: 40px;
+    font-style: italic;
+  }
+
+  .lobby-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 16px;
+  }
+
+  .lobby-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--parchment);
+    margin-bottom: 20px;
+  }
+
+  .team-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .team-input-row { display: flex; align-items: center; gap: 10px; }
+
+  .team-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    width: 28px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .team-input-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .team-input-row input:focus { border-color: var(--navy-light); }
+  .team-input-row input::placeholder { color: var(--muted); }
+
+  .btn-remove {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-remove:hover { border-color: var(--red-light); color: var(--red-light); }
+
+  .timer-picker { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+  .timer-picker-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .timer-options { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .timer-opt {
+    flex: 1;
+    min-width: 60px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .timer-opt:hover { border-color: var(--navy-light); color: var(--text); }
+  .timer-opt.selected { border-color: var(--navy-light); background: var(--navy); color: var(--parchment); }
+
+  .lobby-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+  .btn-add {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    color: var(--parchment-dim);
+    border-radius: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    transition: all 0.2s;
+  }
+  .btn-add:hover { border-color: var(--navy-light); color: var(--text); }
+
+  .btn-start {
+    flex: 1;
+    background: var(--navy);
+    border: none;
+    color: var(--parchment);
+    border-radius: 8px;
+    padding: 14px 24px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-start:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+
+  .lobby-tip {
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  #game { flex-direction: row; align-items: stretch; }
+
+  .game-main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow-y: auto; }
+
+  .game-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .round-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--navy);
+    color: var(--parchment);
+    padding: 5px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  .round-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--parchment); flex: 1; }
+  .round-subtitle { font-family: 'Crimson Pro', serif; font-size: 14px; color: var(--muted); font-style: italic; }
+  .q-counter { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); flex-shrink: 0; }
+
+  .question-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    gap: 20px;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .q-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .tag-easy   { color: #5aaa7a; border-color: #2d5a3d; background: rgba(45,90,61,0.2); }
+  .tag-medium { color: var(--gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.1); }
+  .tag-hard   { color: var(--red-light); border-color: rgba(231,76,60,0.4); background: rgba(231,76,60,0.1); }
+  .tag-pop    { color: var(--parchment-dim); border-color: var(--border); background: var(--surface); }
+  .tag-double { color: var(--gold); border-color: var(--gold); background: rgba(201,168,76,0.15); font-weight: 700; }
+
+  .question-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px 36px; }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    line-height: 1.5;
+    color: var(--parchment);
+  }
+
+  .timer-wrap { display: flex; align-items: center; gap: 16px; }
+
+  .timer-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+
+  .timer-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s linear, background-color 0.5s;
+    width: 100%;
+    background: var(--timer-full);
+  }
+
+  .timer-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--parchment);
+    min-width: 48px;
+    text-align: right;
+    transition: color 0.3s;
+  }
+  .timer-num.warn   { color: var(--timer-warn); }
+  .timer-num.danger { color: var(--timer-danger); }
+
+  .hint-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--parchment-dim);
+    display: none;
+  }
+  .hint-box.visible { display: block; }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; padding-bottom: 20px; }
+
+  .btn-ctrl {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-play  { background: var(--green);   color: var(--parchment); }
+  .btn-play:hover  { background: var(--green-light); }
+  .btn-pause { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .btn-pause:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-hint  { background: var(--surface); border: 1px solid var(--border); color: var(--gold); }
+  .btn-hint:hover  { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+  .btn-next  { background: var(--navy); color: var(--parchment); margin-left: auto; }
+  .btn-next:hover  { background: var(--navy-light); box-shadow: 0 4px 16px var(--accent-glow); }
+  .btn-ctrl:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+  .sidebar {
+    width: 272px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-header { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); }
+  .sidebar-header h3 { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+
+  .sidebar-timer { padding: 10px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .sidebar-timer-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); flex: 1; }
+  .sidebar-timer-val   { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--parchment-dim); }
+
+  .score-list { flex: 1; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    transition: border-color 0.3s;
+  }
+  .score-row.leader { border-color: var(--gold); }
+
+  .score-crown { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+  .score-name  { flex: 1; font-family: 'Crimson Pro', serif; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .score-num   { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--parchment); min-width: 28px; text-align: center; }
+  .score-btns  { display: flex; gap: 4px; }
+
+  .btn-score {
+    width: 26px; height: 26px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    background: var(--surface);
+    color: var(--text);
+    line-height: 1;
+    font-family: 'DM Mono', monospace;
+  }
+  .btn-score.plus  { color: #5aaa7a; }
+  .btn-score.plus:hover  { background: #2d5a3d; border-color: #5aaa7a; }
+  .btn-score.minus { color: var(--red-light); }
+  .btn-score.minus:hover { background: rgba(231,76,60,0.15); border-color: var(--red-light); }
+
+  .round-nav { padding: 14px 18px; border-top: 1px solid var(--border); }
+  .round-nav-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .round-dots { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .round-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .round-dot:hover  { border-color: var(--navy-light); color: var(--text); }
+  .round-dot.active { background: var(--navy); border-color: var(--navy-light); color: var(--parchment); }
+  .round-dot.done   { background: var(--surface); border-color: var(--border); color: var(--muted); }
+
+  #reveal { flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; background: var(--bg); }
+
+  .reveal-header {
+    width: 100%;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .reveal-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--parchment); flex: 1; }
+  .reveal-round-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+  .reveal-progress {
+    display: flex;
+    gap: 6px;
+    padding: 0 40px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .reveal-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+  .reveal-dot.done    { background: var(--gold); }
+  .reveal-dot.current { background: var(--navy-light); }
+
+  .reveal-card-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .reveal-q-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; align-self: flex-start; }
+  .reveal-q-text  { font-family: 'Crimson Pro', serif; font-size: 18px; font-style: italic; color: var(--muted); margin-bottom: 24px; align-self: flex-start; line-height: 1.5; }
+
+  .reveal-answer-box {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .reveal-answer-box.hidden-answer:hover { border-color: var(--navy-light); box-shadow: 0 0 20px var(--accent-glow); }
+
+  .reveal-placeholder { font-family: 'DM Mono', monospace; font-size: 14px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+  .reveal-answer-text { font-family: 'Playfair Display', serif; font-size: clamp(22px, 3vw, 36px); font-weight: 700; color: var(--parchment); text-align: center; line-height: 1.3; display: none; }
+
+  .reveal-answer-box.shown { border-color: var(--gold); background: rgba(201,168,76,0.06); cursor: default; }
+  .reveal-answer-box.shown .reveal-placeholder { display: none; }
+  .reveal-answer-box.shown .reveal-answer-text { display: block; }
+
+  .reveal-next-btn {
+    background: var(--navy);
+    border: none;
+    color: var(--parchment);
+    border-radius: 8px;
+    padding: 14px 28px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .reveal-next-btn:hover { background: var(--navy-light); box-shadow: 0 4px 20px var(--accent-glow); }
+
+  .reveal-score-strip {
+    width: 100%;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .strip-team { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; }
+  .strip-name  { font-family: 'Crimson Pro', serif; font-size: 14px; color: var(--text); }
+  .strip-score { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--parchment); }
+  .strip-btns  { display: flex; gap: 4px; }
+
+  #podium {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(201,168,76,0.12) 0%, transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+  }
+
+  .podium-title    { font-family: 'Playfair Display', serif; font-size: clamp(28px, 5vw, 52px); font-weight: 900; color: var(--parchment); margin-bottom: 8px; text-align: center; }
+  .podium-subtitle { font-family: 'Crimson Pro', serif; font-size: 18px; font-style: italic; color: var(--parchment-dim); margin-bottom: 48px; }
+
+  .podium-blocks { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
+
+  .podium-block { display: flex; flex-direction: column; align-items: center; border-radius: 8px 8px 0 0; }
+  .podium-block .pb-name  { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--parchment); margin-bottom: 6px; text-align: center; max-width: 140px; word-break: break-word; }
+  .podium-block .pb-score { font-family: 'DM Mono', monospace; font-size: 22px; color: var(--parchment); margin-bottom: 8px; }
+  .podium-block .pb-medal { font-size: 28px; margin-bottom: 8px; }
+  .podium-block .pb-stand { width: 140px; display: flex; align-items: center; justify-content: center; border-radius: 6px 6px 0 0; }
+  .podium-block .pb-place { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: rgba(255,255,255,0.7); }
+
+  .pb-1st .pb-stand { background: linear-gradient(135deg, #b8860b, #daa520); height: 120px; }
+  .pb-2nd .pb-stand { background: linear-gradient(135deg, #708090, #a0a0a8); height: 90px; }
+  .pb-3rd .pb-stand { background: linear-gradient(135deg, #7a4f2a, #a0613c); height: 65px; }
+
+  .podium-rest { display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; min-width: 300px; width: 100%; max-width: 440px; }
+
+  .podium-rest-row   { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; }
+  .podium-rest-place { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); width: 24px; }
+  .podium-rest-name  { flex: 1; font-family: 'Crimson Pro', serif; font-size: 16px; color: var(--text); }
+  .podium-rest-score { font-family: 'DM Mono', monospace; font-size: 16px; color: var(--parchment); }
+
+  .btn-play-again {
+    background: var(--navy);
+    border: none;
+    color: var(--parchment);
+    border-radius: 8px;
+    padding: 14px 32px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .btn-play-again:hover { background: var(--navy-light); box-shadow: 0 4px 20px var(--accent-glow); transform: translateY(-2px); }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 220px; }
+    .question-area { padding: 20px 16px; }
+    .reveal-card-wrap { padding: 24px 16px; }
+  }
+  @media (max-width: 600px) {
+    #game { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: relative; border-left: none; border-top: 1px solid var(--border); }
+  }
 </style>
-
 </head>
 <body>
-
-<!-- ── QUESTION BANK ── -->
 
 <script>
 const ROUNDS = [
@@ -869,12 +658,11 @@ const ROUNDS = [
       { q: "Frederick Douglass said this in 1852: 'What, to the American slave, is your Fourth of July? I answer: a day that reveals to him the gross injustice and cruelty to which he is the constant victim.' Name this speech — four words.", a: "What to the Slave", hint: "It's one of the most powerful Fourth of July speeches in American history — delivered in Rochester, New York, to an audience of abolitionists.", diff: "Hard", pop: null, double: false },
       { q: "Alexander Stephens said this in 1861: 'Our cornerstone rests upon the great truth that the negro is not equal to the white man.' What is the common name of this speech?", a: "Cornerstone Speech", hint: "The speech is named after the word Stephens used to describe slavery's role in the new Confederate government.", diff: "Medium", pop: null, double: false },
       { q: "Sojourner Truth declared this at a women's rights convention in 1851: 'I have borne thirteen children, and seen most all sold off to slavery, and when I cried out with my mother's grief, none but Jesus heard me!' Name the speech.", a: "Ain't I a Woman", hint: "The speech is named after the question Truth repeated four times — a challenge to how American society defined womanhood.", diff: "Medium", pop: null, double: false },
-      { q: "⭐ DOUBLE POINTS — Abraham Lincoln said this in 1863: 'It is for us the living to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced.' Name the document AND the location where it was delivered.", a: "Gettysburg Address / Gettysburg", hint: "Lincoln delivered this at a cemetery dedication after one of the bloodiest battles of the Civil War. Two answers needed — document and place.", diff: "Hard", pop: null, double: true }
+      { q: "DOUBLE POINTS — Abraham Lincoln said this in 1863: 'It is for us the living to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced.' Name the document AND the location where it was delivered.", a: "Gettysburg Address / Gettysburg", hint: "Lincoln delivered this at a cemetery dedication after one of the bloodiest battles of the Civil War. Two answers needed — document and place.", diff: "Hard", pop: null, double: true }
     ]
   }
 ];
 
-// Timer options in seconds
 const TIMER_OPTIONS = [
   { label: '30s', val: 30 },
   { label: '45s', val: 45 },
@@ -882,11 +670,10 @@ const TIMER_OPTIONS = [
   { label: '90s', val: 90 },
   { label: '2min', val: 120 },
 ];
-let selectedTimer = 60; // default
+let selectedTimer = 60;
 </script>
 
-<!-- ── LOBBY ── -->
-
+<!-- LOBBY -->
 <div id="lobby" class="screen active">
   <div class="lobby-badge">HIST 101 · Modesto Junior College</div>
   <h1 class="lobby-title">Final Exam Pub Quiz</h1>
@@ -907,60 +694,48 @@ let selectedTimer = 60; // default
       </div>
     </div>
 
-```
-<div class="timer-picker">
-  <span class="timer-picker-label">Time per question</span>
-  <div class="timer-options" id="timerOptions"></div>
-</div>
+    <div class="timer-picker">
+      <span class="timer-picker-label">Time per question</span>
+      <div class="timer-options" id="timerOptions"></div>
+    </div>
 
-<div class="lobby-actions">
-  <button class="btn-add" onclick="addTeam()">+ Add Team</button>
-  <button class="btn-start" onclick="startGame()">Start Quiz →</button>
-</div>
-```
-
+    <div class="lobby-actions">
+      <button class="btn-add" onclick="addTeam()">+ Add Team</button>
+      <button class="btn-start" onclick="startGame()">Start Quiz →</button>
+    </div>
   </div>
 
   <p class="lobby-tip">Teams write answers on paper — no phones needed.<br>Instructor projects and controls the game.</p>
 </div>
 
-<!-- ── GAME ── -->
-
+<!-- GAME -->
 <div id="game" class="screen">
   <div class="game-main">
     <div class="game-header">
-      <span class="round-badge" id="hdrRoundBadge">Round 1</span>
-      <span class="round-title" id="hdrRoundTitle">—</span>
+      <span class="round-badge"    id="hdrRoundBadge">Round 1</span>
+      <span class="round-title"    id="hdrRoundTitle">—</span>
       <span class="round-subtitle" id="hdrRoundSub">—</span>
-      <span class="q-counter" id="hdrQCounter">Q 1 / 5</span>
+      <span class="q-counter"      id="hdrQCounter">Q 1 / 5</span>
     </div>
-
-```
-<div class="question-area">
-  <div class="q-tags" id="qTags"></div>
-
-  <div class="question-card">
-    <p class="question-text" id="questionText">—</p>
-  </div>
-
-  <div class="timer-wrap">
-    <div class="timer-bar-track">
-      <div class="timer-bar-fill" id="timerBar"></div>
+    <div class="question-area">
+      <div class="q-tags" id="qTags"></div>
+      <div class="question-card">
+        <p class="question-text" id="questionText">—</p>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-bar-track">
+          <div class="timer-bar-fill" id="timerBar"></div>
+        </div>
+        <div class="timer-num" id="timerNum">60</div>
+      </div>
+      <div class="hint-box" id="hintBox"></div>
+      <div class="controls">
+        <button class="btn-ctrl btn-play"  id="btnPlay"  onclick="startTimer()">&#9654; Start</button>
+        <button class="btn-ctrl btn-pause" id="btnPause" onclick="pauseTimer()" disabled>&#9646;&#9646; Pause</button>
+        <button class="btn-ctrl btn-hint"  id="btnHint"  onclick="showHint()">&#128161; Hint</button>
+        <button class="btn-ctrl btn-next"  id="btnNext"  onclick="nextQuestion()">Next Question &#8594;</button>
+      </div>
     </div>
-    <div class="timer-num" id="timerNum">60</div>
-  </div>
-
-  <div class="hint-box" id="hintBox"></div>
-
-  <div class="controls">
-    <button class="btn-ctrl btn-play" id="btnPlay" onclick="startTimer()">▶ Start</button>
-    <button class="btn-ctrl btn-pause" id="btnPause" onclick="pauseTimer()" disabled>⏸ Pause</button>
-    <button class="btn-ctrl btn-hint" id="btnHint" onclick="showHint()">💡 Hint</button>
-    <button class="btn-ctrl btn-next" id="btnNext" onclick="nextQuestion()">Next Question →</button>
-  </div>
-</div>
-```
-
   </div>
 
   <div class="sidebar">
@@ -977,40 +752,33 @@ let selectedTimer = 60; // default
   </div>
 </div>
 
-<!-- ── REVEAL ── -->
-
+<!-- REVEAL -->
 <div id="reveal" class="screen">
   <div class="reveal-header">
     <span class="reveal-title">Answer Reveal</span>
     <span class="reveal-round-label" id="revealRoundLabel">—</span>
   </div>
-
   <div class="reveal-progress" id="revealProgress"></div>
-
   <div class="reveal-card-wrap">
     <div class="reveal-q-label" id="revealQLabel">—</div>
-    <div class="reveal-q-text" id="revealQText">—</div>
+    <div class="reveal-q-text"  id="revealQText">—</div>
     <div class="reveal-answer-box hidden-answer" id="revealBox" onclick="showRevealAnswer()">
       <span class="reveal-placeholder">Click to reveal answer</span>
       <span class="reveal-answer-text" id="revealAnswerText">—</span>
     </div>
-    <button class="reveal-next-btn" id="revealNextBtn" onclick="nextReveal()">Next Answer →</button>
+    <button class="reveal-next-btn" id="revealNextBtn" onclick="nextReveal()">Next Answer &#8594;</button>
   </div>
-
   <div class="reveal-score-strip" id="revealScoreStrip"></div>
 </div>
 
-<!-- ── PODIUM ── -->
-
+<!-- PODIUM -->
 <div id="podium" class="screen">
-  <h1 class="podium-title">🏛️ Final Results</h1>
+  <h1 class="podium-title">&#127963; Final Results</h1>
   <p class="podium-subtitle">HIST 101 — Final Exam Pub Quiz</p>
   <div class="podium-blocks" id="podiumBlocks"></div>
-  <div class="podium-rest" id="podiumRest"></div>
-  <button class="btn-play-again" onclick="playAgain()">↩ Play Again</button>
+  <div class="podium-rest"   id="podiumRest"></div>
+  <button class="btn-play-again" onclick="playAgain()">&#8617; Play Again</button>
 </div>
-
-<!-- ── GAME LOGIC ── -->
 
 <script>
 let teams = [];
@@ -1025,7 +793,6 @@ let revealItemIdx = 0;
 let revealAnswerShown = false;
 let postRevealRound = 0;
 
-// ── LOBBY SETUP ──
 (function buildTimerPicker() {
   const wrap = document.getElementById('timerOptions');
   TIMER_OPTIONS.forEach(opt => {
@@ -1047,7 +814,7 @@ function addTeam() {
   const wrap = document.getElementById('teamInputs');
   const div = document.createElement('div');
   div.className = 'team-input-row';
-  div.innerHTML = `<span class="team-num">${rows.length + 1}</span><input type="text" placeholder="Team name…" maxlength="28"><button class="btn-remove" onclick="removeTeam(this)" title="Remove">×</button>`;
+  div.innerHTML = '<span class="team-num">' + (rows.length + 1) + '</span><input type="text" placeholder="Team name\u2026" maxlength="28"><button class="btn-remove" onclick="removeTeam(this)" title="Remove">\u00d7</button>';
   wrap.appendChild(div);
   renumberTeams();
 }
@@ -1067,12 +834,11 @@ function renumberTeams() {
 function startGame() {
   const inputs = document.querySelectorAll('#teamInputs input');
   teams = [];
-  inputs.forEach((inp, i) => teams.push(inp.value.trim() || `Team ${i + 1}`));
+  inputs.forEach((inp, i) => teams.push(inp.value.trim() || 'Team ' + (i + 1)));
   scores = new Array(teams.length).fill(0);
   timerMax = selectedTimer;
   currentRound = 0;
   currentQ = 0;
-  // Update sidebar timer display
   document.getElementById('sidebarTimerVal').textContent =
     TIMER_OPTIONS.find(o => o.val === selectedTimer)?.label || selectedTimer + 's';
   showScreen('game');
@@ -1081,13 +847,11 @@ function startGame() {
   loadQuestion();
 }
 
-// ── SCREEN NAV ──
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// ── SIDEBAR ──
 function buildSidebar() {
   const list = document.getElementById('scoreList');
   list.innerHTML = '';
@@ -1096,15 +860,15 @@ function buildSidebar() {
     const isLeader = scores[i] === maxScore;
     const row = document.createElement('div');
     row.className = 'score-row' + (isLeader ? ' leader' : '');
-    row.id = `scoreRow${i}`;
-    row.innerHTML = `
-      <span class="score-crown">${isLeader ? '👑' : ''}</span>
-      <span class="score-name" title="${name}">${name}</span>
-      <span class="score-num" id="scoreNum${i}">${scores[i]}</span>
-      <div class="score-btns">
-        <button class="btn-score plus" onclick="adjustScore(${i},1)">+</button>
-        <button class="btn-score minus" onclick="adjustScore(${i},-1)">−</button>
-      </div>`;
+    row.id = 'scoreRow' + i;
+    row.innerHTML =
+      '<span class="score-crown">' + (isLeader ? '\ud83d\udc51' : '') + '</span>' +
+      '<span class="score-name" title="' + name + '">' + name + '</span>' +
+      '<span class="score-num" id="scoreNum' + i + '">' + scores[i] + '</span>' +
+      '<div class="score-btns">' +
+        '<button class="btn-score plus"  onclick="adjustScore(' + i + ',1)">+</button>' +
+        '<button class="btn-score minus" onclick="adjustScore(' + i + ',-1)">\u2212</button>' +
+      '</div>';
     list.appendChild(row);
   });
 }
@@ -1118,13 +882,13 @@ function adjustScore(i, delta) {
 function updateScoreDisplay() {
   const maxScore = Math.max(...scores);
   teams.forEach((_, i) => {
-    const num = document.getElementById(`scoreNum${i}`);
+    const num = document.getElementById('scoreNum' + i);
     if (num) num.textContent = scores[i];
-    const row = document.getElementById(`scoreRow${i}`);
+    const row = document.getElementById('scoreRow' + i);
     if (row) {
       const isLeader = scores[i] === maxScore;
       row.className = 'score-row' + (isLeader ? ' leader' : '');
-      row.querySelector('.score-crown').textContent = isLeader ? '👑' : '';
+      row.querySelector('.score-crown').textContent = isLeader ? '\ud83d\udc51' : '';
     }
   });
 }
@@ -1135,7 +899,7 @@ function buildRoundDots() {
   ROUNDS.forEach((r, i) => {
     const dot = document.createElement('button');
     dot.className = 'round-dot' + (i === 0 ? ' active' : '');
-    dot.id = `rdot${i}`;
+    dot.id = 'rdot' + i;
     dot.textContent = i + 1;
     dot.onclick = () => jumpToRound(i);
     wrap.appendChild(dot);
@@ -1144,7 +908,7 @@ function buildRoundDots() {
 
 function updateRoundDots() {
   ROUNDS.forEach((_, i) => {
-    const dot = document.getElementById(`rdot${i}`);
+    const dot = document.getElementById('rdot' + i);
     if (!dot) return;
     dot.className = 'round-dot' + (i === currentRound ? ' active' : i < currentRound ? ' done' : '');
   });
@@ -1157,22 +921,20 @@ function jumpToRound(i) {
   loadQuestion();
 }
 
-// ── QUESTION DISPLAY ──
 function loadQuestion() {
   clearTimer();
   const round = ROUNDS[currentRound];
   const q = round.questions[currentQ];
 
-  document.getElementById('hdrRoundBadge').textContent = `Round ${round.id}`;
-  document.getElementById('hdrRoundTitle').textContent = round.title.split('·')[1]?.trim() || round.title;
-  document.getElementById('hdrRoundSub').textContent = round.subtitle;
-  document.getElementById('hdrQCounter').textContent = `Q ${currentQ + 1} / ${round.questions.length}`;
+  document.getElementById('hdrRoundBadge').textContent = 'Round ' + round.id;
+  document.getElementById('hdrRoundTitle').textContent = round.title.split('\u00b7')[1]?.trim() || round.title;
+  document.getElementById('hdrRoundSub').textContent   = round.subtitle;
+  document.getElementById('hdrQCounter').textContent   = 'Q ' + (currentQ + 1) + ' / ' + round.questions.length;
 
-  // Tags
   const tagsEl = document.getElementById('qTags');
   tagsEl.innerHTML = '';
   const dt = document.createElement('span');
-  dt.className = `tag tag-${q.diff.toLowerCase()}`;
+  dt.className = 'tag tag-' + q.diff.toLowerCase();
   dt.textContent = q.diff;
   tagsEl.appendChild(dt);
   if (q.pop) {
@@ -1184,12 +946,11 @@ function loadQuestion() {
   if (q.double) {
     const dbl = document.createElement('span');
     dbl.className = 'tag tag-double';
-    dbl.textContent = '⭐ Double Points';
+    dbl.textContent = '\u2b50 Double Points';
     tagsEl.appendChild(dbl);
   }
 
   document.getElementById('questionText').textContent = q.q;
-
   timerVal = timerMax;
   renderTimer(timerMax);
 
@@ -1197,30 +958,24 @@ function loadQuestion() {
   hintBox.textContent = q.hint;
   hintBox.classList.remove('visible');
   document.getElementById('btnHint').classList.remove('hidden');
-  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnPlay').disabled  = false;
   document.getElementById('btnPause').disabled = true;
 
-  // Next button label — reveal after EVERY round
-  const isLast = currentQ === round.questions.length - 1;
+  const isLast     = currentQ === round.questions.length - 1;
   const isVeryLast = currentRound === ROUNDS.length - 1 && isLast;
-  const btnNext = document.getElementById('btnNext');
+  const btnNext    = document.getElementById('btnNext');
 
-  if (isVeryLast) {
-    btnNext.textContent = 'Finish & Reveal Answers →';
-  } else if (isLast) {
-    btnNext.textContent = 'End Round & Reveal Answers →';
-  } else {
-    btnNext.textContent = 'Next Question →';
-  }
+  if (isVeryLast)  btnNext.textContent = 'Finish & Reveal Answers \u2192';
+  else if (isLast) btnNext.textContent = 'End Round & Reveal Answers \u2192';
+  else             btnNext.textContent = 'Next Question \u2192';
 
   updateRoundDots();
 }
 
-// ── TIMER ──
 function startTimer() {
   if (timerRunning) return;
   timerRunning = true;
-  document.getElementById('btnPlay').disabled = true;
+  document.getElementById('btnPlay').disabled  = true;
   document.getElementById('btnPause').disabled = false;
   timerInterval = setInterval(() => {
     timerVal--;
@@ -1231,7 +986,7 @@ function startTimer() {
 
 function pauseTimer() {
   clearTimer();
-  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnPlay').disabled  = false;
   document.getElementById('btnPause').disabled = true;
 }
 
@@ -1245,10 +1000,9 @@ function renderTimer(val) {
   const bar = document.getElementById('timerBar');
   const num = document.getElementById('timerNum');
   num.textContent = Math.max(0, val);
-  const pct = Math.max(0, val / timerMax * 100);
+  const pct     = Math.max(0, val / timerMax * 100);
   bar.style.width = pct + '%';
-  // Warning thresholds scale with timer length
-  const warnAt = Math.floor(timerMax * 0.33);
+  const warnAt   = Math.floor(timerMax * 0.33);
   const dangerAt = Math.floor(timerMax * 0.17);
   if (val <= dangerAt) {
     bar.style.background = 'var(--timer-danger)';
@@ -1266,23 +1020,21 @@ function showHint() {
   clearTimer();
   document.getElementById('hintBox').classList.add('visible');
   document.getElementById('btnHint').classList.add('hidden');
-  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnPlay').disabled  = false;
   document.getElementById('btnPause').disabled = true;
   timerRunning = false;
 }
 
-// ── NEXT QUESTION / ROUND ──
 function nextQuestion() {
   clearTimer();
-  const round = ROUNDS[currentRound];
+  const round  = ROUNDS[currentRound];
   const isLast = currentQ === round.questions.length - 1;
 
   if (isLast) {
-    // Always reveal after every round
-    revealItemIdx = 0;
+    revealItemIdx     = 0;
     revealAnswerShown = false;
-    const isVeryLast = currentRound === ROUNDS.length - 1;
-    postRevealRound = isVeryLast ? -1 : currentRound + 1;
+    const isVeryLast  = currentRound === ROUNDS.length - 1;
+    postRevealRound   = isVeryLast ? -1 : currentRound + 1;
     buildRevealScreen();
     showScreen('reveal');
   } else {
@@ -1291,18 +1043,17 @@ function nextQuestion() {
   }
 }
 
-// ── REVEAL SCREEN ──
 function buildRevealScreen() {
   const round = ROUNDS[currentRound];
-  document.getElementById('revealRoundLabel').textContent = `Round ${round.id} — ${round.title.split('·')[1]?.trim() || ''}`;
+  document.getElementById('revealRoundLabel').textContent =
+    'Round ' + round.id + ' \u2014 ' + (round.title.split('\u00b7')[1]?.trim() || '');
 
-  // Progress dots — one per question in this round
   const prog = document.getElementById('revealProgress');
   prog.innerHTML = '';
   round.questions.forEach((_, i) => {
     const dot = document.createElement('div');
     dot.className = 'reveal-dot' + (i === 0 ? ' current' : '');
-    dot.id = `rdot_reveal_${i}`;
+    dot.id = 'rdot_reveal_' + i;
     prog.appendChild(dot);
   });
 
@@ -1312,10 +1063,10 @@ function buildRevealScreen() {
 
 function loadRevealItem() {
   const round = ROUNDS[currentRound];
-  const q = round.questions[revealItemIdx];
+  const q     = round.questions[revealItemIdx];
 
-  document.getElementById('revealQLabel').textContent = `Round ${round.id} · Question ${revealItemIdx + 1}`;
-  document.getElementById('revealQText').textContent = q.q;
+  document.getElementById('revealQLabel').textContent     = 'Round ' + round.id + ' \u00b7 Question ' + (revealItemIdx + 1);
+  document.getElementById('revealQText').textContent      = q.q;
   document.getElementById('revealAnswerText').textContent = q.a;
 
   const box = document.getElementById('revealBox');
@@ -1323,23 +1074,17 @@ function loadRevealItem() {
   box.classList.add('hidden-answer');
   revealAnswerShown = false;
 
-  // Update progress dots
   round.questions.forEach((_, i) => {
-    const dot = document.getElementById(`rdot_reveal_${i}`);
+    const dot = document.getElementById('rdot_reveal_' + i);
     if (!dot) return;
     dot.className = 'reveal-dot' + (i < revealItemIdx ? ' done' : i === revealItemIdx ? ' current' : '');
   });
 
-  // Next button label
   const isLast = revealItemIdx === round.questions.length - 1;
-  const btn = document.getElementById('revealNextBtn');
-  if (!isLast) {
-    btn.textContent = 'Next Answer →';
-  } else if (postRevealRound === -1) {
-    btn.textContent = 'See Final Scores →';
-  } else {
-    btn.textContent = `Start Round ${ROUNDS[postRevealRound].id} →`;
-  }
+  const btn    = document.getElementById('revealNextBtn');
+  if (!isLast)                     btn.textContent = 'Next Answer \u2192';
+  else if (postRevealRound === -1) btn.textContent = 'See Final Scores \u2192';
+  else                             btn.textContent = 'Start Round ' + ROUNDS[postRevealRound].id + ' \u2192';
 }
 
 function showRevealAnswer() {
@@ -1353,7 +1098,7 @@ function showRevealAnswer() {
 function nextReveal() {
   if (!revealAnswerShown) { showRevealAnswer(); return; }
 
-  const round = ROUNDS[currentRound];
+  const round  = ROUNDS[currentRound];
   const isLast = revealItemIdx === round.questions.length - 1;
 
   if (isLast) {
@@ -1381,41 +1126,40 @@ function buildRevealStrip() {
   teams.forEach((name, i) => {
     const div = document.createElement('div');
     div.className = 'strip-team';
-    div.innerHTML = `
-      <span class="strip-name">${scores[i] === maxScore ? '👑 ' : ''}${name}</span>
-      <span class="strip-score" id="stripScore${i}">${scores[i]}</span>
-      <div class="strip-btns">
-        <button class="btn-score plus" onclick="adjustScore(${i},1)">+</button>
-        <button class="btn-score minus" onclick="adjustScore(${i},-1)">−</button>
-      </div>`;
+    div.innerHTML =
+      '<span class="strip-name">' + (scores[i] === maxScore ? '\ud83d\udc51 ' : '') + name + '</span>' +
+      '<span class="strip-score" id="stripScore' + i + '">' + scores[i] + '</span>' +
+      '<div class="strip-btns">' +
+        '<button class="btn-score plus"  onclick="adjustScore(' + i + ',1)">+</button>' +
+        '<button class="btn-score minus" onclick="adjustScore(' + i + ',-1)">\u2212</button>' +
+      '</div>';
     strip.appendChild(div);
   });
 }
 
-// ── PODIUM ──
 function buildPodium() {
-  const ranked = teams.map((name, i) => ({ name, score: scores[i] })).sort((a, b) => b.score - a.score);
-  const medals = ['🥇', '🥈', '🥉'];
+  const ranked  = teams.map((name, i) => ({ name, score: scores[i] })).sort((a, b) => b.score - a.score);
+  const medals  = ['\ud83e\udd47', '\ud83e\udd48', '\ud83e\udd49'];
   const classes = ['pb-1st', 'pb-2nd', 'pb-3rd'];
   const heights = [120, 90, 65];
 
   const blocksWrap = document.getElementById('podiumBlocks');
   blocksWrap.innerHTML = '';
-  const top3 = ranked.slice(0, 3);
+  const top3  = ranked.slice(0, 3);
   const order = top3.length >= 3 ? [1, 0, 2] : top3.length === 2 ? [1, 0] : [0];
 
   order.forEach(idx => {
     if (!top3[idx]) return;
-    const t = top3[idx];
+    const t     = top3[idx];
     const block = document.createElement('div');
-    block.className = `podium-block ${classes[idx]}`;
-    block.innerHTML = `
-      <div class="pb-medal">${medals[idx]}</div>
-      <div class="pb-name">${t.name}</div>
-      <div class="pb-score">${t.score} pts</div>
-      <div class="pb-stand" style="height:${heights[idx]}px">
-        <span class="pb-place">${idx + 1}</span>
-      </div>`;
+    block.className = 'podium-block ' + classes[idx];
+    block.innerHTML =
+      '<div class="pb-medal">' + medals[idx] + '</div>' +
+      '<div class="pb-name">'  + t.name       + '</div>' +
+      '<div class="pb-score">' + t.score + ' pts</div>' +
+      '<div class="pb-stand" style="height:' + heights[idx] + 'px">' +
+        '<span class="pb-place">' + (idx + 1) + '</span>' +
+      '</div>';
     blocksWrap.appendChild(block);
   });
 
@@ -1424,10 +1168,10 @@ function buildPodium() {
   ranked.slice(3).forEach((t, i) => {
     const row = document.createElement('div');
     row.className = 'podium-rest-row';
-    row.innerHTML = `
-      <span class="podium-rest-place">${i + 4}.</span>
-      <span class="podium-rest-name">${t.name}</span>
-      <span class="podium-rest-score">${t.score} pts</span>`;
+    row.innerHTML =
+      '<span class="podium-rest-place">' + (i + 4) + '.</span>' +
+      '<span class="podium-rest-name">'  + t.name   + '</span>' +
+      '<span class="podium-rest-score">' + t.score + ' pts</span>';
     restWrap.appendChild(row);
   });
 }
@@ -1439,6 +1183,5 @@ function playAgain() {
   showScreen('lobby');
 }
 </script>
-
 </body>
 </html>
