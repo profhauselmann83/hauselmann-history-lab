@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIST 101 — Final Exam Pub Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e17;
+    --surface: #131825;
+    --card: #1a2030;
+    --border: #263050;
+    --gold: #c9a84c;
+    --navy: #1e3a6e;
+    --navy-light: #2a4f96;
+    --parchment: #f0e6c8;
+    --parchment-dim: #c8b888;
+    --green: #1e4d35;
+    --green-light: #27623f;
+    --text: #f0e6c8;
+    --muted: #7a8aaa;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --accent: #2a4f96;
+    --accent-glow: rgba(42,79,150,0.35);
+    --timer-full: #2a4f96;
+    --timer-warn: #c9a84c;
+    --timer-danger: #c0392b;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SCREEN MANAGEMENT ── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ══════════════════════════════════════════
+     LOBBY
+  ══════════════════════════════════════════ */
+  #lobby {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(42,79,150,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      var(--bg);
+  }
+
+  .lobby-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--parchment-dim);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    background: var(--surface);
+  }
+
+  .lobby-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900;
+    color: var(--parchment);
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    max-width: 700px;
+  }
+
+  .lobby-subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-size: 20px;
+    color: var(--parchment-dim);
+    text-align: center;
+    margin-bottom: 40px;
+    font-style: italic;
+  }
+
+  .lobby-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 24px;
+  }
+
+  .lobby-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--parchment);
+    margin-bottom: 20px;
+  }
+
+  .team-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+
+  .team-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .team-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    width: 28px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .team-input-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .team-input-row input:focus { border-color: var(--navy-light); }
+  .team-input-row input::placeholder { color: var(--muted); }
+
+  .btn-remove {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-remove:hover { border-color: var(--red-light); color: var(--red-light); }
+
+  .lobby-actions { display: flex; gap: 10px; margin-bottom: 0; }
+
+  .btn-add {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    color: var(--parchment-dim);
+    border-radius: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    transition: all 0.2s;
+  }
+  .btn-add:hover { border-color: var(--navy-light); color: var(--text); }
+
+  .btn-start {
+    flex: 1;
+    background: var(--navy);
+    border: none;
+    color: var(--parchment);
+    border-radius: 8px;
+    padding: 14px 24px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-start:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+
+  .lobby-tip {
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ══════════════════════════════════════════
+     GAME SCREEN
+  ══════════════════════════════════════════ */
+  #game {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  /* Main column */
+  .game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  /* Header */
+  .game-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .round-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--navy);
+    color: var(--parchment);
+    padding: 5px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  .round-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--parchment);
+    flex: 1;
+  }
+
+  .round-subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .q-counter {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  /* Question card */
+  .question-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    gap: 20px;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .q-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+
+  .tag-easy { color: #5aaa7a; border-color: #2d5a3d; background: rgba(45,90,61,0.2); }
+  .tag-medium { color: var(--gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.1); }
+  .tag-hard { color: var(--red-light); border-color: rgba(231,76,60,0.4); background: rgba(231,76,60,0.1); }
+  .tag-pop { color: var(--parchment-dim); border-color: var(--border); background: var(--surface); }
+  .tag-double { color: var(--gold); border-color: var(--gold); background: rgba(201,168,76,0.15); font-weight: 700; }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 36px;
+  }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    line-height: 1.5;
+    color: var(--parchment);
+    margin-bottom: 0;
+  }
+
+  /* Timer */
+  .timer-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .timer-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .timer-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s linear, background-color 0.5s;
+    width: 100%;
+    background: var(--timer-full);
+  }
+
+  .timer-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--parchment);
+    min-width: 48px;
+    text-align: right;
+    transition: color 0.3s;
+  }
+
+  .timer-num.warn { color: var(--timer-warn); }
+  .timer-num.danger { color: var(--timer-danger); }
+
+  /* Hint */
+  .hint-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--parchment-dim);
+    display: none;
+  }
+
+  .hint-box.visible { display: block; }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+  }
+
+  .btn-ctrl {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-play {
+    background: var(--green);
+    color: var(--parchment);
+  }
+  .btn-play:hover { background: var(--green-light); }
+
+  .btn-pause {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-pause:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-hint {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--gold);
+  }
+  .btn-hint:hover { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+
+  .btn-next {
+    background: var(--navy);
+    color: var(--parchment);
+    margin-left: auto;
+  }
+  .btn-next:hover { background: var(--navy-light); box-shadow: 0 4px 16px var(--accent-glow); }
+
+  .btn-ctrl:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 272px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-header h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .score-list {
+    flex: 1;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    transition: border-color 0.3s;
+  }
+
+  .score-row.leader { border-color: var(--gold); }
+
+  .score-crown {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .score-name {
+    flex: 1;
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .score-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--parchment);
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .score-btns { display: flex; gap: 4px; }
+
+  .btn-score {
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    background: var(--surface);
+    color: var(--text);
+    line-height: 1;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .btn-score.plus { color: #5aaa7a; }
+  .btn-score.plus:hover { background: #2d5a3d; border-color: #5aaa7a; }
+  .btn-score.minus { color: var(--red-light); }
+  .btn-score.minus:hover { background: rgba(231,76,60,0.15); border-color: var(--red-light); }
+
+  /* Round nav */
+  .round-nav {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .round-nav-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .round-dots {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .round-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .round-dot:hover { border-color: var(--navy-light); color: var(--text); }
+  .round-dot.active { background: var(--navy); border-color: var(--navy-light); color: var(--parchment); }
+  .round-dot.done { background: var(--surface); border-color: var(--border); color: var(--muted); }
+
+  /* ══════════════════════════════════════════
+     ANSWER REVEAL
+  ══════════════════════════════════════════ */
+  #reveal {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+    background: var(--bg);
+  }
+
+  .reveal-header {
+    width: 100%;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .reveal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--parchment);
+    flex: 1;
+  }
+
+  .reveal-pair-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .reveal-progress {
+    display: flex;
+    gap: 6px;
+    padding: 0 40px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .reveal-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .reveal-dot.done { background: var(--gold); }
+  .reveal-dot.current { background: var(--navy-light); }
+
+  .reveal-card-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .reveal-q-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    align-self: flex-start;
+  }
+
+  .reveal-q-text {
+    font-family: 'Crimson Pro', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 24px;
+    align-self: flex-start;
+    line-height: 1.5;
+  }
+
+  .reveal-answer-box {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .reveal-answer-box.hidden-answer {
+    border-color: var(--border);
+  }
+
+  .reveal-answer-box.hidden-answer:hover {
+    border-color: var(--navy-light);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .reveal-placeholder {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .reveal-answer-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 700;
+    color: var(--parchment);
+    text-align: center;
+    line-height: 1.3;
+    display: none;
+  }
+
+  .reveal-answer-box.shown { border-color: var(--gold); background: rgba(201,168,76,0.06); cursor: default; }
+  .reveal-answer-box.shown .reveal-placeholder { display: none; }
+  .reveal-answer-box.shown .reveal-answer-text { display: block; }
+
+  .reveal-note {
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .reveal-next-btn {
+    background: var(--navy);
+    border: none;
+    color: var(--parchment);
+    border-radius: 8px;
+    padding: 14px 28px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .reveal-next-btn:hover { background: var(--navy-light); box-shadow: 0 4px 20px var(--accent-glow); }
+
+  /* Score strip on reveal */
+  .reveal-score-strip {
+    width: 100%;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .strip-team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+  }
+
+  .strip-name {
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .strip-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    color: var(--parchment);
+  }
+
+  .strip-btns { display: flex; gap: 4px; }
+
+  /* ══════════════════════════════════════════
+     PODIUM / END
+  ══════════════════════════════════════════ */
+  #podium {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(201,168,76,0.12) 0%, transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+  }
+
+  .podium-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    color: var(--parchment);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .podium-subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--parchment-dim);
+    margin-bottom: 48px;
+  }
+
+  .podium-blocks {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .podium-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .podium-block .pb-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--parchment);
+    margin-bottom: 6px;
+    text-align: center;
+    max-width: 140px;
+    word-break: break-word;
+  }
+
+  .podium-block .pb-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    color: var(--parchment);
+    margin-bottom: 8px;
+  }
+
+  .podium-block .pb-medal { font-size: 28px; margin-bottom: 8px; }
+
+  .podium-block .pb-stand {
+    width: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .podium-block .pb-place {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .pb-1st .pb-stand { background: linear-gradient(135deg, #b8860b, #daa520); height: 120px; }
+  .pb-2nd .pb-stand { background: linear-gradient(135deg, #708090, #a0a0a8); height: 90px; }
+  .pb-3rd .pb-stand { background: linear-gradient(135deg, #7a4f2a, #a0613c); height: 65px; }
+
+  .podium-rest {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 40px;
+    min-width: 300px;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .podium-rest-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+  }
+
+  .podium-rest-place {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    width: 24px;
+  }
+
+  .podium-rest-name {
+    flex: 1;
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .podium-rest-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    color: var(--parchment);
+  }
+
+  .btn-play-again {
+    background: var(--navy);
+    border: none;
+    color: var(--parchment);
+    border-radius: 8px;
+    padding: 14px 32px;
+    cursor: pointer;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .btn-play-again:hover { background: var(--navy-light); box-shadow: 0 4px 20px var(--accent-glow); transform: translateY(-2px); }
+
+  /* ── UTILS ── */
+  .hidden { display: none !important; }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 220px; }
+    .question-area { padding: 20px 16px; }
+    .reveal-card-wrap { padding: 24px 16px; }
+  }
+
+  @media (max-width: 600px) {
+    #game { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: relative; border-left: none; border-top: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     QUESTION BANK
+══════════════════════════════════════════ -->
+<script>
+const ROUNDS = [
+  {
+    id: 1,
+    title: "Round 1 · The Founding",
+    subtitle: "Colonial Era, Revolution & the Declaration",
+    questions: [
+      {
+        q: "Under the mercantilist system, colonies existed primarily to serve what purpose for the mother country?",
+        a: "To produce raw materials and generate wealth (supply resources / strengthen the empire's economy)",
+        hint: "Think of it as the opposite of independence — the colony's economy serves someone else's interests, not its own.",
+        diff: "Easy",
+        pop: null,
+        double: false
+      },
+      {
+        q: "The Mayflower Compact of 1620 is historically significant because it established the first example of what in English North America?",
+        a: "Written self-government (a social compact / a framework for self-rule among colonists)",
+        hint: "It's not a constitution, and it's not a bill of rights — but it's the first time a group of colonists agreed in writing to govern themselves.",
+        diff: "Easy",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Which Enlightenment thinker's ideas most directly shaped the Declaration of Independence — specifically the concepts of natural rights and the social contract?",
+        a: "John Locke",
+        hint: "He was English, not French. Think: two treatises, blank slate, life / liberty / property.",
+        diff: "Easy",
+        pop: null,
+        double: false
+      },
+      {
+        q: "The Battle of Saratoga in 1777 is called a turning point in the Revolution. What specific consequence made it so decisive?",
+        a: "It convinced France to enter the war on the American side (secured French military and financial support)",
+        hint: "The answer isn't about the battle itself — it's about who showed up afterward as a result of it.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Rather than fight the British head-on, Washington chose a strategy of avoiding major battles and preserving his army. What is the name historians give to this kind of approach?",
+        a: "War of attrition (Fabian strategy / avoiding pitched battle to wear down the enemy over time)",
+        hint: "The goal wasn't to win any single battle — it was to make the war too costly and too long for Britain to sustain.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: "Round 2 · We the People",
+    subtitle: "The Constitution, Ratification & the Founding Debates",
+    questions: [
+      {
+        q: "What was the single most crippling weakness of the Articles of Confederation that drove delegates to call the Constitutional Convention in 1787?",
+        a: "The national government could not levy taxes (or: regulate commerce / had no power to raise revenue)",
+        hint: "Without this power, the government couldn't pay its debts, fund an army, or do almost anything. It's the same issue that makes governments powerless today when they can't fund themselves.",
+        diff: "Easy",
+        pop: null,
+        double: false
+      },
+      {
+        q: "In the musical Hamilton, Aaron Burr advises Hamilton to 'Talk less, smile more.' But Hamilton talks constantly — especially at the Constitutional Convention. Which Federalist argument did Hamilton make most forcefully at the New York Ratification Convention?",
+        a: "That a strong central government was necessary to prevent national collapse / that large republics were more stable than small ones / that the Anti-Federalists' fear of mob rule was the real danger",
+        hint: "Think about what Hamilton feared more than tyranny. Hint: it rhymes with 'canarchy.'",
+        diff: "Easy",
+        pop: "🎭 Hamilton (the musical)",
+        double: false
+      },
+      {
+        q: "Melancton Smith warned at the New York Ratification Convention that a small House of Representatives would guarantee what outcome?",
+        a: "That only wealthy elites would hold office, producing a government of oppression (power concentrated among the rich)",
+        hint: "Smith's argument was structural — if there are too few seats, who's going to win them? Certainly not the middle-class yeoman farmer.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "The Great Compromise resolved the most explosive debate at the Constitutional Convention. What was that debate, and what did the compromise create?",
+        a: "Debate over representation in Congress. Compromise: equal representation in the Senate, proportional representation in the House.",
+        hint: "Small states wanted one thing, large states wanted another. The solution was to split the difference — literally, by splitting Congress in two.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Patrick Henry shouted at the Virginia Ratification Convention that the Constitution was producing an 'alarming transition' — from what to what?",
+        a: "From a Confederacy (of sovereign states) to a consolidated (national) government",
+        hint: "Henry used two specific words that are almost opposites in political theory. One means loosely joined; the other means fused into one central power.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: "Round 3 · Republic in Crisis",
+    subtitle: "Jefferson, the Louisiana Purchase & Manifest Destiny",
+    questions: [
+      {
+        q: "Jefferson envisioned an 'agrarian democracy' of independent farmers. Name ONE major contradiction embedded in this vision.",
+        a: "His vision depended on enslaved labor OR on the dispossession of Native peoples' land (either accepted; both ideal)",
+        hint: "The land had to come from somewhere. The labor had to come from someone. Who?",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Jefferson privately believed the Louisiana Purchase was unconstitutional. What specific constitutional problem did he identify?",
+        a: "The Constitution did not explicitly grant the president the power to purchase foreign territory (no enumerated power for land acquisition)",
+        hint: "Jefferson was usually a strict constructionist — he believed the government could only do what the Constitution explicitly said. What did the Constitution not say?",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "In his 1803 editorial, Alexander Hamilton criticized the Louisiana Purchase. What did Hamilton actually argue would happen if Americans tried to settle the new territory?",
+        a: "That settlement would weaken the central government (the country would be spread too thin; the land was an unproductive wilderness)",
+        hint: "Hamilton wasn't worried about slavery or constitutionality here — he was worried about what happens to a government when its population scatters over an enormous empty wilderness.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Federalist senators Rufus King and Timothy Pickering had a different fear about the Louisiana Purchase than Hamilton did. What specifically worried them about admitting Louisiana as a state?",
+        a: "That the treaty's property protections would force Congress to admit Louisiana as a slave state, worsening the imbalance of slave vs. free state power in the Senate",
+        hint: "Their concern wasn't about the land or the settlers — it was about a political math problem in Washington, D.C. More slave states meant more what?",
+        diff: "Hard",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Theodore Parker's 1848 sermon listed Louisiana, Florida, and Texas in sequence before turning to Mexico. What pattern was he identifying about American expansion?",
+        a: "A deliberate, escalating pattern of acquiring territory to create new slave states — not accidental but systematic",
+        hint: "Parker repeats the phrase 'not enough' before each territory. What does that repetition suggest about appetite — and about intention?",
+        diff: "Medium",
+        pop: null,
+        double: false
+      }
+    ]
+  },
+  {
+    id: 4,
+    title: "Round 4 · Jackson's America",
+    subtitle: "Jacksonian Democracy, Indian Removal & the Missouri Crisis",
+    questions: [
+      {
+        q: "Jacksonian Democracy expanded voting rights significantly — but only for one specific group. Which group?",
+        a: "White men (regardless of property ownership)",
+        hint: "It's a shorter list than you might think. Two words. Race and gender both matter here.",
+        diff: "Easy",
+        pop: null,
+        double: false
+      },
+      {
+        q: "The Supreme Court ruled against Indian Removal in Worcester v. Georgia. What did Andrew Jackson do in response?",
+        a: "He ignored / defied the ruling and proceeded with removal anyway",
+        hint: "Jackson reportedly said something like: 'The Chief Justice has made his decision — now let him enforce it.' Whether he said it or not, that was his response.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Richard Haass argues that citizens have an obligation to respect the rights of others. The Indian Removal Act of 1830 represents a failure of this obligation at the national level. What makes this failure particularly striking from a legal standpoint?",
+        a: "The federal government violated its own Supreme Court ruling — removal proceeded despite a judicial ruling affirming Native sovereignty",
+        hint: "It's not just that rights were violated — it's that the highest court in the land had already said what those rights were, and the executive branch said: 'We don't care.'",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Missouri's application for statehood in 1819 triggered a national crisis. What was the specific political danger that Missouri posed?",
+        a: "It threatened to upset the balance of free and slave states in the Senate, giving slave states a majority",
+        hint: "It wasn't about Missouri alone — it was about what Missouri's admission would do to a very careful count in Washington.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "John C. Calhoun's 1832 Fort Hill Address argued that southern states faced a binary choice. What were the two options he presented?",
+        a: "Either resist federal power now and maintain sovereignty, OR yield and deliver themselves permanently into their opponents' hands (submit and lose all leverage forever)",
+        hint: "Calhoun framed it as a now-or-never moment. Resist now, or be 'bound, hand and foot' to your opponents forever. What does that language tell you about how he saw the stakes?",
+        diff: "Hard",
+        pop: null,
+        double: false
+      }
+    ]
+  },
+  {
+    id: 5,
+    title: "Round 5 · The House Divided",
+    subtitle: "Abolitionism, the Fugitive Slave Law & the Road to War",
+    questions: [
+      {
+        q: "What distinguished William Lloyd Garrison and Maria Stewart from most white Northerners who opposed slavery?",
+        a: "They demanded immediate, unconditional emancipation on moral grounds — not gradual emancipation or colonization",
+        hint: "Most Northerners who disliked slavery still wanted a slow, managed solution. Garrison and Stewart had a different word for what they wanted — and it started with 'immediate.'",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Sojourner Truth's 'Ain't I a Woman?' speech exposed a fundamental contradiction in how American society defined womanhood. Whose experience was the ideal of 'womanhood' actually built around?",
+        a: "White middle-class women — the ideal excluded Black women and especially enslaved women entirely",
+        hint: "Think about who got to be 'helped into carriages' and given 'the best place.' Truth's point is that she never received any of that — so what did that say about how society classified her?",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "The Fugitive Slave Law of 1850 threatened not just escaped enslaved people but free Black people in the North as well. Why?",
+        a: "Slavecatchers could seize free Black people with minimal legal protection — any Black person could be claimed as a fugitive with little evidence required",
+        hint: "The law didn't just apply to people who had escaped — it created a system where any Black person in a free state could be taken, with almost no legal recourse.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "The Dred Scott decision of 1857 contained two separate rulings. Name both.",
+        a: "(1) African Americans were not citizens and had no standing to sue in federal court. (2) Congress had no authority to ban slavery in the territories — making the Missouri Compromise unconstitutional.",
+        hint: "The first ruling was about who could use the courts. The second was about where slavery could go. Together they meant: no legal path to freedom, and no geographic limit on slavery.",
+        diff: "Hard",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Why did Southerners respond with such panic to John Brown's raid on Harpers Ferry in 1859, even though the raid failed almost immediately?",
+        a: "They feared it signaled that northern abolitionists were willing to arm enslaved people and incite widespread uprisings across the South",
+        hint: "The raid itself was a military disaster — Brown was captured within 36 hours. The terror wasn't about what happened. It was about what the raid revealed about northern intentions.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      }
+    ]
+  },
+  {
+    id: 6,
+    title: "Round 6 · War, Freedom & Reconstruction",
+    subtitle: "Civil War, Emancipation, Douglass & the Promise of Citizenship",
+    questions: [
+      {
+        q: "The Emancipation Proclamation is often misunderstood. Where, specifically, did it actually free enslaved people — and where did it NOT?",
+        a: "It freed enslaved people only in Confederate states (areas under active rebellion). It did NOT free enslaved people in border states that remained in the Union.",
+        hint: "Think about where Lincoln actually had authority — and where he didn't. He couldn't free enslaved people where his government had jurisdiction, because that would have been politically explosive.",
+        diff: "Medium",
+        pop: null,
+        double: false
+      },
+      {
+        q: "In his June 1864 letter, Frederick Douglass leveled a specific, devastating critique at Lincoln's policy toward Black soldiers. What was it?",
+        a: "Black men were deemed good enough to fight and die for the Union but not good enough to vote in it — and the government planned to return them to the political control of their former enslavers with no protections.",
+        hint: "Douglass wasn't critiquing Lincoln's character — he was critiquing a specific political contradiction. 'Good enough to _____, but not good enough to _____.'",
+        diff: "Hard",
+        pop: null,
+        double: false
+      },
+      {
+        q: "Alexander Stephens's Cornerstone Speech of 1861 is historically significant for what reason — especially in debates about the 'cause' of the Civil War?",
+        a: "Stephens explicitly stated that the Confederacy's foundation was racial slavery and white supremacy — not states' rights — making it a primary source that Confederate leaders themselves identified slavery as central.",
+        hint: "If you ever hear someone argue that the Civil War was 'about states' rights, not slavery,' this speech is your first piece of evidence. Who said it? The Vice President of the Confederacy.",
+        diff: "Medium",
+        pop: "🎬 Lincoln (2012)",
+        double: false
+      },
+      {
+        q: "Historian Eric Foner argues that Reconstruction's collapse 'was not inevitable.' What does he mean — and why does the word 'inevitable' matter so much to historians?",
+        a: "Foner identifies three specific human choices that caused collapse (white violence, northern abandonment, judicial rollback) — arguing that different choices could have produced different outcomes. 'Inevitable' removes accountability; 'choices' assigns it.",
+        hint: "If something is inevitable, no one is responsible. If it's a choice, someone made it. Foner is making a moral and political argument disguised as a historical one.",
+        diff: "Hard",
+        pop: null,
+        double: false
+      },
+      {
+        q: "DOUBLE POINTS — The 14th Amendment (1868) guaranteed two things to all persons born in the United States. Name both — and explain why one of them directly overturned the Dred Scott decision.",
+        a: "Citizenship AND equal protection under the law. The citizenship clause directly overturned Dred Scott, which had ruled that Black people could never be citizens.",
+        hint: "The first part reverses a Supreme Court ruling from just 11 years earlier. The second part becomes the basis for almost every civil rights case in American history for the next 150 years.",
+        diff: "Hard",
+        pop: null,
+        double: true
+      }
+    ]
+  }
+];
+
+// Which round indices (0-based) trigger the reveal screen after that round
+const REVEAL_AFTER_ROUNDS = [1, 3]; // after round index 1 (R2) and 3 (R4)
+// Which round pairs are revealed together
+const REVEAL_PAIRS = [[0,1],[2,3],[4,5]];
+</script>
+
+<!-- ══════════════════════════════════════════
+     LOBBY SCREEN
+══════════════════════════════════════════ -->
+<div id="lobby" class="screen active">
+  <div class="lobby-badge">HIST 101 · Modesto Junior College</div>
+  <h1 class="lobby-title">Final Exam Pub Quiz</h1>
+  <p class="lobby-subtitle">Democratic Norms & the American Revolution</p>
+
+  <div class="lobby-card">
+    <h3>Enter Team Names</h3>
+    <div class="team-inputs" id="teamInputs">
+      <div class="team-input-row">
+        <span class="team-num">1</span>
+        <input type="text" placeholder="Team name…" maxlength="28">
+        <button class="btn-remove" onclick="removeTeam(this)" title="Remove">×</button>
+      </div>
+      <div class="team-input-row">
+        <span class="team-num">2</span>
+        <input type="text" placeholder="Team name…" maxlength="28">
+        <button class="btn-remove" onclick="removeTeam(this)" title="Remove">×</button>
+      </div>
+    </div>
+    <div class="lobby-actions">
+      <button class="btn-add" onclick="addTeam()">+ Add Team</button>
+      <button class="btn-start" onclick="startGame()">Start Quiz →</button>
+    </div>
+  </div>
+
+  <p class="lobby-tip">Teams write answers on paper — no phones needed.<br>Instructor projects and controls the game.</p>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN
+══════════════════════════════════════════ -->
+<div id="game" class="screen">
+  <div class="game-main">
+    <div class="game-header">
+      <span class="round-badge" id="hdrRoundBadge">Round 1</span>
+      <span class="round-title" id="hdrRoundTitle">—</span>
+      <span class="round-subtitle" id="hdrRoundSub">—</span>
+      <span class="q-counter" id="hdrQCounter">Q 1 / 5</span>
+    </div>
+
+    <div class="question-area">
+      <div class="q-tags" id="qTags"></div>
+
+      <div class="question-card">
+        <p class="question-text" id="questionText">—</p>
+      </div>
+
+      <div class="timer-wrap">
+        <div class="timer-bar-track">
+          <div class="timer-bar-fill" id="timerBar"></div>
+        </div>
+        <div class="timer-num" id="timerNum">60</div>
+      </div>
+
+      <div class="hint-box" id="hintBox"></div>
+
+      <div class="controls">
+        <button class="btn-ctrl btn-play" id="btnPlay" onclick="startTimer()">▶ Start</button>
+        <button class="btn-ctrl btn-pause" id="btnPause" onclick="pauseTimer()" disabled>⏸ Pause</button>
+        <button class="btn-ctrl btn-hint" id="btnHint" onclick="showHint()">💡 Hint</button>
+        <button class="btn-ctrl btn-next" id="btnNext" onclick="nextQuestion()">Next Question →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header"><h3>Scoreboard</h3></div>
+    <div class="score-list" id="scoreList"></div>
+    <div class="round-nav">
+      <div class="round-nav-label">Rounds</div>
+      <div class="round-dots" id="roundDots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ANSWER REVEAL SCREEN
+══════════════════════════════════════════ -->
+<div id="reveal" class="screen">
+  <div class="reveal-header">
+    <span class="reveal-title">Answer Reveal</span>
+    <span class="reveal-pair-label" id="revealPairLabel">—</span>
+  </div>
+
+  <div class="reveal-progress" id="revealProgress"></div>
+
+  <div class="reveal-card-wrap">
+    <div class="reveal-q-label" id="revealQLabel">—</div>
+    <div class="reveal-q-text" id="revealQText">—</div>
+    <div class="reveal-answer-box hidden-answer" id="revealBox" onclick="showRevealAnswer()">
+      <span class="reveal-placeholder">Click to reveal answer</span>
+      <span class="reveal-answer-text" id="revealAnswerText">—</span>
+    </div>
+    <div class="reveal-note" id="revealNote"></div>
+    <button class="reveal-next-btn" id="revealNextBtn" onclick="nextReveal()">Next Answer →</button>
+  </div>
+
+  <div class="reveal-score-strip" id="revealScoreStrip"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PODIUM SCREEN
+══════════════════════════════════════════ -->
+<div id="podium" class="screen">
+  <h1 class="podium-title">🏛️ Final Results</h1>
+  <p class="podium-subtitle">HIST 101 — Final Exam Pub Quiz</p>
+  <div class="podium-blocks" id="podiumBlocks"></div>
+  <div class="podium-rest" id="podiumRest"></div>
+  <button class="btn-play-again" onclick="playAgain()">↩ Play Again</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME LOGIC
+══════════════════════════════════════════ -->
+<script>
+// ── State ──
+let teams = [];
+let scores = [];
+let currentRound = 0;
+let currentQ = 0;
+let timerVal = 60;
+let timerInterval = null;
+let timerRunning = false;
+let hintShown = false;
+let revealPairIdx = 0;    // which pair we're currently revealing
+let revealItemIdx = 0;    // which item within the pair (0-9)
+let revealAnswerShown = false;
+let postRevealRound = 0;  // which round to go to after reveal
+
+// ── LOBBY ──
+function addTeam() {
+  const rows = document.querySelectorAll('.team-input-row');
+  if (rows.length >= 8) return;
+  const wrap = document.getElementById('teamInputs');
+  const div = document.createElement('div');
+  div.className = 'team-input-row';
+  div.innerHTML = `<span class="team-num">${rows.length + 1}</span><input type="text" placeholder="Team name…" maxlength="28"><button class="btn-remove" onclick="removeTeam(this)" title="Remove">×</button>`;
+  wrap.appendChild(div);
+  renumberTeams();
+}
+
+function removeTeam(btn) {
+  const rows = document.querySelectorAll('.team-input-row');
+  if (rows.length <= 2) return;
+  btn.closest('.team-input-row').remove();
+  renumberTeams();
+}
+
+function renumberTeams() {
+  document.querySelectorAll('.team-input-row').forEach((row, i) => {
+    row.querySelector('.team-num').textContent = i + 1;
+  });
+}
+
+function startGame() {
+  const inputs = document.querySelectorAll('#teamInputs input');
+  teams = [];
+  inputs.forEach((inp, i) => {
+    teams.push(inp.value.trim() || `Team ${i + 1}`);
+  });
+  scores = new Array(teams.length).fill(0);
+  currentRound = 0;
+  currentQ = 0;
+  showScreen('game');
+  buildSidebar();
+  buildRoundDots();
+  loadQuestion();
+}
+
+// ── SCREEN NAV ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── SIDEBAR ──
+function buildSidebar() {
+  const list = document.getElementById('scoreList');
+  list.innerHTML = '';
+  const maxScore = Math.max(...scores);
+  teams.forEach((name, i) => {
+    const isLeader = scores[i] === maxScore && maxScore >= 0;
+    const row = document.createElement('div');
+    row.className = 'score-row' + (isLeader ? ' leader' : '');
+    row.id = `scoreRow${i}`;
+    row.innerHTML = `
+      <span class="score-crown">${isLeader ? '👑' : ''}</span>
+      <span class="score-name" title="${name}">${name}</span>
+      <span class="score-num" id="scoreNum${i}">${scores[i]}</span>
+      <div class="score-btns">
+        <button class="btn-score plus" onclick="adjustScore(${i},1)">+</button>
+        <button class="btn-score minus" onclick="adjustScore(${i},-1)">−</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function adjustScore(i, delta) {
+  scores[i] = Math.max(0, scores[i] + delta);
+  updateScoreDisplay();
+  updateRevealStrip();
+}
+
+function updateScoreDisplay() {
+  const maxScore = Math.max(...scores);
+  teams.forEach((_, i) => {
+    const num = document.getElementById(`scoreNum${i}`);
+    if (num) num.textContent = scores[i];
+    const row = document.getElementById(`scoreRow${i}`);
+    if (row) {
+      const isLeader = scores[i] === maxScore;
+      row.className = 'score-row' + (isLeader ? ' leader' : '');
+      row.querySelector('.score-crown').textContent = isLeader ? '👑' : '';
+    }
+  });
+}
+
+function buildRoundDots() {
+  const wrap = document.getElementById('roundDots');
+  wrap.innerHTML = '';
+  ROUNDS.forEach((r, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'round-dot' + (i === 0 ? ' active' : '');
+    dot.id = `rdot${i}`;
+    dot.textContent = i + 1;
+    dot.onclick = () => jumpToRound(i);
+    wrap.appendChild(dot);
+  });
+}
+
+function updateRoundDots() {
+  ROUNDS.forEach((_, i) => {
+    const dot = document.getElementById(`rdot${i}`);
+    if (!dot) return;
+    dot.className = 'round-dot' + (i === currentRound ? ' active' : i < currentRound ? ' done' : '');
+  });
+}
+
+function jumpToRound(i) {
+  clearTimer();
+  currentRound = i;
+  currentQ = 0;
+  loadQuestion();
+}
+
+// ── QUESTION DISPLAY ──
+function loadQuestion() {
+  clearTimer();
+  hintShown = false;
+  const round = ROUNDS[currentRound];
+  const q = round.questions[currentQ];
+  const totalQs = ROUNDS.reduce((s, r) => s + r.questions.length, 0);
+  const qNum = ROUNDS.slice(0, currentRound).reduce((s, r) => s + r.questions.length, 0) + currentQ + 1;
+
+  // Header
+  document.getElementById('hdrRoundBadge').textContent = `Round ${round.id}`;
+  document.getElementById('hdrRoundTitle').textContent = round.title.split('·')[1]?.trim() || round.title;
+  document.getElementById('hdrRoundSub').textContent = round.subtitle;
+  document.getElementById('hdrQCounter').textContent = `Q ${currentQ + 1} / ${round.questions.length}`;
+
+  // Tags
+  const tagsEl = document.getElementById('qTags');
+  tagsEl.innerHTML = '';
+  const diffTag = document.createElement('span');
+  diffTag.className = `tag tag-${q.diff.toLowerCase()}`;
+  diffTag.textContent = q.diff;
+  tagsEl.appendChild(diffTag);
+  if (q.pop) {
+    const popTag = document.createElement('span');
+    popTag.className = 'tag tag-pop';
+    popTag.textContent = q.pop;
+    tagsEl.appendChild(popTag);
+  }
+  if (q.double) {
+    const dbl = document.createElement('span');
+    dbl.className = 'tag tag-double';
+    dbl.textContent = '⭐ Double Points';
+    tagsEl.appendChild(dbl);
+  }
+
+  // Question
+  document.getElementById('questionText').textContent = q.q;
+
+  // Timer
+  timerVal = 60;
+  renderTimer(60);
+
+  // Hint
+  const hintBox = document.getElementById('hintBox');
+  hintBox.textContent = q.hint;
+  hintBox.classList.remove('visible');
+  document.getElementById('btnHint').classList.remove('hidden');
+
+  // Buttons
+  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnPause').disabled = true;
+
+  // Next button label
+  const btnNext = document.getElementById('btnNext');
+  const isLast = currentQ === round.questions.length - 1;
+  const triggerReveal = REVEAL_AFTER_ROUNDS.includes(currentRound);
+  const isVeryLast = currentRound === ROUNDS.length - 1 && isLast;
+
+  if (isVeryLast) {
+    btnNext.textContent = 'Finish →';
+  } else if (isLast && triggerReveal) {
+    btnNext.textContent = 'End Round & Reveal Answers →';
+  } else if (isLast && !triggerReveal) {
+    btnNext.textContent = 'Next Round →';
+  } else {
+    btnNext.textContent = 'Next Question →';
+  }
+
+  updateRoundDots();
+}
+
+// ── TIMER ──
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  document.getElementById('btnPlay').disabled = true;
+  document.getElementById('btnPause').disabled = false;
+  timerInterval = setInterval(() => {
+    timerVal--;
+    renderTimer(timerVal);
+    if (timerVal <= 0) { clearTimer(); }
+  }, 1000);
+}
+
+function pauseTimer() {
+  clearTimer();
+  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnPause').disabled = true;
+}
+
+function clearTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerInterval = null;
+}
+
+function renderTimer(val) {
+  const bar = document.getElementById('timerBar');
+  const num = document.getElementById('timerNum');
+  num.textContent = Math.max(0, val);
+  const pct = Math.max(0, val / 60 * 100);
+  bar.style.width = pct + '%';
+  if (val <= 10) {
+    bar.style.background = 'var(--timer-danger)';
+    num.className = 'timer-num danger';
+  } else if (val <= 20) {
+    bar.style.background = 'var(--timer-warn)';
+    num.className = 'timer-num warn';
+  } else {
+    bar.style.background = 'var(--timer-full)';
+    num.className = 'timer-num';
+  }
+}
+
+function showHint() {
+  clearTimer();
+  document.getElementById('hintBox').classList.add('visible');
+  document.getElementById('btnHint').classList.add('hidden');
+  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnPause').disabled = true;
+  timerRunning = false;
+}
+
+// ── NEXT QUESTION / ROUND ──
+function nextQuestion() {
+  clearTimer();
+  const round = ROUNDS[currentRound];
+  const isLast = currentQ === round.questions.length - 1;
+  const isVeryLast = currentRound === ROUNDS.length - 1 && isLast;
+
+  if (isVeryLast) {
+    // Last question of last round — go to final reveal then podium
+    revealPairIdx = 2;
+    revealItemIdx = 0;
+    revealAnswerShown = false;
+    postRevealRound = -1; // signals podium after
+    buildRevealScreen();
+    showScreen('reveal');
+    return;
+  }
+
+  if (isLast && REVEAL_AFTER_ROUNDS.includes(currentRound)) {
+    // Trigger reveal after this round pair
+    const pairIdx = Math.floor(REVEAL_AFTER_ROUNDS.indexOf(currentRound));
+    revealPairIdx = pairIdx;
+    revealItemIdx = 0;
+    revealAnswerShown = false;
+    postRevealRound = currentRound + 1;
+    buildRevealScreen();
+    showScreen('reveal');
+    return;
+  }
+
+  if (isLast) {
+    currentRound++;
+    currentQ = 0;
+  } else {
+    currentQ++;
+  }
+  loadQuestion();
+}
+
+// ── REVEAL SCREEN ──
+function buildRevealScreen() {
+  const pair = REVEAL_PAIRS[revealPairIdx];
+  const roundNums = pair.map(i => ROUNDS[i].id).join(' & ');
+  document.getElementById('revealPairLabel').textContent = `Rounds ${roundNums}`;
+
+  // Build progress dots
+  const prog = document.getElementById('revealProgress');
+  prog.innerHTML = '';
+  const allQs = pair.flatMap(ri => ROUNDS[ri].questions);
+  allQs.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'reveal-dot' + (i === 0 ? ' current' : '');
+    dot.id = `rdot_reveal_${i}`;
+    prog.appendChild(dot);
+  });
+
+  loadRevealItem();
+  buildRevealStrip();
+}
+
+function loadRevealItem() {
+  const pair = REVEAL_PAIRS[revealPairIdx];
+  const allQs = pair.flatMap((ri, pi) => ROUNDS[ri].questions.map((q, qi) => ({
+    q, roundId: ROUNDS[ri].id, qNum: qi + 1
+  })));
+  const item = allQs[revealItemIdx];
+
+  document.getElementById('revealQLabel').textContent = `Round ${item.roundId} · Question ${item.qNum}`;
+  document.getElementById('revealQText').textContent = item.q.q;
+  document.getElementById('revealAnswerText').textContent = item.q.a;
+
+  const box = document.getElementById('revealBox');
+  box.classList.remove('shown');
+  box.classList.add('hidden-answer');
+
+  const noteEl = document.getElementById('revealNote');
+  noteEl.style.display = 'none';
+  noteEl.textContent = '';
+
+  revealAnswerShown = false;
+
+  // Progress dots
+  allQs.forEach((_, i) => {
+    const dot = document.getElementById(`rdot_reveal_${i}`);
+    if (!dot) return;
+    dot.className = 'reveal-dot' + (i < revealItemIdx ? ' done' : i === revealItemIdx ? ' current' : '');
+  });
+
+  // Next button label
+  const isLast = revealItemIdx === allQs.length - 1;
+  const btn = document.getElementById('revealNextBtn');
+  if (!isLast) {
+    btn.textContent = 'Next Answer →';
+  } else if (postRevealRound === -1) {
+    btn.textContent = 'See Final Scores →';
+  } else {
+    btn.textContent = `Start Rounds ${ROUNDS[postRevealRound].id} & ${ROUNDS[postRevealRound+1]?.id || ''} →`;
+  }
+}
+
+function showRevealAnswer() {
+  if (revealAnswerShown) return;
+  revealAnswerShown = true;
+  const box = document.getElementById('revealBox');
+  box.classList.remove('hidden-answer');
+  box.classList.add('shown');
+}
+
+function nextReveal() {
+  const pair = REVEAL_PAIRS[revealPairIdx];
+  const totalItems = pair.flatMap(ri => ROUNDS[ri].questions).length;
+  const isLast = revealItemIdx === totalItems - 1;
+
+  if (!revealAnswerShown) {
+    showRevealAnswer();
+    return;
+  }
+
+  if (isLast) {
+    if (postRevealRound === -1) {
+      buildPodium();
+      showScreen('podium');
+    } else {
+      currentRound = postRevealRound;
+      currentQ = 0;
+      showScreen('game');
+      loadQuestion();
+    }
+    return;
+  }
+
+  revealItemIdx++;
+  revealAnswerShown = false;
+  loadRevealItem();
+}
+
+function buildRevealStrip() { updateRevealStrip(); }
+
+function updateRevealStrip() {
+  const strip = document.getElementById('revealScoreStrip');
+  if (!strip) return;
+  strip.innerHTML = '';
+  const maxScore = Math.max(...scores);
+  teams.forEach((name, i) => {
+    const div = document.createElement('div');
+    div.className = 'strip-team';
+    div.innerHTML = `
+      <span class="strip-name">${scores[i] === maxScore ? '👑 ' : ''}${name}</span>
+      <span class="strip-score" id="stripScore${i}">${scores[i]}</span>
+      <div class="strip-btns">
+        <button class="btn-score plus" onclick="adjustScore(${i},1)">+</button>
+        <button class="btn-score minus" onclick="adjustScore(${i},-1)">−</button>
+      </div>`;
+    strip.appendChild(div);
+  });
+}
+
+function updateRevealStrip() {
+  teams.forEach((_, i) => {
+    const el = document.getElementById(`stripScore${i}`);
+    if (el) el.textContent = scores[i];
+  });
+  // Also update game sidebar if visible
+  updateScoreDisplay();
+}
+
+// ── PODIUM ──
+function buildPodium() {
+  const ranked = teams.map((name, i) => ({ name, score: scores[i] }))
+    .sort((a, b) => b.score - a.score);
+
+  const medals = ['🥇', '🥈', '🥉'];
+  const classes = ['pb-1st', 'pb-2nd', 'pb-3rd'];
+  const heights = [120, 90, 65];
+
+  const blocksWrap = document.getElementById('podiumBlocks');
+  blocksWrap.innerHTML = '';
+
+  const top3 = ranked.slice(0, 3);
+  const order = top3.length >= 3 ? [1, 0, 2] : top3.length === 2 ? [1, 0] : [0];
+
+  order.forEach(idx => {
+    if (!top3[idx]) return;
+    const t = top3[idx];
+    const block = document.createElement('div');
+    block.className = `podium-block ${classes[idx]}`;
+    block.innerHTML = `
+      <div class="pb-medal">${medals[idx]}</div>
+      <div class="pb-name">${t.name}</div>
+      <div class="pb-score">${t.score} pts</div>
+      <div class="pb-stand" style="height:${heights[idx]}px">
+        <span class="pb-place">${idx + 1}</span>
+      </div>`;
+    blocksWrap.appendChild(block);
+  });
+
+  const restWrap = document.getElementById('podiumRest');
+  restWrap.innerHTML = '';
+  ranked.slice(3).forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'podium-rest-row';
+    row.innerHTML = `
+      <span class="podium-rest-place">${i + 4}.</span>
+      <span class="podium-rest-name">${t.name}</span>
+      <span class="podium-rest-score">${t.score} pts</span>`;
+    restWrap.appendChild(row);
+  });
+}
+
+function playAgain() {
+  scores = new Array(teams.length).fill(0);
+  currentRound = 0;
+  currentQ = 0;
+  showScreen('lobby');
+}
+</script>
+</body>
+</html>
