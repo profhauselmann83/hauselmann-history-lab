@@ -257,6 +257,21 @@ body { background: var(--bg); color: var(--text); font-family: 'Source Serif 4',
   </div>
 </div>
 
+<!-- INTERSTITIAL -->
+<div id="interstitial" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;background:radial-gradient(ellipse at 50% 40%, #0d2020 0%, var(--bg) 70%);">
+    <div style="font-size:3rem;margin-bottom:1.5rem;">✏️</div>
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:1rem;" id="int-round-label"></div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:900;color:var(--text);line-height:1.2;margin-bottom:1rem;">Review your answers<br>and fill in any blanks.</h2>
+    <p style="color:var(--text-dim);font-size:1.1rem;font-style:italic;max-width:480px;line-height:1.7;margin-bottom:2.5rem;">Answers will be revealed one at a time on the next screen. Make sure every team has written something for each question before you continue.</p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 2rem;margin-bottom:2.5rem;max-width:440px;text-align:left;">
+      <div style="font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Questions this round</div>
+      <div id="int-summary" style="color:var(--text-dim);font-size:.9rem;line-height:2;"></div>
+    </div>
+    <button class="btn-start" style="max-width:320px;" onclick="proceedToReveal()">Reveal Answers →</button>
+  </div>
+</div>
+
 <!-- REVEAL -->
 <div id="reveal" class="screen">
   <div class="rv-header">
@@ -401,7 +416,7 @@ const ROUNDS = [
         "hint": "Diplomats in a European city drew these lines. The borders followed political negotiation, not African geography.",
         "diff": "Easy",
         "theme": "map",
-        "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Scramble_for_Africa_1880_to_1913.png/500px-Scramble_for_Africa_1880_to_1913.png",
+        "img": "https://profhauselmann.org/hist107/images/scramble-africa.gif",
         "imgCaption": "The Scramble for Africa — European territorial claims 1880–1914",
         "note": "The straight lines are the answer. Ch. 26."
       },
@@ -411,18 +426,18 @@ const ROUNDS = [
         "hint": "First elected Prime Minister of the Congo. He was assassinated seven months after this photograph was taken.",
         "diff": "Easy",
         "theme": "map",
-        "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Lumumba_at_independence_ceremony.jpg/440px-Lumumba_at_independence_ceremony.jpg",
+        "img": "https://profhauselmann.org/hist107/images/lumumba-ceremony.jpg",
         "imgCaption": "Congo independence ceremony, June 30, 1960",
         "note": "Document B in the Lumumba activity. Ch. 30."
       },
       {
-        "q": "[GRAPH: World population growth] This graph shows population exploding after 1950. Name the model Szostak uses to explain why death rates fell faster than birth rates — producing the surge.",
+        "q": "[DIAGRAM: Demographic Transition Model] This diagram shows two curves — birth rate and death rate — moving at different speeds over time. Name the model it illustrates.",
         "a": "Demographic transition",
         "hint": "Two words. It describes the movement from high birth/death rates to low birth/death rates — and the explosive gap in between.",
         "diff": "Medium",
         "theme": "map",
-        "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/World_population_history.svg/640px-World_population_history.svg.png",
-        "imgCaption": "World population growth — the demographic transition",
+        "img": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MDAgMzQwIiB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM0MCIgc3R5bGU9ImJhY2tncm91bmQ6IzFhMWExYTtmb250LWZhbWlseTpBcmlhbCxzYW5zLXNlcmlmOyI+CiAgPCEtLSBCYWNrZ3JvdW5kIC0tPgogIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzQwIiBmaWxsPSIjMWExYTFhIi8+CgogIDwhLS0gU3RhZ2UgYmFuZHMgLS0+CiAgPHJlY3QgeD0iNjAiIHk9IjIwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjI2MCIgZmlsbD0iIzFmMmExZiIgb3BhY2l0eT0iMC42Ii8+CiAgPHJlY3QgeD0iMTcwIiB5PSIyMCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIyNjAiIGZpbGw9IiMxYTJmMWEiIG9wYWNpdHk9IjAuNiIvPgogIDxyZWN0IHg9IjI5MCIgeT0iMjAiIHdpZHRoPSIxMjAiIGhlaWdodD0iMjYwIiBmaWxsPSIjMWYyOTFmIiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSI0MTAiIHk9IjIwIiB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI2MCIgZmlsbD0iIzI1MjUyMCIgb3BhY2l0eT0iMC42Ii8+CgogIDwhLS0gU3RhZ2UgZGl2aWRlcnMgLS0+CiAgPGxpbmUgeDE9IjE3MCIgeTE9IjIwIiB4Mj0iMTcwIiB5Mj0iMjgwIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNCwzIi8+CiAgPGxpbmUgeDE9IjI5MCIgeTE9IjIwIiB4Mj0iMjkwIiB5Mj0iMjgwIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNCwzIi8+CiAgPGxpbmUgeDE9IjQxMCIgeTE9IjIwIiB4Mj0iNDEwIiB5Mj0iMjgwIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNCwzIi8+CgogIDwhLS0gU3RhZ2UgbGFiZWxzIC0tPgogIDx0ZXh0IHg9IjExNSIgeT0iNDIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM4ODgiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIj5TdGFnZSAxPC90ZXh0PgogIDx0ZXh0IHg9IjIzMCIgeT0iNDIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM4ODgiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIj5TdGFnZSAyPC90ZXh0PgogIDx0ZXh0IHg9IjM1MCIgeT0iNDIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM4ODgiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIj5TdGFnZSAzPC90ZXh0PgogIDx0ZXh0IHg9IjQ3NSIgeT0iNDIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM4ODgiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIj5TdGFnZSA0PC90ZXh0PgoKICA8IS0tIEF4ZXMgLS0+CiAgPGxpbmUgeDE9IjYwIiB5MT0iMjgwIiB4Mj0iNTQ1IiB5Mj0iMjgwIiBzdHJva2U9IiM1NTUiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPGxpbmUgeDE9IjYwIiB5MT0iMjAiIHgyPSI2MCIgeTI9IjI4MCIgc3Ryb2tlPSIjNTU1IiBzdHJva2Utd2lkdGg9IjEuNSIvPgoKICA8IS0tIFkgYXhpcyBsYWJlbCAtLT4KICA8dGV4dCB4PSIxNCIgeT0iMTYwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjODg4IiBmb250LXNpemU9IjExIiB0cmFuc2Zvcm09InJvdGF0ZSgtOTAsMTQsMTYwKSI+UmF0ZSBwZXIgMSwwMDA8L3RleHQ+CgogIDwhLS0gWCBheGlzIGxhYmVsIC0tPgogIDx0ZXh0IHg9IjMwMCIgeT0iMzE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjODg4IiBmb250LXNpemU9IjExIj5UaW1lIOKGkjwvdGV4dD4KCiAgPCEtLSBQb3B1bGF0aW9uIHRvdGFsIGN1cnZlIChiYWNrZ3JvdW5kLCBzdWJ0bGUpIC0tPgogIDxwYXRoIGQ9Ik02MCwyNjAgUTExNSwyNTggMTcwLDI1MCBRMjEwLDI0NSAyNDAsMjMwIFEyNzAsMjEwIDI5MCwxODUgUTM0MCwxNDAgMzgwLDEwMCBRNDIwLDc1IDQ2MCw2NSBRNTAwLDYwIDU0MCw2MCIKICAgICAgICBmaWxsPSJub25lIiBzdHJva2U9IiMzZDhmOGEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiwzIiBvcGFjaXR5PSIwLjUiLz4KCiAgPCEtLSBCaXJ0aCByYXRlIGN1cnZlIC0tPgogIDxwYXRoIGQ9Ik02MCw5MCBRMTEwLDg4IDE2NSw5MCBRMjAwLDkyIDIzMCwxMDAgUTI2MCwxMTIgMjkwLDEzMCBRMzMwLDE1NSAzNzAsMTc1IFE0MTAsMTkwIDQ1MCwyMDUgUTQ5MCwyMTUgNTQwLDIxOCIKICAgICAgICBmaWxsPSJub25lIiBzdHJva2U9IiNjOTk3M2EiIHN0cm9rZS13aWR0aD0iMyIvPgoKICA8IS0tIERlYXRoIHJhdGUgY3VydmUgLS0+CiAgPHBhdGggZD0iTTYwLDkyIFExMDAsOTIgMTQwLDEwOCBRMTY1LDEyNSAxODUsMTU1IFEyMDUsMTgwIDIzMCwyMDUgUTI1NSwyMjAgMjgwLDIyOCBRMzIwLDIzNiAzNzAsMjM4IFE0MzAsMjQwIDU0MCwyMzgiCiAgICAgICAgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZTA1NTU1IiBzdHJva2Utd2lkdGg9IjMiLz4KCiAgPCEtLSBQb3B1bGF0aW9uIGV4cGxvc2lvbiBzaGFkaW5nIGJldHdlZW4gY3VydmVzIGluIFN0YWdlIDIgLS0+CiAgPHBhdGggZD0iTTE3MCw5MCBRMjAwLDkyIDIzMCwxMDAgUTI2MCwxMTIgMjkwLDEzMCBRMjcwLDE4MCAyNTUsMjEwIFEyNDAsMjIwIDIyMCwyMjggUTIwMCwyMzIgMTg1LDIzMCBRMTc1LDIyMCAxNzUsMjAwIFExNzIsMTY1IDE3MCwxMzAgWiIKICAgICAgICBmaWxsPSIjYzk5NzNhIiBvcGFjaXR5PSIwLjA3Ii8+CgogIDwhLS0gQXJyb3cgc2hvd2luZyAiR0FQID0gcG9wdWxhdGlvbiBleHBsb3Npb24iIC0tPgogIDxsaW5lIHgxPSIyMjAiIHkxPSIxMDUiIHgyPSIyMjAiIHkyPSIyMjAiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIzLDIiIG9wYWNpdHk9IjAuNCIvPgogIDx0ZXh0IHg9IjIyOCIgeT0iMTYyIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjEwIiBvcGFjaXR5PSIwLjciPmdhcCA9PC90ZXh0PgogIDx0ZXh0IHg9IjIyOCIgeT0iMTc0IiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjEwIiBvcGFjaXR5PSIwLjciPmJvb208L3RleHQ+CgogIDwhLS0gTGVnZW5kIC0tPgogIDxyZWN0IHg9IjM0MCIgeT0iMjkwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjQ0IiBmaWxsPSIjMjIyIiByeD0iNCIvPgogIDxsaW5lIHgxPSIzNTIiIHkxPSIzMDUiIHgyPSIzNzgiIHkyPSIzMDUiIHN0cm9rZT0iI2M5OTczYSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPHRleHQgeD0iMzg0IiB5PSIzMDkiIGZpbGw9IiNjOTk3M2EiIGZvbnQtc2l6ZT0iMTEiPkJpcnRoIHJhdGU8L3RleHQ+CiAgPGxpbmUgeDE9IjM1MiIgeTE9IjMyMiIgeDI9IjM3OCIgeTI9IjMyMiIgc3Ryb2tlPSIjZTA1NTU1IiBzdHJva2Utd2lkdGg9IjMiLz4KICA8dGV4dCB4PSIzODQiIHk9IjMyNiIgZmlsbD0iI2UwNTU1NSIgZm9udC1zaXplPSIxMSI+RGVhdGggcmF0ZTwvdGV4dD4KICA8bGluZSB4MT0iNDkwIiB5MT0iMzA1IiB4Mj0iNTE2IiB5Mj0iMzA1IiBzdHJva2U9IiMzZDhmOGEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNSwzIiBvcGFjaXR5PSIwLjciLz4KICA8dGV4dCB4PSIzODQiIHk9IjM0MyIgZmlsbD0iIzNkOGY4YSIgZm9udC1zaXplPSIxMCIgb3BhY2l0eT0iMC43Ij4oZGFzaGVkID0gdG90YWwgcG9wdWxhdGlvbik8L3RleHQ+CgogIDwhLS0gVGl0bGUgLS0+CiAgPHRleHQgeD0iMzAwIiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2M5OTczYSIgZm9udC1zaXplPSIxMiIgZm9udC13ZWlnaHQ9ImJvbGQiIGxldHRlci1zcGFjaW5nPSIxIj5ERU1PR1JBUEhJQyBUUkFOU0lUSU9OIE1PREVMPC90ZXh0Pgo8L3N2Zz4=",
+        "imgCaption": "Demographic Transition Model — birth rate vs. death rate over time",
         "note": "Szostak Ch. 31."
       },
       {
@@ -431,7 +446,7 @@ const ROUNDS = [
         "hint": "One word — the reverse of colonization. It happened remarkably fast, within a single generation after WWII.",
         "diff": "Easy",
         "theme": "map",
-        "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/World_1914_empires_colonies_territory.png/640px-World_1914_empires_colonies_territory.png",
+        "img": "https://profhauselmann.org/hist107/images/empires-1914.png",
         "imgCaption": "Global empires and territories c. 1914",
         "note": "Szostak Ch. 30."
       },
@@ -441,7 +456,7 @@ const ROUNDS = [
         "hint": "One word. It's in the title of Beckert's book. It connected enslaved labor in the American South to factories in Lancashire.",
         "diff": "Easy",
         "theme": "map",
-        "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Gossypium_hirsutum_MS_Carrollton_Calhoun_County.jpg/640px-Gossypium_hirsutum_MS_Carrollton_Calhoun_County.jpg",
+        "img": "https://profhauselmann.org/hist107/images/cotton-field.jpg",
         "imgCaption": "Cotton — the commodity at the center of Beckert's argument",
         "note": "Beckert, Empire of Cotton Ch. 1 — the foundational commodity."
       }
@@ -745,10 +760,24 @@ function nextQ() {
   const isLastQ = qIdx === ROUNDS[roundIdx].questions.length - 1;
   if (isLastQ) {
     revealRoundIdx = roundIdx; revealAnsIdx = 0; revealShown = false;
-    loadReveal(); show('reveal');
+    showInterstitial();
   } else {
     qIdx++; loadQuestion();
   }
+}
+
+function showInterstitial() {
+  const round = ROUNDS[revealRoundIdx];
+  document.getElementById('int-round-label').textContent = round.title + ' — Round complete';
+  document.getElementById('int-summary').innerHTML = round.questions
+    .map((q, i) => `<div><span style="font-family:'DM Mono',monospace;color:var(--gold);font-size:.8rem;">Q${i+1}</span>  ${q.q.replace(/\[.*?\]\s*/,'').substring(0,60)}${q.q.length > 60 ? '…' : ''}</div>`)
+    .join('');
+  show('interstitial');
+}
+
+function proceedToReveal() {
+  loadReveal();
+  show('reveal');
 }
 
 // ── TIMER ─────────────────────────────────────────────────────────────────────
@@ -757,7 +786,11 @@ function resetTimer() {
 }
 function startTimer() {
   clearInterval(timerInterval);
-  timerInterval = setInterval(() => { if (timer <= 0) { clearInterval(timerInterval); return; } timer--; updateTimerDisplay(); }, 1000);
+  timerInterval = setInterval(() => {
+    if (timer <= 0) { clearInterval(timerInterval); nextQ(); return; }
+    timer--;
+    updateTimerDisplay();
+  }, 1000);
 }
 function pauseTimer() { clearInterval(timerInterval); }
 function updateTimerDisplay() {
