@@ -332,10 +332,6 @@
             <label for="eval-section">Section Number:</label>
             <input type="text" id="eval-section" placeholder="e.g., 107-01">
         </div>
-        <div class="form-group" style="flex: 1; min-width: 150px;">
-            <label for="eval-assignment">Assignment / Unit:</label>
-            <input type="text" id="eval-assignment" placeholder="e.g., Week 11 Lab">
-        </div>
     </div>
 </div>
 
@@ -597,7 +593,7 @@
                 document.getElementById(`s${n}-${field}`).addEventListener('input', updateProgress)
             })
         })
-        ;['eval-name', 'eval-section', 'eval-assignment'].forEach(id => {
+        ;['eval-name', 'eval-section'].forEach(id => {
             document.getElementById(id).addEventListener('input', updateProgress)
         })
 
@@ -666,7 +662,6 @@
         const data = {
             evaluator_name:    document.getElementById('eval-name').value.trim(),
             section_number:    document.getElementById('eval-section').value.trim(),
-            assignment:        document.getElementById('eval-assignment').value.trim(),
             students: []
         }
         STUDENTS.forEach(n => {
@@ -688,7 +683,6 @@
         if (!data) return
         document.getElementById('eval-name').value       = data.evaluator_name || ''
         document.getElementById('eval-section').value    = data.section_number || ''
-        document.getElementById('eval-assignment').value = data.assignment || ''
         if (data.students) {
             data.students.forEach((s, i) => {
                 const n = i + 1
@@ -842,7 +836,7 @@
         // Evaluator meta
         doc.setFontSize(10)
         doc.text(`Evaluator: ${data.evaluator_name}`, 20, y); y += 8
-        doc.text(`Section: ${data.section_number}   |   Assignment: ${data.assignment || '—'}`, 20, y); y += 8
+        doc.text(`Section: ${data.section_number}`, 20, y); y += 8
         doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y); y += 14
 
         // Divider
@@ -906,7 +900,7 @@
 
     function clearWork() {
         if (!confirm('Clear all fields? This cannot be undone.')) return
-        ;['eval-name', 'eval-section', 'eval-assignment'].forEach(id => document.getElementById(id).value = '')
+        ;['eval-name', 'eval-section'].forEach(id => document.getElementById(id).value = '')
         STUDENTS.forEach(n => {
             document.getElementById(`s${n}-name`).value  = ''
             document.getElementById(`s${n}-notes`).value = ''
