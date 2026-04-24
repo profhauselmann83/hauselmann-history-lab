@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Part 3: Peer Evaluation | HIST 107</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f0;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        header h1 { margin: 0 0 10px 0; font-size: 2em; }
+        header p { margin: 0; font-size: 1.1em; opacity: 0.9; }
+        nav {
+            background-color: #34495e;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .breadcrumb {
+            background-color: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .breadcrumb a { color: #3498db; text-decoration: none; }
+        .progress-bar {
+            background-color: #ecf0f1;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background-color: #27ae60;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 5px;
+        }
+        .section {
+            background-color: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h3 { color: #2c3e50; margin-top: 20px; }
+        .info-box {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            padding: 20px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        .success-box {
+            background-color: #d4edda;
+            padding: 20px;
+            border-left: 4px solid #27ae60;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Open Sans', sans-serif;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Open Sans', sans-serif;
+            transition: border-color 0.3s;
+            resize: vertical;
+            min-height: 90px;
+            box-sizing: border-box;
+        }
+        .form-group textarea:focus { outline: none; border-color: #3498db; }
+        .help-text {
+            font-size: 0.88em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* ── Rubric table ── */
+        .rubric-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 16px;
+            font-size: 0.93em;
+        }
+        .rubric-table th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .rubric-table th:first-child { width: 22%; }
+        .rubric-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ecf0f1;
+            vertical-align: top;
+        }
+        .rubric-table tr:nth-child(even) td { background-color: #f8f9fa; }
+        .rubric-table .level-name {
+            font-weight: 700;
+            color: #2c3e50;
+            display: block;
+        }
+        .rubric-table .level-pts {
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+
+        /* ── Radio level selector ── */
+        .level-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 8px 0 4px;
+        }
+        .level-btn {
+            flex: 1;
+            min-width: 120px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+            background: white;
+            text-align: left;
+            transition: all 0.18s;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .level-btn:hover { border-color: #3498db; background: #eaf4fb; }
+        .level-btn input[type="radio"] { display: none; }
+        .level-btn .btn-label { font-weight: 700; font-size: 0.93em; display: block; }
+        .level-btn .btn-pts { font-size: 0.82em; color: #7f8c8d; }
+        .level-btn .btn-desc { font-size: 0.82em; color: #555; margin-top: 4px; line-height: 1.35; }
+
+        .level-btn.sel-excellent  { border-color: #27ae60; background: #d4edda; }
+        .level-btn.sel-proficient { border-color: #3498db; background: #e8f4f8; }
+        .level-btn.sel-developing { border-color: #f39c12; background: #fff8e1; }
+        .level-btn.sel-incomplete { border-color: #e74c3c; background: #fdecea; }
+        .level-btn.sel-excellent  .btn-label { color: #155724; }
+        .level-btn.sel-proficient .btn-label { color: #1a5276; }
+        .level-btn.sel-developing .btn-label { color: #856404; }
+        .level-btn.sel-incomplete .btn-label { color: #7b1c1c; }
+
+        /* ── Score display ── */
+        .score-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f0f4f8;
+            border: 1px solid #d0daea;
+            border-radius: 5px;
+            padding: 10px 16px;
+            margin: 12px 0;
+        }
+        .score-display .sd-label {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+        .score-display .sd-value {
+            font-weight: 700;
+            font-size: 1.2em;
+            color: #c0392b;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        /* ── Student block heading ── */
+        .student-heading {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .student-badge {
+            background: #2c3e50;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85em;
+            padding: 5px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .student-name-input {
+            flex: 1;
+        }
+
+        /* ── Divider ── */
+        .student-divider {
+            border: none;
+            border-top: 2px dashed #d5d8dc;
+            margin: 28px 0;
+        }
+
+        /* ── Buttons ── */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .btn-primary   { background-color: #3498db; color: white; }
+        .btn-primary:hover   { background-color: #2980b9; }
+        .btn-success   { background-color: #27ae60; color: white; }
+        .btn-success:hover   { background-color: #229954; }
+        .btn-secondary { background-color: #34495e; color: white; }
+        .btn-secondary:hover { background-color: #2c3e50; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .alert { padding: 15px 20px; margin: 16px 0; border-radius: 5px; font-weight: 500; }
+        .alert-success { background-color: #d4edda; color: #155724; border-left: 4px solid #27ae60; }
+        .alert-error   { background-color: #f8d7da; color: #721c24; border-left: 4px solid #e74c3c; }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 10px; }
+            .level-options { flex-direction: column; }
+            .button-group { flex-direction: column; }
+            .btn { width: 100%; text-align: center; }
+            .student-heading { flex-direction: column; align-items: flex-start; }
+            .student-name-input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⭐ Part 3: Peer Evaluation</h1>
+    <p>HIST 107 | Participation &amp; Engagement (25 pts per student)</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="activities.html">Interactive Activities</a>
+    <a href="research.html">Research Tools</a>
+    <a href="archives.html">Student Archives</a>
+    <a href="blog.html">Blog</a>
+    <a href="https://profhauselmann.org/bss-ai-types.html">AI &amp; Learning</a>
+</nav>
+
+<div class="breadcrumb">
+    <a href="research-hist107.html">← Back to HIST 107 Research Guide</a>
+</div>
+
+<!-- EVALUATOR INFO -->
+<div class="section" style="background-color: #f0f9ff; border-left: 4px solid #3498db;">
+    <h2 style="border-bottom-color: #3498db;">Your Information</h2>
+    <div class="info-box">
+        <strong>Instructions:</strong> You will evaluate each of your three group members below. For each student, select a level for both criteria, then add brief written feedback. When all three are complete, click <strong>Submit to Professor</strong>.
+    </div>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label for="eval-name">Your Name (Evaluator):</label>
+            <input type="text" id="eval-name" placeholder="First and last name">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label for="eval-section">Section Number:</label>
+            <input type="text" id="eval-section" placeholder="e.g., 107-01">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label for="eval-assignment">Assignment / Unit:</label>
+            <input type="text" id="eval-assignment" placeholder="e.g., Week 11 Lab">
+        </div>
+    </div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div id="status-message"></div>
+
+<!-- RUBRIC REFERENCE -->
+<div class="section">
+    <h2>Rubric Reference</h2>
+    <table class="rubric-table">
+        <thead>
+            <tr>
+                <th>Criterion</th>
+                <th>Excellent (9–10)</th>
+                <th>Proficient (7–8)</th>
+                <th>Developing (4–6)</th>
+                <th>Incomplete (0–3)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Research Labs &amp; Workshops</strong></td>
+                <td>Present, prepared, and contributing; engages with feedback</td>
+                <td>Present and participates; engagement varies</td>
+                <td>Present but passive or minimally engaged</td>
+                <td>Absent or disruptive</td>
+            </tr>
+            <tr>
+                <td><strong>Share-Outs &amp; Discussion</strong></td>
+                <td>Offers substantive contributions; builds on others' ideas; asks productive questions</td>
+                <td>Contributes to discussion; not always initiating</td>
+                <td>Contributes rarely or only when called on</td>
+                <td>Does not contribute</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="help-text">Each criterion is scored at the midpoint of its range (Excellent = 10, Proficient = 8, Developing = 5, Incomplete = 2). Scores are scaled to /25.</div>
+</div>
+
+<!-- STUDENT EVALUATIONS -->
+<div class="section" id="eval-section-block">
+    <h2>Student Evaluations</h2>
+
+    <!-- Student 1 -->
+    <div id="student-block-1">
+        <div class="student-heading">
+            <span class="student-badge">Student 1 of 3</span>
+            <div class="student-name-input form-group" style="margin:0; flex:1;">
+                <label for="s1-name" style="display:none;">Name</label>
+                <input type="text" id="s1-name" placeholder="Student name">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Research Labs &amp; Workshops</label>
+            <div class="level-options" id="s1-labs-options">
+                <label class="level-btn" id="s1-labs-excellent">
+                    <input type="radio" name="s1-labs" value="excellent">
+                    <span class="btn-label">Excellent</span>
+                    <span class="btn-pts">9–10 pts</span>
+                    <span class="btn-desc">Present, prepared, and contributing; engages with feedback</span>
+                </label>
+                <label class="level-btn" id="s1-labs-proficient">
+                    <input type="radio" name="s1-labs" value="proficient">
+                    <span class="btn-label">Proficient</span>
+                    <span class="btn-pts">7–8 pts</span>
+                    <span class="btn-desc">Present and participates; engagement varies</span>
+                </label>
+                <label class="level-btn" id="s1-labs-developing">
+                    <input type="radio" name="s1-labs" value="developing">
+                    <span class="btn-label">Developing</span>
+                    <span class="btn-pts">4–6 pts</span>
+                    <span class="btn-desc">Present but passive or minimally engaged</span>
+                </label>
+                <label class="level-btn" id="s1-labs-incomplete">
+                    <input type="radio" name="s1-labs" value="incomplete">
+                    <span class="btn-label">Incomplete</span>
+                    <span class="btn-pts">0–3 pts</span>
+                    <span class="btn-desc">Absent or disruptive</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Share-Outs &amp; Discussion</label>
+            <div class="level-options" id="s1-discussion-options">
+                <label class="level-btn" id="s1-discussion-excellent">
+                    <input type="radio" name="s1-discussion" value="excellent">
+                    <span class="btn-label">Excellent</span>
+                    <span class="btn-pts">9–10 pts</span>
+                    <span class="btn-desc">Substantive contributions; builds on others; asks productive questions</span>
+                </label>
+                <label class="level-btn" id="s1-discussion-proficient">
+                    <input type="radio" name="s1-discussion" value="proficient">
+                    <span class="btn-label">Proficient</span>
+                    <span class="btn-pts">7–8 pts</span>
+                    <span class="btn-desc">Contributes to discussion; not always initiating</span>
+                </label>
+                <label class="level-btn" id="s1-discussion-developing">
+                    <input type="radio" name="s1-discussion" value="developing">
+                    <span class="btn-label">Developing</span>
+                    <span class="btn-pts">4–6 pts</span>
+                    <span class="btn-desc">Contributes rarely or only when called on</span>
+                </label>
+                <label class="level-btn" id="s1-discussion-incomplete">
+                    <input type="radio" name="s1-discussion" value="incomplete">
+                    <span class="btn-label">Incomplete</span>
+                    <span class="btn-pts">0–3 pts</span>
+                    <span class="btn-desc">Does not contribute</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="score-display">
+            <span class="sd-label">Part 3 Score for Student 1</span>
+            <span class="sd-value" id="s1-score">— / 25</span>
+        </div>
+
+        <div class="form-group">
+            <label for="s1-notes">Feedback &amp; Notes</label>
+            <textarea id="s1-notes" placeholder="What did this student do well? What might strengthen their engagement?"></textarea>
+        </div>
+    </div>
+
+    <hr class="student-divider">
+
+    <!-- Student 2 -->
+    <div id="student-block-2">
+        <div class="student-heading">
+            <span class="student-badge">Student 2 of 3</span>
+            <div class="student-name-input form-group" style="margin:0; flex:1;">
+                <input type="text" id="s2-name" placeholder="Student name">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Research Labs &amp; Workshops</label>
+            <div class="level-options" id="s2-labs-options">
+                <label class="level-btn" id="s2-labs-excellent"><input type="radio" name="s2-labs" value="excellent"><span class="btn-label">Excellent</span><span class="btn-pts">9–10 pts</span><span class="btn-desc">Present, prepared, and contributing; engages with feedback</span></label>
+                <label class="level-btn" id="s2-labs-proficient"><input type="radio" name="s2-labs" value="proficient"><span class="btn-label">Proficient</span><span class="btn-pts">7–8 pts</span><span class="btn-desc">Present and participates; engagement varies</span></label>
+                <label class="level-btn" id="s2-labs-developing"><input type="radio" name="s2-labs" value="developing"><span class="btn-label">Developing</span><span class="btn-pts">4–6 pts</span><span class="btn-desc">Present but passive or minimally engaged</span></label>
+                <label class="level-btn" id="s2-labs-incomplete"><input type="radio" name="s2-labs" value="incomplete"><span class="btn-label">Incomplete</span><span class="btn-pts">0–3 pts</span><span class="btn-desc">Absent or disruptive</span></label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Share-Outs &amp; Discussion</label>
+            <div class="level-options" id="s2-discussion-options">
+                <label class="level-btn" id="s2-discussion-excellent"><input type="radio" name="s2-discussion" value="excellent"><span class="btn-label">Excellent</span><span class="btn-pts">9–10 pts</span><span class="btn-desc">Substantive contributions; builds on others; asks productive questions</span></label>
+                <label class="level-btn" id="s2-discussion-proficient"><input type="radio" name="s2-discussion" value="proficient"><span class="btn-label">Proficient</span><span class="btn-pts">7–8 pts</span><span class="btn-desc">Contributes to discussion; not always initiating</span></label>
+                <label class="level-btn" id="s2-discussion-developing"><input type="radio" name="s2-discussion" value="developing"><span class="btn-label">Developing</span><span class="btn-pts">4–6 pts</span><span class="btn-desc">Contributes rarely or only when called on</span></label>
+                <label class="level-btn" id="s2-discussion-incomplete"><input type="radio" name="s2-discussion" value="incomplete"><span class="btn-label">Incomplete</span><span class="btn-pts">0–3 pts</span><span class="btn-desc">Does not contribute</span></label>
+            </div>
+        </div>
+
+        <div class="score-display">
+            <span class="sd-label">Part 3 Score for Student 2</span>
+            <span class="sd-value" id="s2-score">— / 25</span>
+        </div>
+
+        <div class="form-group">
+            <label for="s2-notes">Feedback &amp; Notes</label>
+            <textarea id="s2-notes" placeholder="What did this student do well? What might strengthen their engagement?"></textarea>
+        </div>
+    </div>
+
+    <hr class="student-divider">
+
+    <!-- Student 3 -->
+    <div id="student-block-3">
+        <div class="student-heading">
+            <span class="student-badge">Student 3 of 3</span>
+            <div class="student-name-input form-group" style="margin:0; flex:1;">
+                <input type="text" id="s3-name" placeholder="Student name">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Research Labs &amp; Workshops</label>
+            <div class="level-options" id="s3-labs-options">
+                <label class="level-btn" id="s3-labs-excellent"><input type="radio" name="s3-labs" value="excellent"><span class="btn-label">Excellent</span><span class="btn-pts">9–10 pts</span><span class="btn-desc">Present, prepared, and contributing; engages with feedback</span></label>
+                <label class="level-btn" id="s3-labs-proficient"><input type="radio" name="s3-labs" value="proficient"><span class="btn-label">Proficient</span><span class="btn-pts">7–8 pts</span><span class="btn-desc">Present and participates; engagement varies</span></label>
+                <label class="level-btn" id="s3-labs-developing"><input type="radio" name="s3-labs" value="developing"><span class="btn-label">Developing</span><span class="btn-pts">4–6 pts</span><span class="btn-desc">Present but passive or minimally engaged</span></label>
+                <label class="level-btn" id="s3-labs-incomplete"><input type="radio" name="s3-labs" value="incomplete"><span class="btn-label">Incomplete</span><span class="btn-pts">0–3 pts</span><span class="btn-desc">Absent or disruptive</span></label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Share-Outs &amp; Discussion</label>
+            <div class="level-options" id="s3-discussion-options">
+                <label class="level-btn" id="s3-discussion-excellent"><input type="radio" name="s3-discussion" value="excellent"><span class="btn-label">Excellent</span><span class="btn-pts">9–10 pts</span><span class="btn-desc">Substantive contributions; builds on others; asks productive questions</span></label>
+                <label class="level-btn" id="s3-discussion-proficient"><input type="radio" name="s3-discussion" value="proficient"><span class="btn-label">Proficient</span><span class="btn-pts">7–8 pts</span><span class="btn-desc">Contributes to discussion; not always initiating</span></label>
+                <label class="level-btn" id="s3-discussion-developing"><input type="radio" name="s3-discussion" value="developing"><span class="btn-label">Developing</span><span class="btn-pts">4–6 pts</span><span class="btn-desc">Contributes rarely or only when called on</span></label>
+                <label class="level-btn" id="s3-discussion-incomplete"><input type="radio" name="s3-discussion" value="incomplete"><span class="btn-label">Incomplete</span><span class="btn-pts">0–3 pts</span><span class="btn-desc">Does not contribute</span></label>
+            </div>
+        </div>
+
+        <div class="score-display">
+            <span class="sd-label">Part 3 Score for Student 3</span>
+            <span class="sd-value" id="s3-score">— / 25</span>
+        </div>
+
+        <div class="form-group">
+            <label for="s3-notes">Feedback &amp; Notes</label>
+            <textarea id="s3-notes" placeholder="What did this student do well? What might strengthen their engagement?"></textarea>
+        </div>
+    </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="section">
+    <div class="button-group">
+        <button class="btn btn-success" type="button" onclick="saveWork()">💾 Save Progress</button>
+        <button class="btn btn-secondary" type="button" onclick="exportPDF()">📄 Export as PDF</button>
+        <button class="btn btn-secondary" type="button" onclick="clearWork()">🧹 Clear Form</button>
+        <button class="btn btn-primary" type="button" onclick="submitToSupabase()" id="submitBtn">📤 Submit to Professor</button>
+    </div>
+    <div id="submitMessage"></div>
+</div>
+
+<footer>
+    <p>Prof. Hauselmann | profhauselmann.org</p>
+</footer>
+
+<script>
+    const SUPABASE_URL     = 'https://bqrluqymscucvbiaaeai.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs'
+    const supabaseClient   = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    let currentUser = null
+
+    const LEVEL_VALS = { excellent: 10, proficient: 8, developing: 5, incomplete: 2 }
+    const LEVELS     = ['excellent', 'proficient', 'developing', 'incomplete']
+    const STUDENTS   = [1, 2, 3]
+
+    // ── Auth ────────────────────────────────────────────────────────────────
+    async function checkAuth() {
+        const { data: { user } } = await supabaseClient.auth.getUser()
+        if (user) {
+            currentUser = { id: user.id, email: user.email }
+        } else {
+            const returnTo = window.location.pathname.split('/').pop() || 'peer-evaluation-part3.html'
+            window.location.href = `hist107-student-login.html?return=${encodeURIComponent(returnTo)}`
+            return
+        }
+
+        // Wire up radio buttons
+        STUDENTS.forEach(n => {
+            ['labs', 'discussion'].forEach(criterion => {
+                LEVELS.forEach(level => {
+                    const el = document.getElementById(`s${n}-${criterion}-${level}`)
+                    el.addEventListener('click', () => {
+                        selectLevel(n, criterion, level)
+                        updateProgress()
+                    })
+                })
+            })
+            ;['name', 'notes'].forEach(field => {
+                document.getElementById(`s${n}-${field}`).addEventListener('input', updateProgress)
+            })
+        })
+        ;['eval-name', 'eval-section', 'eval-assignment'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateProgress)
+        })
+
+        await loadWork()
+        updateProgress()
+    }
+
+    // ── Level selection ─────────────────────────────────────────────────────
+    function selectLevel(studentNum, criterion, level) {
+        LEVELS.forEach(l => {
+            const el = document.getElementById(`s${studentNum}-${criterion}-${l}`)
+            el.className = 'level-btn' + (l === level ? ' sel-' + l : '')
+        })
+        updateScore(studentNum)
+    }
+
+    function getSelectedLevel(studentNum, criterion) {
+        return LEVELS.find(l => {
+            const el = document.querySelector(`input[name="s${studentNum}-${criterion}"][value="${l}"]`)
+            return el && el.closest('.level-btn').classList.contains(`sel-${l}`)
+        }) || null
+    }
+
+    function updateScore(studentNum) {
+        const labs = getSelectedLevel(studentNum, 'labs')
+        const disc = getSelectedLevel(studentNum, 'discussion')
+        const el   = document.getElementById(`s${studentNum}-score`)
+
+        if (labs && disc) {
+            const raw    = LEVEL_VALS[labs] + LEVEL_VALS[disc]
+            const scaled = Math.round((raw / 20) * 25)
+            el.textContent = `${scaled} / 25`
+            el.style.color = scaled >= 20 ? '#27ae60' : scaled >= 14 ? '#e67e22' : '#c0392b'
+        } else if (labs || disc) {
+            el.textContent = '? / 25'
+            el.style.color = '#7f8c8d'
+        } else {
+            el.textContent = '— / 25'
+            el.style.color = '#c0392b'
+        }
+    }
+
+    // ── Progress ────────────────────────────────────────────────────────────
+    function updateProgress() {
+        let total = 0, completed = 0
+
+        // Evaluator meta
+        ;['eval-name', 'eval-section'].forEach(id => {
+            total++
+            if (document.getElementById(id).value.trim()) completed++
+        })
+
+        // Per-student
+        STUDENTS.forEach(n => {
+            total += 3  // name, labs, discussion
+            if (document.getElementById(`s${n}-name`).value.trim()) completed++
+            if (getSelectedLevel(n, 'labs'))       completed++
+            if (getSelectedLevel(n, 'discussion')) completed++
+        })
+
+        document.getElementById('progressFill').style.width = ((completed / total) * 100) + '%'
+    }
+
+    // ── Collect / populate ──────────────────────────────────────────────────
+    function collectData() {
+        const data = {
+            evaluator_name:    document.getElementById('eval-name').value.trim(),
+            section_number:    document.getElementById('eval-section').value.trim(),
+            assignment:        document.getElementById('eval-assignment').value.trim(),
+            students: []
+        }
+        STUDENTS.forEach(n => {
+            const labs = getSelectedLevel(n, 'labs')
+            const disc = getSelectedLevel(n, 'discussion')
+            const raw  = (labs && disc) ? LEVEL_VALS[labs] + LEVEL_VALS[disc] : null
+            data.students.push({
+                name:       document.getElementById(`s${n}-name`).value.trim(),
+                labs:       labs,
+                discussion: disc,
+                score:      raw !== null ? Math.round((raw / 20) * 25) : null,
+                notes:      document.getElementById(`s${n}-notes`).value.trim()
+            })
+        })
+        return data
+    }
+
+    function populateForm(data) {
+        if (!data) return
+        document.getElementById('eval-name').value       = data.evaluator_name || ''
+        document.getElementById('eval-section').value    = data.section_number || ''
+        document.getElementById('eval-assignment').value = data.assignment || ''
+        if (data.students) {
+            data.students.forEach((s, i) => {
+                const n = i + 1
+                document.getElementById(`s${n}-name`).value  = s.name  || ''
+                document.getElementById(`s${n}-notes`).value = s.notes || ''
+                if (s.labs)       selectLevel(n, 'labs',       s.labs)
+                if (s.discussion) selectLevel(n, 'discussion', s.discussion)
+            })
+        }
+    }
+
+    // ── Save / Load ─────────────────────────────────────────────────────────
+    async function saveWork(silent = false) {
+        const data = collectData()
+        if (!currentUser) {
+            localStorage.setItem('hist107_peer_eval', JSON.stringify(data))
+            if (!silent) showMessage('✅ Progress saved locally in this browser.', 'success')
+            return
+        }
+        const { error } = await supabaseClient
+            .from('hist107_peer_eval_drafts')
+            .upsert({ ...data, user_id: currentUser.id }, { onConflict: 'user_id' })
+        if (!silent) {
+            error ? showMessage('Error saving: ' + error.message, 'error')
+                  : showMessage('✅ Progress saved!', 'success')
+        }
+    }
+
+    async function loadWork() {
+        if (!currentUser) {
+            const saved = localStorage.getItem('hist107_peer_eval')
+            if (saved) populateForm(JSON.parse(saved))
+            return
+        }
+        const { data, error } = await supabaseClient
+            .from('hist107_peer_eval_drafts')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single()
+        if (!error && data) populateForm(data)
+    }
+
+    // ── Validate ────────────────────────────────────────────────────────────
+    function validate() {
+        const errors = []
+        if (!document.getElementById('eval-name').value.trim())    errors.push('Your name is required.')
+        if (!document.getElementById('eval-section').value.trim()) errors.push('Your section number is required.')
+        STUDENTS.forEach(n => {
+            if (!document.getElementById(`s${n}-name`).value.trim()) errors.push(`Student ${n}: name is required.`)
+            if (!getSelectedLevel(n, 'labs'))                         errors.push(`Student ${n}: Labs & Workshops rating is required.`)
+            if (!getSelectedLevel(n, 'discussion'))                   errors.push(`Student ${n}: Discussion rating is required.`)
+        })
+        return errors
+    }
+
+    // ── Submit ───────────────────────────────────────────────────────────────
+    async function submitToSupabase() {
+        const errors = validate()
+        const msgDiv = document.getElementById('submitMessage')
+        if (errors.length) {
+            msgDiv.innerHTML = `<div class="alert alert-error">⚠️ ${errors.join('  ·  ')}</div>`
+            return
+        }
+        if (!currentUser) {
+            msgDiv.innerHTML = `<div class="alert alert-error">❌ Please log in before submitting. <a href="hist107-student-login.html">Log in here</a>.</div>`
+            return
+        }
+
+        const submitBtn = document.getElementById('submitBtn')
+        submitBtn.disabled = true
+        submitBtn.textContent = '⏳ Submitting...'
+        msgDiv.innerHTML = '<div class="alert" style="background:#fff3cd;color:#856404;border-left:4px solid #ffc107;">Generating PDF and uploading…</div>'
+
+        const data = collectData()
+
+        try {
+            let filePath = null, fileUrl = null
+
+            // Generate + upload PDF
+            try {
+                const pdfBlob = await generatePDFBlob(data)
+                const timestamp    = new Date().toISOString().replace(/[:.]/g, '-')
+                const safeName     = data.evaluator_name.replace(/[^a-zA-Z0-9]/g, '_')
+                const safeSection  = data.section_number.replace(/[^a-zA-Z0-9]/g, '_')
+                const fileName     = `hist107-peer-eval/${safeSection}/${safeName}_peer-eval_${timestamp}.pdf`
+
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('student-submissions')
+                    .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false })
+
+                if (uploadError) {
+                    console.warn('PDF upload failed, continuing with metadata:', uploadError.message)
+                } else {
+                    filePath = fileName
+                    const { data: urlData } = supabaseClient.storage.from('student-submissions').getPublicUrl(fileName)
+                    fileUrl = urlData?.publicUrl || null
+                }
+            } catch (pdfErr) {
+                console.warn('PDF generation/upload skipped:', pdfErr?.message)
+            }
+
+            // Always write the submission record
+            const { error: dbError } = await supabaseClient
+                .from('worksheet_submissions')
+                .insert({
+                    student_name:    data.evaluator_name,
+                    section_number:  data.section_number,
+                    worksheet_type:  'hist107-peer-evaluation-part3',
+                    file_path:       filePath,
+                    file_url:        fileUrl,
+                    form_data:       data,
+                    submitted_at:    new Date().toISOString()
+                })
+
+            if (dbError) throw new Error('Could not save submission record: ' + dbError.message)
+
+            let successHtml = '✅ Successfully submitted! Your peer evaluations have been sent to Prof. Hauselmann.'
+            if (!filePath) {
+                successHtml += '<br><small style="color:#856404;">⚠️ PDF upload did not complete, but your responses were saved. Please also use Export as PDF and email it as a backup.</small>'
+            }
+            msgDiv.innerHTML = `<div class="alert alert-success">${successHtml}</div>`
+            submitBtn.textContent = '✓ Submitted'
+
+        } catch (err) {
+            console.error('Submission error:', err)
+            msgDiv.innerHTML = `<div class="alert alert-error">❌ Submission failed: ${err.message}. Please try again or export the PDF and email it to your professor.</div>`
+            submitBtn.disabled = false
+            submitBtn.textContent = '📤 Submit to Professor'
+        }
+    }
+
+    // ── PDF ──────────────────────────────────────────────────────────────────
+    function buildPDFContent(doc, data) {
+        const lh = 7, pageW = 190, pageH = 280
+        let y = 20
+
+        function checkPage(n) { if (y + n > pageH) { doc.addPage(); y = 20 } }
+        function wrapped(text, x, maxW) {
+            doc.splitTextToSize(text || '', maxW).forEach(line => {
+                if (y + lh > pageH) { doc.addPage(); y = 20 }
+                doc.text(line, x, y); y += lh
+            })
+        }
+
+        // Title
+        doc.setFontSize(16); doc.setFont(undefined, 'bold')
+        doc.text('HIST 107 — Part 3: Peer Evaluation', 105, y, { align: 'center' }); y += 10
+        doc.setFontSize(11); doc.setFont(undefined, 'normal')
+        doc.text('Participation & Engagement (25 pts per student)', 105, y, { align: 'center' }); y += 14
+
+        // Evaluator meta
+        doc.setFontSize(10)
+        doc.text(`Evaluator: ${data.evaluator_name}`, 20, y); y += 8
+        doc.text(`Section: ${data.section_number}   |   Assignment: ${data.assignment || '—'}`, 20, y); y += 8
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y); y += 14
+
+        // Divider
+        doc.setDrawColor(200); doc.line(20, y, 190, y); y += 10
+
+        // Per-student sections
+        data.students.forEach((s, i) => {
+            checkPage(24)
+            doc.setFontSize(13); doc.setFont(undefined, 'bold')
+            doc.text(`Student ${i + 1}: ${s.name || '(no name)'}`, 20, y); y += 9
+
+            doc.setFontSize(10); doc.setFont(undefined, 'normal')
+
+            const levelLabel = (key) => {
+                if (!key) return 'Not rated'
+                return { excellent: 'Excellent (9–10)', proficient: 'Proficient (7–8)', developing: 'Developing (4–6)', incomplete: 'Incomplete (0–3)' }[key]
+            }
+
+            doc.text(`Research Labs & Workshops:  ${levelLabel(s.labs)}`, 25, y); y += 7
+            doc.text(`Share-Outs & Discussion:    ${levelLabel(s.discussion)}`, 25, y); y += 7
+
+            doc.setFont(undefined, 'bold')
+            doc.text(`Part 3 Score: ${s.score !== null ? s.score + ' / 25' : '—'}`, 25, y)
+            doc.setFont(undefined, 'normal'); y += 9
+
+            if (s.notes) {
+                doc.setFont(undefined, 'bold'); doc.text('Feedback:', 25, y); y += 7
+                doc.setFont(undefined, 'normal'); wrapped(s.notes, 30, pageW - 30); y += 3
+            }
+
+            if (i < data.students.length - 1) {
+                checkPage(8); doc.setDrawColor(220); doc.line(20, y + 4, 190, y + 4); y += 12
+            }
+        })
+    }
+
+    function generatePDFBlob(data) {
+        return new Promise(resolve => {
+            const { jsPDF } = window.jspdf
+            const doc = new jsPDF()
+            buildPDFContent(doc, data)
+            resolve(doc.output('blob'))
+        })
+    }
+
+    function exportPDF() {
+        const data = collectData()
+        const { jsPDF } = window.jspdf
+        const doc = new jsPDF()
+        buildPDFContent(doc, data)
+        const safeName = data.evaluator_name.replace(/[^a-zA-Z0-9]/g, '_') || 'student'
+        doc.save(`HIST107_PeerEval_${safeName}_${new Date().toISOString().split('T')[0]}.pdf`)
+        showMessage('✅ PDF exported successfully!', 'success')
+    }
+
+    // ── Utilities ────────────────────────────────────────────────────────────
+    function showMessage(msg, type) {
+        document.getElementById('status-message').innerHTML =
+            `<div class="alert alert-${type === 'success' ? 'success' : 'error'}">${msg}</div>`
+    }
+
+    function clearWork() {
+        if (!confirm('Clear all fields? This cannot be undone.')) return
+        ;['eval-name', 'eval-section', 'eval-assignment'].forEach(id => document.getElementById(id).value = '')
+        STUDENTS.forEach(n => {
+            document.getElementById(`s${n}-name`).value  = ''
+            document.getElementById(`s${n}-notes`).value = ''
+            ;['labs', 'discussion'].forEach(c => {
+                LEVELS.forEach(l => {
+                    document.getElementById(`s${n}-${c}-${l}`).className = 'level-btn'
+                })
+            })
+            document.getElementById(`s${n}-score`).textContent = '— / 25'
+            document.getElementById(`s${n}-score`).style.color = '#c0392b'
+        })
+        localStorage.removeItem('hist107_peer_eval')
+        updateProgress()
+        showMessage('🧹 Form cleared.', 'success')
+    }
+
+    checkAuth()
+</script>
+</body>
+</html>
