@@ -472,6 +472,30 @@
         <div class="content">
             <div id="worksheetContent">
 
+            <!-- Student Information -->
+            <div class="section" style="background: #f0f9ff; border-left: 4px solid #0284c7;">
+                <h2 style="color: #0c4a6e; font-size: 20px; margin-bottom: 15px;">📋 Student Information</h2>
+                <p style="color: #0c4a6e; margin-bottom: 20px; font-size: 14px;"><strong>Fill in your information below. Your section number is the four digits that appear <em>after</em> the course number.</strong></p>
+                <p style="color: #0c4a6e; margin-bottom: 20px; font-size: 13px; background: white; padding: 12px; border-radius: 6px;"><strong>Example:</strong> HIST C1001-1234 → Course: HIST C1001 | Section: 1234</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="question">
+                        <label class="question-label">Your Name</label>
+                        <input type="text" id="student-name" placeholder="First and Last Name">
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">Course Number</label>
+                        <input type="text" id="student-course" placeholder="e.g., HIST C1001">
+                    </div>
+
+                    <div class="question">
+                        <label class="question-label">Section Number</label>
+                        <input type="text" id="student-section" placeholder="e.g., 1234">
+                    </div>
+                </div>
+            </div>
+
             <!-- Introduction -->
             <div class="intro-section">
                 <h2>🔍 What is Lateral Reading?</h2>
@@ -620,6 +644,9 @@
         // ===== LOCAL STORAGE FUNCTIONS =====
         function saveToLocalStorage() {
             const formData = {
+                student_name: document.getElementById('student-name').value,
+                student_course: document.getElementById('student-course').value,
+                student_section: document.getElementById('student-section').value,
                 source1_q1: document.getElementById('source1-q1').value,
                 source1_q2: document.getElementById('source1-q2').value,
                 source1_q3_sources: document.getElementById('source1-q3-sources').value,
@@ -642,6 +669,10 @@
             const savedData = localStorage.getItem('lateralReadingWork');
             if (savedData) {
                 const data = JSON.parse(savedData);
+
+                document.getElementById('student-name').value = data.student_name || '';
+                document.getElementById('student-course').value = data.student_course || '';
+                document.getElementById('student-section').value = data.student_section || '';
 
                 document.getElementById('source1-q1').value = data.source1_q1 || '';
                 document.getElementById('source1-q2').value = data.source1_q2 || '';
@@ -720,6 +751,24 @@
             doc.setFont(undefined, 'normal');
             doc.text('How to Evaluate Online Sources About History', margin, yPosition);
             yPosition += 15;
+
+            // Student Information
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text('Student Information', margin, yPosition);
+            yPosition += 7;
+            
+            doc.setFont(undefined, 'normal');
+            const studentName = document.getElementById('student-name').value || '[Not provided]';
+            const studentCourse = document.getElementById('student-course').value || '[Not provided]';
+            const studentSection = document.getElementById('student-section').value || '[Not provided]';
+            
+            doc.text(`Name: ${studentName}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Course: ${studentCourse}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Section: ${studentSection}`, margin, yPosition);
+            yPosition += 12;
 
             doc.setFontSize(11);
 
