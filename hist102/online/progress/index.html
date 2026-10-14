@@ -460,7 +460,7 @@ body {
   <div class="masthead-left">
     <div>
       <div class="masthead-title">HIST 102 &nbsp;·&nbsp; Instructor Dashboard</div>
-      <div class="masthead-sub">Student Activity &nbsp;·&nbsp; Spring 2026</div>
+      <div class="masthead-sub">Student Activity &nbsp;·&nbsp; <span id="termLabel">Fall 2026</span></div>
     </div>
   </div>
   <div class="masthead-right">
@@ -471,12 +471,13 @@ body {
 
 <!-- ── WEEK TABS ── -->
 <div class="week-tabs">
-  <div class="week-tab active" data-week="w2" onclick="selectWeek('w2', this)">Week 2 — Gilded Age</div>
+  <div class="week-tab active" data-week="w1" onclick="selectWeek('w1', this)">Week 1 — Reconstruction</div>
+  <div class="week-tab" data-week="w2" onclick="selectWeek('w2', this)">Week 2 — Gilded Age</div>
   <div class="week-tab" data-week="w3" onclick="selectWeek('w3', this)">Week 3 — Progressive Era</div>
-  <div class="week-tab" data-week="w4" onclick="selectWeek('w4', this)">Week 4</div>
-  <div class="week-tab" data-week="w5" onclick="selectWeek('w5', this)">Week 5</div>
-  <div class="week-tab" data-week="w6" onclick="selectWeek('w6', this)">Week 6</div>
-  <div class="week-tab" data-week="w7" onclick="selectWeek('w7', this)">Week 7</div>
+  <div class="week-tab" data-week="w4" onclick="selectWeek('w4', this)">Week 4 — World Wars</div>
+  <div class="week-tab" data-week="w5" onclick="selectWeek('w5', this)">Week 5 — Civil Rights</div>
+  <div class="week-tab" data-week="w6" onclick="selectWeek('w6', this)">Week 6 — Cold War &amp; Beyond</div>
+  <div class="week-tab" data-week="w7" onclick="selectWeek('w7', this)">Week 7 — Contemporary America</div>
 </div>
 
 <!-- ── MAIN SHELL ── -->
@@ -533,26 +534,43 @@ body {
 var SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
 var SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
 
-// Page definitions per week
+// ─────────────────────────────────────────────
+//  TERM RESET — only activity on or after this
+//  date is shown. Change it at the start of each
+//  new term to start the dashboard fresh (older
+//  records stay in Supabase, they are just hidden).
+// ─────────────────────────────────────────────
+var TERM_LABEL = 'Fall 2026';
+var TERM_START = '2026-10-15T00:00:00';   // local time
+
+// Page definitions per week (in course order)
 var WEEK_PAGES = {
-  w2: ['overview','video','reading-1','reading-2'],
+  w1: ['overview','video','reading-1','reading-2','primary-sources'],
+  w2: ['overview','video','reading-1','reading-2','primary-sources'],
   w3: ['overview','video','reading-1','source-analysis-1','reading-2','source-analysis-2'],
-  w4: ['overview','video','reading-1','reading-2'],
-  w5: ['overview','video','reading-1','reading-2'],
-  w6: ['overview','video','reading-1','reading-2'],
-  w7: ['overview','video','reading-1','reading-2']
+  w4: ['overview','video','reading-1','source-analysis-1','reading-2','source-analysis-2','reading-3'],
+  w5: ['overview','video','reading-1','source-analysis-1','reading-2','source-analysis-2'],
+  w6: ['overview','video','reading-1','reading-2','reading-3','reading-4','source-analysis-1','source-analysis-2'],
+  w7: ['overview','video','reading-1','reading-2','source-analysis-1','research-paper']
 };
 
 var PAGE_LABELS = {
   'overview':          'Overview',
   'video':             'Video',
   'reading-1':         'Reading 1',
-  'source-analysis-1': 'SA 3.1',
   'reading-2':         'Reading 2',
-  'source-analysis-2': 'SA 3.2'
+  'reading-3':         'Reading 3',
+  'reading-4':         'Reading 4',
+  'source-analysis-1': 'SA 1',
+  'source-analysis-2': 'SA 2',
+  'primary-sources':   'Primary Sources',
+  'research-paper':    'Paper Guide'
 };
 
-var currentWeek = 'w2';
+// Older pages logged the overview as 'index'
+var PAGE_ALIASES = { 'index': 'overview' };
+
+var currentWeek = 'w1';
 
 // ─────────────────────────────────────────────
 //  SUPABASE FETCH HELPER
@@ -593,13 +611,17 @@ async function loadData() {
 
   try {
     var week = currentWeek;
+    var since = encodeURIComponent(new Date(TERM_START).toISOString());
 
-    // Fetch all three tables in parallel
+    // Fetch all three tables in parallel (current term only)
     var [pageViews, gateEntries, pdfDownloads] = await Promise.all([
-      sbQuery('page_views',   'week_id=eq.' + week + '&order=viewed_at.asc&limit=2000'),
-      sbQuery('gate_entries', 'week_id=eq.' + week + '&order=created_at.asc&limit=500'),
-      sbQuery('pdf_downloads','week_id=eq.' + week + '&order=created_at.desc&limit=500')
+      sbQuery('page_views',   'week_id=eq.' + week + '&viewed_at=gte.' + since + '&order=viewed_at.asc&limit=5000'),
+      sbQuery('gate_entries', 'week_id=eq.' + week + '&created_at=gte.' + since + '&order=created_at.asc&limit=1000'),
+      sbQuery('pdf_downloads','week_id=eq.' + week + '&created_at=gte.' + since + '&order=created_at.desc&limit=1000')
     ]);
+    pageViews.forEach(function(row) {
+      if (PAGE_ALIASES[row.page]) row.page = PAGE_ALIASES[row.page];
+    });
 
     renderAll(pageViews, gateEntries, pdfDownloads, week);
     document.getElementById('lastRefresh').textContent =
@@ -617,7 +639,7 @@ async function loadData() {
 //  RENDER ALL SECTIONS
 // ─────────────────────────────────────────────
 function renderAll(pageViews, gateEntries, pdfDownloads, week) {
-  var pages = WEEK_PAGES[week] || WEEK_PAGES['w2'];
+  var pages = WEEK_PAGES[week] || WEEK_PAGES['w1'];
 
   // Build per-student page map
   var studentMap = {};  // wnum → { name, pages: Set, times: [] }
@@ -765,12 +787,14 @@ function renderAlerts(students, gateEntries, pages) {
     }
   });
 
-  // Students who did SA-1 but not SA-2 (Week 3 only)
-  students.forEach(function(s) {
-    if (s.pages.has('source-analysis-1') && !s.pages.has('source-analysis-2')) {
-      alerts.push({ name: s.name, wnum: s.wnum, type: 'Stopped after SA 3.1', badge: 'badge-info' });
-    }
-  });
+  // Students who did SA-1 but not SA-2 (weeks with two source analyses)
+  if (pages.indexOf('source-analysis-2') > -1) {
+    students.forEach(function(s) {
+      if (s.pages.has('source-analysis-1') && !s.pages.has('source-analysis-2')) {
+        alerts.push({ name: s.name, wnum: s.wnum, type: 'Stopped after SA 1', badge: 'badge-info' });
+      }
+    });
+  }
 
   if (alerts.length === 0) {
     document.getElementById('alertsWrap').innerHTML =
@@ -922,6 +946,7 @@ function escHtml(s) {
 // ─────────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────────
+document.getElementById('termLabel').textContent = TERM_LABEL;
 loadData();
 </script>
 </body>

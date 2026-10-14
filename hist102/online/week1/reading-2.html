@@ -590,6 +590,12 @@ function generatePDF(){
 
     var fname = 'HIST102-Week1-ReadingNotes.pdf';
     doc.save(fname);
+
+    // Log to Supabase
+    try{
+      var tok = JSON.parse(localStorage.getItem('hist102_access_w1') || '{}');
+      sbInsert('pdf_downloads',{ student_name:tok.name||'Student', student_w_num:tok.wnum||'', week_id:'w1', filename:fname });
+    }catch(e){}
     status.textContent = '✓ PDF saved — upload to Canvas to complete the assignment.';
 
   } catch(err){
@@ -599,6 +605,22 @@ function generatePDF(){
 }
 </script>
 
+<script src="../supabase-config.js"></script>
+<script>
+(function logPageView() {
+  try {
+    var token = JSON.parse(localStorage.getItem('hist102_access_w1') || '{}');
+    if (token.granted && token.name) {
+      sbInsert('page_views', {
+        student_name:  token.name,
+        student_w_num: token.wnum || '',
+        week_id:       'w1',
+        page:          'reading-2'
+      });
+    }
+  } catch(e) {}
+})();
+</script>
 <script src="../security.js"></script>
 
 </body>
