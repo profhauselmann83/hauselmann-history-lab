@@ -1,5 +1,5 @@
 /**
- * HIST 102 — Week Access Guard
+ * HIST C1002 — Week Access Guard
  * Add to every content page in a week:
  *   <script src="../access-guard.js" data-week="w1" data-gate="gate.html"></script>
  *
