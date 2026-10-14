@@ -1,6 +1,6 @@
 /**
 
-- HIST 102 — Course Security
+- HIST C1002 — Course Security
 - Shared across all weeks via <script src="../security.js"></script>
 - 
 - Protections:

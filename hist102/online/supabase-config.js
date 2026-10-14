@@ -1,5 +1,5 @@
 /**
- * HIST 102 — Supabase Configuration
+ * HIST C1002 — Supabase Configuration
  * ─────────────────────────────────────────────────────────────
  * Replace the two placeholder values below with your actual
  * Supabase project credentials.
