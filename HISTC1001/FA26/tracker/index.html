@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Research Project Tracker</title>
+<style>
+:root{
+  --bg:#f6f5f1; --panel:#fff; --ink:#1d2330; --muted:#667085; --line:#e3e1d9; --accent:#1f4e79;
+  --meets:#d9efe1; --meets-ink:#14633a;
+  --revise:#fde9c8; --revise-ink:#8a4b00;
+  --resub:#d8e6fb; --resub-ink:#1b4a94;
+  --sub:#e8e9ee; --sub-ink:#3b4252;
+  --exc:#ececec; --exc-ink:#6b6b6b;
+  --over:#c0392b;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#14171d; --panel:#1c212b; --ink:#e8eaf0; --muted:#9aa3b2; --line:#2c3340; --accent:#7fb2e5;
+    --meets:#1d3d2b; --meets-ink:#8fd6ac; --revise:#463519; --revise-ink:#f0c27a;
+    --resub:#1f3354; --resub-ink:#9cc0f5; --sub:#2a303c; --sub-ink:#c5cbd8; --exc:#2a2a2a; --exc-ink:#a0a0a0; --over:#ff7b6b; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3{margin:0;line-height:1.2}
+.wrap{max-width:1400px;margin:0 auto;padding:0 16px 48px}
+header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;padding:16px 0 8px}
+header.top h1{font-size:20px}
+header.top .sub{color:var(--muted);font-size:13px}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.danger{color:var(--over)}
+.btn.small{padding:3px 8px;font-size:13px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tab{border:1px solid var(--line);background:var(--panel);padding:7px 16px;border-radius:999px;font-weight:600}
+.tab[aria-selected=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab small{font-weight:400;opacity:.8;margin-left:6px}
+.views{display:flex;gap:18px;border-bottom:1px solid var(--line);margin:6px 0 16px}
+.views button{border:0;background:none;padding:8px 2px;color:var(--muted);border-bottom:2px solid transparent}
+.views button[aria-selected=true]{color:var(--ink);border-color:var(--accent);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card .n{font-size:26px;font-weight:700}
+.card .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.card.warn .n{color:var(--over)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.toolbar input[type=search],.toolbar select,.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 10px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.gridwrap{overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;max-height:72vh}
+table.grid{border-collapse:separate;border-spacing:0;min-width:100%}
+.grid th,.grid td{border-bottom:1px solid var(--line);padding:0;text-align:center}
+.grid thead th{position:sticky;top:0;background:var(--panel);z-index:2;padding:8px 6px;font-size:12px;vertical-align:bottom;min-width:84px;border-bottom:2px solid var(--line)}
+.grid th.name,.grid td.name{position:sticky;left:0;background:var(--panel);z-index:1;text-align:left;min-width:190px;padding:0 10px;border-right:1px solid var(--line)}
+.grid thead th.name{z-index:3}
+.grid td.name button{border:0;background:none;padding:9px 0;text-align:left;width:100%;font-weight:500}
+.grid td.name button:hover{color:var(--accent);text-decoration:underline}
+.grid .wk{color:var(--muted);font-weight:400;display:block}
+.grid .due{color:var(--muted);font-weight:400;display:block;font-size:11px}
+.grid .ttl{display:block;font-weight:700;font-size:13px}
+.bar{height:5px;background:var(--sub);border-radius:3px;margin:5px auto 0;width:60px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .m{background:var(--meets-ink)} .bar .r{background:#d98a1c} .bar .s{background:#6c86b5}
+.cell{width:100%;height:38px;border:0;border-radius:0;font-weight:700;font-size:15px}
+.cell:hover{filter:brightness(.95);outline:2px solid var(--accent);outline-offset:-2px}
+.s-meets{background:var(--meets);color:var(--meets-ink)}
+.s-revise{background:var(--revise);color:var(--revise-ink)}
+.s-resub{background:var(--resub);color:var(--resub-ink)}
+.s-sub{background:var(--sub);color:var(--sub-ink)}
+.s-exc{background:var(--exc);color:var(--exc-ink)}
+.s-missing{background:transparent;color:var(--muted)}
+.cell.overdue{box-shadow:inset 0 0 0 2px var(--over);color:var(--over)}
+.fbdot{font-size:9px;vertical-align:super;margin-left:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.panel h2{font-size:16px;margin-bottom:8px}
+.panel p.help{color:var(--muted);margin:4px 0 10px;font-size:13px}
+.field{display:flex;flex-direction:column;gap:3px;font-size:13px}
+.field label{color:var(--muted)}
+.maprow{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:10px 0}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0}
+.checks label{font-size:13px;display:inline-flex;gap:4px;align-items:center}
+textarea{width:100%;min-height:70px}
+table.simple{border-collapse:collapse;width:100%;font-size:13px}
+table.simple th,table.simple td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+table.simple tr.bad td{background:color-mix(in srgb,var(--over) 10%,transparent)}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);background:var(--bg);border-left:1px solid var(--line);box-shadow:-8px 0 30px rgba(0,0,0,.18);z-index:20;overflow:auto;padding:16px}
+.drawer .hd{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+details.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+details.item summary{cursor:pointer;padding:10px 12px;display:flex;gap:8px;align-items:center;list-style:none}
+details.item summary::-webkit-details-marker{display:none}
+details.item summary .t{flex:1;font-weight:600;font-size:14px}
+details.item .body{padding:0 12px 12px}
+.fb{border-left:3px solid var(--accent);background:var(--bg);padding:8px 10px;margin:8px 0;border-radius:0 8px 8px 0;white-space:pre-wrap;font-size:14px}
+.fb .meta{color:var(--muted);font-size:12px;margin-bottom:4px;display:flex;gap:8px;align-items:center}
+.login{max-width:380px;margin:12vh auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
+.login h1{font-size:20px;margin-bottom:4px}
+.login .field{margin:12px 0}
+.banner{background:var(--revise);color:var(--revise-ink);padding:8px 14px;border-radius:8px;margin:10px 0;font-size:13px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:90vw}
+.err{color:var(--over);font-size:13px;min-height:1em}
+.blur .nm{filter:blur(6px);user-select:none}
+.empty{padding:36px;text-align:center;color:var(--muted)}
+@media (max-width:640px){ .grid th.name,.grid td.name{min-width:130px} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+"use strict";
+/* ====================================================================
+   Helpers
+==================================================================== */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const todayStr = () => new Date().toLocaleDateString("en-CA");
+const norm = s => String(s ?? "").toLowerCase().replace(/[^a-z0-9@. ]+/g, " ").replace(/\s+/g, " ").trim();
+const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + s.length.toString(36); };
+const fmtDate = d => d ? new Date(d + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
+function toast(msg, ms = 3200) {
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), ms);
+}
+
+const STATUS = {
+  meets:       { label: "Meets Standard",    sym: "✓", cls: "s-meets" },
+  revise:      { label: "Revise & Resubmit", sym: "↻", cls: "s-revise" },
+  resubmitted: { label: "Resubmitted",       sym: "⟳", cls: "s-resub" },
+  submitted:   { label: "Submitted",         sym: "•", cls: "s-sub" },
+  excused:     { label: "Excused",           sym: "E", cls: "s-exc" },
+  missing:     { label: "Not yet",           sym: "",  cls: "s-missing" },
+};
+const DONE = new Set(["meets", "excused"]);
+
+const DEFAULT_ITEMS = [
+  ["A1", "Packet A1: Democratic Norms and “Dear Son”", "reading", 8],
+  ["CP1", "Checkpoint 1: Terms and Reading Notes", "checkpoint", 8],
+  ["A2", "Packet A2: The Nightmare of Despotism and the Documents of 1798", "reading", 8],
+  ["CP2", "Checkpoint 2: Research Question Proposal", "checkpoint", 9],
+  ["B", "Packet B: The Resolutions and the Debates", "reading", 10],
+  ["CP3", "Checkpoint 3: Interview Brief", "checkpoint", 11],
+  ["CP4", "Checkpoint 4: Simulation Reflection", "checkpoint", 11],
+  ["C", "Packet C: The Sedition Act in Court", "reading", 10],
+  ["CP5", "Checkpoint 5: Evidence Map and Outline", "checkpoint", 12],
+  ["CP6", "Checkpoint 6: Full Draft", "checkpoint", 13],
+  ["FINAL", "Final Paper", "final", 14],
+].map(([key, title, kind, week], i) => ({ key, title, kind, week, sort: i + 1 }));
+
+/* ====================================================================
+   Tiny CSV / JSON parsing
+==================================================================== */
+function parseCSV(text) {
+  text = text.replace(/^﻿/, "");
+  const first = text.split(/\r?\n/, 1)[0] || "";
+  const delim = (first.match(/\t/g) || []).length > (first.match(/,/g) || []).length ? "\t" : ",";
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === delim) { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); cell = ""; rows.push(row); row = [];
+    } else cell += c;
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(v => String(v).trim() !== ""));
+}
+function parseTable(text) {
+  text = (text || "").trim();
+  if (!text) return { headers: [], rows: [] };
+  if (text[0] === "[" || text[0] === "{") {
+    let data = JSON.parse(text);
+    if (!Array.isArray(data)) {
+      const arr = Object.values(data).find(Array.isArray);
+      data = arr || [data];
+    }
+    const headers = [];
+    data.forEach(o => Object.keys(o || {}).forEach(k => { if (!headers.includes(k)) headers.push(k); }));
+    const rows = data.map(o => Object.fromEntries(headers.map(h => [h, o[h] == null ? "" : typeof o[h] === "object" ? JSON.stringify(o[h]) : String(o[h])])));
+    return { headers, rows };
+  }
+  const grid = parseCSV(text);
+  const headers = grid[0].map((h, i) => (h || "").trim() || `Column ${i + 1}`);
+  const rows = grid.slice(1).map(r => Object.fromEntries(headers.map((h, i) => [h, (r[i] ?? "").trim()])));
+  return { headers, rows };
+}
+
+/* ====================================================================
+   Data layer: Supabase adapter and an in-memory demo adapter
+==================================================================== */
+const cfg = window.TRACKER_CONFIG || {};
+const DEMO = new URLSearchParams(location.search).has("demo") || !(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) || !window.supabase;
+
+function makeSupabaseApi() {
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  async function all(table, order) {
+    let out = [], from = 0;
+    for (;;) {
+      let q = sb.from(table).select("*").range(from, from + 999);
+      if (order) q = q.order(order);
+      const { data, error } = await q;
+      if (error) throw error;
+      out = out.concat(data);
+      if (data.length < 1000) break;
+      from += 1000;
+    }
+    return out;
+  }
+  const chunks = (arr, n = 500) => Array.from({ length: Math.ceil(arr.length / n) }, (_, i) => arr.slice(i * n, i * n + n));
+  return {
+    demo: false, sb,
+    async loadAll() {
+      const [sections, students, items, progress, feedback, due] = await Promise.all([
+        all("sections", "code"), all("students", "last_name"), all("items", "sort"),
+        all("progress"), all("feedback", "created_at"), all("due_dates")]);
+      return { sections, students, items, progress, feedback, due };
+    },
+    async setProgress(rows) {
+      for (const c of chunks(rows)) {
+        const { error } = await sb.from("progress").upsert(c.map(r => ({ ...r, updated_at: new Date().toISOString() })), { onConflict: "student_id,item_key" });
+        if (error) throw error;
+      }
+    },
+    async addFeedback(rows) {
+      for (const c of chunks(rows)) {
+        const { error } = await sb.from("feedback").upsert(c, { onConflict: "student_id,item_key,hash", ignoreDuplicates: true });
+        if (error) throw error;
+      }
+    },
+    async deleteFeedback(id) { const { error } = await sb.from("feedback").delete().eq("id", id); if (error) throw error; },
+    async upsertStudents(rows) {
+      for (const c of chunks(rows)) {
+        const { error } = await sb.from("students").upsert(c, { onConflict: "section_id,student_ref" });
+        if (error) throw error;
+      }
+    },
+    async setDue(section_id, item_key, due) {
+      const q = due
+        ? sb.from("due_dates").upsert({ section_id, item_key, due }, { onConflict: "section_id,item_key" })
+        : sb.from("due_dates").delete().eq("section_id", section_id).eq("item_key", item_key);
+      const { error } = await q; if (error) throw error;
+    },
+  };
+}
+
+function makeDemoApi() {
+  const sections = [5631, 5632, 5633].map((c, i) => ({ id: i + 1, code: String(c), title: "HIST C1001 · Section " + c }));
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const F = ["Avery", "Jordan", "Riley", "Casey", "Morgan", "Quinn", "Rowan", "Sage", "Dakota", "Emery", "Harper", "Reese"];
+  const L = ["Alder", "Birch", "Cedar", "Dunmore", "Ellery", "Fenwick", "Garrow", "Hollis", "Ingram", "Juniper", "Kestrel", "Linden"];
+  const students = [], progress = [], feedback = [];
+  const items = DEFAULT_ITEMS;
+  let n = 0;
+  sections.forEach(s => {
+    for (let i = 0; i < 9; i++) {
+      const id = "demo-" + (++n);
+      students.push({ id, section_id: s.id, student_ref: "D" + (100000 + n * 37), first_name: F[(i + s.id * 3) % 12], last_name: L[(i * 5 + s.id) % 12], email: `student${n}@example.edu` });
+      const depth = 4 + Math.floor(rnd() * 3);
+      items.forEach((it, k) => {
+        if (k >= depth) return;
+        const r = rnd();
+        const st = r < 0.1 ? null : r < 0.6 ? "meets" : r < 0.85 ? "revise" : "submitted";
+        if (!st) return;
+        progress.push({ student_id: id, item_key: it.key, status: st, note: null });
+        if (it.kind === "checkpoint" && st !== "submitted") feedback.push({
+          id: "fb" + feedback.length, student_id: id, item_key: it.key, source: "playlab", hash: "h" + feedback.length, created_at: new Date().toISOString(),
+          body: st === "meets" ? "Strengths: Your definition of mutual toleration is in your own words and your examples are specific.\nNext step: Add the timestamp for your second example."
+            : "Strengths: Clear effort to connect Schiff to the norms.\nNext step: Two of your five moments are not marked kept, strained, or broken. Revise and Resubmit."
+        });
+      });
+    }
+  });
+  const base = new Date(); const d = k => { const x = new Date(base); x.setDate(x.getDate() + k); return x.toLocaleDateString("en-CA"); };
+  const due = [];
+  sections.forEach(s => ["A1:-9", "CP1:-9", "A2:-2", "CP2:-2", "B:5", "CP3:12", "CP4:12", "C:19", "CP5:19", "CP6:26", "FINAL:40"].forEach(p => { const [k, o] = p.split(":"); due.push({ section_id: s.id, item_key: k, due: d(+o) }); }));
+  const store = { sections, students, items, progress, feedback, due };
+  const clone = o => JSON.parse(JSON.stringify(o));
+  return {
+    demo: true,
+    async loadAll() { return clone(store); },
+    async setProgress(rows) { rows.forEach(r => { const i = store.progress.findIndex(p => p.student_id === r.student_id && p.item_key === r.item_key); if (i >= 0) Object.assign(store.progress[i], r); else store.progress.push({ note: null, ...r }); }); },
+    async addFeedback(rows) { rows.forEach(r => { if (!store.feedback.some(f => f.student_id === r.student_id && f.item_key === r.item_key && f.hash === r.hash)) store.feedback.push({ id: "fb" + Math.random().toString(36).slice(2), created_at: new Date().toISOString(), ...r }); }); },
+    async deleteFeedback(id) { store.feedback = store.feedback.filter(f => f.id !== id); },
+    async upsertStudents(rows) { rows.forEach(r => { const i = store.students.findIndex(s => s.section_id === r.section_id && s.student_ref === r.student_ref); if (i >= 0) Object.assign(store.students[i], r); else store.students.push({ id: "demo-new-" + Math.random().toString(36).slice(2), ...r }); }); },
+    async setDue(section_id, item_key, dueV) { store.due = store.due.filter(x => !(x.section_id === section_id && x.item_key === item_key)); if (dueV) store.due.push({ section_id, item_key, due: dueV }); },
+  };
+}
+
+/* ====================================================================
+   State
+==================================================================== */
+let api, D = null;              // D = loaded data
+const S = { sectionId: null, view: "grid", hideNames: false, q: "", only: "all", drawer: null, imp: { roster: null, fb: null } };
+const progMap = new Map();      // `${student}|${item}` -> row
+let dueMap = new Map();         // `${section}|${item}` -> date
+let fbByKey = new Map();        // `${student}|${item}` -> [feedback]
+
+function indexData() {
+  progMap.clear(); fbByKey.clear(); dueMap = new Map();
+  D.progress.forEach(p => progMap.set(p.student_id + "|" + p.item_key, p));
+  D.feedback.forEach(f => { const k = f.student_id + "|" + f.item_key; (fbByKey.get(k) || fbByKey.set(k, []).get(k)).push(f); });
+  D.due.forEach(x => dueMap.set(x.section_id + "|" + x.item_key, x.due));
+  D.students.sort((a, b) => (a.last_name || "").localeCompare(b.last_name || "") || (a.first_name || "").localeCompare(b.first_name || ""));
+}
+const statusOf = (sid, key) => progMap.get(sid + "|" + key)?.status || "missing";
+const dueOf = (secId, key) => dueMap.get(secId + "|" + key) || null;
+const isOverdue = (st, secId, key) => { const d = dueOf(secId, key); return st === "missing" && d && d < todayStr(); };
+const studentsIn = secId => D.students.filter(s => s.section_id === secId);
+const nameOf = s => [s.first_name, s.last_name].filter(Boolean).join(" ") || s.student_ref;
+const section = () => D.sections.find(s => s.id === S.sectionId);
+
+async function reload() {
+  D = await api.loadAll(); indexData();
+  if (!D.sections.find(s => s.id === S.sectionId)) S.sectionId = D.sections[0]?.id ?? null;
+  render();
+}
+
+/* ====================================================================
+   Boot and login
+==================================================================== */
+async function boot() {
+  if (DEMO) { api = makeDemoApi(); await reload(); return; }
+  api = makeSupabaseApi();
+  const { data } = await api.sb.auth.getSession();
+  api.sb.auth.onAuthStateChange((ev, session) => { if (ev === "SIGNED_OUT") renderLogin(); });
+  if (data.session) await enter(); else renderLogin();
+}
+async function enter() {
+  try { await reload(); if (!D.sections.length) throw new Error("no-access"); }
+  catch (e) {
+    await api.sb.auth.signOut();
+    renderLogin("This account is not authorized to view the tracker (or the database is not set up yet). See README step 4.");
+  }
+}
+function renderLogin(msg = "") {
+  $("#app").innerHTML = `
+  <form class="login" id="loginForm">
+    <h1>Research Project Tracker</h1>
+    <div style="color:var(--muted);font-size:13px">HIST C1001 · Instructor sign-in</div>
+    <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <div class="err" id="loginErr">${esc(msg)}</div>
+    <button class="btn primary" style="width:100%">Sign in</button>
+  </form>`;
+  $("#loginForm").onsubmit = async e => {
+    e.preventDefault();
+    $("#loginErr").textContent = "";
+    const { error } = await api.sb.auth.signInWithPassword({ email: $("#em").value.trim(), password: $("#pw").value });
+    if (error) { $("#loginErr").textContent = error.message; return; }
+    await enter();
+  };
+}
+
+/* ====================================================================
+   Rendering
+==================================================================== */
+function render() {
+  const sec = section();
+  const sts = sec ? studentsIn(sec.id) : [];
+  $("#app").innerHTML = `
+  <div class="wrap ${S.hideNames ? "blur" : ""}">
+    <header class="top">
+      <div><h1>Research Project Tracker</h1><div class="sub">HIST C1001 · Forbearance, Mutual Toleration, and 1798</div></div>
+      <div class="spacer"></div>
+      <label class="btn small"><input type="checkbox" data-action="toggleNames" ${S.hideNames ? "checked" : ""}> Hide names</label>
+      ${api.demo ? "" : `<button class="btn small" data-action="signout">Sign out</button>`}
+    </header>
+    ${api.demo ? `<div class="banner">Demo data with fictional students. Nothing here is saved${!cfg.SUPABASE_URL ? " (Supabase is not connected yet; see README)" : !window.supabase ? " (the Supabase library failed to load; check your connection and reload)" : ""}.</div>` : ""}
+    <div class="tabs" role="tablist">
+      ${D.sections.map(s => `<button class="tab" role="tab" aria-selected="${s.id === S.sectionId}" data-action="section" data-id="${s.id}">${esc(s.code)}<small>${studentsIn(s.id).length} students</small></button>`).join("")}
+    </div>
+    <div class="views">
+      ${[["grid", "Progress"], ["import", "Import"], ["settings", "Due dates"]].map(([v, l]) => `<button aria-selected="${S.view === v}" data-action="view" data-view="${v}">${l}</button>`).join("")}
+    </div>
+    <div id="main">${S.view === "grid" ? gridHTML(sec, sts) : S.view === "import" ? importHTML() : settingsHTML(sec)}</div>
+  </div>
+  <div id="drawerMount"></div>`;
+  if (S.view === "import") wireImport();
+  if (S.drawer) renderDrawer();
+}
+
+function statsFor(sec, sts) {
+  let done = 0, total = sts.length * D.items.length, revise = 0, over = 0, fb = 0;
+  sts.forEach(s => D.items.forEach(it => {
+    const st = statusOf(s.id, it.key);
+    if (DONE.has(st)) done++; if (st === "revise") revise++; if (isOverdue(st, sec.id, it.key)) over++;
+    fb += (fbByKey.get(s.id + "|" + it.key) || []).length;
+  }));
+  return { done, total, revise, over, fb };
+}
+function studentFlags(sec, s) {
+  let revise = 0, over = 0, any = 0;
+  D.items.forEach(it => { const st = statusOf(s.id, it.key); if (st === "revise") revise++; if (isOverdue(st, sec.id, it.key)) over++; if (st !== "missing") any++; });
+  return { revise, over, any };
+}
+
+function gridHTML(sec, sts) {
+  if (!sec) return `<div class="empty">No sections yet. Run schema.sql in Supabase.</div>`;
+  if (!sts.length) return `<div class="empty">No students in ${esc(sec.code)} yet.<br><br><button class="btn primary" data-action="view" data-view="import">Import a roster</button></div>`;
+  const st = statsFor(sec, sts);
+  const q = norm(S.q);
+  const list = sts.filter(s => {
+    if (q && !norm(nameOf(s) + " " + s.student_ref + " " + (s.email || "")).includes(q)) return false;
+    const f = studentFlags(sec, s);
+    if (S.only === "revise") return f.revise > 0;
+    if (S.only === "overdue") return f.over > 0;
+    if (S.only === "none") return f.any === 0;
+    return true;
+  });
+  return `
+  <div class="cards">
+    <div class="card"><div class="n">${sts.length}</div><div class="l">Students</div></div>
+    <div class="card"><div class="n">${Math.round(100 * st.done / Math.max(1, st.total))}%</div><div class="l">Items complete</div></div>
+    <div class="card ${st.revise ? "warn" : ""}"><div class="n">${st.revise}</div><div class="l">Awaiting revision</div></div>
+    <div class="card ${st.over ? "warn" : ""}"><div class="n">${st.over}</div><div class="l">Overdue, not submitted</div></div>
+    <div class="card"><div class="n">${st.fb}</div><div class="l">Feedback entries</div></div>
+  </div>
+  <div class="toolbar">
+    <input type="search" id="q" placeholder="Search students" value="${esc(S.q)}">
+    <select id="only">
+      ${[["all", "All students"], ["revise", "Has revision requested"], ["overdue", "Has overdue work"], ["none", "No work recorded yet"]].map(([v, l]) => `<option value="${v}" ${S.only === v ? "selected" : ""}>${l}</option>`).join("")}
+    </select>
+    <span style="color:var(--muted);font-size:13px">${list.length} shown</span>
+    <div class="spacer"></div>
+    <div class="legend">${["meets", "revise", "resubmitted", "submitted", "excused"].map(k => `<span><span class="pill ${STATUS[k].cls}">${STATUS[k].sym}</span>${STATUS[k].label}</span>`).join("")}<span><span class="pill" style="box-shadow:inset 0 0 0 2px var(--over)">&nbsp;</span>Overdue</span></div>
+  </div>
+  <div class="gridwrap"><table class="grid">
+    <thead><tr><th class="name">Student</th>
+    ${D.items.map(it => {
+      let m = 0, r = 0, s2 = 0;
+      sts.forEach(s => { const x = statusOf(s.id, it.key); if (DONE.has(x)) m++; else if (x === "revise") r++; else if (x !== "missing") s2++; });
+      const n = sts.length;
+      return `<th title="${esc(it.title)}"><span class="ttl">${esc(it.key === "FINAL" ? "Final" : it.kind === "checkpoint" ? "CP" + it.key.slice(2) : "Packet " + it.key)}</span><span class="wk">Wk ${it.week ?? ""}</span><span class="due">${dueOf(sec.id, it.key) ? "due " + fmtDate(dueOf(sec.id, it.key)) : "no date"}</span>
+        <div class="bar" title="${m} complete, ${r} revise, ${s2} submitted of ${n}"><i class="m" style="width:${100 * m / n}%"></i><i class="r" style="width:${100 * r / n}%"></i><i class="s" style="width:${100 * s2 / n}%"></i></div></th>`;
+    }).join("")}</tr></thead>
+    <tbody>
+    ${list.map(s => `<tr><td class="name"><button data-action="open" data-sid="${s.id}"><span class="nm">${esc(nameOf(s))}</span></button></td>
+      ${D.items.map(it => {
+        const x = statusOf(s.id, it.key), o = isOverdue(x, sec.id, it.key), n = (fbByKey.get(s.id + "|" + it.key) || []).length;
+        return `<td><button class="cell ${STATUS[x].cls} ${o ? "overdue" : ""}" data-action="open" data-sid="${s.id}" data-item="${it.key}" title="${esc(STATUS[x].label + (o ? " (overdue)" : "") + " · " + it.title)}">${o ? "!" : STATUS[x].sym}${n ? `<span class="fbdot">●</span>` : ""}</button></td>`;
+      }).join("")}</tr>`).join("") || `<tr><td class="empty" colspan="${D.items.length + 1}">No students match.</td></tr>`}
+    </tbody></table></div>`;
+}
+
+function settingsHTML(sec) {
+  if (!sec) return "";
+  return `<div class="panel"><h2>Due dates for section ${esc(sec.code)}</h2>
+  <p class="help">Dates drive the “overdue” flags. Leave blank for no date. Changes save as soon as you pick a date.</p>
+  <table class="simple"><tbody>
+  ${D.items.map(it => `<tr><td>Wk ${it.week ?? ""}</td><td>${esc(it.title)}</td>
+    <td><input type="date" data-due="${it.key}" value="${dueOf(sec.id, it.key) || ""}"></td></tr>`).join("")}
+  </tbody></table>
+  <p style="margin-top:12px"><button class="btn" data-action="copyDue">Copy these dates to the other sections</button></p></div>`;
+}
+
+/* ---------------------------- drawer --------------------------------- */
+function renderDrawer() {
+  const { sid, item } = S.drawer;
+  const s = D.students.find(x => x.id === sid); if (!s) { S.drawer = null; return; }
+  const sec = D.sections.find(x => x.id === s.section_id);
+  $("#drawerMount").innerHTML = `<aside class="drawer ${S.hideNames ? "blur" : ""}" role="dialog" aria-label="Student detail">
+    <div class="hd"><div style="flex:1"><h2 class="nm">${esc(nameOf(s))}</h2>
+      <div style="color:var(--muted);font-size:13px">Section ${esc(sec.code)} · <span class="nm">${esc(s.student_ref)}${s.email ? " · " + esc(s.email) : ""}</span></div></div>
+      <button class="btn small" data-action="close">Close</button></div>
+    ${D.items.map(it => {
+      const p = progMap.get(sid + "|" + it.key), st = p?.status || "missing", fbs = fbByKey.get(sid + "|" + it.key) || [];
+      return `<details class="item" ${item === it.key ? "open" : ""} id="it-${it.key}">
+        <summary><span class="pill ${STATUS[st].cls}" style="min-width:28px;text-align:center">${STATUS[st].sym || "–"}</span><span class="t">${esc(it.title)}</span>
+        ${fbs.length ? `<span style="color:var(--muted);font-size:12px">${fbs.length} feedback</span>` : ""}</summary>
+        <div class="body">
+          <div class="field"><label>Status</label>
+            <select data-status data-sid="${sid}" data-item="${it.key}">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === st ? "selected" : ""}>${v.label}</option>`).join("")}</select></div>
+          <div class="field" style="margin-top:8px"><label>Your private note</label>
+            <textarea data-note data-sid="${sid}" data-item="${it.key}" placeholder="e.g. emailed about interview backup">${esc(p?.note || "")}</textarea></div>
+          <div style="margin-top:8px;font-size:13px;color:var(--muted)">Feedback</div>
+          ${fbs.map(f => `<div class="fb"><div class="meta"><span>${esc(f.source || "")}</span><span>${esc((f.received_at || f.created_at || "").slice(0, 10))}</span>
+            <span class="spacer"></span><button class="btn small danger" data-action="delfb" data-id="${f.id}">Delete</button></div>${esc(f.body)}</div>`).join("") || `<div style="color:var(--muted);font-size:13px">None yet.</div>`}
+          <div class="field" style="margin-top:8px"><label>Add feedback by hand</label>
+            <textarea data-newfb data-sid="${sid}" data-item="${it.key}" placeholder="Paste feedback here"></textarea></div>
+          <button class="btn small" style="margin-top:6px" data-action="addfb" data-sid="${sid}" data-item="${it.key}">Save feedback</button>
+        </div></details>`;
+    }).join("")}
+  </aside>`;
+  if (item) setTimeout(() => $("#it-" + item)?.scrollIntoView({ block: "nearest" }), 0);
+}
+
+/* ---------------------------- mutations ------------------------------ */
+async function setStatus(sid, key, status, note) {
+  const old = progMap.get(sid + "|" + key);
+  const row = { student_id: sid, item_key: key, status: status ?? old?.status ?? "missing", note: note !== undefined ? note : (old?.note ?? null) };
+  try {
+    await api.setProgress([row]);
+    progMap.set(sid + "|" + key, { ...old, ...row });
+    const i = D.progress.findIndex(p => p.student_id === sid && p.item_key === key);
+    if (i >= 0) D.progress[i] = progMap.get(sid + "|" + key); else D.progress.push(progMap.get(sid + "|" + key));
+  } catch (e) { toast("Could not save: " + e.message); await reload(); }
+}
+function keepDrawerOpenStates() { return new Set($$("details.item[open]").map(d => d.id)); }
+function rerenderKeeping() {
+  const open = keepDrawerOpenStates(), sc = $(".drawer")?.scrollTop || 0;
+  render(); open.forEach(id => { const d = document.getElementById(id); if (d) d.open = true; });
+  const dr = $(".drawer"); if (dr) dr.scrollTop = sc;
+}
+
+/* ====================================================================
+   Import
+==================================================================== */
+function importHTML() {
+  return `
+  <div class="panel"><h2>1 · Roster</h2>
+    <p class="help">Upload a CSV (or paste it). Columns can be named almost anything: section, student ID, first name, last name, full name, email. Re-importing updates existing students instead of duplicating them.</p>
+    <div class="toolbar"><input type="file" id="rosterFile" accept=".csv,.tsv,.txt,.json">
+      <label class="field" style="flex-direction:row;align-items:center;gap:6px">Default section
+      <select id="rosterSec">${D.sections.map(s => `<option value="${s.id}" ${s.id === S.sectionId ? "selected" : ""}>${esc(s.code)}</option>`).join("")}</select></label></div>
+    <textarea id="rosterText" placeholder="…or paste CSV here (first row = column names)"></textarea>
+    <p><button class="btn" id="rosterParse">Read roster</button></p>
+    <div id="rosterOut"></div></div>
+
+  <div class="panel"><h2>2 · Playlab feedback</h2>
+    <p class="help">Upload the export as CSV or JSON (or paste it). You pick which column is the student, which holds the feedback, and (optionally) which says which checkpoint it belongs to. You will see a preview before anything is saved, and uploading the same file twice will not create duplicates.</p>
+    <div class="toolbar"><input type="file" id="fbFile" accept=".csv,.tsv,.txt,.json">
+      <label class="field" style="flex-direction:row;align-items:center;gap:6px">Match students in
+      <select id="fbScope"><option value="all">all sections</option>${D.sections.map(s => `<option value="${s.id}" ${s.id === S.sectionId ? "selected" : ""}>${esc(s.code)} only</option>`).join("")}</select></label></div>
+    <textarea id="fbText" placeholder="…or paste CSV/JSON here"></textarea>
+    <p><button class="btn" id="fbParse">Read feedback</button></p>
+    <div id="fbOut"></div></div>`;
+}
+
+function guess(headers, re) { return headers.find(h => re.test(h)) || ""; }
+function mapperHTML(prefix, headers, fields) {
+  return `<div class="maprow">${fields.map(f => `<div class="field"><label>${f.label}${f.req ? " *" : ""}</label>
+    <select id="${prefix}-${f.key}"><option value="">${f.req ? "— choose —" : "— none —"}</option>
+    ${headers.map(h => `<option value="${esc(h)}" ${guess(headers, f.re) === h ? "selected" : ""}>${esc(h)}</option>`).join("")}</select></div>`).join("")}</div>`;
+}
+const pick = (prefix, key) => $("#" + prefix + "-" + key)?.value || "";
+
+function wireImport() {
+  const readFile = (inp, ta) => inp.addEventListener("change", async () => { const f = inp.files[0]; if (f) ta.value = await f.text(); });
+  readFile($("#rosterFile"), $("#rosterText")); readFile($("#fbFile"), $("#fbText"));
+  $("#rosterParse").onclick = () => {
+    try { S.imp.roster = parseTable($("#rosterText").value); } catch (e) { return toast("Could not read that: " + e.message); }
+    const { headers, rows } = S.imp.roster;
+    if (!rows.length) return toast("No rows found.");
+    $("#rosterOut").innerHTML = `<p><b>${rows.length}</b> rows found. Check the column matches:</p>` +
+      mapperHTML("r", headers, [
+        { key: "section", label: "Section", re: /section|class|course|crn/i },
+        { key: "ref", label: "Student ID / username", re: /student.?id|^id$|user|ref|emplid|cid/i },
+        { key: "first", label: "First name", re: /first|given|preferred/i },
+        { key: "last", label: "Last name", re: /last|sur|family/i },
+        { key: "full", label: "Full name (if no first/last)", re: /^name$|full.?name|student.?name/i },
+        { key: "email", label: "Email", re: /e-?mail/i },
+      ]) + `<div id="rosterPrev"></div><button class="btn primary" id="rosterGo">Import roster</button>`;
+    $$("#rosterOut select").forEach(s => s.onchange = rosterPreview); rosterPreview();
+    $("#rosterGo").onclick = rosterCommit;
+  };
+  $("#fbParse").onclick = () => {
+    try { S.imp.fb = parseTable($("#fbText").value); } catch (e) { return toast("Could not read that: " + e.message); }
+    const { headers, rows } = S.imp.fb;
+    if (!rows.length) return toast("No rows found.");
+    const fbGuess = headers.filter(h => /feedback|comment|response|summary|strength|next.?step|suggest|note/i.test(h));
+    $("#fbOut").innerHTML = `<p><b>${rows.length}</b> rows found. Tell me what each column is:</p>` +
+      mapperHTML("f", headers, [
+        { key: "student", label: "Student (ID, email, or full name)", re: /student.?id|^id$|user|e-?mail|^name$|student|full.?name/i, req: true },
+        { key: "first", label: "First name (if separate)", re: /first|given/i },
+        { key: "last", label: "Last name (if separate)", re: /last|sur|family/i },
+        { key: "item", label: "Checkpoint / assignment", re: /checkpoint|assign|task|packet|activity|title/i },
+        { key: "status", label: "Result (Meets / Revise)", re: /status|result|mark|grade|standard/i },
+        { key: "date", label: "Date", re: /date|time|created|submitted/i },
+      ]) +
+      `<div class="field"><label>Feedback text columns (tick all that apply)</label><div class="checks">${headers.map(h => `<label><input type="checkbox" name="fbcols" value="${esc(h)}" ${fbGuess.includes(h) ? "checked" : ""}> ${esc(h)}</label>`).join("")}</div></div>
+       <div class="maprow"><div class="field"><label>If there is no assignment column, all rows are for</label>
+         <select id="f-fixed"><option value="">— use the column above —</option>${D.items.map(i => `<option value="${i.key}">${esc(i.title)}</option>`).join("")}</select></div></div>
+       <div class="checks"><label><input type="checkbox" id="f-setstatus" checked> Set “Meets” / “Revise” when the feedback or result column says so</label>
+       <label><input type="checkbox" id="f-marksub" checked> Mark as “Submitted” if the student has no status yet</label></div>
+       <p><button class="btn" id="fbPreview">Preview matches</button></p><div id="fbPrev"></div>`;
+    $("#fbPreview").onclick = fbPreview;
+  };
+}
+
+/* ---- roster ---- */
+function rosterRecords() {
+  const { rows } = S.imp.roster, pickv = k => pick("r", k), defSec = +$("#rosterSec").value;
+  return rows.map(r => {
+    let first = r[pickv("first")] || "", last = r[pickv("last")] || "";
+    const full = r[pickv("full")] || "";
+    if (!first && !last && full) {
+      if (full.includes(",")) { const [l, f] = full.split(",").map(x => x.trim()); last = l; first = f; }
+      else { const p = full.trim().split(/\s+/); last = p.length > 1 ? p.pop() : ""; first = p.join(" "); }
+    }
+    const email = (r[pickv("email")] || "").trim();
+    const ref = (r[pickv("ref")] || "").trim() || email.toLowerCase() || norm(first + " " + last);
+    const secTxt = r[pickv("section")] || "";
+    const found = D.sections.find(s => secTxt.includes(s.code));
+    return { section_id: found ? found.id : defSec, secKnown: !pickv("section") || !!found, student_ref: ref, first_name: first, last_name: last, email: email || null };
+  }).filter(r => r.student_ref);
+}
+function rosterPreview() {
+  const recs = rosterRecords(), bySec = {};
+  recs.forEach(r => bySec[r.section_id] = (bySec[r.section_id] || 0) + 1);
+  $("#rosterPrev").innerHTML = `<p>Will import ${recs.length} students: ${D.sections.map(s => bySec[s.id] ? `<b>${bySec[s.id]}</b> into ${esc(s.code)}` : "").filter(Boolean).join(", ")}.
+    ${recs.some(r => !r.secKnown) ? `<span class="err">Some rows have a section value I don't recognize; they go to the default section.</span>` : ""}</p>
+    <table class="simple"><thead><tr><th>Section</th><th>ID</th><th>First</th><th>Last</th><th>Email</th></tr></thead><tbody>
+    ${recs.slice(0, 5).map(r => `<tr><td>${esc(D.sections.find(s => s.id === r.section_id)?.code)}</td><td>${esc(r.student_ref)}</td><td>${esc(r.first_name)}</td><td>${esc(r.last_name)}</td><td>${esc(r.email)}</td></tr>`).join("")}</tbody></table>`;
+}
+async function rosterCommit() {
+  const recs = rosterRecords().map(({ secKnown, ...r }) => r);
+  if (!recs.length) return toast("Nothing to import.");
+  try { await api.upsertStudents(recs); toast(`Imported ${recs.length} students.`); S.imp.roster = null; S.view = "grid"; await reload(); }
+  catch (e) { toast("Import failed: " + e.message, 6000); }
+}
+
+/* ---- feedback ---- */
+function buildIndex(students) {
+  const idx = new Map(), add = (k, s) => { k = norm(k); if (!k) return; const a = idx.get(k) || idx.set(k, []).get(k); if (!a.includes(s)) a.push(s); };
+  students.forEach(s => {
+    add(s.student_ref, s); add(s.email, s);
+    add(`${s.first_name} ${s.last_name}`, s); add(`${s.last_name} ${s.first_name}`, s);
+    if (s.first_name) add(`${s.first_name.split(/\s+/)[0]} ${s.last_name}`, s);
+  });
+  return idx;
+}
+function findStudent(idx, cands) {
+  for (const c of cands) {
+    const k = norm(c); if (!k) continue;
+    let hit = idx.get(k);
+    if (!hit) { const em = String(c).match(/[\w.+-]+@[\w.-]+\.\w+/); if (em) hit = idx.get(norm(em[0])); }
+    if (!hit) { const p = k.split(" "); if (p.length > 2) hit = idx.get(p[0] + " " + p[p.length - 1]); }
+    if (hit) return hit.length === 1 ? { s: hit[0] } : { amb: true };
+  }
+  return {};
+}
+function matchItem(text) {
+  const t = String(text || "").toLowerCase();
+  if (!t.trim()) return null;
+  const direct = D.items.find(i => i.key.toLowerCase() === t.trim() || norm(i.title) === norm(t));
+  if (direct) return direct.key;
+  if (/final/.test(t) && !/draft/.test(t)) return "FINAL";
+  let m = t.match(/check\s*-?\s*point\s*#?\s*(\d)/) || t.match(/\bcp\s*-?\s*(\d)\b/) || t.match(/\bchk\s*-?\s*(\d)\b/);
+  if (m) return "CP" + m[1];
+  m = t.match(/packet\s*-?\s*([abc])(?:\s*-?\s*(?:,?\s*part\s*)?([12]))?(?![a-z0-9])/);
+  if (m) return m[1] === "a" ? "A" + (m[2] || (/part\s*2/.test(t) ? "2" : "1")) : m[1].toUpperCase();
+  const titleHit = D.items.find(i => { const w = norm(i.title.split(":").pop()).split(" ").filter(x => x.length > 3); return w.length >= 2 && w.filter(x => t.includes(x)).length >= Math.max(2, Math.ceil(w.length * 0.67)); });
+  return titleHit ? titleHit.key : null;
+}
+function statusFromText(t) {
+  t = String(t || "").toLowerCase();
+  const rev = /revise\s*(and|&)?\s*resubmit|needs?\s+revision/.test(t), meet = /(?<!not\s)(?<!does not\s)meets?\s+(the\s+)?standard/.test(t);
+  if (rev && !meet) return "revise"; if (meet && !rev) return "meets"; return null;
+}
+let fbRecords = [];
+function fbPreview() {
+  const { rows } = S.imp.fb, g = k => pick("f", k), fixed = $("#f-fixed").value;
+  if (!g("student") && !g("last")) return toast("Choose the student column first.");
+  const cols = $$('input[name=fbcols]:checked').map(c => c.value);
+  if (!cols.length) return toast("Tick at least one feedback column.");
+  if (!g("item") && !fixed) return toast("Choose an assignment column, or pick the assignment for all rows.");
+  const scope = $("#fbScope").value, pool = scope === "all" ? D.students : D.students.filter(s => s.section_id === +scope), idx = buildIndex(pool);
+  fbRecords = rows.map((r, n) => {
+    const cands = [r[g("student")], `${r[g("first")] || ""} ${r[g("last")] || ""}`.trim()].filter(Boolean);
+    const m = findStudent(idx, cands), item = fixed || matchItem(r[g("item")]);
+    const body = (cols.length === 1 ? r[cols[0]] : cols.map(c => r[c] ? `${c}: ${r[c]}` : "").filter(Boolean).join("\n")).trim();
+    const stat = statusFromText(r[g("status")]) || statusFromText(body);
+    const problem = !body ? "empty feedback" : m.amb ? "more than one student matches" : !m.s ? "student not found" : !item ? "assignment not recognized" : "";
+    return { n, s: m.s, item, body, stat, problem, date: r[g("date")] || "", who: cands[0] || "" };
+  });
+  const ok = fbRecords.filter(r => !r.problem), bad = fbRecords.length - ok.length;
+  $("#fbPrev").innerHTML = `<p><b>${ok.length}</b> ready to import${bad ? `, <b class="err">${bad}</b> need attention (shown in red; they will be skipped)` : ""}.</p>
+  <div style="max-height:320px;overflow:auto"><table class="simple"><thead><tr><th>Row</th><th>Student</th><th>Item</th><th>Status</th><th>Feedback</th></tr></thead><tbody>
+  ${[...fbRecords].sort((a, b) => !!b.problem - !!a.problem).slice(0, 150).map(r => `<tr class="${r.problem ? "bad" : ""}"><td>${r.n + 2}</td>
+    <td>${r.s ? esc(nameOf(r.s)) : esc(r.who)}</td><td>${esc(r.item || "?")}</td><td>${r.problem ? esc(r.problem) : r.stat ? STATUS[r.stat].label : "—"}</td><td>${esc(r.body.slice(0, 110))}${r.body.length > 110 ? "…" : ""}</td></tr>`).join("")}</tbody></table></div>
+  <p style="margin-top:10px"><button class="btn primary" id="fbGo" ${ok.length ? "" : "disabled"}>Import ${ok.length} feedback entries</button></p>`;
+  $("#fbGo").onclick = fbCommit;
+}
+async function fbCommit() {
+  const ok = fbRecords.filter(r => !r.problem), setStat = $("#f-setstatus").checked, markSub = $("#f-marksub").checked;
+  const fbRows = ok.map(r => ({ student_id: r.s.id, item_key: r.item, body: r.body, source: "playlab", hash: hash(r.body),
+    received_at: r.date && !isNaN(new Date(r.date)) ? new Date(r.date).toISOString() : null }));
+  const prog = new Map();
+  ok.forEach(r => {
+    const k = r.s.id + "|" + r.item, cur = prog.get(k)?.status ?? statusOf(r.s.id, r.item), old = progMap.get(k);
+    let next = null;
+    if (setStat && r.stat && cur !== "excused") next = r.stat;
+    else if (markSub && cur === "missing") next = "submitted";
+    if (next) prog.set(k, { student_id: r.s.id, item_key: r.item, status: next, note: old?.note ?? null });
+  });
+  try {
+    await api.addFeedback(fbRows);
+    if (prog.size) await api.setProgress([...prog.values()]);
+    toast(`Imported ${fbRows.length} feedback entries; updated ${prog.size} statuses.`, 5000);
+    S.imp.fb = null; S.view = "grid"; await reload();
+  } catch (e) { toast("Import failed: " + e.message, 7000); }
+}
+
+/* ====================================================================
+   Events
+==================================================================== */
+document.addEventListener("click", async e => {
+  const el = e.target.closest("[data-action]"); if (!el) return;
+  const a = el.dataset.action;
+  if (a === "section") { S.sectionId = +el.dataset.id; S.drawer = null; render(); }
+  else if (a === "view") { S.view = el.dataset.view; S.drawer = null; render(); }
+  else if (a === "open") { S.drawer = { sid: el.dataset.sid, item: el.dataset.item || null }; renderDrawer(); }
+  else if (a === "close") { S.drawer = null; $("#drawerMount").innerHTML = ""; render(); }
+  else if (a === "signout") { await api.sb.auth.signOut(); D = null; renderLogin(); }
+  else if (a === "delfb") {
+    if (!confirm("Delete this feedback entry?")) return;
+    try { await api.deleteFeedback(el.dataset.id); await reload(); } catch (err) { toast("Could not delete: " + err.message); }
+  } else if (a === "addfb") {
+    const ta = $(`textarea[data-newfb][data-item="${el.dataset.item}"]`), body = ta.value.trim(); if (!body) return;
+    try { await api.addFeedback([{ student_id: el.dataset.sid, item_key: el.dataset.item, body, source: "manual", hash: hash(body), received_at: null }]); await reload(); }
+    catch (err) { toast("Could not save: " + err.message); }
+  } else if (a === "copyDue") {
+    const sec = section(); if (!confirm(`Copy ${sec.code}'s dates to the other sections?`)) return;
+    try { for (const o of D.sections) if (o.id !== sec.id) for (const it of D.items) await api.setDue(o.id, it.key, dueOf(sec.id, it.key)); await reload(); toast("Dates copied."); }
+    catch (err) { toast("Could not copy: " + err.message); }
+  }
+});
+document.addEventListener("change", async e => {
+  const t = e.target;
+  if (t.dataset.action === "toggleNames") { S.hideNames = t.checked; rerenderKeeping(); }
+  else if (t.id === "only") { S.only = t.value; render(); }
+  else if (t.matches("select[data-status]")) { await setStatus(t.dataset.sid, t.dataset.item, t.value); rerenderKeeping(); }
+  else if (t.matches("textarea[data-note]")) { await setStatus(t.dataset.sid, t.dataset.item, undefined, t.value.trim() || null); toast("Note saved", 1200); }
+  else if (t.dataset.due !== undefined && t.type === "date") {
+    const sec = section();
+    try { await api.setDue(sec.id, t.dataset.due, t.value); if (t.value) dueMap.set(sec.id + "|" + t.dataset.due, t.value); else dueMap.delete(sec.id + "|" + t.dataset.due); toast("Saved", 1000); }
+    catch (err) { toast("Could not save: " + err.message); }
+  }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "q") {
+    S.q = e.target.value; const pos = e.target.selectionStart;
+    render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos, pos);
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && S.drawer) { S.drawer = null; render(); } });
+
+boot().catch(e => { $("#app").innerHTML = `<div class="login"><h1>Could not start</h1><p class="err">${esc(e.message)}</p></div>`; });
+</script>
+</body>
+</html>
