@@ -105,6 +105,27 @@ details.item .body{padding:0 12px 12px}
 .err{color:var(--over);font-size:13px;min-height:1em}
 .blur .nm{filter:blur(6px);user-select:none}
 .empty{padding:36px;text-align:center;color:var(--muted)}
+.find{position:relative;flex:1 1 260px;max-width:340px}
+.find input{width:100%;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 10px}
+.gres{position:absolute;top:100%;left:0;right:0;z-index:30;background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.15);overflow:hidden}
+.gres button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 12px}
+.gres button:hover{background:var(--bg)}
+.gres small,.gres .none{color:var(--muted);font-size:12px}
+.gres .none{padding:8px 12px}
+@media print{
+  .find,.np{display:none!important}
+  body.print-student .wrap{display:none}
+  body.print-student .drawer{position:static;width:auto;box-shadow:none;border:0;overflow:visible;padding:0;background:#fff;display:block!important}
+  body.print-student details.item{break-inside:avoid;border-color:#bbb}
+  body.print-student .nm{filter:none}
+  header.top .spacer,header.top label,header.top button,.tabs .tab:not([aria-selected=true]),.views,.toolbar,.banner,.drawer,.toast{display:none!important}
+  body{background:#fff;color:#000}
+  .gridwrap{max-height:none;overflow:visible;border:0}
+  .grid th.name,.grid td.name,.grid thead th{position:static}
+  .cell{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cards{grid-template-columns:repeat(5,1fr)}
+  @page{size:landscape;margin:12mm}
+}
 @media (max-width:640px){ .grid th.name,.grid td.name{min-width:130px} }
 </style>
 </head>
@@ -321,6 +342,7 @@ const isOverdue = (st, secId, key) => { const d = dueOf(secId, key); return st =
 const studentsIn = secId => D.students.filter(s => s.section_id === secId);
 const nameOf = s => [s.first_name, s.last_name].filter(Boolean).join(" ") || s.student_ref;
 const section = () => D.sections.find(s => s.id === S.sectionId);
+const matchesQuery = (s, q) => { const hay = norm(nameOf(s) + " " + s.last_name + " " + s.student_ref + " " + (s.email || "")); return norm(q).split(" ").every(t => hay.includes(t)); };
 
 async function reload() {
   D = await api.loadAll(); indexData();
@@ -374,6 +396,7 @@ function render() {
   <div class="wrap ${S.hideNames ? "blur" : ""}">
     <header class="top">
       <div><h1>Research Project Tracker</h1><div class="sub">HIST C1001 · Forbearance, Mutual Toleration, and 1798</div></div>
+      <div class="find"><input type="search" id="gq" placeholder="Find any student (all sections)…" autocomplete="off" aria-label="Find any student"><div id="gres" class="gres" hidden></div></div>
       <div class="spacer"></div>
       <label class="btn small"><input type="checkbox" data-action="toggleNames" ${S.hideNames ? "checked" : ""}> Hide names</label>
       ${api.demo ? "" : `<button class="btn small" data-action="signout">Sign out</button>`}
@@ -383,9 +406,9 @@ function render() {
       ${D.sections.map(s => `<button class="tab" role="tab" aria-selected="${s.id === S.sectionId}" data-action="section" data-id="${s.id}">${esc(s.code)}<small>${studentsIn(s.id).length} students</small></button>`).join("")}
     </div>
     <div class="views">
-      ${[["grid", "Progress"], ["import", "Import"], ["settings", "Due dates"]].map(([v, l]) => `<button aria-selected="${S.view === v}" data-action="view" data-view="${v}">${l}</button>`).join("")}
+      ${[["grid", "Progress"], ["import", "Import"], ["export", "Export"], ["settings", "Due dates"]].map(([v, l]) => `<button aria-selected="${S.view === v}" data-action="view" data-view="${v}">${l}</button>`).join("")}
     </div>
-    <div id="main">${S.view === "grid" ? gridHTML(sec, sts) : S.view === "import" ? importHTML() : settingsHTML(sec)}</div>
+    <div id="main">${S.view === "grid" ? gridHTML(sec, sts) : S.view === "import" ? importHTML() : S.view === "export" ? exportHTML(sec) : settingsHTML(sec)}</div>
   </div>
   <div id="drawerMount"></div>`;
   if (S.view === "import") wireImport();
@@ -413,7 +436,7 @@ function gridHTML(sec, sts) {
   const st = statsFor(sec, sts);
   const q = norm(S.q);
   const list = sts.filter(s => {
-    if (q && !norm(nameOf(s) + " " + s.student_ref + " " + (s.email || "")).includes(q)) return false;
+    if (q && !matchesQuery(s, q)) return false;
     const f = studentFlags(sec, s);
     if (S.only === "revise") return f.revise > 0;
     if (S.only === "overdue") return f.over > 0;
@@ -466,6 +489,93 @@ function settingsHTML(sec) {
   <p style="margin-top:12px"><button class="btn" data-action="copyDue">Copy these dates to the other sections</button></p></div>`;
 }
 
+/* ---------------------------- export --------------------------------- */
+const itemLabel = it => it.key === "FINAL" ? "Final Paper" : it.kind === "checkpoint" ? "Checkpoint " + it.key.slice(2) : "Packet " + it.key;
+function exportHTML(sec) {
+  if (!sec) return "";
+  return `<div class="panel"><h2>Export reports</h2>
+    <p class="help">Downloads open in Excel or Google Sheets. Files contain student records, so store them somewhere private and delete them when you're done.</p>
+    <div class="toolbar">
+      <label class="field" style="flex-direction:row;align-items:center;gap:6px">Include
+        <select id="exScope"><option value="section">Section ${esc(sec.code)} only</option><option value="all">All sections</option></select></label>
+      <div class="checks"><label><input type="checkbox" id="exNotes"> include my private notes</label></div>
+    </div>
+    <table class="simple"><tbody>
+      <tr><td><b>Progress grid</b><br><span style="color:var(--muted)">One row per student, one column per packet and checkpoint, with overdue work marked. Good for comparing with Canvas.</span></td><td><button class="btn" data-action="export" data-kind="progress">Download CSV</button></td></tr>
+      <tr><td><b>All feedback</b><br><span style="color:var(--muted)">Every feedback entry with student, checkpoint, current status and date.</span></td><td><button class="btn" data-action="export" data-kind="feedback">Download CSV</button></td></tr>
+      <tr><td><b>Needs attention</b><br><span style="color:var(--muted)">Students with a revision requested, overdue work, or nothing recorded yet, with the items listed.</span></td><td><button class="btn" data-action="export" data-kind="attention">Download CSV</button></td></tr>
+      <tr><td><b>Printable summary</b><br><span style="color:var(--muted)">Prints (or saves as PDF) the progress grid for the section you're viewing.</span></td><td><button class="btn" data-action="print">Print / PDF</button></td></tr>
+    </tbody></table></div>`;
+}
+const csvCell = v => {
+  let s = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;           // stop spreadsheets from treating text as a formula
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+};
+function downloadCSV(name, headers, rows) {
+  const text = "﻿" + [headers, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function doStudentCsv(sid) {
+  const s = D.students.find(x => x.id === sid); if (!s) return;
+  const code = D.sections.find(x => x.id === s.section_id).code, withNotes = $("#stNotes")?.checked;
+  const H = ["Section", "Student ID", "First Name", "Last Name", "Item", "Week", "Due", "Status", ...(withNotes ? ["Private note"] : []), "Feedback"];
+  const rows = D.items.map(it => {
+    const x = statusOf(sid, it.key), o = isOverdue(x, s.section_id, it.key);
+    const fb = (fbByKey.get(sid + "|" + it.key) || []).map(f => f.body).join("\n\n---\n\n");
+    return [code, s.student_ref, s.first_name, s.last_name, itemLabel(it), it.week ?? "", dueOf(s.section_id, it.key) || "", o ? "Overdue" : STATUS[x].label,
+      ...(withNotes ? [progMap.get(sid + "|" + it.key)?.note || ""] : []), fb];
+  });
+  downloadCSV(`student-${s.student_ref}-${todayStr()}.csv`.replace(/[^\w.\-]+/g, "_"), H, rows);
+}
+function doExport(kind) {
+  const all = $("#exScope").value === "all", withNotes = $("#exNotes").checked, sec = section();
+  const secs = all ? D.sections : [sec], stamp = todayStr(), tag = all ? "all-sections" : sec.code;
+  const rowsFor = s => ({ s, code: D.sections.find(x => x.id === s.section_id).code, sid: s.section_id });
+  const studs = secs.flatMap(sc => studentsIn(sc.id).map(rowsFor));
+  if (!studs.length) return toast("No students to export.");
+  const base = r => [r.code, r.s.student_ref, r.s.first_name, r.s.last_name, r.s.email || ""];
+  const baseH = ["Section", "Student ID", "First Name", "Last Name", "Email"];
+  if (kind === "progress") {
+    const H = [...baseH, ...D.items.map(itemLabel), "Items complete", "Revisions requested", "Overdue", ...(withNotes ? ["Private notes"] : [])];
+    const rows = studs.map(r => {
+      let done = 0, rev = 0, over = 0; const notes = [];
+      const cells = D.items.map(it => {
+        const x = statusOf(r.s.id, it.key), o = isOverdue(x, r.sid, it.key);
+        if (DONE.has(x)) done++; if (x === "revise") rev++; if (o) over++;
+        const n = progMap.get(r.s.id + "|" + it.key)?.note; if (n) notes.push(`${itemLabel(it)}: ${n}`);
+        return o ? "Overdue" : STATUS[x].label;
+      });
+      return [...base(r), ...cells, done, rev, over, ...(withNotes ? [notes.join(" | ")] : [])];
+    });
+    downloadCSV(`tracker-progress-${tag}-${stamp}.csv`, H, rows);
+  } else if (kind === "feedback") {
+    const H = [...baseH.slice(0, 4), "Item", "Current Status", "Source", "Date", "Feedback"];
+    const rows = [];
+    studs.forEach(r => D.items.forEach(it => (fbByKey.get(r.s.id + "|" + it.key) || []).forEach(f =>
+      rows.push([r.code, r.s.student_ref, r.s.first_name, r.s.last_name, itemLabel(it), STATUS[statusOf(r.s.id, it.key)].label, f.source || "", (f.received_at || f.created_at || "").slice(0, 10), f.body]))));
+    if (!rows.length) return toast("No feedback to export yet.");
+    downloadCSV(`tracker-feedback-${tag}-${stamp}.csv`, H, rows);
+  } else if (kind === "attention") {
+    const H = [...baseH, "Revision requested", "Overdue", "Items with work recorded", ...(withNotes ? ["Private notes"] : [])];
+    const rows = [];
+    studs.forEach(r => {
+      const rev = [], over = []; let any = 0; const notes = [];
+      D.items.forEach(it => {
+        const x = statusOf(r.s.id, it.key);
+        if (x === "revise") rev.push(itemLabel(it)); if (isOverdue(x, r.sid, it.key)) over.push(itemLabel(it)); if (x !== "missing") any++;
+        const n = progMap.get(r.s.id + "|" + it.key)?.note; if (n) notes.push(`${itemLabel(it)}: ${n}`);
+      });
+      if (rev.length || over.length || any === 0) rows.push([...base(r), rev.join("; "), over.join("; "), any, ...(withNotes ? [notes.join(" | ")] : [])]);
+    });
+    if (!rows.length) return toast("Nobody needs attention right now.");
+    downloadCSV(`tracker-needs-attention-${tag}-${stamp}.csv`, H, rows);
+  }
+}
+
 /* ---------------------------- drawer --------------------------------- */
 function renderDrawer() {
   const { sid, item } = S.drawer;
@@ -474,7 +584,10 @@ function renderDrawer() {
   $("#drawerMount").innerHTML = `<aside class="drawer ${S.hideNames ? "blur" : ""}" role="dialog" aria-label="Student detail">
     <div class="hd"><div style="flex:1"><h2 class="nm">${esc(nameOf(s))}</h2>
       <div style="color:var(--muted);font-size:13px">Section ${esc(sec.code)} · <span class="nm">${esc(s.student_ref)}${s.email ? " · " + esc(s.email) : ""}</span></div></div>
-      <button class="btn small" data-action="close">Close</button></div>
+      <button class="btn small np" data-action="close">Close</button></div>
+    <div class="toolbar np"><button class="btn small" data-action="stuCsv" data-sid="${sid}">Download report (CSV)</button>
+      <button class="btn small" data-action="stuPrint">Print / PDF</button>
+      <label style="font-size:13px"><input type="checkbox" id="stNotes"> include my private notes in the CSV</label></div>
     ${D.items.map(it => {
       const p = progMap.get(sid + "|" + it.key), st = p?.status || "missing", fbs = fbByKey.get(sid + "|" + it.key) || [];
       return `<details class="item" ${item === it.key ? "open" : ""} id="it-${it.key}">
@@ -483,14 +596,14 @@ function renderDrawer() {
         <div class="body">
           <div class="field"><label>Status</label>
             <select data-status data-sid="${sid}" data-item="${it.key}">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === st ? "selected" : ""}>${v.label}</option>`).join("")}</select></div>
-          <div class="field" style="margin-top:8px"><label>Your private note</label>
+          <div class="field np" style="margin-top:8px"><label>Your private note</label>
             <textarea data-note data-sid="${sid}" data-item="${it.key}" placeholder="e.g. emailed about interview backup">${esc(p?.note || "")}</textarea></div>
           <div style="margin-top:8px;font-size:13px;color:var(--muted)">Feedback</div>
           ${fbs.map(f => `<div class="fb"><div class="meta"><span>${esc(f.source || "")}</span><span>${esc((f.received_at || f.created_at || "").slice(0, 10))}</span>
-            <span class="spacer"></span><button class="btn small danger" data-action="delfb" data-id="${f.id}">Delete</button></div>${esc(f.body)}</div>`).join("") || `<div style="color:var(--muted);font-size:13px">None yet.</div>`}
-          <div class="field" style="margin-top:8px"><label>Add feedback by hand</label>
+            <span class="spacer"></span><button class="btn small danger np" data-action="delfb" data-id="${f.id}">Delete</button></div>${esc(f.body)}</div>`).join("") || `<div style="color:var(--muted);font-size:13px">None yet.</div>`}
+          <div class="field np" style="margin-top:8px"><label>Add feedback by hand</label>
             <textarea data-newfb data-sid="${sid}" data-item="${it.key}" placeholder="Paste feedback here"></textarea></div>
-          <button class="btn small" style="margin-top:6px" data-action="addfb" data-sid="${sid}" data-item="${it.key}">Save feedback</button>
+          <button class="btn small np" style="margin-top:6px" data-action="addfb" data-sid="${sid}" data-item="${it.key}">Save feedback</button>
         </div></details>`;
     }).join("")}
   </aside>`;
@@ -763,6 +876,19 @@ document.addEventListener("click", async e => {
   else if (a === "view") { S.view = el.dataset.view; S.drawer = null; render(); }
   else if (a === "open") { S.drawer = { sid: el.dataset.sid, item: el.dataset.item || null }; renderDrawer(); }
   else if (a === "close") { S.drawer = null; $("#drawerMount").innerHTML = ""; render(); }
+  else if (a === "export") doExport(el.dataset.kind);
+  else if (a === "pickstudent") {
+    const s = D.students.find(x => x.id === el.dataset.sid); if (!s) return;
+    S.sectionId = s.section_id; S.view = "grid"; S.q = ""; S.only = "all"; S.drawer = { sid: s.id, item: null }; render();
+  }
+  else if (a === "stuCsv") doStudentCsv(el.dataset.sid);
+  else if (a === "stuPrint") {
+    $$("details.item").forEach(d => d.open = true);
+    document.body.classList.add("print-student");
+    const done = () => { document.body.classList.remove("print-student"); window.removeEventListener("afterprint", done); };
+    window.addEventListener("afterprint", done); window.print();
+  }
+  else if (a === "print") { S.view = "grid"; S.drawer = null; render(); setTimeout(() => window.print(), 100); }
   else if (a === "signout") { await api.sb.auth.signOut(); D = null; renderLogin(); }
   else if (a === "delfb") {
     if (!confirm("Delete this feedback entry?")) return;
@@ -795,11 +921,21 @@ document.addEventListener("change", async e => {
   }
 });
 document.addEventListener("input", e => {
+  if (e.target.id === "gq") {
+    const q = e.target.value.trim(), box = $("#gres");
+    if (!q) { box.hidden = true; return; }
+    const hits = D.students.filter(s => matchesQuery(s, q)).slice(0, 8);
+    box.innerHTML = hits.length
+      ? hits.map(s => `<button data-action="pickstudent" data-sid="${s.id}"><span class="nm">${esc(nameOf(s))}</span><small>${esc(D.sections.find(x => x.id === s.section_id)?.code)} · <span class="nm">${esc(s.student_ref)}</span></small></button>`).join("")
+      : `<div class="none">No student found</div>`;
+    box.hidden = false; return;
+  }
   if (e.target.id === "q") {
     S.q = e.target.value; const pos = e.target.selectionStart;
     render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos, pos);
   }
 });
+document.addEventListener("click", e => { if (!e.target.closest(".find")) { const b = $("#gres"); if (b) b.hidden = true; } });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && S.drawer) { S.drawer = null; render(); } });
 
 boot().catch(e => { $("#app").innerHTML = `<div class="login"><h1>Could not start</h1><p class="err">${esc(e.message)}</p></div>`; });
