@@ -533,7 +533,7 @@ function importHTML() {
     <p class="help">Upload the export as CSV or JSON (or paste it). You pick which column is the student, which holds the feedback, and (optionally) which says which checkpoint it belongs to. You will see a preview before anything is saved, and uploading the same file twice will not create duplicates.</p>
     <div class="toolbar"><input type="file" id="fbFile" accept=".csv,.tsv,.txt,.json">
       <label class="field" style="flex-direction:row;align-items:center;gap:6px">Match students in
-      <select id="fbScope"><option value="all">all sections</option>${D.sections.map(s => `<option value="${s.id}" ${s.id === S.sectionId ? "selected" : ""}>${esc(s.code)} only</option>`).join("")}</select></label></div>
+      <select id="fbScope"><option value="all">all sections</option>${D.sections.map(s => `<option value="${s.id}">${esc(s.code)} only</option>`).join("")}</select></label></div>
     <textarea id="fbText" placeholder="…or paste CSV/JSON here"></textarea>
     <p><button class="btn" id="fbParse">Read feedback</button></p>
     <div id="fbOut"></div></div>`;
@@ -628,9 +628,40 @@ function buildIndex(students) {
   students.forEach(s => {
     add(s.student_ref, s); add(s.email, s);
     add(`${s.first_name} ${s.last_name}`, s); add(`${s.last_name} ${s.first_name}`, s);
-    if (s.first_name) add(`${s.first_name.split(/\s+/)[0]} ${s.last_name}`, s);
+    if (s.first_name) {
+      const f1 = s.first_name.split(/\s+/)[0], lt = (s.last_name || "").split(/\s+/);
+      add(`${f1} ${s.last_name}`, s);                 // drops middle names
+      if (lt.length > 1) { add(`${f1} ${lt[0]}`, s); add(`${f1} ${lt[lt.length - 1]}`, s); }  // compound last names
+    }
   });
   return idx;
+}
+/* "Closest name" suggestions: never applied automatically, only offered for you to confirm. */
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+const ratio = (a, b) => (a || b) ? 1 - lev(a, b) / Math.max(a.length, b.length) : 0;
+function suggestNames(pool, who) {
+  const t = norm(who).split(" ").filter(Boolean);
+  if (t.length < 2 || /@/.test(who)) return [];
+  const sf = t[0], sl = t[t.length - 1];
+  return pool.map(s => {
+    const ff = norm(s.first_name).split(" ")[0] || "", ll = norm(s.last_name).split(" ").filter(Boolean);
+    const lastScore = Math.max(0, ...ll.map(x => ratio(sl, x)), ratio(sl, ll.join(" ")));
+    let firstScore = ratio(sf, ff);
+    if (sf.length >= 3 && ff.length >= 3 && (ff.startsWith(sf) || sf.startsWith(ff))) firstScore = Math.max(firstScore, 0.9);  // Zac / Zachary
+    let score = 0.55 * lastScore + 0.45 * firstScore;
+    const swapped = 0.55 * Math.max(0, ...ll.map(x => ratio(sf, x))) + 0.45 * ratio(sl, ff);   // "Last First" order
+    score = Math.max(score, swapped);
+    return { s, score };
+  }).filter(x => x.score >= 0.72).sort((a, b) => b.score - a.score).slice(0, 3);
 }
 function findStudent(idx, cands) {
   for (const c of cands) {
@@ -674,18 +705,36 @@ function fbPreview() {
     const body = (cols.length === 1 ? r[cols[0]] : cols.map(c => r[c] ? `${c}: ${r[c]}` : "").filter(Boolean).join("\n")).trim();
     const stat = statusFromText(r[g("status")]) || statusFromText(body);
     const problem = !body ? "empty feedback" : m.amb ? "more than one student matches" : !m.s ? "student not found" : !item ? "assignment not recognized" : "";
-    return { n, s: m.s, item, body, stat, problem, date: r[g("date")] || "", who: cands[0] || "" };
+    const nameLike = cands.find(c => /\s/.test(c.trim()) && !/@/.test(c)) || "";
+    const sug = !m.s && !m.amb && nameLike ? suggestNames(pool, nameLike) : [];
+    return { n, s: m.s, item, body, stat, problem, sug, pick: null, date: r[g("date")] || "", who: cands[0] || "" };
   });
-  const ok = fbRecords.filter(r => !r.problem), bad = fbRecords.length - ok.length;
-  $("#fbPrev").innerHTML = `<p><b>${ok.length}</b> ready to import${bad ? `, <b class="err">${bad}</b> need attention (shown in red; they will be skipped)` : ""}.</p>
-  <div style="max-height:320px;overflow:auto"><table class="simple"><thead><tr><th>Row</th><th>Student</th><th>Item</th><th>Status</th><th>Feedback</th></tr></thead><tbody>
-  ${[...fbRecords].sort((a, b) => !!b.problem - !!a.problem).slice(0, 150).map(r => `<tr class="${r.problem ? "bad" : ""}"><td>${r.n + 2}</td>
-    <td>${r.s ? esc(nameOf(r.s)) : esc(r.who)}</td><td>${esc(r.item || "?")}</td><td>${r.problem ? esc(r.problem) : r.stat ? STATUS[r.stat].label : "—"}</td><td>${esc(r.body.slice(0, 110))}${r.body.length > 110 ? "…" : ""}</td></tr>`).join("")}</tbody></table></div>
+  fbRecords.sort((a, b) => !!b.problem - !!a.problem || a.n - b.n);
+  renderFbPreview();
+}
+function fbEffectiveProblem(r) {
+  if (!r.pick) return r.problem;
+  return !r.body ? "empty feedback" : !r.item ? "assignment not recognized" : "";
+}
+function renderFbPreview() {
+  const prob = r => fbEffectiveProblem(r), ok = fbRecords.filter(r => !prob(r)), bad = fbRecords.length - ok.length;
+  const sugCount = fbRecords.filter(r => r.sug.length && !r.pick).length;
+  $("#fbPrev").innerHTML = `<p><b>${ok.length}</b> ready to import${bad ? `, <b class="err">${bad}</b> need attention (shown in red; they will be skipped)` : ""}.
+    ${sugCount ? `<br>For <b>${sugCount}</b> unmatched rows I found a similar name. Check the dropdown in the Student column and choose the right person, or leave it to skip the row.` : ""}</p>
+  <div style="max-height:360px;overflow:auto"><table class="simple"><thead><tr><th>Row</th><th>Student</th><th>Item</th><th>Status</th><th>Feedback</th></tr></thead><tbody>
+  ${fbRecords.slice(0, 200).map(r => {
+    const p = prob(r), sec = r.s ? D.sections.find(x => x.id === r.s.section_id)?.code : "";
+    const stuCell = r.sug.length
+      ? `<span class="nm">${esc(r.who)}</span><br><select data-fbpick="${r.n}"><option value="">Skip this row</option>${r.sug.map(x => `<option value="${x.s.id}" ${r.pick === x.s.id ? "selected" : ""}>${esc(nameOf(x.s))} · ${esc(D.sections.find(z => z.id === x.s.section_id)?.code)} (${Math.round(x.score * 100)}% similar)</option>`).join("")}</select>`
+      : r.s ? `<span class="nm">${esc(nameOf(r.s))}</span> <span style="color:var(--muted)">${esc(sec)}</span>` : esc(r.who);
+    return `<tr class="${p ? "bad" : ""}"><td>${r.n + 2}</td><td>${stuCell}</td><td>${esc(r.item || "?")}</td>
+    <td>${p ? esc(p) : r.stat ? STATUS[r.stat].label : "—"}</td><td>${esc(r.body.slice(0, 110))}${r.body.length > 110 ? "…" : ""}</td></tr>`;
+  }).join("")}</tbody></table></div>
   <p style="margin-top:10px"><button class="btn primary" id="fbGo" ${ok.length ? "" : "disabled"}>Import ${ok.length} feedback entries</button></p>`;
   $("#fbGo").onclick = fbCommit;
 }
 async function fbCommit() {
-  const ok = fbRecords.filter(r => !r.problem), setStat = $("#f-setstatus").checked, markSub = $("#f-marksub").checked;
+  const ok = fbRecords.filter(r => !fbEffectiveProblem(r)), setStat = $("#f-setstatus").checked, markSub = $("#f-marksub").checked;
   const fbRows = ok.map(r => ({ student_id: r.s.id, item_key: r.item, body: r.body, source: "playlab", hash: hash(r.body),
     received_at: r.date && !isNaN(new Date(r.date)) ? new Date(r.date).toISOString() : null }));
   const prog = new Map();
@@ -732,6 +781,11 @@ document.addEventListener("change", async e => {
   const t = e.target;
   if (t.dataset.action === "toggleNames") { S.hideNames = t.checked; rerenderKeeping(); }
   else if (t.id === "only") { S.only = t.value; render(); }
+  else if (t.dataset.fbpick !== undefined) {
+    const r = fbRecords.find(x => x.n === +t.dataset.fbpick);
+    r.pick = t.value || null; r.s = r.pick ? D.students.find(s => s.id === r.pick) : undefined;
+    renderFbPreview();
+  }
   else if (t.matches("select[data-status]")) { await setStatus(t.dataset.sid, t.dataset.item, t.value); rerenderKeeping(); }
   else if (t.matches("textarea[data-note]")) { await setStatus(t.dataset.sid, t.dataset.item, undefined, t.value.trim() || null); toast("Note saved", 1200); }
   else if (t.dataset.due !== undefined && t.type === "date") {
