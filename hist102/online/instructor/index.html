@@ -144,6 +144,14 @@ a { color: inherit; }
   color: var(--ink-mid);
 }
 .pages a:hover { color: var(--gold); }
+.pages .no-link {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  padding: 0.45rem 0.1rem;
+  font-size: 0.88rem;
+  color: var(--ink-mid);
+}
 .pages a:hover .page-name { text-decoration: underline; }
 .page-kind {
   font-family: 'DM Mono', monospace;
@@ -236,7 +244,7 @@ body.locked .login-screen { display: block; }
     <strong>Instructor preview is on in this browser.</strong>
     Every week opens directly — no puzzle, access code, or pledge — and the
     student lock dates don't apply. Your visits are left off the progress
-    dashboard. Exams open in preview mode with the instructor panel.
+    dashboard. The midterm and final are in person, so they aren't linked.
     Log out to turn preview off and see the course as a student would.
   </div>
 
@@ -283,7 +291,7 @@ var WEEKS = [
     ['Reading',    'reading-2.html',         'Reading 5.2 — The Great Depression'],
     ['Analysis',   'source-analysis-2.html', 'Source Analysis 4.2 — The Dust Bowl'],
     ['Reading',    'reading-3.html',         'Reading 5.3 — World War II'],
-    ['Exam',       'midterm/index.html?preview=true', 'Midterm — online version (preview) · in person Wed Nov 11, 1–4 PM, FND 172']
+    ['Exam',       null, 'Midterm — in person, Fri Nov 13, 1–4 PM, FND 172 (online version disabled)']
   ]},
   { id: 'w5', dir: 'week5', title: 'Civil Rights', dates: 'Nov 16 – 22', opens: '2026-11-16', code: 'RIGHTS', pages: [
     ['Unlock',     'puzzle.html',            'Unlock Puzzle — World Wars Review'],
@@ -314,7 +322,7 @@ var WEEKS = [
     ['Analysis',   'source-analysis-1.html', 'Source Analysis 7.1 — Iraq Resolutions'],
     ['Paper',      'paper-tutorial.html',    'Research & Reflection Paper — Guide'],
     ['Paper',      'paper-submission.html',  'Research Paper Submission'],
-    ['Exam',       'final/index.html?preview=true', 'Final — online version (preview) · in person Fri Dec 4, 1–4 PM, FND 172']
+    ['Exam',       null, 'Final — in person, Fri Dec 4, 1–4 PM, FND 172 (online version disabled)']
   ]}
 ];
 
@@ -367,6 +375,13 @@ function render() {
       : '<span class="status status-locked">Students: opens ' +
           opens.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span>';
     var pages = w.pages.map(function(p) {
+      // Entries without a page (the in-person exams) are listed but not linked
+      if (!p[1]) {
+        return '<li class="kind-exam"><span class="no-link">' +
+          '<span class="page-kind">' + esc(p[0]) + '</span>' +
+          '<span class="page-name">' + esc(p[2]) + '</span>' +
+        '</span></li>';
+      }
       return '<li class="' + (p[0] === 'Exam' ? 'kind-exam' : '') + '">' +
         '<a href="../' + w.dir + '/' + p[1] + '" target="_blank" rel="noopener">' +
           '<span class="page-kind">' + esc(p[0]) + '</span>' +
