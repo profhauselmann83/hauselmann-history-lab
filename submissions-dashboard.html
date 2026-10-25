@@ -14,6 +14,9 @@
         .container { max-width: 1400px; margin: 0 auto; }
         header { background-color: #2c3e50; color: white; padding: 20px 30px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 1.5em; }
+        .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .term-select { padding: 7px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.35); background: #34495e; color: white; font-family: 'Open Sans', sans-serif; font-size: 0.9em; cursor: pointer; }
+        .term-note { background: #fdf8ee; border: 1px solid #e8d5ae; border-left: 4px solid #9a6f2a; color: #5a4a30; padding: 10px 14px; border-radius: 0 4px 4px 0; margin-bottom: 16px; font-size: 0.92em; }
         .logout-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; font-family: 'Open Sans', sans-serif; }
         .logout-btn:hover { background-color: #c0392b; }
         .login-container { max-width: 400px; margin: 100px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -189,8 +192,16 @@
 <div id="dashboard" class="container hidden">
     <header>
         <h1>📋 Student Submissions Dashboard</h1>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+        <div class="header-actions">
+            <select id="termSelect" class="term-select" onchange="changeTerm(this.value)" aria-label="Term">
+                <option value="current">Fall 2026</option>
+                <option value="archive">Archive (before Aug 1, 2026)</option>
+                <option value="all">All terms</option>
+            </select>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
     </header>
+    <div id="termNote" class="term-note hidden"></div>
     <div id="errorMessage" class="error hidden"></div>
 
     <div class="tab-nav">
@@ -478,7 +489,41 @@ function switchTab(name, btn) {
     btn.classList.add('active');
 }
 
+// ── TERM / ARCHIVE ──────────────────────────────────────────────────────────
+// Submissions from before TERM_START are the archive: still stored, just
+// hidden unless "Archive" or "All terms" is chosen. Change both lines at
+// the start of each new term.
+const TERM_LABEL = 'Fall 2026';
+const TERM_START = '2026-08-01T00:00:00';   // local time
+let termView = 'current';
+try { termView = sessionStorage.getItem('dashboard_term') || 'current'; } catch (e) {}
+
+function termQuery(table) {
+    const since = new Date(TERM_START).toISOString();
+    let q = supabaseClient.from(table).select('*');
+    if (termView === 'current') q = q.gte('submitted_at', since);
+    if (termView === 'archive') q = q.lt('submitted_at', since);
+    return q;
+}
+function showTermNote() {
+    const sel = document.getElementById('termSelect');
+    if (sel) sel.value = termView;
+    const note = document.getElementById('termNote');
+    if (!note) return;
+    const startLabel = new Date(TERM_START).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    if (termView === 'archive') { note.textContent = 'Viewing the archive: submissions from before ' + startLabel + '.'; note.classList.remove('hidden'); }
+    else if (termView === 'all') { note.textContent = 'Viewing all terms, including the archive.'; note.classList.remove('hidden'); }
+    else note.classList.add('hidden');
+}
+function changeTerm(view) {
+    termView = view;
+    try { sessionStorage.setItem('dashboard_term', view); } catch (e) {}
+    showTermNote();
+    loadAll();
+}
+
 async function loadAll() {
+    showTermNote();
     await Promise.all([loadWorksheets(), loadPapers(), loadInterviews(), loadHist102(), loadWeimar(), loadThesis(), loadCheckins()]);
 }
 
@@ -488,7 +533,7 @@ async function loadAll() {
 async function loadThesis() {
     document.getElementById('td-table').innerHTML = '<tr><td colspan="10" class="loading">Loading…</td></tr>';
     try {
-        const { data, error } = await supabaseClient.from('thesis_submissions').select('*').order('submitted_at', { ascending: false });
+        const { data, error } = await termQuery('thesis_submissions').order('submitted_at', { ascending: false });
         if (error) throw error;
         allThesis = data || [];
         updateThesisStats();
@@ -758,7 +803,7 @@ async function downloadSelectedTheses(mode) {
 async function loadWeimar() {
     document.getElementById('wq-table').innerHTML = '<tr><td colspan="7" class="loading">Loading…</td></tr>';
     try {
-        const { data, error } = await supabaseClient.from('quiz_responses').select('*').order('submitted_at', { ascending: false });
+        const { data, error } = await termQuery('quiz_responses').order('submitted_at', { ascending: false });
         if (error) throw error;
         allWeimar = data || [];
         updateWeimarStats(); applyWeimarFilters();
@@ -845,7 +890,7 @@ function exportWeimarCSV() {
 async function loadWorksheets() {
     document.getElementById('ws-table').innerHTML = '<tr><td colspan="8" class="loading">Loading…</td></tr>';
     try {
-        const { data, error } = await supabaseClient.from('worksheet_submissions').select('*').order('submitted_at',{ascending:false});
+        const { data, error } = await termQuery('worksheet_submissions').order('submitted_at',{ascending:false});
         if (error) throw error;
         allWorksheets = data||[]; updateWorksheetStats(); populateWsFilters(); applyWorksheetFilters();
         document.getElementById('count-worksheets').textContent = allWorksheets.length;
@@ -897,7 +942,7 @@ function renderWorksheetTable(rows) {
 async function loadPapers() {
     document.getElementById('pp-table').innerHTML='<tr><td colspan="10" class="loading">Loading…</td></tr>';
     try {
-        const{data,error}=await supabaseClient.from('paper_submissions').select('*').order('submitted_at',{ascending:false});
+        const{data,error}=await termQuery('paper_submissions').order('submitted_at',{ascending:false});
         if(error) throw error;
         allPapers=data||[]; updatePaperStats(); populatePpFilters(); applyPaperFilters();
         document.getElementById('count-papers').textContent=allPapers.length;
@@ -911,7 +956,7 @@ function renderPaperTable(rows){ const tbody=document.getElementById('pp-table')
 // ══════════════════════════════════════════════════════════════════════════════
 //  INTERVIEWS
 // ══════════════════════════════════════════════════════════════════════════════
-async function loadInterviews(){ document.getElementById('iv-table').innerHTML='<tr><td colspan="9" class="loading">Loading…</td></tr>'; try{ const{data,error}=await supabaseClient.from('interview_submissions').select('*').order('submitted_at',{ascending:false}); if(error) throw error; allInterviews=data||[]; updateInterviewStats(); populateIvFilters(); applyInterviewFilters(); document.getElementById('count-interviews').textContent=allInterviews.length; }catch(e){showError('Error loading interviews: '+e.message);document.getElementById('iv-table').innerHTML='<tr><td colspan="9" class="no-data">Error loading data.</td></tr>';} }
+async function loadInterviews(){ document.getElementById('iv-table').innerHTML='<tr><td colspan="9" class="loading">Loading…</td></tr>'; try{ const{data,error}=await termQuery('interview_submissions').order('submitted_at',{ascending:false}); if(error) throw error; allInterviews=data||[]; updateInterviewStats(); populateIvFilters(); applyInterviewFilters(); document.getElementById('count-interviews').textContent=allInterviews.length; }catch(e){showError('Error loading interviews: '+e.message);document.getElementById('iv-table').innerHTML='<tr><td colspan="9" class="no-data">Error loading data.</td></tr>';} }
 function updateInterviewStats(){ const today=new Date().toISOString().split('T')[0]; document.getElementById('iv-total').textContent=allInterviews.length; document.getElementById('iv-today').textContent=allInterviews.filter(s=>s.submitted_at&&s.submitted_at.startsWith(today)).length; document.getElementById('iv-uploads').textContent=allInterviews.filter(s=>s.audio_method==='upload').length; document.getElementById('iv-links').textContent=allInterviews.filter(s=>s.audio_method==='link').length; document.getElementById('iv-reviewed').textContent=allInterviews.filter(s=>s.is_reviewed).length; }
 function populateIvFilters(){ const sections=[...new Set(allInterviews.map(s=>s.section).filter(Boolean))].sort(); const sel=document.getElementById('iv-filterSection'); const val=sel.value; sel.innerHTML='<option value="">All Sections</option>'; sections.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent='Section '+s;sel.appendChild(o);}); sel.value=val; }
 function applyInterviewFilters(){ let f=allInterviews; const section=document.getElementById('iv-filterSection').value, search=document.getElementById('iv-search').value.toLowerCase(), method=document.getElementById('iv-filterMethod').value, reviewed=document.getElementById('iv-filterReviewed').value; if(section) f=f.filter(s=>s.section===section); if(search) f=f.filter(s=>s.student_name&&s.student_name.toLowerCase().includes(search)); if(method) f=f.filter(s=>s.audio_method===method); if(reviewed==='reviewed') f=f.filter(s=>!!s.is_reviewed); if(reviewed==='unreviewed') f=f.filter(s=>!s.is_reviewed); renderInterviewTable(f); }
@@ -920,7 +965,7 @@ function renderInterviewTable(rows){ const tbody=document.getElementById('iv-tab
 // ══════════════════════════════════════════════════════════════════════════════
 //  HIST 102 PAPERS
 // ══════════════════════════════════════════════════════════════════════════════
-async function loadHist102(){ document.getElementById('h2-table').innerHTML='<tr><td colspan="11" class="loading">Loading…</td></tr>'; try{ const{data,error}=await supabaseClient.from('paper_submissions_102').select('*').order('submitted_at',{ascending:false}); if(error) throw error; allHist102=data||[]; updateHist102Stats(); applyHist102Filters(); document.getElementById('count-hist102').textContent=allHist102.length; }catch(e){showError('Error loading HIST C1002 papers: '+e.message);document.getElementById('h2-table').innerHTML='<tr><td colspan="11" class="no-data">Error loading data.</td></tr>';} }
+async function loadHist102(){ document.getElementById('h2-table').innerHTML='<tr><td colspan="11" class="loading">Loading…</td></tr>'; try{ const{data,error}=await termQuery('paper_submissions_102').order('submitted_at',{ascending:false}); if(error) throw error; allHist102=data||[]; updateHist102Stats(); applyHist102Filters(); document.getElementById('count-hist102').textContent=allHist102.length; }catch(e){showError('Error loading HIST C1002 papers: '+e.message);document.getElementById('h2-table').innerHTML='<tr><td colspan="11" class="no-data">Error loading data.</td></tr>';} }
 function updateHist102Stats(){ const today=new Date().toISOString().split('T')[0]; document.getElementById('h2-total').textContent=allHist102.length; document.getElementById('h2-today').textContent=allHist102.filter(s=>s.submitted_at&&s.submitted_at.startsWith(today)).length; document.getElementById('h2-reviewed').textContent=allHist102.filter(s=>s.is_reviewed).length; const wcs=allHist102.map(s=>s.word_count).filter(Boolean); document.getElementById('h2-avgwords').textContent=wcs.length?Math.round(wcs.reduce((a,b)=>a+b,0)/wcs.length).toLocaleString():'-'; ['A','B','C','D'].forEach(p=>{document.getElementById('h2-prompt'+p).textContent=allHist102.filter(s=>s.prompt_choice===p).length;}); }
 function applyHist102Filters(){ let f=allHist102; const prompt=document.getElementById('h2-filterPrompt').value, search=document.getElementById('h2-search').value.toLowerCase(), wcFilter=document.getElementById('h2-filterWc').value, reviewed=document.getElementById('h2-filterReviewed').value; if(prompt) f=f.filter(s=>s.prompt_choice===prompt); if(search) f=f.filter(s=>(s.student_name&&s.student_name.toLowerCase().includes(search))||(s.student_w_num&&s.student_w_num.toLowerCase().includes(search))); if(wcFilter==='ok') f=f.filter(s=>s.word_count>=1500&&s.word_count<=2000); if(wcFilter==='low') f=f.filter(s=>s.word_count<1500); if(wcFilter==='high') f=f.filter(s=>s.word_count>2000); if(reviewed==='reviewed') f=f.filter(s=>!!s.is_reviewed); if(reviewed==='unreviewed') f=f.filter(s=>!s.is_reviewed); h2Filtered=f; renderHist102Table(f); updateH2SelectAll(); }
 function renderHist102Table(rows){ const tbody=document.getElementById('h2-table'); if(!rows.length){tbody.innerHTML='<tr><td colspan="11" class="no-data">No HIST C1002 papers found.</td></tr>';return;} const pl={A:'Option A — Broken Obligation',B:'Option B — Blind Spot',C:'Option C — Crossroads Moment',D:'Option D — Matters Most Now'}; const ps={A:'A',B:'B',C:'C',D:'D'}; tbody.innerHTML=rows.map(sub=>{ const reviewed=!!sub.is_reviewed,wc=sub.word_count||0,wcClass=wc>=1500&&wc<=2000?'wc-ok':'wc-low',bibLines=sub.bibliography?sub.bibliography.split('\n').filter(l=>l.trim()).length:0,selected=h2SelectedSet.has(sub.id),p=sub.prompt_choice||'',pClass='prompt-'+p.toLowerCase(),pLabel=pl[p]||p||'-',pShort=ps[p]||p||'-'; return `<tr><td class="select-cell">${sub.file_path?`<input type="checkbox" class="select-checkbox" id="h2-sel-${sub.id}" ${selected?'checked':''} onchange="h2ToggleSelect(${sub.id})">`:''}</td><td><strong>${esc(sub.student_name||'Unknown')}</strong></td><td style="font-family:monospace;font-size:0.88em;color:#555">${esc(sub.student_w_num||'-')}</td><td><span class="prompt-badge ${pClass}" title="${esc(pLabel)}">${esc(pShort)}</span><span style="font-size:0.82em;color:#888;display:block;margin-top:2px">${esc(pLabel)}</span></td><td><em>${esc(sub.paper_title||'(Untitled)')}</em></td><td><span class="wc-pill ${wcClass}">${wc.toLocaleString()}</span></td><td style="color:#555;font-size:0.88em">${bibLines} source${bibLines!==1?'s':''}</td><td style="font-size:0.82em;color:#888">${esc(sub.pledge_signature||'-')}</td><td>${formatDate(sub.submitted_at)}</td><td class="reviewed-cell"><label id="h2-rl-${sub.id}" class="reviewed-label ${reviewed?'checked':''}" onclick="event.preventDefault();h2ToggleReviewed(${sub.id})"><input type="checkbox" id="h2-rc-${sub.id}" class="review-checkbox" ${reviewed?'checked':''}><span>${reviewed?'Reviewed':'Mark'}</span></label></td><td>${sub.file_path?`<button onclick="downloadFile('${esc(sub.file_path)}')" class="download-btn">⬇ PDF</button>`:''}<button class="view-btn" onclick="viewHist102Paper(${sub.id})">👁 View</button></td></tr>`; }).join(''); }
@@ -939,7 +984,7 @@ const CHECKIN_LABELS = { '1': 'Research Materials', '2': 'Thesis Statement', '3'
 async function loadCheckins() {
     document.getElementById('ci-table').innerHTML = '<tr><td colspan="7" class="loading">Loading…</td></tr>';
     try {
-        const { data, error } = await supabaseClient.from('checkin_submissions').select('*').order('submitted_at', { ascending: false });
+        const { data, error } = await termQuery('checkin_submissions').order('submitted_at', { ascending: false });
         if (error) throw error;
         allCheckins = data || [];
         updateCheckinStats(); populateCiFilters(); applyCheckinFilters();
