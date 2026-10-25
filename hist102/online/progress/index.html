@@ -527,6 +527,7 @@ body.locked .login-screen { display: block; }
   </div>
   <div class="masthead-right">
     <span class="last-refresh" id="lastRefresh">Not yet loaded</span>
+    <a class="refresh-btn" href="../instructor/index.html" style="text-decoration:none">Course Map</a>
     <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
     <button class="refresh-btn" onclick="logout()">Log out</button>
   </div>
@@ -687,6 +688,12 @@ async function loadData() {
       sbQuery('gate_entries', 'week_id=eq.' + week + '&created_at=gte.' + since + '&order=created_at.asc&limit=1000'),
       sbQuery('pdf_downloads','week_id=eq.' + week + '&created_at=gte.' + since + '&order=created_at.desc&limit=1000')
     ]);
+    // Leave out the instructor's own preview visits (see instructor/index.html)
+    var notInstructor = function(row) { return row.student_w_num !== 'INSTRUCTOR'; };
+    pageViews    = pageViews.filter(notInstructor);
+    gateEntries  = gateEntries.filter(notInstructor);
+    pdfDownloads = pdfDownloads.filter(notInstructor);
+
     pageViews.forEach(function(row) {
       if (PAGE_ALIASES[row.page]) row.page = PAGE_ALIASES[row.page];
     });
