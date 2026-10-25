@@ -442,6 +442,56 @@ body {
   border-radius: 2px;
 }
 
+/* ── LOGIN SCREEN ── */
+body.locked .masthead, body.locked .week-tabs, body.locked .shell { display: none; }
+.login-screen { display: none; max-width: 380px; margin: 14vh auto 0; padding: 0 16px; }
+body.locked .login-screen { display: block; }
+.login-card {
+  background: #fff;
+  border: 1px solid var(--rule-strong);
+  border-top: 3px solid var(--gold);
+  border-radius: 0 0 6px 6px;
+  padding: 2rem;
+}
+.login-card h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.login-card p { font-size: 0.9rem; color: var(--ink-light); margin-bottom: 1.25rem; }
+.login-card input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  font-size: 1rem;
+  font-family: inherit;
+  margin-bottom: 0.75rem;
+  background: var(--cream);
+}
+.login-card button {
+  width: 100%;
+  padding: 0.7rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.login-card button:hover { background: var(--ink-mid); }
+.login-error {
+  display: none;
+  margin-top: 0.75rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--rust);
+}
+
 /* two-col layout for bottom section */
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 @media(max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
@@ -453,7 +503,19 @@ body {
 }
 </style>
 </head>
-<body>
+<body class="locked">
+
+<!-- ── LOGIN SCREEN (same password as the Submissions Dashboard) ── -->
+<div class="login-screen">
+  <div class="login-card">
+    <h1>HIST C1002 · Instructor Dashboard</h1>
+    <p>Enter the dashboard password to view student progress.</p>
+    <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password"
+           onkeydown="if (event.key === 'Enter') checkPassword()">
+    <button onclick="checkPassword()">Open Dashboard</button>
+    <div class="login-error" id="loginError">Incorrect password.</div>
+  </div>
+</div>
 
 <!-- ── MASTHEAD ── -->
 <div class="masthead">
@@ -466,6 +528,7 @@ body {
   <div class="masthead-right">
     <span class="last-refresh" id="lastRefresh">Not yet loaded</span>
     <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    <button class="refresh-btn" onclick="logout()">Log out</button>
   </div>
 </div>
 
@@ -955,7 +1018,44 @@ function escHtml(s) {
 //  INIT
 // ─────────────────────────────────────────────
 document.getElementById('termLabel').textContent = TERM_LABEL;
-loadData();
+
+// ─────────────────────────────────────────────
+//  LOGIN — same password and session flag as
+//  submissions-dashboard.html, so signing in to
+//  either one in a tab unlocks both.
+// ─────────────────────────────────────────────
+var DASHBOARD_PASSWORD = 'hauselmann2026';
+
+function isAuthed() {
+  try { return sessionStorage.getItem('dashboard_auth') === 'true'; } catch (e) { return false; }
+}
+function unlock() {
+  document.body.classList.remove('locked');
+  loadData();
+}
+function checkPassword() {
+  var input = document.getElementById('passwordInput');
+  if (input.value === DASHBOARD_PASSWORD) {
+    try { sessionStorage.setItem('dashboard_auth', 'true'); } catch (e) {}
+    input.value = '';
+    document.getElementById('loginError').style.display = 'none';
+    unlock();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    input.select();
+  }
+}
+function logout() {
+  try { sessionStorage.removeItem('dashboard_auth'); } catch (e) {}
+  document.body.classList.add('locked');
+  ['statRow', 'heatmapWrap', 'alertsWrap', 'popularityWrap'].forEach(function(id) {
+    document.getElementById(id).innerHTML = '<div class="loading-msg">Loading…</div>';
+  });
+  document.getElementById('passwordInput').focus();
+}
+
+if (isAuthed()) unlock();
+else document.getElementById('passwordInput').focus();
 </script>
 </body>
 </html>
