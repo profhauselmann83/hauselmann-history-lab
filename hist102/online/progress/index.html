@@ -488,6 +488,11 @@ body {
     <strong>⚠ Setup required:</strong> Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> at the top of this file's script block with your actual Supabase project credentials before opening.
   </div>
 
+  <!-- Shown when students pass the gate but no page views arrive -->
+  <div class="config-banner" id="trackingBanner" style="display:none">
+    <strong>⚠ Page views aren't being recorded:</strong> students passed this week's gate, but none of their page visits reached Supabase. This usually means the <code>page_views</code> table is missing its insert/select policies — run <code>supabase-rls-hist102-progress-tracking.sql</code> in the Supabase SQL Editor.
+  </div>
+
   <!-- ── STAT CARDS ── -->
   <div class="stat-row" id="statRow">
     <div class="loading-msg">Loading data…</div>
@@ -622,6 +627,9 @@ async function loadData() {
     pageViews.forEach(function(row) {
       if (PAGE_ALIASES[row.page]) row.page = PAGE_ALIASES[row.page];
     });
+
+    document.getElementById('trackingBanner').style.display =
+      (gateEntries.length > 0 && pageViews.length === 0) ? 'block' : 'none';
 
     renderAll(pageViews, gateEntries, pdfDownloads, week);
     document.getElementById('lastRefresh').textContent =
