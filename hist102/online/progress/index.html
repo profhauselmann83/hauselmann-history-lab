@@ -1054,6 +1054,8 @@ function checkPassword() {
 }
 function logout() {
   try { sessionStorage.removeItem('dashboard_auth'); } catch (e) {}
+  // Also turn off instructor preview (passes set by the Course Map)
+  for (var w = 1; w <= 7; w++) { try { var k = 'hist102_access_w' + w; if ((JSON.parse(localStorage.getItem(k) || '{}')).wnum === 'INSTRUCTOR') localStorage.removeItem(k); } catch (e) {} }
   document.body.classList.add('locked');
   ['statRow', 'heatmapWrap', 'alertsWrap', 'popularityWrap'].forEach(function(id) {
     document.getElementById(id).innerHTML = '<div class="loading-msg">Loading…</div>';

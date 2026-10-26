@@ -478,7 +478,7 @@ function checkPassword() {
     if (pw === DASHBOARD_PASSWORD) { sessionStorage.setItem('dashboard_auth','true'); showDashboard(); }
     else { const el = document.getElementById('loginError'); el.textContent = 'Incorrect password.'; el.classList.remove('hidden'); }
 }
-function logout() { sessionStorage.removeItem('dashboard_auth'); document.getElementById('dashboard').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('passwordInput').value = ''; }
+function logout() { sessionStorage.removeItem('dashboard_auth'); /* also turn off HIST C1002 instructor preview */ for (var w = 1; w <= 7; w++) { try { var k = 'hist102_access_w' + w; if ((JSON.parse(localStorage.getItem(k) || '{}')).wnum === 'INSTRUCTOR') localStorage.removeItem(k); } catch (e) {} } document.getElementById('dashboard').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('passwordInput').value = ''; }
 function showDashboard() { document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); loadAll(); }
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
