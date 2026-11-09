@@ -32,6 +32,15 @@
     }
 
     /* ── WATCH PROGRESS BAR ── */
+    .video-fallback {
+      margin: 10px 0 14px;
+      font-size: 0.95em;
+      color: #555;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .video-fallback a { font-weight: 600; color: #1a5fb4; }
+    .video-fallback-sub { display: block; font-size: 0.85em; color: #777; }
     .watch-progress-wrap {
       background: var(--cream-dark);
       border: 1px solid var(--cream-deep);
@@ -329,6 +338,13 @@
       </div>
     </div>
 
+    <!-- FALLBACK LINK (if the embedded player is blocked) -->
+    <p class="video-fallback">
+      If the video isn't showing, use the following link:
+      <a href="https://www.youtube.com/watch?v=gCkC1Y14HVQ" target="_blank" rel="noopener" onclick="onFallbackLinkClick()">Watch the film on YouTube &#8599;</a>
+      <span class="video-fallback-sub">After watching there, come back to this page. The quiz below will open so you can continue.</span>
+    </p>
+
     <!-- WATCH PROGRESS -->
     <div class="watch-progress-wrap">
       <span class="watch-progress-label">Watch progress</span>
@@ -464,7 +480,7 @@
 <!-- YOUTUBE IFRAME API -->
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────────
-var VIDEO_ID         = 'TS43yfwGuuM';
+var VIDEO_ID         = 'gCkC1Y14HVQ';
 var UNLOCK_THRESHOLD = 0.80;                    // 80% watched unlocks next page
 var LS_KEY           = 'hist102_w4_video_watched';
 var POLL_INTERVAL    = 5000;                    // check every 5 seconds
@@ -483,6 +499,16 @@ try {
     unlocked   = true;
   }
 } catch(e) {}
+
+// Students who used the fallback YouTube link can't be tracked by the
+// embedded player, so the link opens the quiz (which still gates Reading 5.1).
+var LS_FALLBACK = 'hist102_w4_video_fallback';
+try { if (!unlocked && localStorage.getItem(LS_FALLBACK) === 'yes') unlocked = true; } catch(e) {}
+
+function onFallbackLinkClick() {
+  try { localStorage.setItem(LS_FALLBACK, 'yes'); } catch(e) {}
+  if (!unlocked) { unlocked = true; applyUnlocked(); }
+}
 
 if (unlocked) { applyUnlocked(); }
 
@@ -590,7 +616,8 @@ var LS_QUIZ = 'hist102_w4_quiz_passed';
 document.addEventListener('DOMContentLoaded', function() {
   try {
     var savedWatch = localStorage.getItem('hist102_w4_video_watched');
-    if (savedWatch && parseFloat(savedWatch) >= 0.80 && localStorage.getItem(LS_QUIZ) === 'yes') {
+    var fallbackUsed = localStorage.getItem('hist102_w4_video_fallback') === 'yes';
+    if (((savedWatch && parseFloat(savedWatch) >= 0.80) || fallbackUsed) && localStorage.getItem(LS_QUIZ) === 'yes') {
       var quiz = document.getElementById('quiz-section');
       if (quiz) quiz.style.display = 'block';
       applyQuizPassed(true);
