@@ -595,7 +595,7 @@
                 <span class="wc-number too-few" id="wc-number">0 words</span>
                 <div class="wc-track">
                     <div class="wc-fill" id="wc-fill" style="width:0%;background:#e74c3c"></div>
-                    <div class="wc-marker" id="wc-min-marker" data-label="1,800 min"></div>
+                    <div class="wc-marker" id="wc-min-marker" data-label="1,500 min"></div>
                     <div class="wc-marker" id="wc-max-marker" data-label="2,400 max"></div>
                 </div>
                 <span class="autosave-badge unsaved" id="autosave-badge">● Unsaved</span>
@@ -617,6 +617,19 @@
         <div class="wc-hint" id="fn-status" style="margin-top:8px"></div>
         <div class="alert alert-danger" id="wc-over-alert" style="display:none;margin-top:10px">
             You have exceeded the 2,400-word maximum. Please shorten your paper before proceeding.
+        </div>
+        <div class="alert alert-warning" id="wc-note-box" style="display:none;margin-top:10px">
+            <strong>Under the 1,500-word minimum?</strong> You can still submit your paper. Explain below why you were unable to reach the minimum (at least <span id="wc-note-min-label">20</span> words). Your instructor will see this note with your submission.
+            <textarea id="wc-note-area"
+                placeholder="Explain why you were unable to reach the 1,500-word minimum…"
+                oninput="onAnyInput()"
+                onpaste="blockPaste(event)"
+                ondrop="blockDrop(event)"
+                oncontextmenu="return false"
+                spellcheck="true"
+                autocomplete="off"
+                style="width:100%;min-height:110px;margin-top:8px;padding:10px;font:inherit;font-size:0.95em;border:1px solid #e0c97a;border-radius:6px;box-sizing:border-box;resize:vertical;color:#333;background:#fff"></textarea>
+            <div class="wc-hint" id="wc-note-hint" style="margin-top:4px"></div>
         </div>
     </div>
 
@@ -775,6 +788,7 @@
         <p><strong>Section:</strong> <span id="rv-section"></span></p>
         <p><strong>Paper Title:</strong> <span id="rv-title"></span></p>
         <p><strong>Essay Word Count:</strong> <span id="rv-wc"></span></p>
+        <p id="rv-note-row" style="display:none"><strong>Word Count Explanation:</strong> <span id="rv-note" style="white-space:pre-wrap"></span></p>
         <p><strong>In-text citations:</strong> <span id="rv-fn"></span></p>
         <p><strong>Reference List Entries:</strong> <span id="rv-bib"></span></p>
         <p><strong>Process Reflection:</strong> <span id="rv-ref"></span></p>
@@ -814,7 +828,8 @@
 const SUPABASE_URL  = 'https://bqrluqymscucvbiaaeai.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs';
 const TABLE         = 'paper_submissions';
-const MIN_WORDS     = 1800;
+const MIN_WORDS     = 1500;
+const WC_NOTE_MIN   = 20;    // words required in the under-minimum explanation
 const MAX_WORDS     = 2400;
 const REF_MIN       = 200;   // Process Reflection (one page)
 const REF_MAX       = 500;
@@ -950,7 +965,7 @@ function updateAll() {
     fillEl.style.width = Math.min(wordCount / trackMax * 100, 100).toFixed(1) + '%';
     if (wordCount < MIN_WORDS) {
         numEl.className = 'wc-number too-few'; fillEl.style.background = '#e74c3c';
-        hintEl.innerHTML = `Need <strong>${(MIN_WORDS - wordCount).toLocaleString()}</strong> more word(s) to reach the ${MIN_WORDS.toLocaleString()}-word minimum.`; overEl.style.display = 'none';
+        hintEl.innerHTML = `Need <strong>${(MIN_WORDS - wordCount).toLocaleString()}</strong> more word(s) to reach the ${MIN_WORDS.toLocaleString()}-word minimum. If you cannot reach it, you may still submit by explaining why in the box below the essay.`; overEl.style.display = 'none';
     } else if (wordCount <= MAX_WORDS) {
         numEl.className = 'wc-number in-range'; fillEl.style.background = 'linear-gradient(90deg,#27ae60,#2ecc71)';
         hintEl.innerHTML = `✓ Word count is within range (${MIN_WORDS.toLocaleString()}–${MAX_WORDS.toLocaleString()} words, including in-text citations).`; overEl.style.display = 'none';
@@ -958,6 +973,15 @@ function updateAll() {
         numEl.className = 'wc-number too-many'; fillEl.style.background = '#e67e22';
         hintEl.innerHTML = `<strong>${(wordCount - MAX_WORDS).toLocaleString()}</strong> word(s) over the ${MAX_WORDS.toLocaleString()}-word maximum. Please shorten your paper.`; overEl.style.display = 'block';
     }
+    // Under-minimum explanation (lets students submit short papers with a note)
+    const underMin = wordCount > 0 && wordCount < MIN_WORDS;
+    const noteBox = document.getElementById('wc-note-box'), noteHint = document.getElementById('wc-note-hint');
+    const noteCount = countWords(document.getElementById('wc-note-area').value);
+    noteBox.style.display = underMin ? 'block' : 'none';
+    document.getElementById('wc-note-min-label').textContent = WC_NOTE_MIN;
+    if (noteCount < WC_NOTE_MIN) noteHint.innerHTML = `${noteCount} word(s). Need <strong>${WC_NOTE_MIN - noteCount}</strong> more to submit under the minimum.`;
+    else noteHint.innerHTML = `✓ ${noteCount} words. You can submit under the minimum with this explanation.`;
+
     const fnEl = document.getElementById('fn-status');
     if (!fn.ok) { fnEl.innerHTML = '<span style="color:#c0392b">⚠ ' + fn.error + '</span>'; }
     else { fnEl.innerHTML = `In-text citations: <strong>${fn.notes.length}</strong>`; }
@@ -970,7 +994,7 @@ function updateAll() {
 
     const missing = [];
     if (!document.getElementById('inp-title').value.trim()) missing.push('Enter a paper title.');
-    if (wordCount < MIN_WORDS) missing.push(`Essay: ${(MIN_WORDS - wordCount).toLocaleString()} more word(s) needed.`);
+    if (wordCount < MIN_WORDS && (!underMin || noteCount < WC_NOTE_MIN)) missing.push(`Essay: ${(MIN_WORDS - wordCount).toLocaleString()} more word(s) needed, or explain in the box below the essay why you could not reach the ${MIN_WORDS.toLocaleString()}-word minimum (at least ${WC_NOTE_MIN} words).`);
     if (wordCount > MAX_WORDS) missing.push(`Essay: shorten by ${(wordCount - MAX_WORDS).toLocaleString()} word(s).`);
     if (!fn.ok) missing.push('Citations: ' + fn.error);
     else if (fn.notes.length < MIN_CITES) missing.push(`Add at least ${MIN_CITES} in-text citations, such as (Rosen 2025, 4). See the Citation Guide tab.`);
@@ -1000,7 +1024,10 @@ function fillReview(sig) {
     document.getElementById('rv-id').textContent = studentId;
     document.getElementById('rv-section').textContent = 'Section ' + section;
     document.getElementById('rv-title').textContent = document.getElementById('inp-title').value.trim();
-    document.getElementById('rv-wc').textContent = wordCount.toLocaleString() + ' words';
+    document.getElementById('rv-wc').textContent = wordCount.toLocaleString() + ' words' + (wordCount < MIN_WORDS ? ` (under the ${MIN_WORDS.toLocaleString()}-word minimum)` : '');
+    const note = wordCountNote();
+    document.getElementById('rv-note-row').style.display = note ? 'block' : 'none';
+    document.getElementById('rv-note').textContent = note;
     document.getElementById('rv-fn').textContent = fn.notes.length;
     document.getElementById('rv-bib').textContent = bibLines.length + ' source' + (bibLines.length !== 1 ? 's' : '');
     document.getElementById('rv-ref').textContent = refCount + ' words';
@@ -1019,6 +1046,7 @@ function backToPledge() { showStep(3); }
 // ════════════════════════════════════════════════════════════════
 //  SUBMIT
 // ════════════════════════════════════════════════════════════════
+function wordCountNote() { return wordCount < MIN_WORDS ? document.getElementById('wc-note-area').value.trim() : ''; }
 function lastNameSlug() { return (studentName.trim().split(/\s+/).pop() || 'student').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]/g, ''); }
 
 async function submitPaper() {
@@ -1039,7 +1067,9 @@ async function submitPaper() {
         } catch (pdfErr) { console.warn('PDF generation failed:', pdfErr); }
 
         btn.textContent = 'Submitting…';
-        const paperText = essay + '\n\n=== PROCESS REFLECTION ===\n\n' + reflection;
+        const note = wordCountNote();
+        const paperText = (note ? `=== WORD COUNT NOTE (${wordCount.toLocaleString()} of ${MIN_WORDS.toLocaleString()} minimum) ===\n\n${note}\n\n=== ESSAY ===\n\n` : '') +
+            essay + '\n\n=== PROCESS REFLECTION ===\n\n' + reflection;
         const { error } = await getDB().from(TABLE).insert([{
             student_name: studentName, student_id: studentId, section,
             paper_title: title, paper_text: paperText, bibliography: bib,
@@ -1072,7 +1102,7 @@ function saveDraft() {
     try {
         localStorage.setItem(DRAFT_KEY, JSON.stringify({ id: studentId, title: document.getElementById('inp-title').value,
             essay: document.getElementById('essay-area').value, bib: document.getElementById('bib-area').value,
-            ref: document.getElementById('ref-area').value, saved: new Date().toISOString() }));
+            ref: document.getElementById('ref-area').value, wcNote: document.getElementById('wc-note-area').value, saved: new Date().toISOString() }));
         setBadge('saved');
     } catch (e) { setBadge('unsaved'); }
 }
@@ -1084,13 +1114,14 @@ function loadDraft() {
         if (d.essay) document.getElementById('essay-area').value = d.essay;
         if (d.bib) document.getElementById('bib-area').value = d.bib;
         if (d.ref) document.getElementById('ref-area').value = d.ref;
+        if (d.wcNote) document.getElementById('wc-note-area').value = d.wcNote;
         updateAll(); setBadge('saved');
     } catch (e) {}
 }
 function clearDraft() {
     if (!confirm('Clear your saved draft? This cannot be undone.')) return;
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-    ['inp-title','essay-area','bib-area','ref-area'].forEach(id => { document.getElementById(id).value = ''; });
+    ['inp-title','essay-area','bib-area','ref-area','wc-note-area'].forEach(id => { document.getElementById(id).value = ''; });
     updateAll(); setBadge('unsaved');
 }
 function setBadge(state) {
@@ -1116,7 +1147,7 @@ document.addEventListener('beforeinput', e => {
 }, true);
 document.addEventListener('keydown', e => {
     const a = document.activeElement;
-    if (!a || !['essay-area','bib-area','ref-area','inp-title'].includes(a.id)) return;
+    if (!a || !['essay-area','bib-area','ref-area','wc-note-area','inp-title'].includes(a.id)) return;
     if ((e.metaKey || e.ctrlKey) && (e.key === 'v' || e.key === 'V')) { e.preventDefault(); document.getElementById('paste-modal').classList.add('show'); }
     if (e.shiftKey && e.key === 'Insert') { e.preventDefault(); document.getElementById('paste-modal').classList.add('show'); }
 });
@@ -1250,6 +1281,22 @@ function buildPDF(isDraft) {
         });
         y += 0.1;
     });
+
+    // ---- word count note (only when submitted under the minimum) ----
+    const wcNote = wordCountNote();
+    if (wcNote) {
+        doc.addPage(); y = M + 0.15;
+        doc.setFont('times', 'bold'); doc.setFontSize(BODY); doc.text('Word Count Note', PW / 2, y, { align:'center' }); y += LH_SINGLE * 1.6;
+        breakLines(tokenize(`Essay length: ${wordCount.toLocaleString()} words (minimum ${MIN_WORDS.toLocaleString()}).`), CW, CW, BODY).forEach(ln => { drawLine(ln, M, y, BODY); y += LH_SINGLE; });
+        y += 0.1;
+        wcNote.split(/\n+/).filter(p => p.trim()).forEach(par => {
+            breakLines(tokenize(par.trim()), CW, CW, BODY).forEach(ln => {
+                if (y > PH - M) { doc.addPage(); y = M + 0.15; }
+                drawLine(ln, M, y, BODY); y += LH_SINGLE;
+            });
+            y += 0.1;
+        });
+    }
 
     // ---- running head: "Lastname page" from page 2 on ----
     const pages = doc.getNumberOfPages();
