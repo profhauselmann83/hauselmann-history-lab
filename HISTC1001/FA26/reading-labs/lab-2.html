@@ -127,7 +127,7 @@ blockquote.ex cite{display:block;font-size:14px;color:var(--muted);font-style:no
 
   <section class="card" id="secSubmit">
     <h2><span class="step" id="subStep">6</span>Submit</h2>
-    <p class="sub">When everything above is complete, submit once. You’ll get a receipt to keep (and to paste into Canvas if your instructor asks).</p>
+    <p class="sub">When everything above is complete, submit once. You’ll then be able to <strong>download a PDF of your work</strong>. Save it for your files and upload it to the matching Canvas assignment.</p>
     <div class="btns"><button class="btn" id="btnSubmit" type="button">Submit for extra credit</button></div>
     <div id="errors"></div>
     <div id="receiptWrap" class="hidden">
@@ -136,12 +136,14 @@ blockquote.ex cite{display:block;font-size:14px;color:var(--muted);font-style:no
       <pre class="receipt" id="receipt"></pre>
       <div class="btns">
         <button class="btn ghost" id="btnCopy" type="button">Copy receipt</button>
+        <button class="btn" id="btnPdf" type="button">Download PDF</button>
         <button class="btn ghost" id="btnDl" type="button">Download .txt</button>
       </div>
     </div>
   </section>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ===== Instructor configuration =====
    Leave supabaseUrl empty to run with receipts only (students copy/paste or download).
@@ -379,7 +381,7 @@ sId.addEventListener('input',()=>saveDraft('sid',sId.value));
 pledge.addEventListener('change',()=>saveDraft('pledge',pledge.checked?'1':'0'));
 
 /* ---------- submit ---------- */
-let submitted=false, lastReceipt='';
+let submitted=false, lastReceipt='', lastPayload=null;
 $('#btnSubmit').addEventListener('click', async ()=>{
   if (submitted) return;
   const errs=[];
@@ -399,17 +401,17 @@ $('#btnSubmit').addEventListener('click', async ()=>{
     const chosen = s.opts.find(o=>o.input.checked); const ok = chosen.o.i===s.q.answer; if(ok) mcCorrect++;
     s.opts.forEach(o=>{ o.input.disabled=true; if(o.o.i===s.q.answer) o.lab.classList.add('right'); else if(o===chosen) o.lab.classList.add('wrong'); });
     s.fb.textContent = (ok?'✓ ':'✗ ')+s.q.why+'  ['+s.q.ref+']';
-    mc.push({n:qi+1, q:s.q.q, chosen:chosen.o.t, correct:ok});
+    mc.push({n:qi+1, q:s.q.q, chosen:chosen.o.t, correct:ok, right:s.q.options[s.q.answer]});
   });
   const acts = activityHandles.map(h=>{ const r=h.res(); return r; });
   const autoActs = acts.filter(a=>a.type==='sort'||a.type==='sequence'||a.type==='match');
   const actCorrect = autoActs.reduce((s,a)=>s+a.correct,0), actTotal = autoActs.reduce((s,a)=>s+a.total,0);
-  const written = writtenFields.map(w=>({label:w.label.replace(/<[^>]+>/g,''), words:words(w.ta.value), text:w.ta.value.trim()}));
+  const written = writtenFields.map(w=>({label:(w.key==='resp'?'Short response: '+M.response.prompt:w.label).replace(/<[^>]+>/g,''), words:words(w.ta.value), text:w.ta.value.trim()}));
   const now = new Date().toISOString();
   const payload = {course:CONFIG.courseLabel, semester:CONFIG.semester, module:M.id, moduleTitle:M.title, student:{name:sName.value.trim(), id:sId.value.trim(), section:sSec.value.trim()},
     submittedAt:now, mc:{correct:mcCorrect,total:mc.length,items:mc}, activities:acts, written, pledge:true};
   const code = djb2(JSON.stringify(payload));
-  payload.receiptCode = code;
+  payload.receiptCode = code; lastPayload = payload;
 
   const lines=[];
   lines.push(CONFIG.courseLabel+' — Reading & Analysis Lab');
@@ -452,6 +454,52 @@ $('#btnSubmit').addEventListener('click', async ()=>{
 $('#btnCopy').addEventListener('click', async ()=>{
   try{ await navigator.clipboard.writeText(lastReceipt); $('#btnCopy').textContent='Copied ✓'; }
   catch(e){ const r=document.createRange(); r.selectNodeContents($('#receipt')); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); $('#btnCopy').textContent='Selected — press Ctrl/Cmd+C'; }
+});
+function pdfSafe(t){
+  return String(t==null?'':t).replace(/\u2032/g,"'").replace(/\u2033/g,'"').replace(/[\u2192]/g,'->')
+    .replace(/[^\u0009\u000a\u0020-\u007e\u00a0-\u00ff\u2013\u2014\u2018\u2019\u201c\u201d\u2022\u2026]/g,'');
+}
+function makePdf(){
+  const P = lastPayload; if(!P || !(window.jspdf&&window.jspdf.jsPDF)) return null;
+  const doc = new window.jspdf.jsPDF({unit:'pt',format:'letter'});
+  const W=612,H=792,mx=54,mw=W-2*mx; let y=60;
+  const need=h=>{ if(y+h>H-54){ doc.addPage(); y=60; } };
+  const para=(t,size,style,gap,color)=>{
+    doc.setFont('helvetica',style||'normal'); doc.setFontSize(size); doc.setTextColor(...(color||[30,36,51]));
+    const lines=doc.splitTextToSize(pdfSafe(t),mw); const lh=size*1.3;
+    lines.forEach(l=>{ need(lh); doc.text(l,mx,y); y+=lh; }); y+=(gap==null?6:gap);
+  };
+  para(CONFIG.courseLabel+' - Reading & Analysis Lab',11,'normal',2,[138,47,47]);
+  para('Lab '+M.num+': '+M.title,17,'bold',4);
+  para('Student: '+P.student.name+'   |   ID/Email: '+P.student.id+'   |   Section: '+P.student.section,10.5,'normal',2);
+  para('Submitted: '+new Date(P.submittedAt).toLocaleString()+'   |   Receipt code: '+P.receiptCode,10.5,'normal',8,[91,100,119]);
+  doc.setDrawColor(200,196,186); need(10); doc.line(mx,y,W-mx,y); y+=14;
+  para('Reading check: '+P.mc.correct+' / '+P.mc.total,13,'bold',4);
+  P.mc.items.forEach(m=>{
+    para(m.n+'. '+m.q,10.5,'bold',1);
+    para('Your answer: '+m.chosen+(m.correct?'  (correct)':'  (incorrect)'),10.5,'normal',m.correct?5:1);
+    if(!m.correct) para('Correct answer: '+m.right,10.5,'normal',5,[31,107,69]);
+  });
+  const auto=P.activities.filter(a=>a.type==='sort'||a.type==='sequence'||a.type==='match');
+  y+=6; para('Activities',13,'bold',4);
+  auto.forEach(a=>para(a.title+': '+a.correct+' / '+a.total+' correct ('+a.attempts+' check'+(a.attempts===1?'':'s')+')'+(a.revealed?', answers revealed':''),10.5,'normal',3));
+  P.activities.filter(a=>a.type==='rank').forEach(a=>{
+    para(a.title+' (my ranking, most to least important):',10.5,'bold',2);
+    a.order.forEach((t,i)=>para((i+1)+'. '+t,10.5,'normal',1));
+    y+=4;
+  });
+  y+=6; para('Written work',13,'bold',4);
+  P.written.forEach(w=>{ para(w.label+' ('+w.words+' words)',10.5,'bold',2); para(w.text,11,'normal',10); });
+  para('Pledge: the student affirmed this is their own work.',9.5,'italic',0,[91,100,119]);
+  const pages=doc.getNumberOfPages();
+  for(let i=1;i<=pages;i++){ doc.setPage(i); doc.setFontSize(8.5); doc.setTextColor(120,120,120); doc.text(pdfSafe(CONFIG.courseLabel+' Lab '+M.num+' - '+P.student.name+' - page '+i+' of '+pages),mx,H-30); }
+  return doc;
+}
+$('#btnPdf').addEventListener('click',()=>{
+  const doc=makePdf();
+  if(!doc){ alert('The PDF tool could not load. Check your internet connection and try again, or use Download .txt.'); return; }
+  const last=(lastPayload.student.name.trim().split(/\s+/).pop()||'student').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]/g,'');
+  doc.save('C1001-Lab'+M.num+'-'+last+'.pdf');
 });
 $('#btnDl').addEventListener('click', ()=>{
   const blob=new Blob([lastReceipt],{type:'text/plain'}); const a=document.createElement('a');
