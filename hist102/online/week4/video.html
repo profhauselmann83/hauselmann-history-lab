@@ -341,8 +341,8 @@
     <!-- FALLBACK LINK (if the embedded player is blocked) -->
     <p class="video-fallback">
       If the video isn't showing, use the following link:
-      <a href="https://www.youtube.com/watch?v=gCkC1Y14HVQ" target="_blank" rel="noopener" onclick="onFallbackLinkClick()">Watch the film on YouTube &#8599;</a>
-      <span class="video-fallback-sub">After watching there, come back to this page. The quiz below will open so you can continue.</span>
+      <a href="https://www.youtube.com/watch?v=gCkC1Y14HVQ" target="_blank" rel="noopener">Watch the film on YouTube &#8599;</a>
+      <span class="video-fallback-sub">After watching there, come back to this page to take the quiz.</span>
     </p>
 
     <!-- WATCH PROGRESS -->
@@ -356,8 +356,8 @@
 
     <!-- UNLOCK NOTICE -->
     <div class="unlock-notice" id="unlock-notice">
-      <span class="unlock-notice-icon">🔒</span>
-      <span id="unlock-text">Watch the film — a short quiz will appear once you've watched at least 80%. Pass the quiz to unlock Reading 5.1.</span>
+      <span class="unlock-notice-icon">📺</span>
+      <span id="unlock-text">Please watch the full film before taking the quiz below. The questions are based on the film. Pass the quiz to unlock Reading 5.1.</span>
     </div>
   </div>
 
@@ -410,10 +410,10 @@
     </div>
   </div>
 
-  <!-- QUIZ SECTION (unlocks after 80% watched) -->
-  <div class="quiz-section" id="quiz-section" style="display:none;">
+  <!-- QUIZ SECTION (always visible; students are reminded to watch first) -->
+  <div class="quiz-section" id="quiz-section">
     <h2 class="quiz-heading">Quick Check &mdash; Before You Continue</h2>
-    <p class="quiz-intro">Answer all five questions correctly to unlock Reading 5.1. You can retry as many times as needed.</p>
+    <p class="quiz-intro"><strong>Reminder:</strong> watch the film above (or use the YouTube link under the player) before you answer. Answer all five questions correctly to unlock Reading 5.1. You can retry as many times as needed.</p>
 
     <div class="quiz-form" id="quiz-form">
 
@@ -500,16 +500,6 @@ try {
   }
 } catch(e) {}
 
-// Students who used the fallback YouTube link can't be tracked by the
-// embedded player, so the link opens the quiz (which still gates Reading 5.1).
-var LS_FALLBACK = 'hist102_w4_video_fallback';
-try { if (!unlocked && localStorage.getItem(LS_FALLBACK) === 'yes') unlocked = true; } catch(e) {}
-
-function onFallbackLinkClick() {
-  try { localStorage.setItem(LS_FALLBACK, 'yes'); } catch(e) {}
-  if (!unlocked) { unlocked = true; applyUnlocked(); }
-}
-
 if (unlocked) { applyUnlocked(); }
 
 // ── YOUTUBE API ──────────────────────────────────────────────────────────────
@@ -588,7 +578,6 @@ function applyUnlocked() {
   var status  = document.getElementById('watch-status');
   var notice  = document.getElementById('unlock-notice');
   var text    = document.getElementById('unlock-text');
-  var quiz    = document.getElementById('quiz-section');
 
   var pct = Math.min(Math.round(maxWatched * 100), 100);
 
@@ -596,7 +585,6 @@ function applyUnlocked() {
   if (status) { status.textContent = pct + '% watched'; status.classList.add('done'); }
   if (notice) { notice.classList.add('unlocked'); }
   if (text)   { text.textContent = '\u2713 Video complete \u2014 answer the quick check below to continue.'; }
-  if (quiz)   { quiz.style.display = 'block'; quiz.scrollIntoView({behavior:'smooth', block:'start'}); }
 
   // Also restore quiz if already passed on a prior visit
   try {
@@ -615,11 +603,7 @@ var LS_QUIZ = 'hist102_w4_quiz_passed';
 // Restore quiz-passed state after DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   try {
-    var savedWatch = localStorage.getItem('hist102_w4_video_watched');
-    var fallbackUsed = localStorage.getItem('hist102_w4_video_fallback') === 'yes';
-    if (((savedWatch && parseFloat(savedWatch) >= 0.80) || fallbackUsed) && localStorage.getItem(LS_QUIZ) === 'yes') {
-      var quiz = document.getElementById('quiz-section');
-      if (quiz) quiz.style.display = 'block';
+    if (localStorage.getItem(LS_QUIZ) === 'yes') {
       applyQuizPassed(true);
     }
   } catch(e) {}
