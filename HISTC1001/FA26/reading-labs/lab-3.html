@@ -101,7 +101,7 @@ blockquote.ex cite{display:block;font-size:14px;color:var(--muted);font-style:no
       <div class="field"><label for="sName">Full name</label><input id="sName" type="text" autocomplete="name"></div>
       <div class="field"><label for="sId">Student ID or school email</label><input id="sId" type="text" autocomplete="email"></div>
     </div>
-    <div class="field"><label for="sSec">Section number</label><input id="sSec" type="text" inputmode="numeric" autocomplete="off"></div>
+    <div class="field"><label for="sSec">Section</label><select id="sSec"><option value="">Choose your section…</option><option value="5632">#5632 MW 12:45</option><option value="5633">#5633 MW 2:20</option><option value="5631">#5631 TTH 9:35</option></select></div>
     <label class="pledge"><input id="pledge" type="checkbox"><span>I did this work myself. I read the assigned chapter, and the words I write are my own.</span></label>
   </section>
 
@@ -374,7 +374,7 @@ $('#respHost').append(textArea('Your response', M.response.minWords, 'resp', M.r
 
 /* student fields */
 const sName=$('#sName'), sId=$('#sId'), sSec=$('#sSec'), pledge=$('#pledge');
-sSec.value=loadDraft('sec'); sSec.addEventListener('input',()=>saveDraft('sec',sSec.value));
+sSec.value=loadDraft('sec'); sSec.addEventListener('change',()=>saveDraft('sec',sSec.value));
 sName.value=loadDraft('name'); sId.value=loadDraft('sid'); pledge.checked=loadDraft('pledge')==='1';
 sName.addEventListener('input',()=>saveDraft('name',sName.value));
 sId.addEventListener('input',()=>saveDraft('sid',sId.value));
@@ -387,7 +387,7 @@ $('#btnSubmit').addEventListener('click', async ()=>{
   const errs=[];
   if (!sName.value.trim()) errs.push('Enter your full name.');
   if (!sId.value.trim()) errs.push('Enter your student ID or school email.');
-  if (!sSec.value.trim()) errs.push('Enter your section number.');
+  if (!sSec.value) errs.push('Choose your section.');
   if (!pledge.checked) errs.push('Check the “I did this work myself” box.');
   activityHandles.forEach(h=>{ if(!h.needs()) errs.push(h.needsMsg || ('Check your answers at least once in “'+h.label+'”.')); });
   quizState.forEach((s,qi)=>{ if(!s.opts.some(o=>o.input.checked)) errs.push('Answer reading-check question '+(qi+1)+'.'); });
@@ -408,7 +408,7 @@ $('#btnSubmit').addEventListener('click', async ()=>{
   const actCorrect = autoActs.reduce((s,a)=>s+a.correct,0), actTotal = autoActs.reduce((s,a)=>s+a.total,0);
   const written = writtenFields.map(w=>({label:(w.key==='resp'?'Short response: '+M.response.prompt:w.label).replace(/<[^>]+>/g,''), words:words(w.ta.value), text:w.ta.value.trim()}));
   const now = new Date().toISOString();
-  const payload = {course:CONFIG.courseLabel, semester:CONFIG.semester, module:M.id, moduleTitle:M.title, student:{name:sName.value.trim(), id:sId.value.trim(), section:sSec.value.trim()},
+  const payload = {course:CONFIG.courseLabel, semester:CONFIG.semester, module:M.id, moduleTitle:M.title, student:{name:sName.value.trim(), id:sId.value.trim(), section:sSec.value, sectionLabel:sSec.options[sSec.selectedIndex].text},
     submittedAt:now, mc:{correct:mcCorrect,total:mc.length,items:mc}, activities:acts, written, pledge:true};
   const code = djb2(JSON.stringify(payload));
   payload.receiptCode = code; lastPayload = payload;
@@ -416,7 +416,7 @@ $('#btnSubmit').addEventListener('click', async ()=>{
   const lines=[];
   lines.push(CONFIG.courseLabel+' — Reading & Analysis Lab');
   lines.push('Module '+M.num+': '+M.title+' ('+M.chapterLabel+')');
-  lines.push('Student: '+payload.student.name+' ('+payload.student.id+'), Section '+payload.student.section);
+  lines.push('Student: '+payload.student.name+' ('+payload.student.id+'), Section '+payload.student.sectionLabel);
   lines.push('Submitted: '+now);
   lines.push('Receipt code: '+code);
   lines.push('');
@@ -471,7 +471,7 @@ function makePdf(){
   };
   para(CONFIG.courseLabel+' - Reading & Analysis Lab',11,'normal',2,[138,47,47]);
   para('Lab '+M.num+': '+M.title,17,'bold',4);
-  para('Student: '+P.student.name+'   |   ID/Email: '+P.student.id+'   |   Section: '+P.student.section,10.5,'normal',2);
+  para('Student: '+P.student.name+'   |   ID/Email: '+P.student.id+'   |   Section: '+P.student.sectionLabel,10.5,'normal',2);
   para('Submitted: '+new Date(P.submittedAt).toLocaleString()+'   |   Receipt code: '+P.receiptCode,10.5,'normal',8,[91,100,119]);
   doc.setDrawColor(200,196,186); need(10); doc.line(mx,y,W-mx,y); y+=14;
   para('Reading check: '+P.mc.correct+' / '+P.mc.total,13,'bold',4);
