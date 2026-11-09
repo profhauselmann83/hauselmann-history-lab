@@ -159,6 +159,7 @@ const CONFIG = {
   supabaseUrl: "https://bqrluqymscucvbiaaeai.supabase.co",
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmx1cXltc2N1Y3ZiaWFhZWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2Njg4MTMsImV4cCI6MjA4NDI0NDgxM30.AVOjnQe_TDoWydE2wDP1_YftU1lBkYxcPuyQeZb8Nfs",
   table: "worksheet_submissions",
+  bucket: "student-submissions",
   semester: "Fall 2026"
 };
 
@@ -467,15 +468,30 @@ $('#btnSubmit').addEventListener('click', async ()=>{
 
   if (CONFIG.supabaseUrl && CONFIG.supabaseAnonKey){
     sn.textContent='Sending to your instructor…';
+    const base=CONFIG.supabaseUrl.replace(/\/$/,'');
+    const hdr={apikey:CONFIG.supabaseAnonKey,Authorization:'Bearer '+CONFIG.supabaseAnonKey};
+    let filePath=null, fileUrl=null, why='';
     try{
-      const row = { student_name:payload.student.name, section_number:payload.student.section,
-        worksheet_type:'histc1001-ec-lab-'+M.num, form_data:payload, submitted_at:now };
-      const r = await fetch(CONFIG.supabaseUrl.replace(/\/$/,'')+'/rest/v1/'+CONFIG.table, {method:'POST',
-        headers:{'Content-Type':'application/json',apikey:CONFIG.supabaseAnonKey,Authorization:'Bearer '+CONFIG.supabaseAnonKey,Prefer:'return=minimal'}, body:JSON.stringify(row)});
-      sn.textContent = r.ok ? '✓ Submitted to your instructor. Keep this receipt as proof.' : 'The course server did not accept this (status '+r.status+'). Copy or download your receipt and send it to your instructor.';
-    }catch(e){ sn.textContent='Could not reach the course server. Copy or download your receipt and send it to your instructor.'; }
+      const doc=makePdf();
+      if(doc){
+        const blob=doc.output('blob');
+        const safe=payload.student.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
+        const path='histc1001-ec-lab'+M.num+'/'+payload.student.section+'/'+safe+'_'+now.replace(/[:.]/g,'-')+'.pdf';
+        const up=await fetch(base+'/storage/v1/object/'+CONFIG.bucket+'/'+path,{method:'POST',headers:Object.assign({'Content-Type':'application/pdf','x-upsert':'false'},hdr),body:blob});
+        if(up.ok){ filePath=path; fileUrl=base+'/storage/v1/object/public/'+CONFIG.bucket+'/'+path; }
+        else { why='file '+up.status; try{console.error('Upload failed',up.status,await up.text());}catch(e){} }
+      } else { why='pdf'; }
+    }catch(e){ why='file'; console.error(e); }
+    try{
+      const row={student_name:payload.student.name, section_number:payload.student.section,
+        worksheet_type:'histc1001-ec-lab-'+M.num, form_data:payload, submitted_at:now};
+      if(filePath){ row.file_path=filePath; row.file_url=fileUrl; }
+      const r=await fetch(base+'/rest/v1/'+CONFIG.table,{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},hdr),body:JSON.stringify(row)});
+      if(r.ok){ sn.textContent='✓ Submitted to your instructor. Now download your PDF and upload it to Canvas.'; }
+      else { try{console.error('Insert failed',r.status,await r.text());}catch(e){} sn.textContent='The course server did not accept this (error '+r.status+(why?', '+why:'')+'). Download your PDF and upload it to Canvas, and tell your instructor.'; }
+    }catch(e){ console.error(e); sn.textContent='Could not reach the course server. Download your PDF and upload it to Canvas, and tell your instructor.'; }
   } else {
-    sn.textContent='Copy or download this receipt and submit it where your instructor asks (for example, paste it into the Canvas assignment).';
+    sn.textContent='Download your PDF and upload it to Canvas as your submission.';
   }
   $('#receiptWrap').scrollIntoView({behavior:'smooth',block:'start'});
 });
