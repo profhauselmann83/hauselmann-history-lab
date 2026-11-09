@@ -115,7 +115,7 @@ input,textarea,select,.receipt{-webkit-user-select:text;user-select:text}
     <ul class="focus" id="focus"></ul>
   </section>
 
-  <p class="nopaste" id="nopaste" role="status">Copying and pasting are turned off on this page. Type your answers in your own words.</p>
+  <p class="nopaste" id="nopaste" role="status">Copying and pasting are turned off on this page. Type your answers in your own words. Your results and the correct answers appear only after you submit.</p>
   <div id="activities"></div>
 
   <section class="card" id="secQuiz">
@@ -218,38 +218,32 @@ function buildSort(a, idx){
     sec.append(row);
     return {it,sel,fb,row};
   });
-  const score = el('p',{class:'score','aria-live':'polite'});
-  const reveal = el('button',{class:'btn ghost',type:'button',disabled:true,onclick:()=>{
-    res.revealed=true;
-    rows.forEach(r=>{ const c=a.categories.find(c=>c.id===r.it.cat); r.fb.textContent='Answer: '+c.label+' — '+r.it.why; });
-  }},'Reveal answers');
-  const check = el('button',{class:'btn',type:'button',onclick:()=>{
-    res.attempts++; let c=0;
+  const grade = ()=>{
+    let c=0;
     rows.forEach(r=>{
       const ok = r.sel.value===r.it.cat; if(ok) c++;
-      r.row.classList.toggle('ok',ok); r.row.classList.toggle('no',!ok);
-      r.fb.textContent = r.sel.value===''?'Choose a category first.' : ok?('✓ '+r.it.why):('✗ Not yet. Look again at: '+r.it.ref);
+      const cat = a.categories.find(x=>x.id===r.it.cat);
+      r.row.classList.add(ok?'ok':'no');
+      r.fb.textContent = ok ? ('✓ '+r.it.why) : ('✗ Correct category: '+cat.label+'. '+r.it.why+' [See: '+r.it.ref+']');
+      r.sel.disabled = true;
     });
-    res.correct=c; score.textContent = c+' of '+res.total+' correct'+(c<res.total?' — adjust and check again.':' — nice work.');
-    reveal.disabled = false;
-  }},'Check my sorting');
-  sec.append(el('div',{class:'btns'}, check, reveal, score));
-  activityHandles.push({res:()=>res, needs:()=>res.attempts>0, label:a.title});
+    res.correct=c; res.attempts=1;
+  };
+  activityHandles.push({res:()=>res, grade, needs:()=>rows.every(r=>r.sel.value!==''), needsMsg:'Choose a category for every item in “'+a.title+'”.', label:a.title});
   return sec;
 }
 
-function orderUI(sec, items, getKey){
-  // returns {order:[...], list node, rerender}
-  const state = {order:items.slice()};
+function orderUI(sec, items){
+  const state = {order:items.slice(), moved:false, locked:false};
   const list = el('div');
   const render = (marks)=>{
     list.innerHTML='';
     state.order.forEach((it,i)=>{
-      const up = el('button',{type:'button','aria-label':'Move up: '+it.text,disabled:i===0,onclick:()=>{ [state.order[i-1],state.order[i]]=[state.order[i],state.order[i-1]]; render(); }},'▲');
-      const dn = el('button',{type:'button','aria-label':'Move down: '+it.text,disabled:i===state.order.length-1,onclick:()=>{ [state.order[i+1],state.order[i]]=[state.order[i],state.order[i+1]]; render(); }},'▼');
+      const up = el('button',{type:'button','aria-label':'Move up: '+it.text,disabled:state.locked||i===0,onclick:()=>{ [state.order[i-1],state.order[i]]=[state.order[i],state.order[i-1]]; state.moved=true; render(); }},'▲');
+      const dn = el('button',{type:'button','aria-label':'Move down: '+it.text,disabled:state.locked||i===state.order.length-1,onclick:()=>{ [state.order[i+1],state.order[i]]=[state.order[i],state.order[i+1]]; state.moved=true; render(); }},'▼');
       const row = el('div',{class:'item'+(marks&&marks[i]!=null?(marks[i]?' ok':' no'):'')},
         el('div',{class:'seq'}, el('span',{class:'num'}, String(i+1)), el('p',{class:'item-text'}, it.text), el('div',{class:'mv'}, up, dn)));
-      if (marks && marks.show) row.append(el('div',{class:'when'}, it.when||''));
+      if (marks && marks.show) row.append(el('div',{class:'when'}, (marks[i]?'✓ ':'✗ ')+(it.when||'')));
       list.append(row);
     });
   };
@@ -264,17 +258,13 @@ function buildSequence(a, idx){
   let start = shuffle(base); let guard=0;
   while (start.every((x,k)=>x.i===k) && guard++<20) start = shuffle(base);
   const ui = orderUI(sec, start);
-  const score = el('p',{class:'score','aria-live':'polite'});
-  const reveal = el('button',{class:'btn ghost',type:'button',disabled:true,onclick:()=>{
-    res.revealed=true; ui.state.order = base.slice(); const m=base.map(()=>true); m.show=true; ui.render(m);
-  }},'Reveal correct order');
-  const check = el('button',{class:'btn',type:'button',onclick:()=>{
-    res.attempts++; const m = ui.state.order.map((x,k)=>x.i===k); let c=m.filter(Boolean).length;
-    m.show = (c===res.total); ui.render(m); res.correct=c; reveal.disabled=false;
-    score.textContent = c+' of '+res.total+' in the right place'+(c<res.total?' — keep rearranging (dates appear when the order is right).':' — correct order.');
-  }},'Check the order');
-  sec.append(el('div',{class:'btns'}, check, reveal, score));
-  activityHandles.push({res:()=>res, needs:()=>res.attempts>0, label:a.title});
+  const grade = ()=>{
+    const m = ui.state.order.map((x,k)=>x.i===k);
+    res.correct = m.filter(Boolean).length; res.attempts=1;
+    ui.state.locked = true; m.show = true; ui.render(m);
+    if (res.correct<res.total) sec.append(el('p',{class:'note'}, 'Correct order: '+base.map(x=>x.text+' ('+x.when+')').join('  →  ')));
+  };
+  activityHandles.push({res:()=>res, grade, needs:()=>ui.state.moved, needsMsg:'Put the events in order in “'+a.title+'” (move at least one with the ▲ ▼ buttons).', label:a.title});
   return sec;
 }
 
@@ -288,21 +278,17 @@ function buildMatch(a, idx){
     const row = el('div',{class:'item'}, el('p',{class:'item-text'}, el('strong',{},p.left)), sel, fb);
     sec.append(row); return {p,sel,fb,row};
   });
-  const score = el('p',{class:'score','aria-live':'polite'});
-  const reveal = el('button',{class:'btn ghost',type:'button',disabled:true,onclick:()=>{
-    res.revealed=true; rows.forEach(r=>{ r.fb.textContent='Answer: '+r.p.right+(r.p.why?' — '+r.p.why:''); });
-  }},'Reveal answers');
-  const check = el('button',{class:'btn',type:'button',onclick:()=>{
-    res.attempts++; let c=0;
-    rows.forEach(r=>{ const ok=r.sel.value===r.p.right; if(ok) c++;
-      r.row.classList.toggle('ok',ok); r.row.classList.toggle('no',!ok);
-      r.fb.textContent = r.sel.value===''?'Choose an answer first.' : ok?('✓ '+(r.p.why||'Correct.')):('✗ Not yet. Look again at: '+r.p.ref);
+  const grade = ()=>{
+    let c=0;
+    rows.forEach(r=>{
+      const ok = r.sel.value===r.p.right; if(ok) c++;
+      r.row.classList.add(ok?'ok':'no');
+      r.fb.textContent = ok ? ('✓ '+(r.p.why||'Correct.')) : ('✗ Correct answer: '+r.p.right+(r.p.why?' — '+r.p.why:'')+' [See: '+r.p.ref+']');
+      r.sel.disabled = true;
     });
-    res.correct=c; reveal.disabled=false;
-    score.textContent = c+' of '+res.total+' correct'+(c<res.total?' — adjust and check again.':' — nice work.');
-  }},'Check my matches');
-  sec.append(el('div',{class:'btns'}, check, reveal, score));
-  activityHandles.push({res:()=>res, needs:()=>res.attempts>0, label:a.title});
+    res.correct=c; res.attempts=1;
+  };
+  activityHandles.push({res:()=>res, grade, needs:()=>rows.every(r=>r.sel.value!==''), needsMsg:'Choose an answer for every item in “'+a.title+'”.', label:a.title});
   return sec;
 }
 
@@ -417,12 +403,13 @@ $('#btnSubmit').addEventListener('click', async ()=>{
   if (!sId.value.trim()) errs.push('Enter your student ID or school email.');
   if (!sSec.value) errs.push('Choose your section.');
   if (!pledge.checked) errs.push('Check the “I did this work myself” box.');
-  activityHandles.forEach(h=>{ if(!h.needs()) errs.push(h.needsMsg || ('Check your answers at least once in “'+h.label+'”.')); });
+  activityHandles.forEach(h=>{ if(!h.needs()) errs.push(h.needsMsg || ('Complete “'+h.label+'”.')); });
   quizState.forEach((s,qi)=>{ if(!s.opts.some(o=>o.input.checked)) errs.push('Answer reading-check question '+(qi+1)+'.'); });
   writtenFields.forEach(w=>{ const n=words(w.ta.value); if(n<w.min) errs.push('“'+w.label.replace(/<[^>]+>/g,'').slice(0,70)+(w.label.length>70?'…':'')+'” needs at least '+w.min+' words (you have '+n+').'); });
   const box=$('#errors'); box.innerHTML='';
   if (errs.length){ box.append(el('div',{class:'alert',role:'alert'}, el('strong',{},'Almost there — finish these first:'), el('ul',{}, errs.map(e=>el('li',{},e))))); return; }
 
+  activityHandles.forEach(h=>{ if(h.grade) h.grade(); });
   // grade MC
   let mcCorrect=0; const mc=[];
   quizState.forEach((s,qi)=>{
@@ -452,7 +439,7 @@ $('#btnSubmit').addEventListener('click', async ()=>{
   mc.forEach(m=>lines.push('  Q'+m.n+': '+(m.correct?'correct':'incorrect')));
   lines.push('');
   lines.push('ACTIVITIES (auto-checked items): '+actCorrect+' / '+actTotal);
-  acts.forEach(a=>lines.push('  '+a.title+' — '+(a.type==='rank'?'ranking recorded':a.type==='source'?'written analysis':(a.correct+'/'+a.total+', '+a.attempts+' check(s)'+(a.revealed?', answers revealed':'')))));
+  acts.forEach(a=>lines.push('  '+a.title+' — '+(a.type==='rank'?'ranking recorded':a.type==='source'?'written analysis':(a.correct+'/'+a.total))));
   lines.push('');
   lines.push('WRITTEN WORK');
   written.forEach(w=>{ lines.push('['+w.label+'] ('+w.words+' words)'); lines.push(w.text); lines.push(''); });
@@ -526,7 +513,7 @@ function makePdf(){
   });
   const auto=P.activities.filter(a=>a.type==='sort'||a.type==='sequence'||a.type==='match');
   y+=6; para('Activities',13,'bold',4);
-  auto.forEach(a=>para(a.title+': '+a.correct+' / '+a.total+' correct ('+a.attempts+' check'+(a.attempts===1?'':'s')+')'+(a.revealed?', answers revealed':''),10.5,'normal',3));
+  auto.forEach(a=>para(a.title+': '+a.correct+' / '+a.total+' correct',10.5,'normal',3));
   P.activities.filter(a=>a.type==='rank').forEach(a=>{
     para(a.title+' (my ranking, most to least important):',10.5,'bold',2);
     a.order.forEach((t,i)=>para((i+1)+'. '+t,10.5,'normal',1));
