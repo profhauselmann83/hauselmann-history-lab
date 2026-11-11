@@ -728,6 +728,19 @@
             oncontextmenu="return false"
             spellcheck="true"
             autocomplete="off"></textarea>
+        <div class="alert alert-warning" id="ref-note-box" style="display:none;margin-top:10px">
+            <strong>Under the <span id="ref-note-req-label">200</span>-word minimum?</strong> You can still submit your Process Reflection. Explain below why you were unable to reach the minimum (at least <span id="ref-note-min-label">20</span> words). Your instructor will see this note with your submission.
+            <textarea id="ref-note-area"
+                placeholder="Explain why you were unable to reach the Process Reflection minimum…"
+                oninput="onAnyInput()"
+                onpaste="blockPaste(event)"
+                ondrop="blockDrop(event)"
+                oncontextmenu="return false"
+                spellcheck="true"
+                autocomplete="off"
+                style="width:100%;min-height:110px;margin-top:8px;padding:10px;font:inherit;font-size:0.95em;border:1px solid #e0c97a;border-radius:6px;box-sizing:border-box;resize:vertical;color:#333;background:#fff"></textarea>
+            <div class="wc-hint" id="ref-note-hint" style="margin-top:4px"></div>
+        </div>
     </div>
 
     <div class="alert alert-warning" id="req-box" style="margin-top:16px;display:none"></div>
@@ -792,6 +805,7 @@
         <p><strong>In-text citations:</strong> <span id="rv-fn"></span></p>
         <p><strong>Reference List Entries:</strong> <span id="rv-bib"></span></p>
         <p><strong>Process Reflection:</strong> <span id="rv-ref"></span></p>
+        <p id="rv-ref-note-row" style="display:none"><strong>Reflection Length Explanation:</strong> <span id="rv-ref-note" style="white-space:pre-wrap"></span></p>
         <p><strong>Pledge Signed:</strong> <span id="rv-pledge" style="color:#27ae60"></span></p>
     </div>
     <div class="alert alert-info">
@@ -988,9 +1002,18 @@ function updateAll() {
 
     const rEl = document.getElementById('ref-wc-number'), rHint = document.getElementById('ref-hint');
     rEl.textContent = refCount.toLocaleString() + (refCount === 1 ? ' word' : ' words');
-    if (refCount < REF_MIN) { rEl.className = 'wc-number too-few'; rHint.innerHTML = `Need <strong>${REF_MIN - refCount}</strong> more word(s). Aim for ${REF_MIN}–${REF_MAX} words so it fits on one page.`; }
+    if (refCount < REF_MIN) { rEl.className = 'wc-number too-few'; rHint.innerHTML = `Need <strong>${REF_MIN - refCount}</strong> more word(s). Aim for ${REF_MIN}–${REF_MAX} words so it fits on one page. If you cannot reach it, you may still submit by explaining why in the box below the reflection.`; }
     else if (refCount <= REF_MAX) { rEl.className = 'wc-number in-range'; rHint.innerHTML = `✓ Length is within range (${REF_MIN}–${REF_MAX} words).`; }
     else { rEl.className = 'wc-number too-many'; rHint.innerHTML = `<strong>${refCount - REF_MAX}</strong> word(s) over the ${REF_MAX}-word maximum. The reflection must fit on one page.`; }
+    // Under-minimum explanation for the Process Reflection
+    const refUnderMin = refCount > 0 && refCount < REF_MIN;
+    const refNoteCount = countWords(document.getElementById('ref-note-area').value);
+    document.getElementById('ref-note-box').style.display = refUnderMin ? 'block' : 'none';
+    document.getElementById('ref-note-min-label').textContent = WC_NOTE_MIN;
+    document.getElementById('ref-note-req-label').textContent = REF_MIN;
+    const refNoteHint = document.getElementById('ref-note-hint');
+    if (refNoteCount < WC_NOTE_MIN) refNoteHint.innerHTML = `${refNoteCount} word(s). Need <strong>${WC_NOTE_MIN - refNoteCount}</strong> more to submit under the minimum.`;
+    else refNoteHint.innerHTML = `✓ ${refNoteCount} words. You can submit under the minimum with this explanation.`;
 
     const missing = [];
     if (!document.getElementById('inp-title').value.trim()) missing.push('Enter a paper title.');
@@ -999,7 +1022,7 @@ function updateAll() {
     if (!fn.ok) missing.push('Citations: ' + fn.error);
     else if (fn.notes.length < MIN_CITES) missing.push(`Add at least ${MIN_CITES} in-text citations, such as (Rosen 2025, 4). See the Citation Guide tab.`);
     if (!document.getElementById('bib-area').value.trim()) missing.push('Enter your reference list.');
-    if (refCount < REF_MIN) missing.push(`Process Reflection: ${REF_MIN - refCount} more word(s) needed.`);
+    if (refCount < REF_MIN && (!refUnderMin || refNoteCount < WC_NOTE_MIN)) missing.push(`Process Reflection: ${REF_MIN - refCount} more word(s) needed, or explain in the box below the reflection why you could not reach the ${REF_MIN}-word minimum (at least ${WC_NOTE_MIN} words).`);
     if (refCount > REF_MAX) missing.push(`Process Reflection: shorten by ${refCount - REF_MAX} word(s).`);
     const box = document.getElementById('req-box');
     if (missing.length) { box.style.display = 'block'; box.innerHTML = '<strong>Before you can continue:</strong><ul style="margin:6px 0 0 18px;padding:0">' + missing.map(m => '<li>' + m + '</li>').join('') + '</ul>'; }
@@ -1030,7 +1053,10 @@ function fillReview(sig) {
     document.getElementById('rv-note').textContent = note;
     document.getElementById('rv-fn').textContent = fn.notes.length;
     document.getElementById('rv-bib').textContent = bibLines.length + ' source' + (bibLines.length !== 1 ? 's' : '');
-    document.getElementById('rv-ref').textContent = refCount + ' words';
+    document.getElementById('rv-ref').textContent = refCount + ' words' + (refCount < REF_MIN ? ` (under the ${REF_MIN}-word minimum)` : '');
+    const refNote = refCountNote();
+    document.getElementById('rv-ref-note-row').style.display = refNote ? 'block' : 'none';
+    document.getElementById('rv-ref-note').textContent = refNote;
     document.getElementById('rv-pledge').textContent = '✓ Signed by ' + sig;
 }
 function proceedToReview() {
@@ -1047,6 +1073,7 @@ function backToPledge() { showStep(3); }
 //  SUBMIT
 // ════════════════════════════════════════════════════════════════
 function wordCountNote() { return wordCount < MIN_WORDS ? document.getElementById('wc-note-area').value.trim() : ''; }
+function refCountNote() { return refCount < REF_MIN ? document.getElementById('ref-note-area').value.trim() : ''; }
 function lastNameSlug() { return (studentName.trim().split(/\s+/).pop() || 'student').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]/g, ''); }
 
 async function submitPaper() {
@@ -1067,9 +1094,10 @@ async function submitPaper() {
         } catch (pdfErr) { console.warn('PDF generation failed:', pdfErr); }
 
         btn.textContent = 'Submitting…';
-        const note = wordCountNote();
+        const note = wordCountNote(), refNote = refCountNote();
         const paperText = (note ? `=== WORD COUNT NOTE (${wordCount.toLocaleString()} of ${MIN_WORDS.toLocaleString()} minimum) ===\n\n${note}\n\n=== ESSAY ===\n\n` : '') +
-            essay + '\n\n=== PROCESS REFLECTION ===\n\n' + reflection;
+            essay + '\n\n=== PROCESS REFLECTION ===\n\n' + reflection +
+            (refNote ? `\n\n=== REFLECTION LENGTH NOTE (${refCount} of ${REF_MIN} minimum) ===\n\n${refNote}` : '');
         const { error } = await getDB().from(TABLE).insert([{
             student_name: studentName, student_id: studentId, section,
             paper_title: title, paper_text: paperText, bibliography: bib,
@@ -1102,7 +1130,7 @@ function saveDraft() {
     try {
         localStorage.setItem(DRAFT_KEY, JSON.stringify({ id: studentId, title: document.getElementById('inp-title').value,
             essay: document.getElementById('essay-area').value, bib: document.getElementById('bib-area').value,
-            ref: document.getElementById('ref-area').value, wcNote: document.getElementById('wc-note-area').value, saved: new Date().toISOString() }));
+            ref: document.getElementById('ref-area').value, wcNote: document.getElementById('wc-note-area').value, refNote: document.getElementById('ref-note-area').value, saved: new Date().toISOString() }));
         setBadge('saved');
     } catch (e) { setBadge('unsaved'); }
 }
@@ -1115,13 +1143,14 @@ function loadDraft() {
         if (d.bib) document.getElementById('bib-area').value = d.bib;
         if (d.ref) document.getElementById('ref-area').value = d.ref;
         if (d.wcNote) document.getElementById('wc-note-area').value = d.wcNote;
+        if (d.refNote) document.getElementById('ref-note-area').value = d.refNote;
         updateAll(); setBadge('saved');
     } catch (e) {}
 }
 function clearDraft() {
     if (!confirm('Clear your saved draft? This cannot be undone.')) return;
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-    ['inp-title','essay-area','bib-area','ref-area','wc-note-area'].forEach(id => { document.getElementById(id).value = ''; });
+    ['inp-title','essay-area','bib-area','ref-area','wc-note-area','ref-note-area'].forEach(id => { document.getElementById(id).value = ''; });
     updateAll(); setBadge('unsaved');
 }
 function setBadge(state) {
@@ -1147,7 +1176,7 @@ document.addEventListener('beforeinput', e => {
 }, true);
 document.addEventListener('keydown', e => {
     const a = document.activeElement;
-    if (!a || !['essay-area','bib-area','ref-area','wc-note-area','inp-title'].includes(a.id)) return;
+    if (!a || !['essay-area','bib-area','ref-area','wc-note-area','ref-note-area','inp-title'].includes(a.id)) return;
     if ((e.metaKey || e.ctrlKey) && (e.key === 'v' || e.key === 'V')) { e.preventDefault(); document.getElementById('paste-modal').classList.add('show'); }
     if (e.shiftKey && e.key === 'Insert') { e.preventDefault(); document.getElementById('paste-modal').classList.add('show'); }
 });
@@ -1290,6 +1319,22 @@ function buildPDF(isDraft) {
         breakLines(tokenize(`Essay length: ${wordCount.toLocaleString()} words (minimum ${MIN_WORDS.toLocaleString()}).`), CW, CW, BODY).forEach(ln => { drawLine(ln, M, y, BODY); y += LH_SINGLE; });
         y += 0.1;
         wcNote.split(/\n+/).filter(p => p.trim()).forEach(par => {
+            breakLines(tokenize(par.trim()), CW, CW, BODY).forEach(ln => {
+                if (y > PH - M) { doc.addPage(); y = M + 0.15; }
+                drawLine(ln, M, y, BODY); y += LH_SINGLE;
+            });
+            y += 0.1;
+        });
+    }
+
+    // ---- reflection length note (only when submitted under the minimum) ----
+    const refNote = refCountNote();
+    if (refNote) {
+        doc.addPage(); y = M + 0.15;
+        doc.setFont('times', 'bold'); doc.setFontSize(BODY); doc.text('Process Reflection Length Note', PW / 2, y, { align:'center' }); y += LH_SINGLE * 1.6;
+        breakLines(tokenize(`Reflection length: ${refCount} words (minimum ${REF_MIN}).`), CW, CW, BODY).forEach(ln => { drawLine(ln, M, y, BODY); y += LH_SINGLE; });
+        y += 0.1;
+        refNote.split(/\n+/).filter(p => p.trim()).forEach(par => {
             breakLines(tokenize(par.trim()), CW, CW, BODY).forEach(ln => {
                 if (y > PH - M) { doc.addPage(); y = M + 0.15; }
                 drawLine(ln, M, y, BODY); y += LH_SINGLE;
