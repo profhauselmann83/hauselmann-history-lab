@@ -553,8 +553,11 @@
         <input type="text" id="inp-id" placeholder="e.g. 12345678" autocomplete="off" inputmode="numeric">
     </div>
     <div class="form-row">
-        <label for="inp-section">Course Section Number</label>
-        <input type="text" id="inp-section" placeholder="e.g. 1234" autocomplete="off" inputmode="numeric">
+        <label for="inp-section">Course Section</label>
+        <select id="inp-section">
+            <option value="">— Select your section —</option>
+            <option value="4724">#4724</option>
+        </select>
     </div>
     <div class="alert alert-danger" id="login-error" style="display:none"></div>
     <div class="btn-row">
@@ -903,7 +906,6 @@ function proceedToWrite() {
     const err = document.getElementById('login-error');
     if (!name || !id || !sec) { err.textContent = 'Please complete all fields before continuing.'; err.style.display = 'block'; return; }
     if (!/^\d{5,10}$/.test(id)) { err.textContent = 'Student ID should be 5–10 digits (numbers only).'; err.style.display = 'block'; return; }
-    if (!/^\d{3,6}$/.test(sec)) { err.textContent = 'Section number should be numbers only (for example, 1234). Check your course schedule.'; err.style.display = 'block'; return; }
     err.style.display = 'none';
     studentName = name; studentId = id; section = sec;
     loadDraft();
@@ -1299,7 +1301,7 @@ const INSTRUCTOR_MODE = new URLSearchParams(window.location.search).get('instruc
 if (INSTRUCTOR_MODE) {
     document.getElementById('inp-name').value = 'Instructor Preview';
     document.getElementById('inp-id').value = '00000000';
-    document.getElementById('inp-section').value = '1234';
+    document.getElementById('inp-section').value = '4724';
     document.getElementById('inp-title').value = 'Sample Paper Title';
     document.getElementById('essay-area').value = 'This is a preview of the essay field. Disease followed the trade routes (Kiple 1993, 45).\n\nThis is a second paragraph to show paragraph spacing (Sample 2022).';
     document.getElementById('bib-area').value = 'Kiple, Kenneth F. 1993. *The Cambridge World History of Human Disease*. Cambridge: Cambridge University Press.\nSample, Ian. 2022. "Mystery of Black Death\'s Origins Solved, Say Researchers." *The Guardian*, June 15, 2022.';
@@ -1315,13 +1317,13 @@ if (INSTRUCTOR_MODE) {
         [['1','Login'],['2','Write'],['3','Pledge'],['4','Review'],['5','Confirmation']].map(([n,l]) =>
         `<button onclick="instructorGoTo(${n})" style="margin:2px 4px;padding:5px 14px;border:none;border-radius:4px;font-size:0.82em;font-weight:700;cursor:pointer;background:#3498db;color:white">${n} · ${l}</button>`).join('');
     document.body.insertBefore(jumper, document.body.children[1]);
-    studentName = 'Instructor Preview'; studentId = '00000000'; section = '1234';
+    studentName = 'Instructor Preview'; studentId = '00000000'; section = '4724';
     updateAll(); checkPledge();
 }
 function instructorGoTo(n) {
     if (!INSTRUCTOR_MODE) return;
     if (n === 4) { fillReview('Instructor Preview'); setTimeout(() => { const b = document.getElementById('btn-final'); if (b) { b.disabled = true; b.title = 'Disabled in preview'; } }, 50); }
-    if (n === 5) document.getElementById('confirm-details').innerHTML = '<strong>Instructor Preview</strong> | ID: 00000000 | Section 1234<br><em>"Sample Paper Title"</em> — preview';
+    if (n === 5) document.getElementById('confirm-details').innerHTML = '<strong>Instructor Preview</strong> | ID: 00000000 | Section 4724<br><em>"Sample Paper Title"</em> — preview';
     document.getElementById('locked-panel').style.display = 'none';
     showStep(n);
 }
